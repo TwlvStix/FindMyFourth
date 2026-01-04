@@ -1,10 +1,10 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/upload_data.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/widgets/app_button.dart';
+import '/core/upload_data.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'change_photo_model.dart';
@@ -49,7 +49,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
         width: MediaQuery.sizeOf(context).width * 1.0,
         height: 350.0,
         decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).secondaryBackground,
+          color: AppTheme.of(context).secondaryBackground,
           borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(0.0),
             bottomRight: Radius.circular(0.0),
@@ -75,7 +75,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                           thickness: 3.0,
                           indent: 150.0,
                           endIndent: 150.0,
-                          color: FlutterFlowTheme.of(context).primaryBackground,
+                          color: AppTheme.of(context).primaryBackground,
                         ),
                         Row(
                           mainAxisSize: MainAxisSize.max,
@@ -87,19 +87,19 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                     0.0, 4.0, 16.0, 0.0),
                                 child: Text(
                                   'Change Profile Picture',
-                                  style: FlutterFlowTheme.of(context)
+                                  style: AppTheme.of(context)
                                       .headlineMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight: FontWeight.bold,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .headlineMedium
                                                   .fontStyle,
                                         ),
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.bold,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .headlineMedium
                                             .fontStyle,
                                       ),
@@ -117,24 +117,24 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                     0.0, 8.0, 0.0, 0.0),
                                 child: Text(
                                   'Upload a new photo below in order to change your profile picture.',
-                                  style: FlutterFlowTheme.of(context)
+                                  style: AppTheme.of(context)
                                       .labelMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontStyle,
                                         ),
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelMedium
                                             .fontStyle,
                                       ),
@@ -219,14 +219,14 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              FFButtonWidget(
+                              AppButton(
                                 onPressed: () async {
                                   final selectedMedia =
                                       await selectMediaWithSourceBottomSheet(
                                     context: context,
                                     allowPhoto: true,
                                     backgroundColor:
-                                        FlutterFlowTheme.of(context)
+                                        AppTheme.of(context)
                                             .primaryBtnText,
                                     textColor: Color(0xFF253551),
                                   );
@@ -285,7 +285,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                   }
                                 },
                                 text: 'Upload Image',
-                                options: FFButtonOptions(
+                                options: AppButtonOptions(
                                   width: 150.0,
                                   height: 50.0,
                                   padding: EdgeInsetsDirectional.fromSTEB(
@@ -293,25 +293,25 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                   iconPadding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, 0.0),
                                   color: Color(0xFFA9A9A9),
-                                  textStyle: FlutterFlowTheme.of(context)
+                                  textStyle: AppTheme.of(context)
                                       .labelMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontStyle,
                                         ),
                                         color: Colors.white,
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelMedium
                                             .fontStyle,
                                       ),
@@ -322,7 +322,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                   ),
                                 ),
                               ),
-                              FFButtonWidget(
+                              AppButton(
                                 onPressed: () async {
                                   await currentUserReference!
                                       .update(createUsersRecordData(
@@ -332,21 +332,21 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                   Navigator.pop(context);
                                 },
                                 text: 'Save Changes',
-                                options: FFButtonOptions(
+                                options: AppButtonOptions(
                                   width: 150.0,
                                   height: 50.0,
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, 0.0),
                                   iconPadding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, 0.0),
-                                  color: FlutterFlowTheme.of(context).primary,
-                                  textStyle: FlutterFlowTheme.of(context)
+                                  color: AppTheme.of(context).primary,
+                                  textStyle: AppTheme.of(context)
                                       .titleSmall
                                       .override(
                                         font: GoogleFonts.lexendDeca(
                                           fontWeight: FontWeight.normal,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .titleSmall
                                                   .fontStyle,
                                         ),
@@ -354,7 +354,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                         fontSize: 14.0,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.normal,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .titleSmall
                                             .fontStyle,
                                       ),

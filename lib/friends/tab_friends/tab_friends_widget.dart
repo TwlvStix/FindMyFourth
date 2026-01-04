@@ -1,12 +1,12 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_autocomplete_options_list.dart';
-import '/flutter_flow/flutter_flow_button_tabbar.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/random_data_util.dart' as random_data;
+import '/core/autocomplete_options_list.dart';
+import '/core/button_tabbar.dart';
+import '/core/widgets/app_icon_button.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/widgets/app_button.dart';
+import '/core/random_data_util.dart' as random_data;
 import '/index.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -64,18 +64,18 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).alternate,
+        backgroundColor: AppTheme.of(context).alternate,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).alternate,
+          backgroundColor: AppTheme.of(context).alternate,
           automaticallyImplyLeading: false,
-          leading: FlutterFlowIconButton(
+          leading: AppIconButton(
             borderColor: Colors.transparent,
             borderRadius: 30.0,
             borderWidth: 1.0,
             buttonSize: 55.0,
             icon: Icon(
               Icons.arrow_back_sharp,
-              color: FlutterFlowTheme.of(context).primary,
+              color: AppTheme.of(context).primary,
               size: 25.0,
             ),
             onPressed: () async {
@@ -84,19 +84,19 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
           ),
           title: Text(
             'Golfers',
-            style: FlutterFlowTheme.of(context).headlineSmall.override(
+            style: AppTheme.of(context).headlineSmall.override(
                   font: GoogleFonts.outfit(
                     fontWeight:
-                        FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                        AppTheme.of(context).headlineSmall.fontWeight,
                     fontStyle:
-                        FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                        AppTheme.of(context).headlineSmall.fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   letterSpacing: 0.0,
                   fontWeight:
-                      FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                      AppTheme.of(context).headlineSmall.fontWeight,
                   fontStyle:
-                      FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                      AppTheme.of(context).headlineSmall.fontStyle,
                 ),
           ),
           actions: [],
@@ -116,34 +116,34 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                       child: FlutterFlowButtonTabBar(
                         useToggleButtonStyle: false,
                         labelStyle:
-                            FlutterFlowTheme.of(context).titleMedium.override(
+                            AppTheme.of(context).titleMedium.override(
                                   font: GoogleFonts.outfit(
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                    fontWeight: AppTheme.of(context)
                                         .titleMedium
                                         .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .titleMedium
                                         .fontStyle,
                                   ),
                                   fontSize: 18.0,
                                   letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
+                                  fontWeight: AppTheme.of(context)
                                       .titleMedium
                                       .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
+                                  fontStyle: AppTheme.of(context)
                                       .titleMedium
                                       .fontStyle,
                                 ),
                         unselectedLabelStyle: TextStyle(),
-                        labelColor: FlutterFlowTheme.of(context).primaryBtnText,
+                        labelColor: AppTheme.of(context).primaryBtnText,
                         unselectedLabelColor:
-                            FlutterFlowTheme.of(context).secondaryText,
-                        backgroundColor: FlutterFlowTheme.of(context).primary,
+                            AppTheme.of(context).secondaryText,
+                        backgroundColor: AppTheme.of(context).primary,
                         unselectedBackgroundColor:
-                            FlutterFlowTheme.of(context).alternate,
-                        borderColor: FlutterFlowTheme.of(context).primary,
+                            AppTheme.of(context).alternate,
+                        borderColor: AppTheme.of(context).primary,
                         unselectedBorderColor:
-                            FlutterFlowTheme.of(context).alternate,
+                            AppTheme.of(context).alternate,
                         borderWidth: 2.0,
                         borderRadius: 8.0,
                         elevation: 0.0,
@@ -188,7 +188,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                               width: double.infinity,
                               height: double.infinity,
                               decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
+                                color: AppTheme.of(context)
                                     .secondaryBackground,
                                 image: DecorationImage(
                                   fit: BoxFit.cover,
@@ -243,17 +243,17 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                     options: options.toList(),
                                                     onSelected: onSelected,
                                                     textStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodyMedium
                                                             .override(
                                                               font: GoogleFonts
                                                                   .outfit(
-                                                                fontWeight: FlutterFlowTheme.of(
+                                                                fontWeight: AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
+                                                                fontStyle: AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
@@ -261,12 +261,12 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                               letterSpacing:
                                                                   0.0,
                                                               fontWeight:
-                                                                  FlutterFlowTheme.of(
+                                                                  AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontWeight,
                                                               fontStyle:
-                                                                  FlutterFlowTheme.of(
+                                                                  AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontStyle,
@@ -275,11 +275,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                         TextStyle(),
                                                     elevation: 4.0,
                                                     optionBackgroundColor:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .primaryBackground,
                                                     optionHighlightColor:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .secondaryBackground,
                                                     maxHeight: 200.0,
@@ -314,63 +314,63 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                     obscureText: false,
                                                     decoration: InputDecoration(
                                                       labelStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .labelMedium
                                                               .override(
                                                                 font:
                                                                     GoogleFonts
                                                                         .outfit(
-                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                  fontWeight: AppTheme.of(
                                                                           context)
                                                                       .labelMedium
                                                                       .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .labelMedium
                                                                       .fontStyle,
                                                                 ),
-                                                                color: FlutterFlowTheme.of(
+                                                                color: AppTheme.of(
                                                                         context)
                                                                     .primaryBtnText,
                                                                 letterSpacing:
                                                                     0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
+                                                                fontWeight: AppTheme.of(
                                                                         context)
                                                                     .labelMedium
                                                                     .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
+                                                                fontStyle: AppTheme.of(
                                                                         context)
                                                                     .labelMedium
                                                                     .fontStyle,
                                                               ),
                                                       hintStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .labelMedium
                                                               .override(
                                                                 font:
                                                                     GoogleFonts
                                                                         .outfit(
-                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                  fontWeight: AppTheme.of(
                                                                           context)
                                                                       .labelMedium
                                                                       .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .labelMedium
                                                                       .fontStyle,
                                                                 ),
-                                                                color: FlutterFlowTheme.of(
+                                                                color: AppTheme.of(
                                                                         context)
                                                                     .primaryBtnText,
                                                                 letterSpacing:
                                                                     0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
+                                                                fontWeight: AppTheme.of(
                                                                         context)
                                                                     .labelMedium
                                                                     .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
+                                                                fontStyle: AppTheme.of(
                                                                         context)
                                                                     .labelMedium
                                                                     .fontStyle,
@@ -378,7 +378,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                       enabledBorder:
                                                           OutlineInputBorder(
                                                         borderSide: BorderSide(
-                                                          color: FlutterFlowTheme
+                                                          color: AppTheme
                                                                   .of(context)
                                                               .primaryBtnText,
                                                           width: 2.0,
@@ -390,7 +390,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                       focusedBorder:
                                                           OutlineInputBorder(
                                                         borderSide: BorderSide(
-                                                          color: FlutterFlowTheme
+                                                          color: AppTheme
                                                                   .of(context)
                                                               .primaryBtnText,
                                                           width: 2.0,
@@ -402,7 +402,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                       errorBorder:
                                                           OutlineInputBorder(
                                                         borderSide: BorderSide(
-                                                          color: FlutterFlowTheme
+                                                          color: AppTheme
                                                                   .of(context)
                                                               .error,
                                                           width: 2.0,
@@ -414,7 +414,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                       focusedErrorBorder:
                                                           OutlineInputBorder(
                                                         borderSide: BorderSide(
-                                                          color: FlutterFlowTheme
+                                                          color: AppTheme
                                                                   .of(context)
                                                               .error,
                                                           width: 2.0,
@@ -426,39 +426,39 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                       prefixIcon: Icon(
                                                         Icons.search_rounded,
                                                         color:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .primaryBtnText,
                                                       ),
                                                     ),
-                                                    style: FlutterFlowTheme.of(
+                                                    style: AppTheme.of(
                                                             context)
                                                         .bodyMedium
                                                         .override(
                                                           font: GoogleFonts
                                                               .outfit(
                                                             fontWeight:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontWeight,
                                                             fontStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
                                                           ),
-                                                          color: FlutterFlowTheme
+                                                          color: AppTheme
                                                                   .of(context)
                                                               .secondaryBackground,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontStyle,
@@ -475,7 +475,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
                                                     12.0, 0.0, 0.0, 0.0),
-                                            child: FlutterFlowIconButton(
+                                            child: AppIconButton(
                                               borderColor: Colors.transparent,
                                               borderRadius: 30.0,
                                               borderWidth: 1.0,
@@ -483,7 +483,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                               icon: Icon(
                                                 Icons.clear_sharp,
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .primaryBtnText,
                                                 size: 24.0,
                                               ),
@@ -500,29 +500,29 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                           24.0, 0.0, 0.0, 0.0),
                                       child: Text(
                                         'Add a Friend Request',
-                                        style: FlutterFlowTheme.of(context)
+                                        style: AppTheme.of(context)
                                             .labelMedium
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelMedium
                                                         .fontStyle,
                                               ),
                                               color:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .primaryBtnText,
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontStyle,
                                             ),
@@ -578,7 +578,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                 width: double.infinity,
                                                 height: 60.0,
                                                 decoration: BoxDecoration(
-                                                  color: FlutterFlowTheme.of(
+                                                  color: AppTheme.of(
                                                           context)
                                                       .primaryBtnText,
                                                   boxShadow: [
@@ -654,7 +654,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                         .displayName,
                                                                     'name',
                                                                   ),
-                                                                  style: FlutterFlowTheme.of(
+                                                                  style: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .override(
@@ -662,7 +662,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                             .outfit(
                                                                           fontWeight:
                                                                               FontWeight.w500,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                          fontStyle: AppTheme.of(context)
                                                                               .bodyMedium
                                                                               .fontStyle,
                                                                         ),
@@ -672,7 +672,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                             0.0,
                                                                         fontWeight:
                                                                             FontWeight.w500,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                        fontStyle: AppTheme.of(context)
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
@@ -690,7 +690,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                     0.0,
                                                                     10.0,
                                                                     0.0),
-                                                        child: FFButtonWidget(
+                                                        child: AppButton(
                                                           onPressed: () async {
                                                             context.pushNamed(
                                                               ProfileUserWidget
@@ -723,7 +723,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                           },
                                                           text: 'View',
                                                           options:
-                                                              FFButtonOptions(
+                                                              AppButtonOptions(
                                                             width: 51.0,
                                                             height: 36.0,
                                                             padding:
@@ -743,7 +743,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                             color: Color(
                                                                 0xFF253551),
                                                             textStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .override(
@@ -751,7 +751,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           .outfit(
                                                                         fontWeight:
                                                                             FontWeight.normal,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                        fontStyle: AppTheme.of(context)
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
@@ -764,7 +764,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                       fontWeight:
                                                                           FontWeight
                                                                               .normal,
-                                                                      fontStyle: FlutterFlowTheme.of(
+                                                                      fontStyle: AppTheme.of(
                                                                               context)
                                                                           .bodyMedium
                                                                           .fontStyle,
@@ -792,9 +792,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                     5.0,
                                                                     0.0),
                                                         child:
-                                                            FlutterFlowIconButton(
+                                                            AppIconButton(
                                                           borderColor:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .primary,
                                                           borderRadius: 20.0,
@@ -1027,9 +1027,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   AuthUserStreamWidget(
                                                                 builder:
                                                                     (context) =>
-                                                                        FlutterFlowIconButton(
+                                                                        AppIconButton(
                                                                   borderColor:
-                                                                      FlutterFlowTheme.of(
+                                                                      AppTheme.of(
                                                                               context)
                                                                           .primary,
                                                                   borderRadius:
@@ -1078,9 +1078,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   AuthUserStreamWidget(
                                                                 builder:
                                                                     (context) =>
-                                                                        FlutterFlowIconButton(
+                                                                        AppIconButton(
                                                                   borderColor:
-                                                                      FlutterFlowTheme.of(
+                                                                      AppTheme.of(
                                                                               context)
                                                                           .primary,
                                                                   borderRadius:
@@ -1130,23 +1130,23 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                         content:
                                                                             Text(
                                                                           'A Friend Request Has Been Sent!',
-                                                                          style: FlutterFlowTheme.of(context)
+                                                                          style: AppTheme.of(context)
                                                                               .titleMedium
                                                                               .override(
                                                                                 font: GoogleFonts.outfit(
-                                                                                  fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                                  fontWeight: AppTheme.of(context).titleMedium.fontWeight,
+                                                                                  fontStyle: AppTheme.of(context).titleMedium.fontStyle,
                                                                                 ),
-                                                                                color: FlutterFlowTheme.of(context).primaryBtnText,
+                                                                                color: AppTheme.of(context).primaryBtnText,
                                                                                 letterSpacing: 0.0,
-                                                                                fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
-                                                                                fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                                fontWeight: AppTheme.of(context).titleMedium.fontWeight,
+                                                                                fontStyle: AppTheme.of(context).titleMedium.fontStyle,
                                                                               ),
                                                                         ),
                                                                         duration:
                                                                             Duration(milliseconds: 1500),
                                                                         backgroundColor:
-                                                                            FlutterFlowTheme.of(context).primary,
+                                                                            AppTheme.of(context).primary,
                                                                       ),
                                                                     );
                                                                   },
@@ -1172,9 +1172,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   AuthUserStreamWidget(
                                                                 builder:
                                                                     (context) =>
-                                                                        FlutterFlowIconButton(
+                                                                        AppIconButton(
                                                                   borderColor:
-                                                                      FlutterFlowTheme.of(
+                                                                      AppTheme.of(
                                                                               context)
                                                                           .primary,
                                                                   borderRadius:
@@ -1225,7 +1225,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                 minHeight: double.infinity,
                               ),
                               decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
+                                color: AppTheme.of(context)
                                     .secondaryBackground,
                                 image: DecorationImage(
                                   fit: BoxFit.cover,
@@ -1399,17 +1399,17 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                         Text(
                                                                           userList5UsersRecord
                                                                               .displayName,
-                                                                          style: FlutterFlowTheme.of(context)
+                                                                          style: AppTheme.of(context)
                                                                               .bodyMedium
                                                                               .override(
                                                                                 font: GoogleFonts.outfit(
                                                                                   fontWeight: FontWeight.w500,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                  fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
                                                                                 ),
                                                                                 fontSize: 16.0,
                                                                                 letterSpacing: 0.0,
                                                                                 fontWeight: FontWeight.w500,
-                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
                                                                               ),
                                                                         ),
                                                                       ],
@@ -1427,7 +1427,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           5.0,
                                                                           0.0),
                                                               child:
-                                                                  FFButtonWidget(
+                                                                  AppButton(
                                                                 onPressed:
                                                                     () async {
                                                                   context
@@ -1461,7 +1461,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                 },
                                                                 text: 'View',
                                                                 options:
-                                                                    FFButtonOptions(
+                                                                    AppButtonOptions(
                                                                   width: 51.0,
                                                                   height: 36.0,
                                                                   padding: EdgeInsetsDirectional
@@ -1478,7 +1478,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           0.0),
                                                                   color: Color(
                                                                       0xFF253551),
-                                                                  textStyle: FlutterFlowTheme.of(
+                                                                  textStyle: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .override(
@@ -1486,7 +1486,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                             .outfit(
                                                                           fontWeight:
                                                                               FontWeight.normal,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                          fontStyle: AppTheme.of(context)
                                                                               .bodyMedium
                                                                               .fontStyle,
                                                                         ),
@@ -1498,7 +1498,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                             0.0,
                                                                         fontWeight:
                                                                             FontWeight.normal,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                        fontStyle: AppTheme.of(context)
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
@@ -1526,9 +1526,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           5.0,
                                                                           0.0),
                                                               child:
-                                                                  FlutterFlowIconButton(
+                                                                  AppIconButton(
                                                                 borderColor:
-                                                                    FlutterFlowTheme.of(
+                                                                    AppTheme.of(
                                                                             context)
                                                                         .primary,
                                                                 borderRadius:
@@ -1572,24 +1572,24 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                       content:
                                                                           Text(
                                                                         'You  have successfully made a Friend!',
-                                                                        style: FlutterFlowTheme.of(context)
+                                                                        style: AppTheme.of(context)
                                                                             .titleMedium
                                                                             .override(
                                                                               font: GoogleFonts.outfit(
-                                                                                fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
-                                                                                fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                                fontWeight: AppTheme.of(context).titleMedium.fontWeight,
+                                                                                fontStyle: AppTheme.of(context).titleMedium.fontStyle,
                                                                               ),
-                                                                              color: FlutterFlowTheme.of(context).primaryBtnText,
+                                                                              color: AppTheme.of(context).primaryBtnText,
                                                                               letterSpacing: 0.0,
-                                                                              fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
-                                                                              fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                              fontWeight: AppTheme.of(context).titleMedium.fontWeight,
+                                                                              fontStyle: AppTheme.of(context).titleMedium.fontStyle,
                                                                             ),
                                                                       ),
                                                                       duration: Duration(
                                                                           milliseconds:
                                                                               1500),
                                                                       backgroundColor:
-                                                                          FlutterFlowTheme.of(context)
+                                                                          AppTheme.of(context)
                                                                               .primary,
                                                                     ),
                                                                   );
@@ -1605,9 +1605,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           5.0,
                                                                           0.0),
                                                               child:
-                                                                  FlutterFlowIconButton(
+                                                                  AppIconButton(
                                                                 borderColor:
-                                                                    FlutterFlowTheme.of(
+                                                                    AppTheme.of(
                                                                             context)
                                                                         .primary,
                                                                 borderRadius:
@@ -1783,17 +1783,17 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                         Text(
                                                                           userList5UsersRecord
                                                                               .displayName,
-                                                                          style: FlutterFlowTheme.of(context)
+                                                                          style: AppTheme.of(context)
                                                                               .bodyMedium
                                                                               .override(
                                                                                 font: GoogleFonts.outfit(
                                                                                   fontWeight: FontWeight.w500,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                  fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
                                                                                 ),
                                                                                 fontSize: 16.0,
                                                                                 letterSpacing: 0.0,
                                                                                 fontWeight: FontWeight.w500,
-                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
                                                                               ),
                                                                         ),
                                                                       ],
@@ -1811,7 +1811,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           5.0,
                                                                           0.0),
                                                               child:
-                                                                  FFButtonWidget(
+                                                                  AppButton(
                                                                 onPressed:
                                                                     () async {
                                                                   context
@@ -1845,7 +1845,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                 },
                                                                 text: 'View',
                                                                 options:
-                                                                    FFButtonOptions(
+                                                                    AppButtonOptions(
                                                                   width: 51.0,
                                                                   height: 36.0,
                                                                   padding: EdgeInsetsDirectional
@@ -1862,7 +1862,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           0.0),
                                                                   color: Color(
                                                                       0xFF253551),
-                                                                  textStyle: FlutterFlowTheme.of(
+                                                                  textStyle: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .override(
@@ -1870,7 +1870,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                             .outfit(
                                                                           fontWeight:
                                                                               FontWeight.normal,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                          fontStyle: AppTheme.of(context)
                                                                               .bodyMedium
                                                                               .fontStyle,
                                                                         ),
@@ -1882,7 +1882,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                             0.0,
                                                                         fontWeight:
                                                                             FontWeight.normal,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                        fontStyle: AppTheme.of(context)
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
@@ -1910,9 +1910,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           5.0,
                                                                           0.0),
                                                               child:
-                                                                  FlutterFlowIconButton(
+                                                                  AppIconButton(
                                                                 borderColor:
-                                                                    FlutterFlowTheme.of(
+                                                                    AppTheme.of(
                                                                             context)
                                                                         .primary,
                                                                 borderRadius:
@@ -1971,24 +1971,24 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                       content:
                                                                           Text(
                                                                         'You  have successfully made a Friend!',
-                                                                        style: FlutterFlowTheme.of(context)
+                                                                        style: AppTheme.of(context)
                                                                             .titleMedium
                                                                             .override(
                                                                               font: GoogleFonts.outfit(
-                                                                                fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
-                                                                                fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                                fontWeight: AppTheme.of(context).titleMedium.fontWeight,
+                                                                                fontStyle: AppTheme.of(context).titleMedium.fontStyle,
                                                                               ),
-                                                                              color: FlutterFlowTheme.of(context).primaryBtnText,
+                                                                              color: AppTheme.of(context).primaryBtnText,
                                                                               letterSpacing: 0.0,
-                                                                              fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
-                                                                              fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                              fontWeight: AppTheme.of(context).titleMedium.fontWeight,
+                                                                              fontStyle: AppTheme.of(context).titleMedium.fontStyle,
                                                                             ),
                                                                       ),
                                                                       duration: Duration(
                                                                           milliseconds:
                                                                               1500),
                                                                       backgroundColor:
-                                                                          FlutterFlowTheme.of(context)
+                                                                          AppTheme.of(context)
                                                                               .primary,
                                                                     ),
                                                                   );
@@ -2004,9 +2004,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           5.0,
                                                                           0.0),
                                                               child:
-                                                                  FlutterFlowIconButton(
+                                                                  AppIconButton(
                                                                 borderColor:
-                                                                    FlutterFlowTheme.of(
+                                                                    AppTheme.of(
                                                                             context)
                                                                         .primary,
                                                                 borderRadius:
@@ -2067,7 +2067,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                 minHeight: double.infinity,
                               ),
                               decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
+                                color: AppTheme.of(context)
                                     .secondaryBackground,
                                 image: DecorationImage(
                                   fit: BoxFit.cover,
@@ -2221,17 +2221,17 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                             userList5UsersRecord.displayName,
                                                                             'name',
                                                                           ),
-                                                                          style: FlutterFlowTheme.of(context)
+                                                                          style: AppTheme.of(context)
                                                                               .bodyMedium
                                                                               .override(
                                                                                 font: GoogleFonts.outfit(
                                                                                   fontWeight: FontWeight.w500,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                  fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
                                                                                 ),
                                                                                 fontSize: 16.0,
                                                                                 letterSpacing: 0.0,
                                                                                 fontWeight: FontWeight.w500,
-                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
                                                                               ),
                                                                         ),
                                                                       ],
@@ -2249,7 +2249,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           5.0,
                                                                           0.0),
                                                               child:
-                                                                  FFButtonWidget(
+                                                                  AppButton(
                                                                 onPressed:
                                                                     () async {
                                                                   context
@@ -2283,7 +2283,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                 },
                                                                 text: 'View',
                                                                 options:
-                                                                    FFButtonOptions(
+                                                                    AppButtonOptions(
                                                                   width: 51.0,
                                                                   height: 36.0,
                                                                   padding: EdgeInsetsDirectional
@@ -2300,7 +2300,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           0.0),
                                                                   color: Color(
                                                                       0xFF253551),
-                                                                  textStyle: FlutterFlowTheme.of(
+                                                                  textStyle: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .override(
@@ -2308,7 +2308,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                             .outfit(
                                                                           fontWeight:
                                                                               FontWeight.normal,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                          fontStyle: AppTheme.of(context)
                                                                               .bodyMedium
                                                                               .fontStyle,
                                                                         ),
@@ -2320,7 +2320,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                             0.0,
                                                                         fontWeight:
                                                                             FontWeight.normal,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                        fontStyle: AppTheme.of(context)
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
@@ -2348,9 +2348,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           5.0,
                                                                           0.0),
                                                               child:
-                                                                  FlutterFlowIconButton(
+                                                                  AppIconButton(
                                                                 borderColor:
-                                                                    FlutterFlowTheme.of(
+                                                                    AppTheme.of(
                                                                             context)
                                                                         .primary,
                                                                 borderRadius:
@@ -2405,24 +2405,24 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                       content:
                                                                           Text(
                                                                         'You don\'t like this person and now they know',
-                                                                        style: FlutterFlowTheme.of(context)
+                                                                        style: AppTheme.of(context)
                                                                             .titleMedium
                                                                             .override(
                                                                               font: GoogleFonts.outfit(
-                                                                                fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
-                                                                                fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                                fontWeight: AppTheme.of(context).titleMedium.fontWeight,
+                                                                                fontStyle: AppTheme.of(context).titleMedium.fontStyle,
                                                                               ),
-                                                                              color: FlutterFlowTheme.of(context).primaryBtnText,
+                                                                              color: AppTheme.of(context).primaryBtnText,
                                                                               letterSpacing: 0.0,
-                                                                              fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
-                                                                              fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                              fontWeight: AppTheme.of(context).titleMedium.fontWeight,
+                                                                              fontStyle: AppTheme.of(context).titleMedium.fontStyle,
                                                                             ),
                                                                       ),
                                                                       duration: Duration(
                                                                           milliseconds:
                                                                               1500),
                                                                       backgroundColor:
-                                                                          FlutterFlowTheme.of(context)
+                                                                          AppTheme.of(context)
                                                                               .primary,
                                                                     ),
                                                                   );
@@ -2473,9 +2473,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   );
                                                                 },
                                                                 child:
-                                                                    FlutterFlowIconButton(
+                                                                    AppIconButton(
                                                                   borderColor:
-                                                                      FlutterFlowTheme.of(
+                                                                      AppTheme.of(
                                                                               context)
                                                                           .primary,
                                                                   borderRadius:

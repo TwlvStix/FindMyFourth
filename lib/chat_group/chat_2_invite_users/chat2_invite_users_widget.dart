@@ -1,11 +1,11 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/chat_group/empty_state_simple/empty_state_simple_widget.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/random_data_util.dart' as random_data;
+import '/core/widgets/app_icon_button.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/widgets/app_button.dart';
+import '/core/random_data_util.dart' as random_data;
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
@@ -75,9 +75,9 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).accent4,
+        backgroundColor: AppTheme.of(context).accent4,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+          backgroundColor: AppTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
           title: Column(
             mainAxisSize: MainAxisSize.max,
@@ -85,40 +85,40 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
             children: [
               Text(
                 'Invite to Chat',
-                style: FlutterFlowTheme.of(context).headlineSmall.override(
+                style: AppTheme.of(context).headlineSmall.override(
                       font: GoogleFonts.outfit(
-                        fontWeight: FlutterFlowTheme.of(context)
+                        fontWeight: AppTheme.of(context)
                             .headlineSmall
                             .fontWeight,
-                        fontStyle: FlutterFlowTheme.of(context)
+                        fontStyle: AppTheme.of(context)
                             .headlineSmall
                             .fontStyle,
                       ),
-                      color: FlutterFlowTheme.of(context).primary,
+                      color: AppTheme.of(context).primary,
                       letterSpacing: 0.0,
                       fontWeight:
-                          FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                          AppTheme.of(context).headlineSmall.fontWeight,
                       fontStyle:
-                          FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                          AppTheme.of(context).headlineSmall.fontStyle,
                     ),
               ),
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 0.0),
                 child: Text(
                   'Select users from below to start a chat.',
-                  style: FlutterFlowTheme.of(context).labelSmall.override(
+                  style: AppTheme.of(context).labelSmall.override(
                         font: GoogleFonts.outfit(
-                          fontWeight: FlutterFlowTheme.of(context)
+                          fontWeight: AppTheme.of(context)
                               .labelSmall
                               .fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).labelSmall.fontStyle,
+                              AppTheme.of(context).labelSmall.fontStyle,
                         ),
                         letterSpacing: 0.0,
                         fontWeight:
-                            FlutterFlowTheme.of(context).labelSmall.fontWeight,
+                            AppTheme.of(context).labelSmall.fontWeight,
                         fontStyle:
-                            FlutterFlowTheme.of(context).labelSmall.fontStyle,
+                            AppTheme.of(context).labelSmall.fontStyle,
                       ),
                 ),
               ),
@@ -127,15 +127,15 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
           actions: [
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 12.0, 4.0),
-              child: FlutterFlowIconButton(
-                borderColor: FlutterFlowTheme.of(context).alternate,
+              child: AppIconButton(
+                borderColor: AppTheme.of(context).alternate,
                 borderRadius: 12.0,
                 borderWidth: 1.0,
                 buttonSize: 44.0,
-                fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+                fillColor: AppTheme.of(context).secondaryBackground,
                 icon: Icon(
                   Icons.close_rounded,
-                  color: FlutterFlowTheme.of(context).secondaryText,
+                  color: AppTheme.of(context).secondaryText,
                   size: 24.0,
                 ),
                 onPressed: () async {
@@ -165,22 +165,22 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                               16.0, 12.0, 0.0, 0.0),
                           child: Text(
                             'Invite Players',
-                            style: FlutterFlowTheme.of(context)
+                            style: AppTheme.of(context)
                                 .labelMedium
                                 .override(
                                   font: GoogleFonts.outfit(
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                    fontWeight: AppTheme.of(context)
                                         .labelMedium
                                         .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .labelMedium
                                         .fontStyle,
                                   ),
                                   letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
+                                  fontWeight: AppTheme.of(context)
                                       .labelMedium
                                       .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
+                                  fontStyle: AppTheme.of(context)
                                       .labelMedium
                                       .fontStyle,
                                 ),
@@ -198,20 +198,20 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                                   1))
                               .toString(),
                           style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
+                              AppTheme.of(context).bodyMedium.override(
                                     font: GoogleFonts.outfit(
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .bodyMedium
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
                                     letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                    fontWeight: AppTheme.of(context)
                                         .bodyMedium
                                         .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .bodyMedium
                                         .fontStyle,
                                   ),
@@ -223,20 +223,20 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                         child: Text(
                           'Selected',
                           style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
+                              AppTheme.of(context).bodyMedium.override(
                                     font: GoogleFonts.outfit(
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .bodyMedium
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
                                     letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                    fontWeight: AppTheme.of(context)
                                         .bodyMedium
                                         .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .bodyMedium
                                         .fontStyle,
                                   ),
@@ -289,7 +289,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                             EmptyStateSimpleWidget(
                           icon: Icon(
                             Icons.groups_outlined,
-                            color: FlutterFlowTheme.of(context).primary,
+                            color: AppTheme.of(context).primary,
                             size: 90.0,
                           ),
                           title: 'No Friends',
@@ -311,15 +311,15 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                                 decoration: BoxDecoration(
                                   color: _model.friendsList.contains(
                                           listViewUsersRecord.reference)
-                                      ? FlutterFlowTheme.of(context).accent1
-                                      : FlutterFlowTheme.of(context)
+                                      ? AppTheme.of(context).accent1
+                                      : AppTheme.of(context)
                                           .secondaryBackground,
                                   borderRadius: BorderRadius.circular(12.0),
                                   border: Border.all(
                                     color: _model.friendsList.contains(
                                             listViewUsersRecord.reference)
-                                        ? FlutterFlowTheme.of(context).primary
-                                        : FlutterFlowTheme.of(context)
+                                        ? AppTheme.of(context).primary
+                                        : AppTheme.of(context)
                                             .alternate,
                                     width: 1.0,
                                   ),
@@ -334,12 +334,12 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                                         width: 44.0,
                                         height: 44.0,
                                         decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
+                                          color: AppTheme.of(context)
                                               .accent1,
                                           borderRadius:
                                               BorderRadius.circular(10.0),
                                           border: Border.all(
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .primary,
                                             width: 2.0,
                                           ),
@@ -380,7 +380,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                                         child: Theme(
                                           data: ThemeData(
                                             unselectedWidgetColor:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .secondaryText,
                                           ),
                                           child: CheckboxListTile(
@@ -416,30 +416,30 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                                                 'Ghost User',
                                               ),
                                               style:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .override(
                                                         font:
                                                             GoogleFonts.outfit(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyLarge
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyLarge
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyLarge
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyLarge
                                                                 .fontStyle,
@@ -451,43 +451,43 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                                                 listViewUsersRecord.email,
                                                 'casper@ghost.io',
                                               ),
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .labelSmall
                                                   .override(
                                                     font: GoogleFonts.outfit(
                                                       fontWeight:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .labelSmall
                                                               .fontWeight,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .labelSmall
                                                               .fontStyle,
                                                     ),
-                                                    color: FlutterFlowTheme.of(
+                                                    color: AppTheme.of(
                                                             context)
                                                         .secondary,
                                                     letterSpacing: 0.0,
                                                     fontWeight:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .labelSmall
                                                             .fontWeight,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .labelSmall
                                                             .fontStyle,
                                                   ),
                                             ),
                                             tileColor:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .secondaryBackground,
                                             activeColor:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .primary,
                                             checkColor: Colors.white,
                                             dense: false,
@@ -525,8 +525,8 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      FlutterFlowTheme.of(context).accent4,
-                      FlutterFlowTheme.of(context).secondaryBackground
+                      AppTheme.of(context).accent4,
+                      AppTheme.of(context).secondaryBackground
                     ],
                     stops: [0.0, 1.0],
                     begin: AlignmentDirectional(0.0, -1.0),
@@ -536,7 +536,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                 alignment: AlignmentDirectional(0.0, 0.0),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                  child: FFButtonWidget(
+                  child: AppButton(
                     onPressed: () async {
                       if (_model.friendsList.length >= 2) {
                         if (widget.chatRef != null) {
@@ -631,30 +631,30 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                           SnackBar(
                             content: Text(
                               'You must select at least one other user to start a chat.',
-                              style: FlutterFlowTheme.of(context)
+                              style: AppTheme.of(context)
                                   .titleSmall
                                   .override(
                                     font: GoogleFonts.outfit(
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .titleSmall
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .titleSmall
                                           .fontStyle,
                                     ),
-                                    color: FlutterFlowTheme.of(context).info,
+                                    color: AppTheme.of(context).info,
                                     letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                    fontWeight: AppTheme.of(context)
                                         .titleSmall
                                         .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .titleSmall
                                         .fontStyle,
                                   ),
                             ),
                             duration: Duration(milliseconds: 3000),
                             backgroundColor:
-                                FlutterFlowTheme.of(context).primary,
+                                AppTheme.of(context).primary,
                           ),
                         );
                       }
@@ -664,30 +664,30 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                     text: widget.chatRef != null
                         ? 'Add to Chat'
                         : 'Start to Chat',
-                    options: FFButtonOptions(
+                    options: AppButtonOptions(
                       width: double.infinity,
                       height: 50.0,
                       padding:
                           EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                       iconPadding:
                           EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                      color: FlutterFlowTheme.of(context).primary,
+                      color: AppTheme.of(context).primary,
                       textStyle:
-                          FlutterFlowTheme.of(context).titleSmall.override(
+                          AppTheme.of(context).titleSmall.override(
                                 font: GoogleFonts.outfit(
-                                  fontWeight: FlutterFlowTheme.of(context)
+                                  fontWeight: AppTheme.of(context)
                                       .titleSmall
                                       .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
+                                  fontStyle: AppTheme.of(context)
                                       .titleSmall
                                       .fontStyle,
                                 ),
                                 color: Colors.white,
                                 letterSpacing: 0.0,
-                                fontWeight: FlutterFlowTheme.of(context)
+                                fontWeight: AppTheme.of(context)
                                     .titleSmall
                                     .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
+                                fontStyle: AppTheme.of(context)
                                     .titleSmall
                                     .fontStyle,
                               ),

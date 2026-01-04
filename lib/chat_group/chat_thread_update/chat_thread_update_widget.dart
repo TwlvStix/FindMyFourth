@@ -1,9 +1,9 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_media_display.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_video_player.dart';
+import '/core/media_display.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/video_player.dart';
 import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -99,11 +99,11 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                             width: 36.0,
                             height: 36.0,
                             decoration: BoxDecoration(
-                              color: FlutterFlowTheme.of(context).accent1,
+                              color: AppTheme.of(context).accent1,
                               borderRadius: BorderRadius.circular(12.0),
                               shape: BoxShape.rectangle,
                               border: Border.all(
-                                color: FlutterFlowTheme.of(context).primary,
+                                color: AppTheme.of(context).primary,
                                 width: 2.0,
                               ),
                             ),
@@ -136,7 +136,7 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                                       width: 100.0,
                                       height: 100.0,
                                       decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context)
+                                        color: AppTheme.of(context)
                                             .secondaryBackground,
                                         borderRadius:
                                             BorderRadius.circular(8.0),
@@ -150,20 +150,20 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                                           maxChars: 1,
                                         ),
                                         textAlign: TextAlign.center,
-                                        style: FlutterFlowTheme.of(context)
+                                        style: AppTheme.of(context)
                                             .bodyLarge
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight: FontWeight.bold,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyLarge
                                                         .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
                                               fontWeight: FontWeight.bold,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontStyle,
                                             ),
@@ -191,20 +191,20 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                                         child: AutoSizeText(
                                       otherUserUsersRecord.displayName,
                                       textAlign: TextAlign.start,
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .labelSmall
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight: FontWeight.bold,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelSmall
                                                       .fontStyle,
                                             ),
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.bold,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelSmall
                                                     .fontStyle,
                                           ),
@@ -215,26 +215,26 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                                             widget.chatMessagesRef?.timestamp),
                                         '--',
                                       ),
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .labelSmall
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelSmall
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelSmall
                                                       .fontStyle,
                                             ),
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelSmall
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelSmall
                                                     .fontStyle,
                                           ),
@@ -244,7 +244,7 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                               ),
                               Container(
                                 decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
+                                  color: AppTheme.of(context)
                                       .secondaryBackground,
                                   boxShadow: [
                                     BoxShadow(
@@ -264,7 +264,7 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                                   ),
                                   border: Border.all(
                                     color:
-                                        FlutterFlowTheme.of(context).alternate,
+                                        AppTheme.of(context).alternate,
                                     width: 1.0,
                                   ),
                                 ),
@@ -282,26 +282,26 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                                           '--',
                                         ),
                                         textAlign: TextAlign.start,
-                                        style: FlutterFlowTheme.of(context)
+                                        style: AppTheme.of(context)
                                             .bodyLarge
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyLarge
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyLarge
                                                         .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontStyle,
                                               lineHeight: 1.5,
@@ -403,20 +403,20 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                               "relative", widget.chatMessagesRef?.timestamp),
                           '--',
                         ),
-                        style: FlutterFlowTheme.of(context).labelSmall.override(
+                        style: AppTheme.of(context).labelSmall.override(
                               font: GoogleFonts.outfit(
-                                fontWeight: FlutterFlowTheme.of(context)
+                                fontWeight: AppTheme.of(context)
                                     .labelSmall
                                     .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
+                                fontStyle: AppTheme.of(context)
                                     .labelSmall
                                     .fontStyle,
                               ),
                               letterSpacing: 0.0,
-                              fontWeight: FlutterFlowTheme.of(context)
+                              fontWeight: AppTheme.of(context)
                                   .labelSmall
                                   .fontWeight,
-                              fontStyle: FlutterFlowTheme.of(context)
+                              fontStyle: AppTheme.of(context)
                                   .labelSmall
                                   .fontStyle,
                             ),
@@ -424,7 +424,7 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                     ),
                     Container(
                       decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).primary,
+                        color: AppTheme.of(context).primary,
                         boxShadow: [
                           BoxShadow(
                             blurRadius: 3.0,
@@ -442,7 +442,7 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                           topRight: Radius.circular(12.0),
                         ),
                         border: Border.all(
-                          color: FlutterFlowTheme.of(context).accent1,
+                          color: AppTheme.of(context).accent1,
                         ),
                       ),
                       child: Padding(
@@ -457,24 +457,24 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                                 widget.chatMessagesRef?.text,
                                 '--',
                               ),
-                              style: FlutterFlowTheme.of(context)
+                              style: AppTheme.of(context)
                                   .titleSmall
                                   .override(
                                     font: GoogleFonts.outfit(
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .titleSmall
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .titleSmall
                                           .fontStyle,
                                     ),
-                                    color: FlutterFlowTheme.of(context)
+                                    color: AppTheme.of(context)
                                         .primaryBtnText,
                                     letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                    fontWeight: AppTheme.of(context)
                                         .titleSmall
                                         .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .titleSmall
                                         .fontStyle,
                                   ),

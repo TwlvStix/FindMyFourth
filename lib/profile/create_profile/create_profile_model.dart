@@ -1,11 +1,11 @@
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/form_field_controller.dart';
+import '/core/app_util.dart';
+import '/core/form_field_controller.dart';
 import '/index.dart';
 import 'create_profile_widget.dart' show CreateProfileWidget;
 import 'package:flutter/material.dart';
 
-class CreateProfileModel extends FlutterFlowModel<CreateProfileWidget> {
+class CreateProfileModel extends AppModel<CreateProfileWidget> {
   ///  State fields for stateful widgets in this page.
 
   final formKey = GlobalKey<FormState>();
