@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "357406229935",
+    "firebase_url": "https://find-my-fourth-default-rtdb.firebaseio.com",
+    "project_id": "find-my-fourth",
+    "storage_bucket": "find-my-fourth.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:357406229935:android:e49d3b908afab558e9db5a",
+        "android_client_info": {
+          "package_name": "com.mycompany.findmyfourth"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "357406229935-b80gfcvite6up8auvsclnp7o5u8vf67p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mycompany.findmyfourth",
+            "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
+          }
+        },
+        {
+          "client_id": "357406229935-ksl2vrt1jm0cmlch1n0m605q85v87sh6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0BHCXEb3QBN_qstoWVq0wxwAu1gIu4gs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "357406229935-ksl2vrt1jm0cmlch1n0m605q85v87sh6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "357406229935-1l8fsgi4n77o2qdjmr599phggtaeb36h.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.findmyfourth"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

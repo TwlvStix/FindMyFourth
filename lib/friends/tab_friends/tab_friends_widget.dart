@@ -1,0 +1,2717 @@
+import '/auth/firebase_auth/auth_util.dart';
+import '/backend/backend.dart';
+import '/flutter_flow/flutter_flow_autocomplete_options_list.dart';
+import '/flutter_flow/flutter_flow_button_tabbar.dart';
+import '/flutter_flow/flutter_flow_icon_button.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_widgets.dart';
+import '/flutter_flow/random_data_util.dart' as random_data;
+import '/index.dart';
+import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'tab_friends_model.dart';
+export 'tab_friends_model.dart';
+
+class TabFriendsWidget extends StatefulWidget {
+  const TabFriendsWidget({super.key});
+
+  static String routeName = 'Tab_Friends';
+  static String routePath = '/tabFriends';
+
+  @override
+  State<TabFriendsWidget> createState() => _TabFriendsWidgetState();
+}
+
+class _TabFriendsWidgetState extends State<TabFriendsWidget>
+    with TickerProviderStateMixin {
+  late TabFriendsModel _model;
+
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _model = createModel(context, () => TabFriendsModel());
+
+    _model.tabBarController = TabController(
+      vsync: this,
+      length: 3,
+      initialIndex: 0,
+    )..addListener(() => safeSetState(() {}));
+
+    _model.textController ??= TextEditingController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _model.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: FlutterFlowTheme.of(context).alternate,
+        appBar: AppBar(
+          backgroundColor: FlutterFlowTheme.of(context).alternate,
+          automaticallyImplyLeading: false,
+          leading: FlutterFlowIconButton(
+            borderColor: Colors.transparent,
+            borderRadius: 30.0,
+            borderWidth: 1.0,
+            buttonSize: 55.0,
+            icon: Icon(
+              Icons.arrow_back_sharp,
+              color: FlutterFlowTheme.of(context).primary,
+              size: 25.0,
+            ),
+            onPressed: () async {
+              context.pop();
+            },
+          ),
+          title: Text(
+            'Golfers',
+            style: FlutterFlowTheme.of(context).headlineSmall.override(
+                  font: GoogleFonts.outfit(
+                    fontWeight:
+                        FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                    fontStyle:
+                        FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                  ),
+                  color: FlutterFlowTheme.of(context).primary,
+                  letterSpacing: 0.0,
+                  fontWeight:
+                      FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                  fontStyle:
+                      FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                ),
+          ),
+          actions: [],
+          centerTitle: false,
+        ),
+        body: SafeArea(
+          top: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    Align(
+                      alignment: Alignment(-1.0, 0),
+                      child: FlutterFlowButtonTabBar(
+                        useToggleButtonStyle: false,
+                        labelStyle:
+                            FlutterFlowTheme.of(context).titleMedium.override(
+                                  font: GoogleFonts.outfit(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .titleMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .titleMedium
+                                        .fontStyle,
+                                  ),
+                                  fontSize: 18.0,
+                                  letterSpacing: 0.0,
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .titleMedium
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .titleMedium
+                                      .fontStyle,
+                                ),
+                        unselectedLabelStyle: TextStyle(),
+                        labelColor: FlutterFlowTheme.of(context).primaryBtnText,
+                        unselectedLabelColor:
+                            FlutterFlowTheme.of(context).secondaryText,
+                        backgroundColor: FlutterFlowTheme.of(context).primary,
+                        unselectedBackgroundColor:
+                            FlutterFlowTheme.of(context).alternate,
+                        borderColor: FlutterFlowTheme.of(context).primary,
+                        unselectedBorderColor:
+                            FlutterFlowTheme.of(context).alternate,
+                        borderWidth: 2.0,
+                        borderRadius: 8.0,
+                        elevation: 0.0,
+                        labelPadding: EdgeInsetsDirectional.fromSTEB(
+                            12.0, 0.0, 12.0, 0.0),
+                        buttonMargin:
+                            EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
+                        padding: EdgeInsets.all(4.0),
+                        tabs: [
+                          Tab(
+                            text: 'Search',
+                          ),
+                          Tab(
+                            text: 'Requests',
+                          ),
+                          Tab(
+                            text: 'Friends',
+                          ),
+                        ],
+                        controller: _model.tabBarController,
+                        onTap: (i) async {
+                          [
+                            () async {},
+                            () async {
+                              _model.friendList = [];
+                              safeSetState(() {});
+                            },
+                            () async {
+                              _model.friendList = [];
+                              safeSetState(() {});
+                            }
+                          ][i]();
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: TabBarView(
+                        controller: _model.tabBarController,
+                        children: [
+                          KeepAliveWidgetWrapper(
+                            builder: (context) => Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              decoration: BoxDecoration(
+                                color: FlutterFlowTheme.of(context)
+                                    .secondaryBackground,
+                                image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: Image.asset(
+                                    'assets/images/igdownloader.com_2980395830822133751.jpg',
+                                  ).image,
+                                ),
+                              ),
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          16.0, 8.0, 16.0, 12.0),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.max,
+                                        children: [
+                                          Expanded(
+                                            child: Padding(
+                                              padding: EdgeInsetsDirectional
+                                                  .fromSTEB(8.0, 0.0, 8.0, 0.0),
+                                              child: Autocomplete<String>(
+                                                initialValue:
+                                                    TextEditingValue(),
+                                                optionsBuilder:
+                                                    (textEditingValue) {
+                                                  if (textEditingValue.text ==
+                                                      '') {
+                                                    return const Iterable<
+                                                        String>.empty();
+                                                  }
+                                                  return ['Option 1']
+                                                      .where((option) {
+                                                    final lowercaseOption =
+                                                        option.toLowerCase();
+                                                    return lowercaseOption
+                                                        .contains(
+                                                            textEditingValue
+                                                                .text
+                                                                .toLowerCase());
+                                                  });
+                                                },
+                                                optionsViewBuilder: (context,
+                                                    onSelected, options) {
+                                                  return AutocompleteOptionsList(
+                                                    textFieldKey:
+                                                        _model.textFieldKey,
+                                                    textController:
+                                                        _model.textController!,
+                                                    options: options.toList(),
+                                                    onSelected: onSelected,
+                                                    textStyle:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .bodyMedium
+                                                            .override(
+                                                              font: GoogleFonts
+                                                                  .outfit(
+                                                                fontWeight: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .fontWeight,
+                                                                fontStyle: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .fontStyle,
+                                                              ),
+                                                              letterSpacing:
+                                                                  0.0,
+                                                              fontWeight:
+                                                                  FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .fontStyle,
+                                                            ),
+                                                    textHighlightStyle:
+                                                        TextStyle(),
+                                                    elevation: 4.0,
+                                                    optionBackgroundColor:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .primaryBackground,
+                                                    optionHighlightColor:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .secondaryBackground,
+                                                    maxHeight: 200.0,
+                                                  );
+                                                },
+                                                onSelected: (String selection) {
+                                                  safeSetState(() => _model
+                                                          .textFieldSelectedOption =
+                                                      selection);
+                                                  FocusScope.of(context)
+                                                      .unfocus();
+                                                },
+                                                fieldViewBuilder: (
+                                                  context,
+                                                  textEditingController,
+                                                  focusNode,
+                                                  onEditingComplete,
+                                                ) {
+                                                  _model.textFieldFocusNode =
+                                                      focusNode;
+
+                                                  _model.textController =
+                                                      textEditingController;
+                                                  return TextFormField(
+                                                    key: _model.textFieldKey,
+                                                    controller:
+                                                        textEditingController,
+                                                    focusNode: focusNode,
+                                                    onEditingComplete:
+                                                        onEditingComplete,
+                                                    autofocus: true,
+                                                    obscureText: false,
+                                                    decoration: InputDecoration(
+                                                      labelStyle:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .labelMedium
+                                                              .override(
+                                                                font:
+                                                                    GoogleFonts
+                                                                        .outfit(
+                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .labelMedium
+                                                                      .fontWeight,
+                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .labelMedium
+                                                                      .fontStyle,
+                                                                ),
+                                                                color: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .primaryBtnText,
+                                                                letterSpacing:
+                                                                    0.0,
+                                                                fontWeight: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .labelMedium
+                                                                    .fontWeight,
+                                                                fontStyle: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .labelMedium
+                                                                    .fontStyle,
+                                                              ),
+                                                      hintStyle:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .labelMedium
+                                                              .override(
+                                                                font:
+                                                                    GoogleFonts
+                                                                        .outfit(
+                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .labelMedium
+                                                                      .fontWeight,
+                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .labelMedium
+                                                                      .fontStyle,
+                                                                ),
+                                                                color: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .primaryBtnText,
+                                                                letterSpacing:
+                                                                    0.0,
+                                                                fontWeight: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .labelMedium
+                                                                    .fontWeight,
+                                                                fontStyle: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .labelMedium
+                                                                    .fontStyle,
+                                                              ),
+                                                      enabledBorder:
+                                                          OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .primaryBtnText,
+                                                          width: 2.0,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8.0),
+                                                      ),
+                                                      focusedBorder:
+                                                          OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .primaryBtnText,
+                                                          width: 2.0,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8.0),
+                                                      ),
+                                                      errorBorder:
+                                                          OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .error,
+                                                          width: 2.0,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8.0),
+                                                      ),
+                                                      focusedErrorBorder:
+                                                          OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .error,
+                                                          width: 2.0,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8.0),
+                                                      ),
+                                                      prefixIcon: Icon(
+                                                        Icons.search_rounded,
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primaryBtnText,
+                                                      ),
+                                                    ),
+                                                    style: FlutterFlowTheme.of(
+                                                            context)
+                                                        .bodyMedium
+                                                        .override(
+                                                          font: GoogleFonts
+                                                              .outfit(
+                                                            fontWeight:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .fontStyle,
+                                                          ),
+                                                          color: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .secondaryBackground,
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                    validator: _model
+                                                        .textControllerValidator
+                                                        .asValidator(context),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    12.0, 0.0, 0.0, 0.0),
+                                            child: FlutterFlowIconButton(
+                                              borderColor: Colors.transparent,
+                                              borderRadius: 30.0,
+                                              borderWidth: 1.0,
+                                              buttonSize: 44.0,
+                                              icon: Icon(
+                                                Icons.clear_sharp,
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .primaryBtnText,
+                                                size: 24.0,
+                                              ),
+                                              onPressed: () {
+                                                print('IconButton pressed ...');
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          24.0, 0.0, 0.0, 0.0),
+                                      child: Text(
+                                        'Add a Friend Request',
+                                        style: FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .override(
+                                              font: GoogleFonts.outfit(
+                                                fontWeight:
+                                                    FlutterFlowTheme.of(context)
+                                                        .labelMedium
+                                                        .fontWeight,
+                                                fontStyle:
+                                                    FlutterFlowTheme.of(context)
+                                                        .labelMedium
+                                                        .fontStyle,
+                                              ),
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryBtnText,
+                                              letterSpacing: 0.0,
+                                              fontWeight:
+                                                  FlutterFlowTheme.of(context)
+                                                      .labelMedium
+                                                      .fontWeight,
+                                              fontStyle:
+                                                  FlutterFlowTheme.of(context)
+                                                      .labelMedium
+                                                      .fontStyle,
+                                            ),
+                                      ),
+                                    ),
+                                    StreamBuilder<List<UsersRecord>>(
+                                      stream: queryUsersRecord(),
+                                      builder: (context, snapshot) {
+                                        // Customize what your widget looks like when it's loading.
+                                        if (!snapshot.hasData) {
+                                          return Center(
+                                            child: SizedBox(
+                                              width: 50.0,
+                                              height: 50.0,
+                                              child: SpinKitWanderingCubes(
+                                                color: Color(0xFF25504F),
+                                                size: 50.0,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        List<UsersRecord>
+                                            listViewUsersRecordList = snapshot
+                                                .data!
+                                                .where((u) =>
+                                                    u.uid != currentUserUid)
+                                                .toList();
+
+                                        return ListView.separated(
+                                          padding: EdgeInsets.fromLTRB(
+                                            0,
+                                            12.0,
+                                            0,
+                                            44.0,
+                                          ),
+                                          primary: false,
+                                          shrinkWrap: true,
+                                          scrollDirection: Axis.vertical,
+                                          itemCount:
+                                              listViewUsersRecordList.length,
+                                          separatorBuilder: (_, __) =>
+                                              SizedBox(height: 12.0),
+                                          itemBuilder:
+                                              (context, listViewIndex) {
+                                            final listViewUsersRecord =
+                                                listViewUsersRecordList[
+                                                    listViewIndex];
+                                            return Padding(
+                                              padding: EdgeInsetsDirectional
+                                                  .fromSTEB(
+                                                      12.0, 0.0, 12.0, 0.0),
+                                              child: Container(
+                                                width: double.infinity,
+                                                height: 60.0,
+                                                decoration: BoxDecoration(
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primaryBtnText,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      blurRadius: 4.0,
+                                                      color: Color(0x32000000),
+                                                      offset: Offset(
+                                                        0.0,
+                                                        2.0,
+                                                      ),
+                                                    )
+                                                  ],
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8.0),
+                                                ),
+                                                child: Padding(
+                                                  padding: EdgeInsetsDirectional
+                                                      .fromSTEB(
+                                                          8.0, 0.0, 8.0, 0.0),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceAround,
+                                                    children: [
+                                                      ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(26.0),
+                                                        child: Image.network(
+                                                          valueOrDefault<
+                                                              String>(
+                                                            listViewUsersRecord
+                                                                .photoUrl,
+                                                            'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+                                                          ),
+                                                          width: 36.0,
+                                                          height: 36.0,
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: Padding(
+                                                          padding:
+                                                              EdgeInsetsDirectional
+                                                                  .fromSTEB(
+                                                                      12.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0),
+                                                          child: Column(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .max,
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Align(
+                                                                alignment:
+                                                                    AlignmentDirectional(
+                                                                        -1.0,
+                                                                        0.0),
+                                                                child: Text(
+                                                                  valueOrDefault<
+                                                                      String>(
+                                                                    listViewUsersRecord
+                                                                        .displayName,
+                                                                    'name',
+                                                                  ),
+                                                                  style: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .override(
+                                                                        font: GoogleFonts
+                                                                            .outfit(
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                              .bodyMedium
+                                                                              .fontStyle,
+                                                                        ),
+                                                                        fontSize:
+                                                                            16.0,
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                        fontWeight:
+                                                                            FontWeight.w500,
+                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                            .bodyMedium
+                                                                            .fontStyle,
+                                                                      ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsetsDirectional
+                                                                .fromSTEB(
+                                                                    0.0,
+                                                                    0.0,
+                                                                    10.0,
+                                                                    0.0),
+                                                        child: FFButtonWidget(
+                                                          onPressed: () async {
+                                                            context.pushNamed(
+                                                              ProfileUserWidget
+                                                                  .routeName,
+                                                              queryParameters: {
+                                                                'userRef':
+                                                                    serializeParam(
+                                                                  listViewUsersRecord,
+                                                                  ParamType
+                                                                      .Document,
+                                                                ),
+                                                              }.withoutNulls,
+                                                              extra: <String,
+                                                                  dynamic>{
+                                                                'userRef':
+                                                                    listViewUsersRecord,
+                                                                kTransitionInfoKey:
+                                                                    TransitionInfo(
+                                                                  hasTransition:
+                                                                      true,
+                                                                  transitionType:
+                                                                      PageTransitionType
+                                                                          .bottomToTop,
+                                                                  duration: Duration(
+                                                                      milliseconds:
+                                                                          220),
+                                                                ),
+                                                              },
+                                                            );
+                                                          },
+                                                          text: 'View',
+                                                          options:
+                                                              FFButtonOptions(
+                                                            width: 51.0,
+                                                            height: 36.0,
+                                                            padding:
+                                                                EdgeInsetsDirectional
+                                                                    .fromSTEB(
+                                                                        0.0,
+                                                                        0.0,
+                                                                        0.0,
+                                                                        0.0),
+                                                            iconPadding:
+                                                                EdgeInsetsDirectional
+                                                                    .fromSTEB(
+                                                                        0.0,
+                                                                        0.0,
+                                                                        0.0,
+                                                                        0.0),
+                                                            color: Color(
+                                                                0xFF253551),
+                                                            textStyle:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      font: GoogleFonts
+                                                                          .outfit(
+                                                                        fontWeight:
+                                                                            FontWeight.normal,
+                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                            .bodyMedium
+                                                                            .fontStyle,
+                                                                      ),
+                                                                      color: Colors
+                                                                          .white,
+                                                                      fontSize:
+                                                                          14.0,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .normal,
+                                                                      fontStyle: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .bodyMedium
+                                                                          .fontStyle,
+                                                                    ),
+                                                            elevation: 2.0,
+                                                            borderSide:
+                                                                BorderSide(
+                                                              color: Colors
+                                                                  .transparent,
+                                                              width: 1.0,
+                                                            ),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8.0),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsetsDirectional
+                                                                .fromSTEB(
+                                                                    5.0,
+                                                                    0.0,
+                                                                    5.0,
+                                                                    0.0),
+                                                        child:
+                                                            FlutterFlowIconButton(
+                                                          borderColor:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .primary,
+                                                          borderRadius: 20.0,
+                                                          borderWidth: 1.0,
+                                                          buttonSize: 40.0,
+                                                          fillColor:
+                                                              Color(0xFF253551),
+                                                          icon: FaIcon(
+                                                            FontAwesomeIcons
+                                                                .facebookMessenger,
+                                                            color: Colors.white,
+                                                            size: 18.0,
+                                                          ),
+                                                          onPressed: () async {
+                                                            _model.addToFriendList(
+                                                                currentUserReference!);
+                                                            safeSetState(() {});
+                                                            _model.addToFriendList(
+                                                                listViewUsersRecord
+                                                                    .reference);
+                                                            safeSetState(() {});
+                                                            _model.chatsChecker =
+                                                                await queryChatsRecordOnce(
+                                                              queryBuilder:
+                                                                  (chatsRecord) =>
+                                                                      chatsRecord
+                                                                          .where(
+                                                                            'user_a',
+                                                                            isEqualTo:
+                                                                                currentUserReference,
+                                                                          )
+                                                                          .where(
+                                                                            'user_b',
+                                                                            isEqualTo:
+                                                                                listViewUsersRecord.reference,
+                                                                          ),
+                                                              singleRecord:
+                                                                  true,
+                                                            ).then((s) => s
+                                                                    .firstOrNull);
+                                                            if (_model
+                                                                    .chatsChecker !=
+                                                                null) {
+                                                              if (Navigator.of(
+                                                                      context)
+                                                                  .canPop()) {
+                                                                context.pop();
+                                                              }
+                                                              context.pushNamed(
+                                                                Chat2DetailsWidget
+                                                                    .routeName,
+                                                                queryParameters:
+                                                                    {
+                                                                  'chatRef':
+                                                                      serializeParam(
+                                                                    _model
+                                                                        .chatsChecker,
+                                                                    ParamType
+                                                                        .Document,
+                                                                  ),
+                                                                }.withoutNulls,
+                                                                extra: <String,
+                                                                    dynamic>{
+                                                                  'chatRef': _model
+                                                                      .chatsChecker,
+                                                                },
+                                                              );
+                                                            } else {
+                                                              _model.chatsChecker2 =
+                                                                  await queryChatsRecordOnce(
+                                                                queryBuilder:
+                                                                    (chatsRecord) =>
+                                                                        chatsRecord
+                                                                            .where(
+                                                                              'user_a',
+                                                                              isEqualTo: listViewUsersRecord.reference,
+                                                                            )
+                                                                            .where(
+                                                                              'user_b',
+                                                                              isEqualTo: currentUserReference,
+                                                                            ),
+                                                                singleRecord:
+                                                                    true,
+                                                              ).then((s) => s
+                                                                      .firstOrNull);
+                                                              if (_model
+                                                                      .chatsChecker2 !=
+                                                                  null) {
+                                                                if (Navigator.of(
+                                                                        context)
+                                                                    .canPop()) {
+                                                                  context.pop();
+                                                                }
+                                                                context
+                                                                    .pushNamed(
+                                                                  Chat2DetailsWidget
+                                                                      .routeName,
+                                                                  queryParameters:
+                                                                      {
+                                                                    'chatRef':
+                                                                        serializeParam(
+                                                                      _model
+                                                                          .chatsChecker2,
+                                                                      ParamType
+                                                                          .Document,
+                                                                    ),
+                                                                  }.withoutNulls,
+                                                                  extra: <String,
+                                                                      dynamic>{
+                                                                    'chatRef':
+                                                                        _model
+                                                                            .chatsChecker2,
+                                                                  },
+                                                                );
+                                                              } else {
+                                                                // newChat
+
+                                                                var chatsRecordReference =
+                                                                    ChatsRecord
+                                                                        .collection
+                                                                        .doc();
+                                                                await chatsRecordReference
+                                                                    .set({
+                                                                  ...createChatsRecordData(
+                                                                    userA:
+                                                                        currentUserReference,
+                                                                    userB: listViewUsersRecord
+                                                                        .reference,
+                                                                    lastMessage:
+                                                                        '',
+                                                                    lastMessageTime:
+                                                                        getCurrentTimestamp,
+                                                                    lastMessageSentBy:
+                                                                        currentUserReference,
+                                                                    groupChatId:
+                                                                        random_data.randomInteger(
+                                                                            1000000,
+                                                                            9999999),
+                                                                  ),
+                                                                  ...mapToFirestore(
+                                                                    {
+                                                                      'users':
+                                                                          _model
+                                                                              .friendList,
+                                                                    },
+                                                                  ),
+                                                                });
+                                                                _model.chatroomReference =
+                                                                    ChatsRecord
+                                                                        .getDocumentFromData({
+                                                                  ...createChatsRecordData(
+                                                                    userA:
+                                                                        currentUserReference,
+                                                                    userB: listViewUsersRecord
+                                                                        .reference,
+                                                                    lastMessage:
+                                                                        '',
+                                                                    lastMessageTime:
+                                                                        getCurrentTimestamp,
+                                                                    lastMessageSentBy:
+                                                                        currentUserReference,
+                                                                    groupChatId:
+                                                                        random_data.randomInteger(
+                                                                            1000000,
+                                                                            9999999),
+                                                                  ),
+                                                                  ...mapToFirestore(
+                                                                    {
+                                                                      'users':
+                                                                          _model
+                                                                              .friendList,
+                                                                    },
+                                                                  ),
+                                                                }, chatsRecordReference);
+                                                                if (Navigator.of(
+                                                                        context)
+                                                                    .canPop()) {
+                                                                  context.pop();
+                                                                }
+                                                                context
+                                                                    .pushNamed(
+                                                                  Chat2DetailsWidget
+                                                                      .routeName,
+                                                                  queryParameters:
+                                                                      {
+                                                                    'chatRef':
+                                                                        serializeParam(
+                                                                      _model
+                                                                          .chatroomReference,
+                                                                      ParamType
+                                                                          .Document,
+                                                                    ),
+                                                                  }.withoutNulls,
+                                                                  extra: <String,
+                                                                      dynamic>{
+                                                                    'chatRef':
+                                                                        _model
+                                                                            .chatroomReference,
+                                                                  },
+                                                                );
+                                                              }
+                                                            }
+
+                                                            safeSetState(() {});
+                                                          },
+                                                        ),
+                                                      ),
+                                                      Stack(
+                                                        children: [
+                                                          if (listViewUsersRecord
+                                                                  .friendRequests
+                                                                  .contains(
+                                                                      currentUserReference) ||
+                                                              (currentUserDocument
+                                                                          ?.friendRequests
+                                                                          .toList() ??
+                                                                      [])
+                                                                  .contains(
+                                                                      listViewUsersRecord
+                                                                          .reference))
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          5.0,
+                                                                          0.0,
+                                                                          5.0,
+                                                                          0.0),
+                                                              child:
+                                                                  AuthUserStreamWidget(
+                                                                builder:
+                                                                    (context) =>
+                                                                        FlutterFlowIconButton(
+                                                                  borderColor:
+                                                                      FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primary,
+                                                                  borderRadius:
+                                                                      20.0,
+                                                                  borderWidth:
+                                                                      1.0,
+                                                                  buttonSize:
+                                                                      40.0,
+                                                                  fillColor: Color(
+                                                                      0xFF253551),
+                                                                  icon: Icon(
+                                                                    Icons
+                                                                        .pending,
+                                                                    color: Colors
+                                                                        .white,
+                                                                    size: 22.0,
+                                                                  ),
+                                                                  onPressed:
+                                                                      () {
+                                                                    print(
+                                                                        'pending pressed ...');
+                                                                  },
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          if (!listViewUsersRecord
+                                                                  .friendRequests
+                                                                  .contains(
+                                                                      currentUserReference) &&
+                                                              !(currentUserDocument
+                                                                          ?.friendRequests
+                                                                          .toList() ??
+                                                                      [])
+                                                                  .contains(
+                                                                      listViewUsersRecord
+                                                                          .reference))
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          5.0,
+                                                                          0.0,
+                                                                          5.0,
+                                                                          0.0),
+                                                              child:
+                                                                  AuthUserStreamWidget(
+                                                                builder:
+                                                                    (context) =>
+                                                                        FlutterFlowIconButton(
+                                                                  borderColor:
+                                                                      FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primary,
+                                                                  borderRadius:
+                                                                      20.0,
+                                                                  borderWidth:
+                                                                      1.0,
+                                                                  buttonSize:
+                                                                      40.0,
+                                                                  fillColor: Color(
+                                                                      0xFF253551),
+                                                                  icon: Icon(
+                                                                    Icons.add,
+                                                                    color: Colors
+                                                                        .white,
+                                                                    size: 18.0,
+                                                                  ),
+                                                                  onPressed:
+                                                                      () async {
+                                                                    await listViewUsersRecord
+                                                                        .reference
+                                                                        .update({
+                                                                      ...mapToFirestore(
+                                                                        {
+                                                                          'friend_requests':
+                                                                              FieldValue.arrayUnion([
+                                                                            currentUserReference
+                                                                          ]),
+                                                                        },
+                                                                      ),
+                                                                    });
+                                                                    _model.addToReqUserList(
+                                                                        valueOrDefault<
+                                                                            String>(
+                                                                      listViewUsersRecord
+                                                                          .uid,
+                                                                      '007',
+                                                                    ));
+                                                                    safeSetState(
+                                                                        () {});
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .clearSnackBars();
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .showSnackBar(
+                                                                      SnackBar(
+                                                                        content:
+                                                                            Text(
+                                                                          'A Friend Request Has Been Sent!',
+                                                                          style: FlutterFlowTheme.of(context)
+                                                                              .titleMedium
+                                                                              .override(
+                                                                                font: GoogleFonts.outfit(
+                                                                                  fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
+                                                                                  fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                                ),
+                                                                                color: FlutterFlowTheme.of(context).primaryBtnText,
+                                                                                letterSpacing: 0.0,
+                                                                                fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
+                                                                                fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                              ),
+                                                                        ),
+                                                                        duration:
+                                                                            Duration(milliseconds: 1500),
+                                                                        backgroundColor:
+                                                                            FlutterFlowTheme.of(context).primary,
+                                                                      ),
+                                                                    );
+                                                                  },
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          if ((currentUserDocument
+                                                                      ?.friends
+                                                                      .toList() ??
+                                                                  [])
+                                                              .contains(
+                                                                  listViewUsersRecord
+                                                                      .reference))
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          5.0,
+                                                                          0.0,
+                                                                          5.0,
+                                                                          0.0),
+                                                              child:
+                                                                  AuthUserStreamWidget(
+                                                                builder:
+                                                                    (context) =>
+                                                                        FlutterFlowIconButton(
+                                                                  borderColor:
+                                                                      FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primary,
+                                                                  borderRadius:
+                                                                      20.0,
+                                                                  borderWidth:
+                                                                      1.0,
+                                                                  buttonSize:
+                                                                      40.0,
+                                                                  fillColor: Color(
+                                                                      0xFF253551),
+                                                                  icon: Icon(
+                                                                    Icons
+                                                                        .people,
+                                                                    color: Colors
+                                                                        .white,
+                                                                    size: 22.0,
+                                                                  ),
+                                                                  onPressed:
+                                                                      () {
+                                                                    print(
+                                                                        'friends pressed ...');
+                                                                  },
+                                                                ),
+                                                              ),
+                                                            ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          KeepAliveWidgetWrapper(
+                            builder: (context) => Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              constraints: BoxConstraints(
+                                minWidth: double.infinity,
+                                minHeight: double.infinity,
+                              ),
+                              decoration: BoxDecoration(
+                                color: FlutterFlowTheme.of(context)
+                                    .secondaryBackground,
+                                image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: Image.asset(
+                                    'assets/images/igdownloader.com_2980395830822133751.jpg',
+                                  ).image,
+                                ),
+                              ),
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (isiOS)
+                                      StreamBuilder<List<FriendRequestRecord>>(
+                                        stream: queryFriendRequestRecord(
+                                          queryBuilder: (friendRequestRecord) =>
+                                              friendRequestRecord.where(
+                                            'receiver_id',
+                                            isEqualTo: currentUserReference,
+                                          ),
+                                        ),
+                                        builder: (context, snapshot) {
+                                          // Customize what your widget looks like when it's loading.
+                                          if (!snapshot.hasData) {
+                                            return Center(
+                                              child: SizedBox(
+                                                width: 50.0,
+                                                height: 50.0,
+                                                child: SpinKitWanderingCubes(
+                                                  color: Color(0xFF25504F),
+                                                  size: 50.0,
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                          List<FriendRequestRecord>
+                                              listViewFriendRequestRecordList =
+                                              snapshot.data!;
+                                          if (listViewFriendRequestRecordList
+                                              .isEmpty) {
+                                            return Image.asset(
+                                              'assets/images/Whitefixed.png',
+                                            );
+                                          }
+
+                                          return ListView.separated(
+                                            padding: EdgeInsets.fromLTRB(
+                                              0,
+                                              12.0,
+                                              0,
+                                              44.0,
+                                            ),
+                                            primary: false,
+                                            shrinkWrap: true,
+                                            scrollDirection: Axis.vertical,
+                                            itemCount:
+                                                listViewFriendRequestRecordList
+                                                    .length,
+                                            separatorBuilder: (_, __) =>
+                                                SizedBox(height: 12.0),
+                                            itemBuilder:
+                                                (context, listViewIndex) {
+                                              final listViewFriendRequestRecord =
+                                                  listViewFriendRequestRecordList[
+                                                      listViewIndex];
+                                              return Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        16.0, 12.0, 16.0, 12.0),
+                                                child:
+                                                    StreamBuilder<UsersRecord>(
+                                                  stream: UsersRecord.getDocument(
+                                                      listViewFriendRequestRecord
+                                                          .requesterId!),
+                                                  builder: (context, snapshot) {
+                                                    // Customize what your widget looks like when it's loading.
+                                                    if (!snapshot.hasData) {
+                                                      return Center(
+                                                        child: SizedBox(
+                                                          width: 50.0,
+                                                          height: 50.0,
+                                                          child:
+                                                              SpinKitWanderingCubes(
+                                                            color: Color(
+                                                                0xFF25504F),
+                                                            size: 50.0,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }
+
+                                                    final userList5UsersRecord =
+                                                        snapshot.data!;
+
+                                                    return Container(
+                                                      width: double.infinity,
+                                                      height: 60.0,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            blurRadius: 4.0,
+                                                            color: Color(
+                                                                0x32000000),
+                                                            offset: Offset(
+                                                              0.0,
+                                                              2.0,
+                                                            ),
+                                                          )
+                                                        ],
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8.0),
+                                                      ),
+                                                      child: Padding(
+                                                        padding:
+                                                            EdgeInsetsDirectional
+                                                                .fromSTEB(
+                                                                    8.0,
+                                                                    0.0,
+                                                                    8.0,
+                                                                    0.0),
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceAround,
+                                                          children: [
+                                                            ClipRRect(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          26.0),
+                                                              child:
+                                                                  Image.network(
+                                                                userList5UsersRecord
+                                                                    .photoUrl,
+                                                                width: 36.0,
+                                                                height: 36.0,
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                              ),
+                                                            ),
+                                                            Expanded(
+                                                              child: Padding(
+                                                                padding:
+                                                                    EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            12.0,
+                                                                            0.0,
+                                                                            0.0,
+                                                                            0.0),
+                                                                child: Column(
+                                                                  mainAxisSize:
+                                                                      MainAxisSize
+                                                                          .max,
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .center,
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Row(
+                                                                      mainAxisSize:
+                                                                          MainAxisSize
+                                                                              .max,
+                                                                      children: [
+                                                                        Text(
+                                                                          userList5UsersRecord
+                                                                              .displayName,
+                                                                          style: FlutterFlowTheme.of(context)
+                                                                              .bodyMedium
+                                                                              .override(
+                                                                                font: GoogleFonts.outfit(
+                                                                                  fontWeight: FontWeight.w500,
+                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                ),
+                                                                                fontSize: 16.0,
+                                                                                letterSpacing: 0.0,
+                                                                                fontWeight: FontWeight.w500,
+                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                              ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          5.0,
+                                                                          0.0),
+                                                              child:
+                                                                  FFButtonWidget(
+                                                                onPressed:
+                                                                    () async {
+                                                                  context
+                                                                      .pushNamed(
+                                                                    ProfileUserWidget
+                                                                        .routeName,
+                                                                    queryParameters:
+                                                                        {
+                                                                      'userRef':
+                                                                          serializeParam(
+                                                                        userList5UsersRecord,
+                                                                        ParamType
+                                                                            .Document,
+                                                                      ),
+                                                                    }.withoutNulls,
+                                                                    extra: <String,
+                                                                        dynamic>{
+                                                                      'userRef':
+                                                                          userList5UsersRecord,
+                                                                      kTransitionInfoKey:
+                                                                          TransitionInfo(
+                                                                        hasTransition:
+                                                                            true,
+                                                                        transitionType:
+                                                                            PageTransitionType.bottomToTop,
+                                                                        duration:
+                                                                            Duration(milliseconds: 220),
+                                                                      ),
+                                                                    },
+                                                                  );
+                                                                },
+                                                                text: 'View',
+                                                                options:
+                                                                    FFButtonOptions(
+                                                                  width: 51.0,
+                                                                  height: 36.0,
+                                                                  padding: EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                  iconPadding: EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                  color: Color(
+                                                                      0xFF253551),
+                                                                  textStyle: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .override(
+                                                                        font: GoogleFonts
+                                                                            .outfit(
+                                                                          fontWeight:
+                                                                              FontWeight.normal,
+                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                              .bodyMedium
+                                                                              .fontStyle,
+                                                                        ),
+                                                                        color: Colors
+                                                                            .white,
+                                                                        fontSize:
+                                                                            14.0,
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                        fontWeight:
+                                                                            FontWeight.normal,
+                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                            .bodyMedium
+                                                                            .fontStyle,
+                                                                      ),
+                                                                  elevation:
+                                                                      2.0,
+                                                                  borderSide:
+                                                                      BorderSide(
+                                                                    color: Colors
+                                                                        .transparent,
+                                                                    width: 1.0,
+                                                                  ),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              8.0),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          5.0,
+                                                                          0.0),
+                                                              child:
+                                                                  FlutterFlowIconButton(
+                                                                borderColor:
+                                                                    FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .primary,
+                                                                borderRadius:
+                                                                    20.0,
+                                                                borderWidth:
+                                                                    1.0,
+                                                                buttonSize:
+                                                                    40.0,
+                                                                fillColor: Color(
+                                                                    0xFF253551),
+                                                                icon: Icon(
+                                                                  Icons.check,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  size: 18.0,
+                                                                ),
+                                                                onPressed:
+                                                                    () async {
+                                                                  await currentUserReference!
+                                                                      .update({
+                                                                    ...mapToFirestore(
+                                                                      {
+                                                                        'friends':
+                                                                            FieldValue.arrayUnion([
+                                                                          userList5UsersRecord
+                                                                              .reference
+                                                                        ]),
+                                                                      },
+                                                                    ),
+                                                                  });
+                                                                  await listViewFriendRequestRecord
+                                                                      .reference
+                                                                      .delete();
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .clearSnackBars();
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(
+                                                                    SnackBar(
+                                                                      content:
+                                                                          Text(
+                                                                        'You  have successfully made a Friend!',
+                                                                        style: FlutterFlowTheme.of(context)
+                                                                            .titleMedium
+                                                                            .override(
+                                                                              font: GoogleFonts.outfit(
+                                                                                fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
+                                                                                fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                              ),
+                                                                              color: FlutterFlowTheme.of(context).primaryBtnText,
+                                                                              letterSpacing: 0.0,
+                                                                              fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
+                                                                              fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                            ),
+                                                                      ),
+                                                                      duration: Duration(
+                                                                          milliseconds:
+                                                                              1500),
+                                                                      backgroundColor:
+                                                                          FlutterFlowTheme.of(context)
+                                                                              .primary,
+                                                                    ),
+                                                                  );
+                                                                },
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          5.0,
+                                                                          0.0),
+                                                              child:
+                                                                  FlutterFlowIconButton(
+                                                                borderColor:
+                                                                    FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .primary,
+                                                                borderRadius:
+                                                                    20.0,
+                                                                borderWidth:
+                                                                    1.0,
+                                                                buttonSize:
+                                                                    40.0,
+                                                                fillColor: Color(
+                                                                    0xFF253551),
+                                                                icon: Icon(
+                                                                  Icons
+                                                                      .not_interested,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  size: 18.0,
+                                                                ),
+                                                                onPressed:
+                                                                    () async {
+                                                                  await listViewFriendRequestRecord
+                                                                      .reference
+                                                                      .delete();
+                                                                },
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    AuthUserStreamWidget(
+                                      builder: (context) => Builder(
+                                        builder: (context) {
+                                          final friendRequestList =
+                                              (currentUserDocument
+                                                          ?.friendRequests
+                                                          .toList() ??
+                                                      [])
+                                                  .toList();
+
+                                          return ListView.separated(
+                                            padding: EdgeInsets.fromLTRB(
+                                              0,
+                                              12.0,
+                                              0,
+                                              44.0,
+                                            ),
+                                            primary: false,
+                                            shrinkWrap: true,
+                                            scrollDirection: Axis.vertical,
+                                            itemCount: friendRequestList.length,
+                                            separatorBuilder: (_, __) =>
+                                                SizedBox(height: 12.0),
+                                            itemBuilder: (context,
+                                                friendRequestListIndex) {
+                                              final friendRequestListItem =
+                                                  friendRequestList[
+                                                      friendRequestListIndex];
+                                              return Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        16.0, 12.0, 16.0, 12.0),
+                                                child:
+                                                    StreamBuilder<UsersRecord>(
+                                                  stream:
+                                                      UsersRecord.getDocument(
+                                                          friendRequestListItem),
+                                                  builder: (context, snapshot) {
+                                                    // Customize what your widget looks like when it's loading.
+                                                    if (!snapshot.hasData) {
+                                                      return Center(
+                                                        child: SizedBox(
+                                                          width: 50.0,
+                                                          height: 50.0,
+                                                          child:
+                                                              SpinKitWanderingCubes(
+                                                            color: Color(
+                                                                0xFF25504F),
+                                                            size: 50.0,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }
+
+                                                    final userList5UsersRecord =
+                                                        snapshot.data!;
+
+                                                    return Container(
+                                                      width: double.infinity,
+                                                      height: 60.0,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            blurRadius: 4.0,
+                                                            color: Color(
+                                                                0x32000000),
+                                                            offset: Offset(
+                                                              0.0,
+                                                              2.0,
+                                                            ),
+                                                          )
+                                                        ],
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8.0),
+                                                      ),
+                                                      child: Padding(
+                                                        padding:
+                                                            EdgeInsetsDirectional
+                                                                .fromSTEB(
+                                                                    8.0,
+                                                                    0.0,
+                                                                    8.0,
+                                                                    0.0),
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceAround,
+                                                          children: [
+                                                            ClipRRect(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          26.0),
+                                                              child:
+                                                                  Image.network(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                                  userList5UsersRecord
+                                                                      .photoUrl,
+                                                                  'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+                                                                ),
+                                                                width: 36.0,
+                                                                height: 36.0,
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                              ),
+                                                            ),
+                                                            Expanded(
+                                                              child: Padding(
+                                                                padding:
+                                                                    EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            12.0,
+                                                                            0.0,
+                                                                            0.0,
+                                                                            0.0),
+                                                                child: Column(
+                                                                  mainAxisSize:
+                                                                      MainAxisSize
+                                                                          .max,
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .center,
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Row(
+                                                                      mainAxisSize:
+                                                                          MainAxisSize
+                                                                              .max,
+                                                                      children: [
+                                                                        Text(
+                                                                          userList5UsersRecord
+                                                                              .displayName,
+                                                                          style: FlutterFlowTheme.of(context)
+                                                                              .bodyMedium
+                                                                              .override(
+                                                                                font: GoogleFonts.outfit(
+                                                                                  fontWeight: FontWeight.w500,
+                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                ),
+                                                                                fontSize: 16.0,
+                                                                                letterSpacing: 0.0,
+                                                                                fontWeight: FontWeight.w500,
+                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                              ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          5.0,
+                                                                          0.0),
+                                                              child:
+                                                                  FFButtonWidget(
+                                                                onPressed:
+                                                                    () async {
+                                                                  context
+                                                                      .pushNamed(
+                                                                    ProfileUserWidget
+                                                                        .routeName,
+                                                                    queryParameters:
+                                                                        {
+                                                                      'userRef':
+                                                                          serializeParam(
+                                                                        userList5UsersRecord,
+                                                                        ParamType
+                                                                            .Document,
+                                                                      ),
+                                                                    }.withoutNulls,
+                                                                    extra: <String,
+                                                                        dynamic>{
+                                                                      'userRef':
+                                                                          userList5UsersRecord,
+                                                                      kTransitionInfoKey:
+                                                                          TransitionInfo(
+                                                                        hasTransition:
+                                                                            true,
+                                                                        transitionType:
+                                                                            PageTransitionType.bottomToTop,
+                                                                        duration:
+                                                                            Duration(milliseconds: 220),
+                                                                      ),
+                                                                    },
+                                                                  );
+                                                                },
+                                                                text: 'View',
+                                                                options:
+                                                                    FFButtonOptions(
+                                                                  width: 51.0,
+                                                                  height: 36.0,
+                                                                  padding: EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                  iconPadding: EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                  color: Color(
+                                                                      0xFF253551),
+                                                                  textStyle: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .override(
+                                                                        font: GoogleFonts
+                                                                            .outfit(
+                                                                          fontWeight:
+                                                                              FontWeight.normal,
+                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                              .bodyMedium
+                                                                              .fontStyle,
+                                                                        ),
+                                                                        color: Colors
+                                                                            .white,
+                                                                        fontSize:
+                                                                            14.0,
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                        fontWeight:
+                                                                            FontWeight.normal,
+                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                            .bodyMedium
+                                                                            .fontStyle,
+                                                                      ),
+                                                                  elevation:
+                                                                      2.0,
+                                                                  borderSide:
+                                                                      BorderSide(
+                                                                    color: Colors
+                                                                        .transparent,
+                                                                    width: 1.0,
+                                                                  ),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              8.0),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          5.0,
+                                                                          0.0),
+                                                              child:
+                                                                  FlutterFlowIconButton(
+                                                                borderColor:
+                                                                    FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .primary,
+                                                                borderRadius:
+                                                                    20.0,
+                                                                borderWidth:
+                                                                    1.0,
+                                                                buttonSize:
+                                                                    40.0,
+                                                                fillColor: Color(
+                                                                    0xFF253551),
+                                                                icon: Icon(
+                                                                  Icons.check,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  size: 18.0,
+                                                                ),
+                                                                onPressed:
+                                                                    () async {
+                                                                  await currentUserReference!
+                                                                      .update({
+                                                                    ...mapToFirestore(
+                                                                      {
+                                                                        'friends':
+                                                                            FieldValue.arrayUnion([
+                                                                          userList5UsersRecord
+                                                                              .reference
+                                                                        ]),
+                                                                        'friend_requests':
+                                                                            FieldValue.arrayRemove([
+                                                                          userList5UsersRecord
+                                                                              .reference
+                                                                        ]),
+                                                                      },
+                                                                    ),
+                                                                  });
+
+                                                                  await userList5UsersRecord
+                                                                      .reference
+                                                                      .update({
+                                                                    ...mapToFirestore(
+                                                                      {
+                                                                        'friends':
+                                                                            FieldValue.arrayUnion([
+                                                                          currentUserReference
+                                                                        ]),
+                                                                      },
+                                                                    ),
+                                                                  });
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .clearSnackBars();
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(
+                                                                    SnackBar(
+                                                                      content:
+                                                                          Text(
+                                                                        'You  have successfully made a Friend!',
+                                                                        style: FlutterFlowTheme.of(context)
+                                                                            .titleMedium
+                                                                            .override(
+                                                                              font: GoogleFonts.outfit(
+                                                                                fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
+                                                                                fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                              ),
+                                                                              color: FlutterFlowTheme.of(context).primaryBtnText,
+                                                                              letterSpacing: 0.0,
+                                                                              fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
+                                                                              fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                            ),
+                                                                      ),
+                                                                      duration: Duration(
+                                                                          milliseconds:
+                                                                              1500),
+                                                                      backgroundColor:
+                                                                          FlutterFlowTheme.of(context)
+                                                                              .primary,
+                                                                    ),
+                                                                  );
+                                                                },
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          5.0,
+                                                                          0.0),
+                                                              child:
+                                                                  FlutterFlowIconButton(
+                                                                borderColor:
+                                                                    FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .primary,
+                                                                borderRadius:
+                                                                    20.0,
+                                                                borderWidth:
+                                                                    1.0,
+                                                                buttonSize:
+                                                                    40.0,
+                                                                fillColor: Color(
+                                                                    0xFF253551),
+                                                                icon: Icon(
+                                                                  Icons
+                                                                      .not_interested,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  size: 18.0,
+                                                                ),
+                                                                onPressed:
+                                                                    () async {
+                                                                  await currentUserReference!
+                                                                      .update({
+                                                                    ...mapToFirestore(
+                                                                      {
+                                                                        'friend_requests':
+                                                                            FieldValue.arrayRemove([
+                                                                          userList5UsersRecord
+                                                                              .reference
+                                                                        ]),
+                                                                      },
+                                                                    ),
+                                                                  });
+                                                                },
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          KeepAliveWidgetWrapper(
+                            builder: (context) => Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              constraints: BoxConstraints(
+                                minWidth: double.infinity,
+                                minHeight: double.infinity,
+                              ),
+                              decoration: BoxDecoration(
+                                color: FlutterFlowTheme.of(context)
+                                    .secondaryBackground,
+                                image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: Image.asset(
+                                    'assets/images/igdownloader.com_2980395830822133751.jpg',
+                                  ).image,
+                                ),
+                              ),
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    AuthUserStreamWidget(
+                                      builder: (context) => Builder(
+                                        builder: (context) {
+                                          final friendsList =
+                                              (currentUserDocument?.friends
+                                                          .toList() ??
+                                                      [])
+                                                  .toList();
+
+                                          return ListView.separated(
+                                            padding: EdgeInsets.fromLTRB(
+                                              0,
+                                              12.0,
+                                              0,
+                                              44.0,
+                                            ),
+                                            primary: false,
+                                            shrinkWrap: true,
+                                            scrollDirection: Axis.vertical,
+                                            itemCount: friendsList.length,
+                                            separatorBuilder: (_, __) =>
+                                                SizedBox(height: 12.0),
+                                            itemBuilder:
+                                                (context, friendsListIndex) {
+                                              final friendsListItem =
+                                                  friendsList[friendsListIndex];
+                                              return Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        16.0, 12.0, 16.0, 12.0),
+                                                child:
+                                                    StreamBuilder<UsersRecord>(
+                                                  stream:
+                                                      UsersRecord.getDocument(
+                                                          friendsListItem),
+                                                  builder: (context, snapshot) {
+                                                    // Customize what your widget looks like when it's loading.
+                                                    if (!snapshot.hasData) {
+                                                      return Center(
+                                                        child: SizedBox(
+                                                          width: 50.0,
+                                                          height: 50.0,
+                                                          child:
+                                                              SpinKitWanderingCubes(
+                                                            color: Color(
+                                                                0xFF25504F),
+                                                            size: 50.0,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }
+
+                                                    final userList5UsersRecord =
+                                                        snapshot.data!;
+
+                                                    return Container(
+                                                      width: double.infinity,
+                                                      height: 60.0,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            blurRadius: 4.0,
+                                                            color: Color(
+                                                                0x32000000),
+                                                            offset: Offset(
+                                                              0.0,
+                                                              2.0,
+                                                            ),
+                                                          )
+                                                        ],
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8.0),
+                                                      ),
+                                                      child: Padding(
+                                                        padding:
+                                                            EdgeInsetsDirectional
+                                                                .fromSTEB(
+                                                                    8.0,
+                                                                    0.0,
+                                                                    8.0,
+                                                                    0.0),
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceAround,
+                                                          children: [
+                                                            ClipRRect(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          26.0),
+                                                              child:
+                                                                  Image.network(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                                  userList5UsersRecord
+                                                                      .photoUrl,
+                                                                  'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+                                                                ),
+                                                                width: 36.0,
+                                                                height: 36.0,
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                              ),
+                                                            ),
+                                                            Expanded(
+                                                              child: Padding(
+                                                                padding:
+                                                                    EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            12.0,
+                                                                            0.0,
+                                                                            0.0,
+                                                                            0.0),
+                                                                child: Column(
+                                                                  mainAxisSize:
+                                                                      MainAxisSize
+                                                                          .max,
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .center,
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Row(
+                                                                      mainAxisSize:
+                                                                          MainAxisSize
+                                                                              .max,
+                                                                      children: [
+                                                                        Text(
+                                                                          valueOrDefault<
+                                                                              String>(
+                                                                            userList5UsersRecord.displayName,
+                                                                            'name',
+                                                                          ),
+                                                                          style: FlutterFlowTheme.of(context)
+                                                                              .bodyMedium
+                                                                              .override(
+                                                                                font: GoogleFonts.outfit(
+                                                                                  fontWeight: FontWeight.w500,
+                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                ),
+                                                                                fontSize: 16.0,
+                                                                                letterSpacing: 0.0,
+                                                                                fontWeight: FontWeight.w500,
+                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                              ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          5.0,
+                                                                          0.0),
+                                                              child:
+                                                                  FFButtonWidget(
+                                                                onPressed:
+                                                                    () async {
+                                                                  context
+                                                                      .pushNamed(
+                                                                    ProfileUserWidget
+                                                                        .routeName,
+                                                                    queryParameters:
+                                                                        {
+                                                                      'userRef':
+                                                                          serializeParam(
+                                                                        userList5UsersRecord,
+                                                                        ParamType
+                                                                            .Document,
+                                                                      ),
+                                                                    }.withoutNulls,
+                                                                    extra: <String,
+                                                                        dynamic>{
+                                                                      'userRef':
+                                                                          userList5UsersRecord,
+                                                                      kTransitionInfoKey:
+                                                                          TransitionInfo(
+                                                                        hasTransition:
+                                                                            true,
+                                                                        transitionType:
+                                                                            PageTransitionType.bottomToTop,
+                                                                        duration:
+                                                                            Duration(milliseconds: 220),
+                                                                      ),
+                                                                    },
+                                                                  );
+                                                                },
+                                                                text: 'View',
+                                                                options:
+                                                                    FFButtonOptions(
+                                                                  width: 51.0,
+                                                                  height: 36.0,
+                                                                  padding: EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                  iconPadding: EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                  color: Color(
+                                                                      0xFF253551),
+                                                                  textStyle: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .override(
+                                                                        font: GoogleFonts
+                                                                            .outfit(
+                                                                          fontWeight:
+                                                                              FontWeight.normal,
+                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                              .bodyMedium
+                                                                              .fontStyle,
+                                                                        ),
+                                                                        color: Colors
+                                                                            .white,
+                                                                        fontSize:
+                                                                            14.0,
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                        fontWeight:
+                                                                            FontWeight.normal,
+                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                            .bodyMedium
+                                                                            .fontStyle,
+                                                                      ),
+                                                                  elevation:
+                                                                      2.0,
+                                                                  borderSide:
+                                                                      BorderSide(
+                                                                    color: Colors
+                                                                        .transparent,
+                                                                    width: 1.0,
+                                                                  ),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              8.0),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          5.0,
+                                                                          0.0),
+                                                              child:
+                                                                  FlutterFlowIconButton(
+                                                                borderColor:
+                                                                    FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .primary,
+                                                                borderRadius:
+                                                                    20.0,
+                                                                borderWidth:
+                                                                    1.0,
+                                                                buttonSize:
+                                                                    40.0,
+                                                                fillColor: Color(
+                                                                    0xFF253551),
+                                                                icon: FaIcon(
+                                                                  FontAwesomeIcons
+                                                                      .minus,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  size: 18.0,
+                                                                ),
+                                                                onPressed:
+                                                                    () async {
+                                                                  await currentUserReference!
+                                                                      .update({
+                                                                    ...mapToFirestore(
+                                                                      {
+                                                                        'friends':
+                                                                            FieldValue.arrayRemove([
+                                                                          userList5UsersRecord
+                                                                              .reference
+                                                                        ]),
+                                                                      },
+                                                                    ),
+                                                                  });
+
+                                                                  await userList5UsersRecord
+                                                                      .reference
+                                                                      .update({
+                                                                    ...mapToFirestore(
+                                                                      {
+                                                                        'friends':
+                                                                            FieldValue.arrayRemove([
+                                                                          currentUserReference
+                                                                        ]),
+                                                                      },
+                                                                    ),
+                                                                  });
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .clearSnackBars();
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(
+                                                                    SnackBar(
+                                                                      content:
+                                                                          Text(
+                                                                        'You don\'t like this person and now they know',
+                                                                        style: FlutterFlowTheme.of(context)
+                                                                            .titleMedium
+                                                                            .override(
+                                                                              font: GoogleFonts.outfit(
+                                                                                fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
+                                                                                fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                              ),
+                                                                              color: FlutterFlowTheme.of(context).primaryBtnText,
+                                                                              letterSpacing: 0.0,
+                                                                              fontWeight: FlutterFlowTheme.of(context).titleMedium.fontWeight,
+                                                                              fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
+                                                                            ),
+                                                                      ),
+                                                                      duration: Duration(
+                                                                          milliseconds:
+                                                                              1500),
+                                                                      backgroundColor:
+                                                                          FlutterFlowTheme.of(context)
+                                                                              .primary,
+                                                                    ),
+                                                                  );
+                                                                },
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          0.0,
+                                                                          5.0,
+                                                                          0.0),
+                                                              child: InkWell(
+                                                                splashColor: Colors
+                                                                    .transparent,
+                                                                focusColor: Colors
+                                                                    .transparent,
+                                                                hoverColor: Colors
+                                                                    .transparent,
+                                                                highlightColor:
+                                                                    Colors
+                                                                        .transparent,
+                                                                onDoubleTap:
+                                                                    () async {
+                                                                  await showDialog(
+                                                                    context:
+                                                                        context,
+                                                                    builder:
+                                                                        (alertDialogContext) {
+                                                                      return AlertDialog(
+                                                                        title: Text(
+                                                                            currentUserReference!.id),
+                                                                        content: Text(userList5UsersRecord
+                                                                            .reference
+                                                                            .id),
+                                                                        actions: [
+                                                                          TextButton(
+                                                                            onPressed: () =>
+                                                                                Navigator.pop(alertDialogContext),
+                                                                            child:
+                                                                                Text('Ok'),
+                                                                          ),
+                                                                        ],
+                                                                      );
+                                                                    },
+                                                                  );
+                                                                },
+                                                                child:
+                                                                    FlutterFlowIconButton(
+                                                                  borderColor:
+                                                                      FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primary,
+                                                                  borderRadius:
+                                                                      20.0,
+                                                                  borderWidth:
+                                                                      1.0,
+                                                                  buttonSize:
+                                                                      40.0,
+                                                                  fillColor: Color(
+                                                                      0xFF253551),
+                                                                  icon: FaIcon(
+                                                                    FontAwesomeIcons
+                                                                        .facebookMessenger,
+                                                                    color: Colors
+                                                                        .white,
+                                                                    size: 18.0,
+                                                                  ),
+                                                                  onPressed:
+                                                                      () async {
+                                                                    _model.addToFriendList(
+                                                                        userList5UsersRecord
+                                                                            .reference);
+                                                                    safeSetState(
+                                                                        () {});
+                                                                    _model.chatroomChecker =
+                                                                        await queryChatsRecordOnce(
+                                                                      queryBuilder: (chatsRecord) => chatsRecord
+                                                                          .where(
+                                                                            'user_a',
+                                                                            isEqualTo:
+                                                                                userList5UsersRecord.reference,
+                                                                          )
+                                                                          .where(
+                                                                            'user_b',
+                                                                            isEqualTo:
+                                                                                currentUserReference,
+                                                                          ),
+                                                                      singleRecord:
+                                                                          true,
+                                                                    ).then((s) =>
+                                                                            s.firstOrNull);
+                                                                    if (_model
+                                                                            .chatroomChecker !=
+                                                                        null) {
+                                                                      if (Navigator.of(
+                                                                              context)
+                                                                          .canPop()) {
+                                                                        context
+                                                                            .pop();
+                                                                      }
+                                                                      context
+                                                                          .pushNamed(
+                                                                        Chat2DetailsWidget
+                                                                            .routeName,
+                                                                        queryParameters:
+                                                                            {
+                                                                          'chatRef':
+                                                                              serializeParam(
+                                                                            _model.chatroomChecker,
+                                                                            ParamType.Document,
+                                                                          ),
+                                                                        }.withoutNulls,
+                                                                        extra: <String,
+                                                                            dynamic>{
+                                                                          'chatRef':
+                                                                              _model.chatroomChecker,
+                                                                        },
+                                                                      );
+                                                                    } else {
+                                                                      _model.chatroomChecker2 =
+                                                                          await queryChatsRecordOnce(
+                                                                        queryBuilder: (chatsRecord) => chatsRecord
+                                                                            .where(
+                                                                              'user_a',
+                                                                              isEqualTo: currentUserReference,
+                                                                            )
+                                                                            .where(
+                                                                              'user_b',
+                                                                              isEqualTo: currentUserReference,
+                                                                            ),
+                                                                        singleRecord:
+                                                                            true,
+                                                                      ).then((s) =>
+                                                                              s.firstOrNull);
+                                                                      if (_model
+                                                                              .chatroomChecker2 !=
+                                                                          null) {
+                                                                        if (Navigator.of(context)
+                                                                            .canPop()) {
+                                                                          context
+                                                                              .pop();
+                                                                        }
+                                                                        context
+                                                                            .pushNamed(
+                                                                          Chat2DetailsWidget
+                                                                              .routeName,
+                                                                          queryParameters:
+                                                                              {
+                                                                            'chatRef':
+                                                                                serializeParam(
+                                                                              _model.chatroomChecker2,
+                                                                              ParamType.Document,
+                                                                            ),
+                                                                          }.withoutNulls,
+                                                                          extra: <String,
+                                                                              dynamic>{
+                                                                            'chatRef':
+                                                                                _model.chatroomChecker2,
+                                                                          },
+                                                                        );
+                                                                      } else {
+                                                                        // newChat
+
+                                                                        var chatsRecordReference = ChatsRecord
+                                                                            .collection
+                                                                            .doc();
+                                                                        await chatsRecordReference
+                                                                            .set({
+                                                                          ...createChatsRecordData(
+                                                                            userA:
+                                                                                currentUserReference,
+                                                                            userB:
+                                                                                userList5UsersRecord.reference,
+                                                                            lastMessage:
+                                                                                '',
+                                                                            lastMessageTime:
+                                                                                getCurrentTimestamp,
+                                                                            lastMessageSentBy:
+                                                                                currentUserReference,
+                                                                            groupChatId:
+                                                                                random_data.randomInteger(1000000, 9999999),
+                                                                          ),
+                                                                          ...mapToFirestore(
+                                                                            {
+                                                                              'users': _model.friendList,
+                                                                            },
+                                                                          ),
+                                                                        });
+                                                                        _model.chatroomReference2 =
+                                                                            ChatsRecord.getDocumentFromData({
+                                                                          ...createChatsRecordData(
+                                                                            userA:
+                                                                                currentUserReference,
+                                                                            userB:
+                                                                                userList5UsersRecord.reference,
+                                                                            lastMessage:
+                                                                                '',
+                                                                            lastMessageTime:
+                                                                                getCurrentTimestamp,
+                                                                            lastMessageSentBy:
+                                                                                currentUserReference,
+                                                                            groupChatId:
+                                                                                random_data.randomInteger(1000000, 9999999),
+                                                                          ),
+                                                                          ...mapToFirestore(
+                                                                            {
+                                                                              'users': _model.friendList,
+                                                                            },
+                                                                          ),
+                                                                        }, chatsRecordReference);
+                                                                        if (Navigator.of(context)
+                                                                            .canPop()) {
+                                                                          context
+                                                                              .pop();
+                                                                        }
+                                                                        context
+                                                                            .pushNamed(
+                                                                          Chat2DetailsWidget
+                                                                              .routeName,
+                                                                          queryParameters:
+                                                                              {
+                                                                            'chatRef':
+                                                                                serializeParam(
+                                                                              _model.chatroomReference2,
+                                                                              ParamType.Document,
+                                                                            ),
+                                                                          }.withoutNulls,
+                                                                          extra: <String,
+                                                                              dynamic>{
+                                                                            'chatRef':
+                                                                                _model.chatroomReference2,
+                                                                          },
+                                                                        );
+
+                                                                        await showDialog(
+                                                                          context:
+                                                                              context,
+                                                                          builder:
+                                                                              (alertDialogContext) {
+                                                                            return AlertDialog(
+                                                                              content: Text('Create chatroom'),
+                                                                              actions: [
+                                                                                TextButton(
+                                                                                  onPressed: () => Navigator.pop(alertDialogContext),
+                                                                                  child: Text('Ok'),
+                                                                                ),
+                                                                              ],
+                                                                            );
+                                                                          },
+                                                                        );
+                                                                      }
+                                                                    }
+
+                                                                    safeSetState(
+                                                                        () {});
+                                                                  },
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
