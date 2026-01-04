@@ -1,11 +1,11 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_choice_chips.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/form_field_controller.dart';
-import '/flutter_flow/custom_functions.dart' as functions;
+import '/core/widgets/app_choice_chips.dart';
+import '/core/widgets/app_icon_button.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/form_field_controller.dart';
+import '/core/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:collection/collection.dart';
@@ -76,16 +76,16 @@ class _GamesListWidgetState extends State<GamesListWidget> {
         key: scaffoldKey,
         backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+          backgroundColor: AppTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
-          leading: FlutterFlowIconButton(
+          leading: AppIconButton(
             borderColor: Colors.transparent,
             borderRadius: 30.0,
             borderWidth: 1.0,
             buttonSize: 55.0,
             icon: Icon(
               Icons.arrow_back_sharp,
-              color: FlutterFlowTheme.of(context).primary,
+              color: AppTheme.of(context).primary,
               size: 25.0,
             ),
             onPressed: () async {
@@ -94,9 +94,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
           ),
           title: Text(
             'Game List',
-            style: FlutterFlowTheme.of(context).headlineLarge.override(
+            style: AppTheme.of(context).headlineLarge.override(
                   fontFamily: 'Gotham',
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   fontSize: 24.0,
                   letterSpacing: 0.0,
                   fontWeight: FontWeight.w500,
@@ -105,14 +105,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
           actions: [
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 15.0, 0.0),
-              child: FlutterFlowIconButton(
+              child: AppIconButton(
                 borderRadius: 20.0,
                 borderWidth: 1.0,
                 buttonSize: 40.0,
-                fillColor: FlutterFlowTheme.of(context).primaryBackground,
+                fillColor: AppTheme.of(context).primaryBackground,
                 icon: Icon(
                   Icons.person_outline_outlined,
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   size: 30.0,
                 ),
                 onPressed: () async {
@@ -131,14 +131,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
             ),
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
-              child: FlutterFlowIconButton(
+              child: AppIconButton(
                 borderRadius: 20.0,
                 borderWidth: 1.0,
                 buttonSize: 40.0,
-                fillColor: FlutterFlowTheme.of(context).primaryBackground,
+                fillColor: AppTheme.of(context).primaryBackground,
                 icon: Icon(
                   Icons.search_sharp,
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   size: 26.0,
                 ),
                 onPressed: () async {
@@ -165,7 +165,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
             width: double.infinity,
             height: double.infinity,
             decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).secondaryBackground,
+              color: AppTheme.of(context).secondaryBackground,
             ),
             child: Padding(
               padding: EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 20.0),
@@ -182,7 +182,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                         Expanded(
                           child: Align(
                             alignment: AlignmentDirectional(0.0, 0.0),
-                            child: FlutterFlowChoiceChips(
+                            child: AppChoiceChips(
                               options: [
                                 ChipData('\$\$\$\$'),
                                 ChipData('Vegas'),
@@ -203,24 +203,24 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               },
                               selectedChipStyle: ChipStyle(
                                 backgroundColor: Color(0xFFA2A2A2),
-                                textStyle: FlutterFlowTheme.of(context)
+                                textStyle: AppTheme.of(context)
                                     .bodyMedium
                                     .override(
                                       font: GoogleFonts.outfit(
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .bodyMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .primaryText,
                                       letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .bodyMedium
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
@@ -232,25 +232,25 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               ),
                               unselectedChipStyle: ChipStyle(
                                 backgroundColor:
-                                    FlutterFlowTheme.of(context).primaryBtnText,
-                                textStyle: FlutterFlowTheme.of(context)
+                                    AppTheme.of(context).primaryBtnText,
+                                textStyle: AppTheme.of(context)
                                     .bodyMedium
                                     .override(
                                       font: GoogleFonts.outfit(
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .bodyMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .secondaryText,
                                       letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .bodyMedium
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
@@ -258,7 +258,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 iconSize: 18.0,
                                 elevation: 5.0,
                                 borderColor:
-                                    FlutterFlowTheme.of(context).primaryBtnText,
+                                    AppTheme.of(context).primaryBtnText,
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                               chipSpacing: 12.0,
@@ -302,7 +302,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 width: MediaQuery.sizeOf(context).width * 0.85,
                                 height: MediaQuery.sizeOf(context).height * 0.2,
                                 decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
+                                  color: AppTheme.of(context)
                                       .secondaryBackground,
                                   borderRadius: BorderRadius.circular(15.0),
                                   shape: BoxShape.rectangle,
@@ -387,34 +387,34 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                       maxChars: 20,
                                                       replacement: '…',
                                                     ),
-                                                    style: FlutterFlowTheme.of(
+                                                    style: AppTheme.of(
                                                             context)
                                                         .headlineMedium
                                                         .override(
                                                           font: GoogleFonts
                                                               .outfit(
                                                             fontWeight:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .headlineMedium
                                                                     .fontWeight,
                                                             fontStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .headlineMedium
                                                                     .fontStyle,
                                                           ),
-                                                          color: FlutterFlowTheme
+                                                          color: AppTheme
                                                                   .of(context)
                                                               .info,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .headlineMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .headlineMedium
                                                                   .fontStyle,
@@ -422,19 +422,19 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                   ),
                                                 ),
                                               ),
-                                              FlutterFlowIconButton(
+                                              AppIconButton(
                                                 borderRadius: 20.0,
                                                 borderWidth: 1.0,
                                                 buttonSize: 40.0,
                                                 hoverColor:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .primaryText,
                                                 hoverIconColor:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .primaryBtnText,
                                                 icon: Icon(
                                                   Icons.navigate_next,
-                                                  color: FlutterFlowTheme.of(
+                                                  color: AppTheme.of(
                                                           context)
                                                       .primaryBackground,
                                                   size: 36.0,
@@ -521,7 +521,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                           5.0, 0.0, 0.0, 0.0),
                                                   child: FaIcon(
                                                     FontAwesomeIcons.calendar,
-                                                    color: FlutterFlowTheme.of(
+                                                    color: AppTheme.of(
                                                             context)
                                                         .info,
                                                     size: 24.0,
@@ -539,7 +539,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                               .date),
                                                       'Friday',
                                                     ),
-                                                    style: FlutterFlowTheme.of(
+                                                    style: AppTheme.of(
                                                             context)
                                                         .bodyMedium
                                                         .override(
@@ -549,19 +549,19 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                                 FontWeight
                                                                     .normal,
                                                             fontStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
                                                           ),
-                                                          color: FlutterFlowTheme
+                                                          color: AppTheme
                                                                   .of(context)
                                                               .info,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontStyle,
@@ -570,7 +570,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 ),
                                                 Text(
                                                   ',',
-                                                  style: FlutterFlowTheme.of(
+                                                  style: AppTheme.of(
                                                           context)
                                                       .bodyMedium
                                                       .override(
@@ -579,7 +579,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontStyle,
@@ -588,7 +588,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
@@ -606,7 +606,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                               .date),
                                                       'July',
                                                     ),
-                                                    style: FlutterFlowTheme.of(
+                                                    style: AppTheme.of(
                                                             context)
                                                         .bodyMedium
                                                         .override(
@@ -616,19 +616,19 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                                 FontWeight
                                                                     .normal,
                                                             fontStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
                                                           ),
-                                                          color: FlutterFlowTheme
+                                                          color: AppTheme
                                                                   .of(context)
                                                               .info,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontStyle,
@@ -647,7 +647,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                               .date),
                                                       '16',
                                                     ),
-                                                    style: FlutterFlowTheme.of(
+                                                    style: AppTheme.of(
                                                             context)
                                                         .bodyMedium
                                                         .override(
@@ -657,19 +657,19 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                                 FontWeight
                                                                     .normal,
                                                             fontStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
                                                           ),
-                                                          color: FlutterFlowTheme
+                                                          color: AppTheme
                                                                   .of(context)
                                                               .info,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontStyle,
@@ -688,34 +688,34 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                               .date),
                                                       '9:00',
                                                     ),
-                                                    style: FlutterFlowTheme.of(
+                                                    style: AppTheme.of(
                                                             context)
                                                         .bodyMedium
                                                         .override(
                                                           font: GoogleFonts
                                                               .outfit(
                                                             fontWeight:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontWeight,
                                                             fontStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
                                                           ),
-                                                          color: FlutterFlowTheme
+                                                          color: AppTheme
                                                                   .of(context)
                                                               .info,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontStyle,
@@ -747,7 +747,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                       child: Icon(
                                                         Icons.golf_course,
                                                         color:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .info,
                                                         size: 24.0,
@@ -760,32 +760,32 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                         'Tower Ranch',
                                                       ),
                                                       style:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .override(
                                                                 font:
                                                                     GoogleFonts
                                                                         .outfit(
-                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                  fontWeight: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontStyle,
                                                                 ),
-                                                                color: FlutterFlowTheme.of(
+                                                                color: AppTheme.of(
                                                                         context)
                                                                     .info,
                                                                 letterSpacing:
                                                                     0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
+                                                                fontWeight: AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
+                                                                fontStyle: AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
@@ -824,7 +824,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                       child: Icon(
                                                         Icons.person,
                                                         color:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .info,
                                                         size: 24.0,
@@ -833,32 +833,32 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                     Text(
                                                       'Players Needed:  ',
                                                       style:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .override(
                                                                 font:
                                                                     GoogleFonts
                                                                         .outfit(
-                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                  fontWeight: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontStyle,
                                                                 ),
-                                                                color: FlutterFlowTheme.of(
+                                                                color: AppTheme.of(
                                                                         context)
                                                                     .info,
                                                                 letterSpacing:
                                                                     0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
+                                                                fontWeight: AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
+                                                                fontStyle: AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
@@ -871,7 +871,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                                   .joinedPlayers
                                                                   .length)
                                                           .toString(),
-                                                      style: FlutterFlowTheme
+                                                      style: AppTheme
                                                               .of(context)
                                                           .bodyMedium
                                                           .override(
@@ -881,12 +881,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                                   FontWeight
                                                                       .w500,
                                                               fontStyle:
-                                                                  FlutterFlowTheme.of(
+                                                                  AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontStyle,
                                                             ),
-                                                            color: FlutterFlowTheme
+                                                            color: AppTheme
                                                                     .of(context)
                                                                 .info,
                                                             fontSize: 20.0,
@@ -894,7 +894,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                             fontWeight:
                                                                 FontWeight.w500,
                                                             fontStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
@@ -915,31 +915,31 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                         textAlign:
                                                             TextAlign.end,
                                                         style:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .override(
                                                                   font: GoogleFonts
                                                                       .outfit(
-                                                                    fontWeight: FlutterFlowTheme.of(
+                                                                    fontWeight: AppTheme.of(
                                                                             context)
                                                                         .bodyMedium
                                                                         .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
+                                                                    fontStyle: AppTheme.of(
                                                                             context)
                                                                         .bodyMedium
                                                                         .fontStyle,
                                                                   ),
-                                                                  color: FlutterFlowTheme.of(
+                                                                  color: AppTheme.of(
                                                                           context)
                                                                       .error,
                                                                   letterSpacing:
                                                                       0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                  fontWeight: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontStyle,
@@ -959,31 +959,31 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                         textAlign:
                                                             TextAlign.end,
                                                         style:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .override(
                                                                   font: GoogleFonts
                                                                       .outfit(
-                                                                    fontWeight: FlutterFlowTheme.of(
+                                                                    fontWeight: AppTheme.of(
                                                                             context)
                                                                         .bodyMedium
                                                                         .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
+                                                                    fontStyle: AppTheme.of(
                                                                             context)
                                                                         .bodyMedium
                                                                         .fontStyle,
                                                                   ),
-                                                                  color: FlutterFlowTheme.of(
+                                                                  color: AppTheme.of(
                                                                           context)
                                                                       .error,
                                                                   letterSpacing:
                                                                       0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                  fontWeight: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontStyle,

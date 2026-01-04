@@ -1,5 +1,5 @@
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'empty_state_simple_model.dart';
@@ -60,19 +60,19 @@ class _EmptyStateSimpleWidgetState extends State<EmptyStateSimpleWidget> {
             child: Text(
               widget.title,
               textAlign: TextAlign.center,
-              style: FlutterFlowTheme.of(context).headlineSmall.override(
+              style: AppTheme.of(context).headlineSmall.override(
                     font: GoogleFonts.outfit(
                       fontWeight:
-                          FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                          AppTheme.of(context).headlineSmall.fontWeight,
                       fontStyle:
-                          FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                          AppTheme.of(context).headlineSmall.fontStyle,
                     ),
-                    color: FlutterFlowTheme.of(context).primaryText,
+                    color: AppTheme.of(context).primaryText,
                     letterSpacing: 0.0,
                     fontWeight:
-                        FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                        AppTheme.of(context).headlineSmall.fontWeight,
                     fontStyle:
-                        FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                        AppTheme.of(context).headlineSmall.fontStyle,
                   ),
             ),
           ),
@@ -81,18 +81,18 @@ class _EmptyStateSimpleWidgetState extends State<EmptyStateSimpleWidget> {
             child: Text(
               widget.body,
               textAlign: TextAlign.center,
-              style: FlutterFlowTheme.of(context).labelMedium.override(
+              style: AppTheme.of(context).labelMedium.override(
                     font: GoogleFonts.outfit(
                       fontWeight:
-                          FlutterFlowTheme.of(context).labelMedium.fontWeight,
+                          AppTheme.of(context).labelMedium.fontWeight,
                       fontStyle:
-                          FlutterFlowTheme.of(context).labelMedium.fontStyle,
+                          AppTheme.of(context).labelMedium.fontStyle,
                     ),
                     letterSpacing: 0.0,
                     fontWeight:
-                        FlutterFlowTheme.of(context).labelMedium.fontWeight,
+                        AppTheme.of(context).labelMedium.fontWeight,
                     fontStyle:
-                        FlutterFlowTheme.of(context).labelMedium.fontStyle,
+                        AppTheme.of(context).labelMedium.fontStyle,
                   ),
             ),
           ),

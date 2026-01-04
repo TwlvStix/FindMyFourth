@@ -1,8 +1,8 @@
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_util.dart';
 import 'notification_page_widget.dart' show NotificationPageWidget;
 import 'package:flutter/material.dart';
 
-class NotificationPageModel extends FlutterFlowModel<NotificationPageWidget> {
+class NotificationPageModel extends AppModel<NotificationPageWidget> {
   ///  Local state fields for this page.
 
   bool? notifyAll;

@@ -1,15 +1,15 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
-import '/flutter_flow/flutter_flow_count_controller.dart';
-import '/flutter_flow/flutter_flow_drop_down.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/form_field_controller.dart';
+import '/core/widgets/app_count_controller.dart';
+import '/core/widgets/app_drop_down.dart';
+import '/core/widgets/app_icon_button.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/widgets/app_button.dart';
+import '/core/form_field_controller.dart';
 import '/custom_code/actions/index.dart' as actions;
-import '/flutter_flow/random_data_util.dart' as random_data;
+import '/core/random_data_util.dart' as random_data;
 import '/index.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_debounce/easy_debounce.dart';
@@ -69,16 +69,16 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
         key: scaffoldKey,
         backgroundColor: Color(0xFF253551),
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+          backgroundColor: AppTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
-          leading: FlutterFlowIconButton(
+          leading: AppIconButton(
             borderColor: Colors.transparent,
             borderRadius: 30.0,
             borderWidth: 1.0,
             buttonSize: 55.0,
             icon: Icon(
               Icons.arrow_back_sharp,
-              color: FlutterFlowTheme.of(context).primary,
+              color: AppTheme.of(context).primary,
               size: 25.0,
             ),
             onPressed: () async {
@@ -87,31 +87,31 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
           ),
           title: Text(
             'Create Game',
-            style: FlutterFlowTheme.of(context).headlineLarge.override(
+            style: AppTheme.of(context).headlineLarge.override(
                   font: GoogleFonts.outfit(
                     fontWeight: FontWeight.w500,
                     fontStyle:
-                        FlutterFlowTheme.of(context).headlineLarge.fontStyle,
+                        AppTheme.of(context).headlineLarge.fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   fontSize: 24.0,
                   letterSpacing: 0.0,
                   fontWeight: FontWeight.w500,
                   fontStyle:
-                      FlutterFlowTheme.of(context).headlineLarge.fontStyle,
+                      AppTheme.of(context).headlineLarge.fontStyle,
                 ),
           ),
           actions: [
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 15.0, 0.0),
-              child: FlutterFlowIconButton(
+              child: AppIconButton(
                 borderRadius: 20.0,
                 borderWidth: 1.0,
                 buttonSize: 40.0,
-                fillColor: FlutterFlowTheme.of(context).primaryBackground,
+                fillColor: AppTheme.of(context).primaryBackground,
                 icon: Icon(
                   Icons.person_outline_outlined,
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   size: 30.0,
                 ),
                 onPressed: () async {
@@ -130,14 +130,14 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
             ),
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
-              child: FlutterFlowIconButton(
+              child: AppIconButton(
                 borderRadius: 20.0,
                 borderWidth: 1.0,
                 buttonSize: 40.0,
-                fillColor: FlutterFlowTheme.of(context).primaryBackground,
+                fillColor: AppTheme.of(context).primaryBackground,
                 icon: Icon(
                   Icons.search_sharp,
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   size: 26.0,
                 ),
                 onPressed: () async {
@@ -164,7 +164,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
             width: double.infinity,
             height: double.infinity,
             decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).tertiary,
+              color: AppTheme.of(context).tertiary,
               image: DecorationImage(
                 fit: BoxFit.cover,
                 image: Image.asset(
@@ -199,27 +199,27 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                   children: [
                                     Text(
                                       'Game Name',
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .labelMedium
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontStyle,
                                             ),
                                             color: Colors.white,
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontStyle,
                                           ),
@@ -244,40 +244,40 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     textInputAction: TextInputAction.next,
                                     obscureText: false,
                                     decoration: InputDecoration(
-                                      labelStyle: FlutterFlowTheme.of(context)
+                                      labelStyle: AppTheme.of(context)
                                           .labelMedium
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontStyle,
                                             ),
                                             color: Colors.white,
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontStyle,
                                           ),
-                                      hintStyle: FlutterFlowTheme.of(context)
+                                      hintStyle: AppTheme.of(context)
                                           .labelMedium
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontStyle,
                                             ),
@@ -285,11 +285,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             fontSize: 15.0,
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontStyle,
                                           ),
@@ -311,7 +311,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       ),
                                       errorBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: FlutterFlowTheme.of(context)
+                                          color: AppTheme.of(context)
                                               .error,
                                           width: 1.0,
                                         ),
@@ -320,7 +320,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       ),
                                       focusedErrorBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: FlutterFlowTheme.of(context)
+                                          color: AppTheme.of(context)
                                               .error,
                                           width: 1.0,
                                         ),
@@ -343,13 +343,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             )
                                           : null,
                                     ),
-                                    style: FlutterFlowTheme.of(context)
+                                    style: AppTheme.of(context)
                                         .bodyMedium
                                         .override(
                                           font: GoogleFonts.outfit(
                                             fontWeight: FontWeight.w500,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontStyle,
                                           ),
@@ -358,7 +358,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                           letterSpacing: 0.0,
                                           fontWeight: FontWeight.w500,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
@@ -397,27 +397,27 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                   children: [
                                     Text(
                                       'Game Day',
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .labelMedium
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontStyle,
                                             ),
                                             color: Colors.white,
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontStyle,
                                           ),
@@ -482,33 +482,33 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                     .datePicked),
                                                             'Jan',
                                                           ),
-                                                          style: FlutterFlowTheme
+                                                          style: AppTheme
                                                                   .of(context)
                                                               .bodyMedium
                                                               .override(
                                                                 font:
                                                                     GoogleFonts
                                                                         .outfit(
-                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                  fontWeight: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontStyle,
                                                                 ),
-                                                                color: FlutterFlowTheme.of(
+                                                                color: AppTheme.of(
                                                                         context)
                                                                     .primaryBtnText,
                                                                 fontSize: 22.0,
                                                                 letterSpacing:
                                                                     0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
+                                                                fontWeight: AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
+                                                                fontStyle: AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
@@ -523,33 +523,33 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                     .datePicked),
                                                             '22',
                                                           ),
-                                                          style: FlutterFlowTheme
+                                                          style: AppTheme
                                                                   .of(context)
                                                               .bodyMedium
                                                               .override(
                                                                 font:
                                                                     GoogleFonts
                                                                         .outfit(
-                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                  fontWeight: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontStyle,
                                                                 ),
-                                                                color: FlutterFlowTheme.of(
+                                                                color: AppTheme.of(
                                                                         context)
                                                                     .primaryBtnText,
                                                                 fontSize: 26.0,
                                                                 letterSpacing:
                                                                     0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
+                                                                fontWeight: AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
+                                                                fontStyle: AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
@@ -563,7 +563,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                     child: VerticalDivider(
                                                       thickness: 1.0,
                                                       color:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .accent4,
                                                     ),
@@ -592,7 +592,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                     .datePicked),
                                                             'Friday',
                                                           ),
-                                                          style: FlutterFlowTheme
+                                                          style: AppTheme
                                                                   .of(context)
                                                               .bodyMedium
                                                               .override(
@@ -602,12 +602,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w300,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontStyle,
                                                                 ),
-                                                                color: FlutterFlowTheme.of(
+                                                                color: AppTheme.of(
                                                                         context)
                                                                     .primaryBtnText,
                                                                 fontSize: 22.0,
@@ -616,7 +616,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w300,
-                                                                fontStyle: FlutterFlowTheme.of(
+                                                                fontStyle: AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
@@ -631,7 +631,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                     .datePicked),
                                                             '09:00am',
                                                           ),
-                                                          style: FlutterFlowTheme
+                                                          style: AppTheme
                                                                   .of(context)
                                                               .bodyMedium
                                                               .override(
@@ -641,12 +641,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w300,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontStyle,
                                                                 ),
-                                                                color: FlutterFlowTheme.of(
+                                                                color: AppTheme.of(
                                                                         context)
                                                                     .primaryBtnText,
                                                                 fontSize: 22.0,
@@ -655,7 +655,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w300,
-                                                                fontStyle: FlutterFlowTheme.of(
+                                                                fontStyle: AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
@@ -692,15 +692,15 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                       context,
                                                       child!,
                                                       headerBackgroundColor:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .primary,
                                                       headerForegroundColor:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .info,
                                                       headerTextStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .headlineLarge
                                                               .override(
@@ -710,7 +710,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w600,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .headlineLarge
                                                                       .fontStyle,
@@ -721,29 +721,29 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w600,
-                                                                fontStyle: FlutterFlowTheme.of(
+                                                                fontStyle: AppTheme.of(
                                                                         context)
                                                                     .headlineLarge
                                                                     .fontStyle,
                                                               ),
                                                       pickerBackgroundColor:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .secondaryBackground,
                                                       pickerForegroundColor:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .primaryText,
                                                       selectedDateTimeBackgroundColor:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .primary,
                                                       selectedDateTimeForegroundColor:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .info,
                                                       actionButtonForegroundColor:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .primaryText,
                                                       iconSize: 24.0,
@@ -764,15 +764,15 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                         context,
                                                         child!,
                                                         headerBackgroundColor:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .primary,
                                                         headerForegroundColor:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .info,
                                                         headerTextStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .headlineLarge
                                                                 .override(
@@ -781,7 +781,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .w600,
-                                                                    fontStyle: FlutterFlowTheme.of(
+                                                                    fontStyle: AppTheme.of(
                                                                             context)
                                                                         .headlineLarge
                                                                         .fontStyle,
@@ -793,29 +793,29 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w600,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .headlineLarge
                                                                       .fontStyle,
                                                                 ),
                                                         pickerBackgroundColor:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .secondaryBackground,
                                                         pickerForegroundColor:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .primaryText,
                                                         selectedDateTimeBackgroundColor:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .primary,
                                                         selectedDateTimeForegroundColor:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .info,
                                                         actionButtonForegroundColor:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .primaryText,
                                                         iconSize: 24.0,
@@ -847,7 +847,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                               child: Icon(
                                                 Icons.date_range,
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .primaryBtnText,
                                                 size: 36.0,
                                               ),
@@ -866,27 +866,27 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       0.0, 5.0, 0.0, 0.0),
                                   child: Text(
                                     'Friends Only?',
-                                    style: FlutterFlowTheme.of(context)
+                                    style: AppTheme.of(context)
                                         .labelMedium
                                         .override(
                                           font: GoogleFonts.outfit(
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontStyle,
                                           ),
                                           color: Colors.white,
                                           letterSpacing: 0.0,
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontStyle,
                                         ),
@@ -898,7 +898,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                 child: Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 5.0, 0.0, 0.0),
-                                  child: FlutterFlowDropDown<String>(
+                                  child: AppDropDown<String>(
                                     controller:
                                         _model.friendsValueController ??=
                                             FormFieldController<String>(null),
@@ -907,37 +907,37 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         () => _model.friendsValue = val),
                                     width: 300.0,
                                     height: 50.0,
-                                    textStyle: FlutterFlowTheme.of(context)
+                                    textStyle: AppTheme.of(context)
                                         .bodyMedium
                                         .override(
                                           font: GoogleFonts.outfit(
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
                                     hintText: 'Please select...',
                                     icon: Icon(
                                       Icons.keyboard_arrow_down_rounded,
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .secondaryText,
                                       size: 24.0,
                                     ),
-                                    fillColor: FlutterFlowTheme.of(context)
+                                    fillColor: AppTheme.of(context)
                                         .secondaryBackground,
                                     elevation: 2.0,
                                     borderColor: Color(0xFF253551),
@@ -963,27 +963,27 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                           0.0, 5.0, 0.0, 0.0),
                                       child: Text(
                                         'Course',
-                                        style: FlutterFlowTheme.of(context)
+                                        style: AppTheme.of(context)
                                             .labelMedium
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelMedium
                                                         .fontStyle,
                                               ),
                                               color: Colors.white,
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontStyle,
                                             ),
@@ -1019,7 +1019,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                           courseCourseRecordList =
                                           snapshot.data!;
 
-                                      return FlutterFlowDropDown<String>(
+                                      return AppDropDown<String>(
                                         controller: _model
                                                 .courseValueController ??=
                                             FormFieldController<String>(null),
@@ -1043,74 +1043,74 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         },
                                         width: 300.0,
                                         height: 50.0,
-                                        searchHintTextStyle: FlutterFlowTheme
+                                        searchHintTextStyle: AppTheme
                                                 .of(context)
                                             .labelMedium
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelMedium
                                                         .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontStyle,
                                             ),
-                                        searchTextStyle: FlutterFlowTheme.of(
+                                        searchTextStyle: AppTheme.of(
                                                 context)
                                             .bodyMedium
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyMedium
                                                         .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .fontStyle,
                                             ),
-                                        textStyle: FlutterFlowTheme.of(context)
+                                        textStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyMedium
                                                         .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .fontStyle,
                                             ),
@@ -1118,11 +1118,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         searchHintText: 'Find your course',
                                         icon: Icon(
                                           Icons.keyboard_arrow_down_rounded,
-                                          color: FlutterFlowTheme.of(context)
+                                          color: AppTheme.of(context)
                                               .secondaryText,
                                           size: 24.0,
                                         ),
-                                        fillColor: FlutterFlowTheme.of(context)
+                                        fillColor: AppTheme.of(context)
                                             .secondaryBackground,
                                         elevation: 2.0,
                                         borderColor: Color(0xFF253551),
@@ -1146,27 +1146,27 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       0.0, 15.0, 0.0, 0.0),
                                   child: Text(
                                     'Member Perk',
-                                    style: FlutterFlowTheme.of(context)
+                                    style: AppTheme.of(context)
                                         .labelMedium
                                         .override(
                                           font: GoogleFonts.outfit(
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontStyle,
                                           ),
                                           color: Colors.white,
                                           letterSpacing: 0.0,
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontStyle,
                                         ),
@@ -1178,7 +1178,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                 child: Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 5.0, 0.0, 0.0),
-                                  child: FlutterFlowDropDown<String>(
+                                  child: AppDropDown<String>(
                                     controller: _model.memberValueController ??=
                                         FormFieldController<String>(null),
                                     options: ['Yes', 'No'],
@@ -1187,74 +1187,74 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     width: 300.0,
                                     height: 50.0,
                                     searchHintTextStyle:
-                                        FlutterFlowTheme.of(context)
+                                        AppTheme.of(context)
                                             .labelMedium
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelMedium
                                                         .fontStyle,
                                               ),
                                               color: Colors.white,
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontStyle,
                                             ),
                                     searchTextStyle:
-                                        FlutterFlowTheme.of(context)
+                                        AppTheme.of(context)
                                             .bodyMedium
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyMedium
                                                         .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .fontStyle,
                                             ),
-                                    textStyle: FlutterFlowTheme.of(context)
+                                    textStyle: AppTheme.of(context)
                                         .bodyMedium
                                         .override(
                                           font: GoogleFonts.outfit(
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
@@ -1264,11 +1264,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     searchCursorColor: Colors.white,
                                     icon: Icon(
                                       Icons.keyboard_arrow_down_rounded,
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .secondaryText,
                                       size: 24.0,
                                     ),
-                                    fillColor: FlutterFlowTheme.of(context)
+                                    fillColor: AppTheme.of(context)
                                         .secondaryBackground,
                                     elevation: 2.0,
                                     borderColor: Color(0xFF253551),
@@ -1294,27 +1294,27 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                           0.0, 10.0, 0.0, 0.0),
                                       child: Text(
                                         'Number of Players Needed?',
-                                        style: FlutterFlowTheme.of(context)
+                                        style: AppTheme.of(context)
                                             .labelMedium
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelMedium
                                                         .fontStyle,
                                               ),
                                               color: Colors.white,
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontStyle,
                                             ),
@@ -1332,7 +1332,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     width: 160.0,
                                     height: 50.0,
                                     decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .secondaryBackground,
                                       borderRadius: BorderRadius.circular(8.0),
                                       shape: BoxShape.rectangle,
@@ -1341,48 +1341,48 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         width: 1.0,
                                       ),
                                     ),
-                                    child: FlutterFlowCountController(
+                                    child: AppCountController(
                                       decrementIconBuilder: (enabled) => FaIcon(
                                         FontAwesomeIcons.minus,
                                         color: enabled
-                                            ? FlutterFlowTheme.of(context)
+                                            ? AppTheme.of(context)
                                                 .secondaryText
-                                            : FlutterFlowTheme.of(context)
+                                            : AppTheme.of(context)
                                                 .alternate,
                                         size: 20.0,
                                       ),
                                       incrementIconBuilder: (enabled) => FaIcon(
                                         FontAwesomeIcons.plus,
                                         color: enabled
-                                            ? FlutterFlowTheme.of(context)
+                                            ? AppTheme.of(context)
                                                 .primary
-                                            : FlutterFlowTheme.of(context)
+                                            : AppTheme.of(context)
                                                 .alternate,
                                         size: 20.0,
                                       ),
                                       countBuilder: (count) => Text(
                                         count.toString(),
-                                        style: FlutterFlowTheme.of(context)
+                                        style: AppTheme.of(context)
                                             .titleLarge
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .titleLarge
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .titleLarge
                                                         .fontStyle,
                                               ),
                                               fontSize: 18.0,
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .titleLarge
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .titleLarge
                                                       .fontStyle,
                                             ),
@@ -1405,27 +1405,27 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                   children: [
                                     Text(
                                       'Rules Settings',
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .labelMedium
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontStyle,
                                             ),
                                             color: Colors.white,
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontStyle,
                                           ),
@@ -1438,7 +1438,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                 child: Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 5.0, 0.0, 0.0),
-                                  child: FlutterFlowDropDown<String>(
+                                  child: AppDropDown<String>(
                                     controller:
                                         _model.rulesSetValueController ??=
                                             FormFieldController<String>(null),
@@ -1451,37 +1451,37 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         () => _model.rulesSetValue = val),
                                     width: 300.0,
                                     height: 50.0,
-                                    textStyle: FlutterFlowTheme.of(context)
+                                    textStyle: AppTheme.of(context)
                                         .bodyMedium
                                         .override(
                                           font: GoogleFonts.outfit(
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
                                     hintText: 'Please select...',
                                     icon: Icon(
                                       Icons.keyboard_arrow_down_rounded,
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .secondaryText,
                                       size: 24.0,
                                     ),
-                                    fillColor: FlutterFlowTheme.of(context)
+                                    fillColor: AppTheme.of(context)
                                         .secondaryBackground,
                                     elevation: 2.0,
                                     borderColor: Color(0xFF253551),
@@ -1508,17 +1508,17 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             0.0, 5.0, 0.0, 0.0),
                                         child: Text(
                                           'Style of Game',
-                                          style: FlutterFlowTheme.of(context)
+                                          style: AppTheme.of(context)
                                               .labelMedium
                                               .override(
                                                 font: GoogleFonts.outfit(
                                                   fontWeight:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .labelMedium
                                                           .fontWeight,
                                                   fontStyle:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .labelMedium
                                                           .fontStyle,
@@ -1526,11 +1526,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                 color: Colors.white,
                                                 letterSpacing: 0.0,
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelMedium
                                                         .fontStyle,
                                               ),
@@ -1545,7 +1545,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                 child: Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 5.0, 0.0, 0.0),
-                                  child: FlutterFlowDropDown<String>(
+                                  child: AppDropDown<String>(
                                     controller:
                                         _model.styleGameValueController ??=
                                             FormFieldController<String>(null),
@@ -1558,37 +1558,37 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         () => _model.styleGameValue = val),
                                     width: 300.0,
                                     height: 50.0,
-                                    textStyle: FlutterFlowTheme.of(context)
+                                    textStyle: AppTheme.of(context)
                                         .bodyMedium
                                         .override(
                                           font: GoogleFonts.outfit(
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
                                     hintText: 'What are we playing for?',
                                     icon: Icon(
                                       Icons.keyboard_arrow_down_rounded,
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .secondaryText,
                                       size: 24.0,
                                     ),
-                                    fillColor: FlutterFlowTheme.of(context)
+                                    fillColor: AppTheme.of(context)
                                         .secondaryBackground,
                                     elevation: 2.0,
                                     borderColor: Color(0xFF253551),
@@ -1611,27 +1611,27 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                   children: [
                                     Text(
                                       'Game Type',
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .labelMedium
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontStyle,
                                             ),
                                             color: Colors.white,
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontStyle,
                                           ),
@@ -1644,7 +1644,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                 child: Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 5.0, 0.0, 0.0),
-                                  child: FlutterFlowDropDown<String>(
+                                  child: AppDropDown<String>(
                                     controller:
                                         _model.gameTypeValueController ??=
                                             FormFieldController<String>(null),
@@ -1661,37 +1661,37 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         () => _model.gameTypeValue = val),
                                     width: 300.0,
                                     height: 50.0,
-                                    textStyle: FlutterFlowTheme.of(context)
+                                    textStyle: AppTheme.of(context)
                                         .bodyMedium
                                         .override(
                                           font: GoogleFonts.outfit(
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
                                     hintText: 'Pick Your Poison...',
                                     icon: Icon(
                                       Icons.keyboard_arrow_down_rounded,
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .secondaryText,
                                       size: 24.0,
                                     ),
-                                    fillColor: FlutterFlowTheme.of(context)
+                                    fillColor: AppTheme.of(context)
                                         .secondaryBackground,
                                     elevation: 2.0,
                                     borderColor: Color(0xFF253551),
@@ -1714,27 +1714,27 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                   children: [
                                     Text(
                                       'Scoring',
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .labelMedium
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontStyle,
                                             ),
                                             color: Colors.white,
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontStyle,
                                           ),
@@ -1747,7 +1747,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                 child: Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 5.0, 0.0, 0.0),
-                                  child: FlutterFlowDropDown<String>(
+                                  child: AppDropDown<String>(
                                     controller:
                                         _model.scoringValueController ??=
                                             FormFieldController<String>(null),
@@ -1762,37 +1762,37 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         () => _model.scoringValue = val),
                                     width: 300.0,
                                     height: 50.0,
-                                    textStyle: FlutterFlowTheme.of(context)
+                                    textStyle: AppTheme.of(context)
                                         .bodyMedium
                                         .override(
                                           font: GoogleFonts.outfit(
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
                                     hintText: 'How we add up the #\'s',
                                     icon: Icon(
                                       Icons.keyboard_arrow_down_rounded,
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .secondaryText,
                                       size: 24.0,
                                     ),
-                                    fillColor: FlutterFlowTheme.of(context)
+                                    fillColor: AppTheme.of(context)
                                         .secondaryBackground,
                                     elevation: 2.0,
                                     borderColor: Color(0xFF253551),
@@ -1810,7 +1810,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 30.0, 0.0, 0.0),
-                                child: FFButtonWidget(
+                                child: AppButton(
                                   onPressed: () async {
                                     if (_model.formKey.currentState == null ||
                                         !_model.formKey.currentState!
@@ -1962,33 +1962,33 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                           SnackBar(
                                             content: Text(
                                               'You have created a game!',
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .titleMedium
                                                   .override(
                                                     font: GoogleFonts.outfit(
                                                       fontWeight:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .titleMedium
                                                               .fontWeight,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .titleMedium
                                                               .fontStyle,
                                                     ),
-                                                    color: FlutterFlowTheme.of(
+                                                    color: AppTheme.of(
                                                             context)
                                                         .secondaryBackground,
                                                     letterSpacing: 0.0,
                                                     fontWeight:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .titleMedium
                                                             .fontWeight,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .titleMedium
                                                             .fontStyle,
@@ -1997,7 +1997,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             duration:
                                                 Duration(milliseconds: 4000),
                                             backgroundColor:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .primary,
                                           ),
                                         );
@@ -2007,34 +2007,34 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     safeSetState(() {});
                                   },
                                   text: 'Submit Game',
-                                  options: FFButtonOptions(
+                                  options: AppButtonOptions(
                                     height: 40.0,
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         24.0, 0.0, 24.0, 0.0),
                                     iconPadding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 0.0, 0.0, 0.0),
                                     color: Colors.white,
-                                    textStyle: FlutterFlowTheme.of(context)
+                                    textStyle: AppTheme.of(context)
                                         .titleSmall
                                         .override(
                                           font: GoogleFonts.outfit(
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .titleSmall
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .titleSmall
                                                     .fontStyle,
                                           ),
                                           color: Color(0xFF253551),
                                           letterSpacing: 0.0,
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .titleSmall
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .titleSmall
                                                   .fontStyle,
                                         ),

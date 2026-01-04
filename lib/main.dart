@@ -9,8 +9,8 @@ import 'auth/firebase_auth/auth_util.dart';
 
 import 'backend/push_notifications/push_notifications_util.dart';
 import 'backend/firebase/firebase_config.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import 'flutter_flow/flutter_flow_util.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'index.dart';
@@ -113,6 +113,7 @@ class _MyAppState extends State<MyApp> {
       supportedLocales: const [Locale('en', '')],
       theme: ThemeData(
         brightness: Brightness.light,
+        extensions: const [AppThemeColors.light],
         scrollbarTheme: ScrollbarThemeData(
           thumbVisibility: WidgetStateProperty.all(false),
           thickness: WidgetStateProperty.all(5.0),
@@ -184,9 +185,9 @@ class _NavBarPageState extends State<NavBarPage> {
           _currentPageName = tabs.keys.toList()[i];
         }),
         backgroundColor: Colors.white,
-        color: FlutterFlowTheme.of(context).primary,
+        color: AppTheme.of(context).primary,
         activeColor: Color(0xFF402550),
-        tabBackgroundColor: FlutterFlowTheme.of(context).primaryBtnText,
+        tabBackgroundColor: AppTheme.of(context).primaryBtnText,
         tabBorderRadius: 100.0,
         tabMargin: EdgeInsets.all(6.0),
         padding: EdgeInsets.all(6.0),
@@ -199,7 +200,7 @@ class _NavBarPageState extends State<NavBarPage> {
             icon: Icons.list_alt,
             text: 'Games List',
             iconSize: 24.0,
-            backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+            backgroundColor: AppTheme.of(context).primaryBackground,
           ),
           GButton(
             icon: FontAwesomeIcons.plus,

@@ -1,9 +1,9 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/components/date_format_widget.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/widgets/app_button.dart';
 import '/main_function/join_game/join_game_widget.dart';
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/index.dart';
@@ -56,7 +56,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
         // Customize what your widget looks like when it's loading.
         if (!snapshot.hasData) {
           return Scaffold(
-            backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+            backgroundColor: AppTheme.of(context).secondaryBackground,
             body: Center(
               child: SizedBox(
                 width: 50.0,
@@ -74,9 +74,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
 
         return Scaffold(
           key: scaffoldKey,
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: AppTheme.of(context).secondaryBackground,
           appBar: AppBar(
-            backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+            backgroundColor: AppTheme.of(context).primaryBackground,
             automaticallyImplyLeading: false,
             leading: InkWell(
               splashColor: Colors.transparent,
@@ -88,23 +88,23 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
               },
               child: Icon(
                 Icons.chevron_left_rounded,
-                color: FlutterFlowTheme.of(context).primary,
+                color: AppTheme.of(context).primary,
                 size: 32.0,
               ),
             ),
             title: Text(
               'Join Game',
-              style: FlutterFlowTheme.of(context).headlineSmall.override(
+              style: AppTheme.of(context).headlineSmall.override(
                     font: GoogleFonts.outfit(
                       fontWeight: FontWeight.w500,
                       fontStyle:
-                          FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                          AppTheme.of(context).headlineSmall.fontStyle,
                     ),
-                    color: FlutterFlowTheme.of(context).primary,
+                    color: AppTheme.of(context).primary,
                     letterSpacing: 0.0,
                     fontWeight: FontWeight.w500,
                     fontStyle:
-                        FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                        AppTheme.of(context).headlineSmall.fontStyle,
                   ),
             ),
             actions: [],
@@ -133,7 +133,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
 
               return Container(
                 decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).tertiary,
+                  color: AppTheme.of(context).tertiary,
                 ),
                 child: SingleChildScrollView(
                   child: Column(
@@ -189,28 +189,28 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                   Expanded(
                                     child: Text(
                                       joinGameDetailedGamesRecord.nameGame,
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .headlineMedium
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .headlineMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .headlineMedium
                                                       .fontStyle,
                                             ),
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .primaryBtnText,
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .headlineMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .headlineMedium
                                                     .fontStyle,
                                           ),
@@ -225,17 +225,17 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                         child: Text(
                                           joinGameDetailedGamesRecord
                                               .coursePlay,
-                                          style: FlutterFlowTheme.of(context)
+                                          style: AppTheme.of(context)
                                               .headlineSmall
                                               .override(
                                                 font: GoogleFonts.outfit(
                                                   fontWeight:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .headlineSmall
                                                           .fontWeight,
                                                   fontStyle:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .headlineSmall
                                                           .fontStyle,
@@ -244,11 +244,11 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                 fontSize: 16.0,
                                                 letterSpacing: 0.0,
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .headlineSmall
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .headlineSmall
                                                         .fontStyle,
                                               ),
@@ -269,35 +269,31 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                           mainAxisSize: MainAxisSize.max,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            wrapWithModel(
-                              model: _model.dateFormatModel,
-                              updateCallback: () => safeSetState(() {}),
-                              child: DateFormatWidget(
-                                date: joinGameDetailedGamesRecord.date,
-                              ),
+                            DateFormatWidget(
+                              date: joinGameDetailedGamesRecord.date,
                             ),
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 10.0, 0.0, 0.0),
                               child: Text(
                                 'Game Details:',
-                                style: FlutterFlowTheme.of(context)
+                                style: AppTheme.of(context)
                                     .bodyMedium
                                     .override(
                                       font: GoogleFonts.outfit(
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .bodyMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
                                       color: Colors.white,
                                       letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .bodyMedium
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
@@ -326,7 +322,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                               shape: BoxShape.circle,
                                               border: Border.all(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .primaryBtnText,
                                                 width: 2.0,
                                               ),
@@ -351,7 +347,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             child: Text(
                                               'Betting\n',
                                               textAlign: TextAlign.center,
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .bodySmall
                                                   .override(
@@ -360,7 +356,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodySmall
                                                               .fontStyle,
@@ -371,7 +367,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodySmall
                                                             .fontStyle,
@@ -395,7 +391,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                               shape: BoxShape.circle,
                                               border: Border.all(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .primaryBtnText,
                                                 width: 2.0,
                                               ),
@@ -420,7 +416,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             child: Text(
                                               'Rule\nStyle',
                                               textAlign: TextAlign.center,
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .bodySmall
                                                   .override(
@@ -429,7 +425,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodySmall
                                                               .fontStyle,
@@ -440,7 +436,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodySmall
                                                             .fontStyle,
@@ -464,7 +460,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                               shape: BoxShape.circle,
                                               border: Border.all(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .primaryBtnText,
                                                 width: 2.0,
                                               ),
@@ -489,7 +485,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             child: Text(
                                               'Game\nType',
                                               textAlign: TextAlign.center,
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .bodySmall
                                                   .override(
@@ -498,7 +494,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodySmall
                                                               .fontStyle,
@@ -509,7 +505,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodySmall
                                                             .fontStyle,
@@ -533,7 +529,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                               shape: BoxShape.circle,
                                               border: Border.all(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .primaryBtnText,
                                                 width: 2.0,
                                               ),
@@ -558,7 +554,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             child: Text(
                                               'Scoring\n',
                                               textAlign: TextAlign.center,
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .bodySmall
                                                   .override(
@@ -567,7 +563,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodySmall
                                                               .fontStyle,
@@ -578,7 +574,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodySmall
                                                             .fontStyle,
@@ -602,7 +598,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                               shape: BoxShape.circle,
                                               border: Border.all(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .primaryBtnText,
                                                 width: 2.0,
                                               ),
@@ -627,7 +623,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             child: Text(
                                               'Member\nDiscount',
                                               textAlign: TextAlign.center,
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .bodySmall
                                                   .override(
@@ -636,7 +632,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodySmall
                                                               .fontStyle,
@@ -647,7 +643,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodySmall
                                                             .fontStyle,
@@ -671,7 +667,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                               shape: BoxShape.circle,
                                               border: Border.all(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .primaryBtnText,
                                                 width: 2.0,
                                               ),
@@ -696,7 +692,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             child: Text(
                                               'Friends\nOnly?',
                                               textAlign: TextAlign.center,
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .bodySmall
                                                   .override(
@@ -705,7 +701,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodySmall
                                                               .fontStyle,
@@ -716,7 +712,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodySmall
                                                             .fontStyle,
@@ -736,19 +732,19 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                             Divider(
                               height: 32.0,
                               thickness: 1.0,
-                              color: FlutterFlowTheme.of(context).alternate,
+                              color: AppTheme.of(context).alternate,
                             ),
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 8.0, 0.0, 0.0),
                               child: Text(
                                 'Players in this Group:',
-                                style: FlutterFlowTheme.of(context)
+                                style: AppTheme.of(context)
                                     .labelMedium
                                     .override(
                                       font: GoogleFonts.outfit(
                                         fontWeight: FontWeight.w800,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelMedium
                                             .fontStyle,
                                       ),
@@ -756,7 +752,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                       fontSize: 18.0,
                                       letterSpacing: 0.0,
                                       fontWeight: FontWeight.w800,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .labelMedium
                                           .fontStyle,
                                     ),
@@ -817,7 +813,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                               height: 64.0,
                                               decoration: BoxDecoration(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .info,
                                                 shape: BoxShape.circle,
                                                 border: Border.all(
@@ -897,7 +893,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                 friend1UsersRecord.displayName,
                                                 textAlign: TextAlign.center,
                                                 style:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodySmall
                                                         .override(
                                                           font: GoogleFonts
@@ -906,7 +902,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                                 FontWeight
                                                                     .normal,
                                                             fontStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodySmall
                                                                     .fontStyle,
@@ -917,7 +913,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodySmall
                                                                   .fontStyle,
@@ -942,7 +938,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                           child: Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 8.0),
-                            child: FFButtonWidget(
+                            child: AppButton(
                               onPressed: () async {
                                 if ((joinGameDetailedGamesRecord.maxPlayers >
                                         joinGameDetailedGamesRecord
@@ -992,7 +988,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 }
                               },
                               text: 'Reserve Spot',
-                              options: FFButtonOptions(
+                              options: AppButtonOptions(
                                 width: 300.0,
                                 height: 60.0,
                                 padding: EdgeInsetsDirectional.fromSTEB(
@@ -1000,23 +996,23 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 iconPadding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 0.0, 0.0),
                                 color: Color(0xFF253551),
-                                textStyle: FlutterFlowTheme.of(context)
+                                textStyle: AppTheme.of(context)
                                     .headlineSmall
                                     .override(
                                       font: GoogleFonts.outfit(
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .headlineSmall
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .headlineSmall
                                             .fontStyle,
                                       ),
                                       color: Colors.white,
                                       letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .headlineSmall
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .headlineSmall
                                           .fontStyle,
                                     ),

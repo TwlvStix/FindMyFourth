@@ -1,7 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -56,11 +56,11 @@ class _UserListSmallWidgetState extends State<UserListSmallWidget> {
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
           color: _model.iuserHovered
-              ? FlutterFlowTheme.of(context).primaryBackground
-              : FlutterFlowTheme.of(context).secondaryBackground,
+              ? AppTheme.of(context).primaryBackground
+              : AppTheme.of(context).secondaryBackground,
           borderRadius: BorderRadius.circular(12.0),
           border: Border.all(
-            color: FlutterFlowTheme.of(context).alternate,
+            color: AppTheme.of(context).alternate,
           ),
         ),
         child: Padding(
@@ -72,10 +72,10 @@ class _UserListSmallWidgetState extends State<UserListSmallWidget> {
                 width: 40.0,
                 height: 40.0,
                 decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).accent1,
+                  color: AppTheme.of(context).accent1,
                   borderRadius: BorderRadius.circular(12.0),
                   border: Border.all(
-                    color: FlutterFlowTheme.of(context).primary,
+                    color: AppTheme.of(context).primary,
                     width: 2.0,
                   ),
                 ),
@@ -104,7 +104,7 @@ class _UserListSmallWidgetState extends State<UserListSmallWidget> {
                           width: 100.0,
                           height: 100.0,
                           decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context)
+                            color: AppTheme.of(context)
                                 .secondaryBackground,
                             borderRadius: BorderRadius.circular(8.0),
                           ),
@@ -118,16 +118,16 @@ class _UserListSmallWidgetState extends State<UserListSmallWidget> {
                             ),
                             textAlign: TextAlign.center,
                             style:
-                                FlutterFlowTheme.of(context).bodyLarge.override(
+                                AppTheme.of(context).bodyLarge.override(
                                       font: GoogleFonts.outfit(
                                         fontWeight: FontWeight.bold,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyLarge
                                             .fontStyle,
                                       ),
                                       letterSpacing: 0.0,
                                       fontWeight: FontWeight.bold,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyLarge
                                           .fontStyle,
                                     ),
@@ -151,16 +151,16 @@ class _UserListSmallWidgetState extends State<UserListSmallWidget> {
                           widget.userRef?.displayName,
                           'Ghost User',
                         ),
-                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        style: AppTheme.of(context).bodyMedium.override(
                               font: GoogleFonts.outfit(
                                 fontWeight: FontWeight.bold,
-                                fontStyle: FlutterFlowTheme.of(context)
+                                fontStyle: AppTheme.of(context)
                                     .bodyMedium
                                     .fontStyle,
                               ),
                               letterSpacing: 0.0,
                               fontWeight: FontWeight.bold,
-                              fontStyle: FlutterFlowTheme.of(context)
+                              fontStyle: AppTheme.of(context)
                                   .bodyMedium
                                   .fontStyle,
                             ),
@@ -173,10 +173,10 @@ class _UserListSmallWidgetState extends State<UserListSmallWidget> {
                 Container(
                   height: 32.0,
                   decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).primary,
+                    color: AppTheme.of(context).primary,
                     borderRadius: BorderRadius.circular(12.0),
                     border: Border.all(
-                      color: FlutterFlowTheme.of(context).primary,
+                      color: AppTheme.of(context).primary,
                       width: 2.0,
                     ),
                   ),
@@ -188,22 +188,22 @@ class _UserListSmallWidgetState extends State<UserListSmallWidget> {
                       child: Text(
                         'ME',
                         textAlign: TextAlign.center,
-                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        style: AppTheme.of(context).bodyMedium.override(
                               font: GoogleFonts.outfit(
-                                fontWeight: FlutterFlowTheme.of(context)
+                                fontWeight: AppTheme.of(context)
                                     .bodyMedium
                                     .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
+                                fontStyle: AppTheme.of(context)
                                     .bodyMedium
                                     .fontStyle,
                               ),
                               color:
-                                  FlutterFlowTheme.of(context).primaryBtnText,
+                                  AppTheme.of(context).primaryBtnText,
                               letterSpacing: 0.0,
-                              fontWeight: FlutterFlowTheme.of(context)
+                              fontWeight: AppTheme.of(context)
                                   .bodyMedium
                                   .fontWeight,
-                              fontStyle: FlutterFlowTheme.of(context)
+                              fontStyle: AppTheme.of(context)
                                   .bodyMedium
                                   .fontStyle,
                             ),

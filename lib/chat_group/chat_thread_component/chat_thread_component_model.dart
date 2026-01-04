@@ -1,11 +1,10 @@
 import '/backend/backend.dart';
-import '/chat_group/chat_thread_update/chat_thread_update_widget.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_util.dart';
 import 'chat_thread_component_widget.dart' show ChatThreadComponentWidget;
 import 'package:flutter/material.dart';
 
 class ChatThreadComponentModel
-    extends FlutterFlowModel<ChatThreadComponentWidget> {
+    extends AppModel<ChatThreadComponentWidget> {
   ///  Local state fields for this component.
 
   List<DocumentReference> lastSeenBy = [];
@@ -32,8 +31,6 @@ class ChatThreadComponentModel
 
   final formKey = GlobalKey<FormState>();
   List<ChatMessagesRecord>? listViewPreviousSnapshot;
-  // Models for chat_threadUpdate dynamic component.
-  late FlutterFlowDynamicModels<ChatThreadUpdateModel> chatThreadUpdateModels;
   bool isDataUploading_uploadDataJub4 = false;
   FFUploadedFile uploadedLocalFile_uploadDataJub4 =
       FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
@@ -49,14 +46,10 @@ class ChatThreadComponentModel
   ChatMessagesRecord? newChat;
 
   @override
-  void initState(BuildContext context) {
-    chatThreadUpdateModels =
-        FlutterFlowDynamicModels(() => ChatThreadUpdateModel());
-  }
+  void initState(BuildContext context) {}
 
   @override
   void dispose() {
-    chatThreadUpdateModels.dispose();
     textFieldFocusNode?.dispose();
     textController?.dispose();
   }

@@ -2,9 +2,9 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/chat_group/chat_details_overlay/chat_details_overlay_widget.dart';
 import '/chat_group/chat_thread_component/chat_thread_component_widget.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/widgets/app_icon_button.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
 import 'dart:async';
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -76,18 +76,18 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: AppTheme.of(context).secondaryBackground,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+          backgroundColor: AppTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
-          leading: FlutterFlowIconButton(
+          leading: AppIconButton(
             borderColor: Colors.transparent,
             borderRadius: 30.0,
             borderWidth: 1.0,
             buttonSize: 60.0,
             icon: Icon(
               Icons.arrow_back_rounded,
-              color: FlutterFlowTheme.of(context).primaryText,
+              color: AppTheme.of(context).primaryText,
               size: 30.0,
             ),
             onPressed: () async {
@@ -111,20 +111,20 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                   children: [
                     Text(
                       'SET YOUR TEXT IF SOLO IN GROUP',
-                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                      style: AppTheme.of(context).bodyMedium.override(
                             font: GoogleFonts.outfit(
-                              fontWeight: FlutterFlowTheme.of(context)
+                              fontWeight: AppTheme.of(context)
                                   .bodyMedium
                                   .fontWeight,
-                              fontStyle: FlutterFlowTheme.of(context)
+                              fontStyle: AppTheme.of(context)
                                   .bodyMedium
                                   .fontStyle,
                             ),
                             letterSpacing: 0.0,
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .bodyMedium
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .bodyMedium
                                 .fontStyle,
                           ),
@@ -170,7 +170,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                       width: 44.0,
                                       height: 44.0,
                                       decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context)
+                                        color: AppTheme.of(context)
                                             .accent1,
                                         borderRadius: BorderRadius.only(
                                           bottomLeft: Radius.circular(10.0),
@@ -180,7 +180,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                         ),
                                         shape: BoxShape.rectangle,
                                         border: Border.all(
-                                          color: FlutterFlowTheme.of(context)
+                                          color: AppTheme.of(context)
                                               .primary,
                                           width: 2.0,
                                         ),
@@ -213,26 +213,26 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                             .displayName,
                                         'Ghost User',
                                       ),
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .bodyLarge
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontStyle,
                                             ),
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyLarge
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyLarge
                                                     .fontStyle,
                                           ),
@@ -287,13 +287,13 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                               height: 32.0,
                                               decoration: BoxDecoration(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .accent1,
                                                 borderRadius:
                                                     BorderRadius.circular(12.0),
                                                 shape: BoxShape.rectangle,
                                                 border: Border.all(
-                                                  color: FlutterFlowTheme.of(
+                                                  color: AppTheme.of(
                                                           context)
                                                       .primary,
                                                   width: 2.0,
@@ -343,7 +343,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                                         height: 100.0,
                                                         decoration:
                                                             BoxDecoration(
-                                                          color: FlutterFlowTheme
+                                                          color: AppTheme
                                                                   .of(context)
                                                               .secondaryBackground,
                                                           borderRadius:
@@ -365,7 +365,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                                           ),
                                                           textAlign:
                                                               TextAlign.center,
-                                                          style: FlutterFlowTheme
+                                                          style: AppTheme
                                                                   .of(context)
                                                               .bodyLarge
                                                               .override(
@@ -375,7 +375,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .bold,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .bodyLarge
                                                                       .fontStyle,
@@ -385,7 +385,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold,
-                                                                fontStyle: FlutterFlowTheme.of(
+                                                                fontStyle: AppTheme.of(
                                                                         context)
                                                                     .bodyLarge
                                                                     .fontStyle,
@@ -407,14 +407,14 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                           width: 32.0,
                                           height: 32.0,
                                           decoration: BoxDecoration(
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .accent1,
                                             borderRadius:
                                                 BorderRadius.circular(12.0),
                                             shape: BoxShape.rectangle,
                                             border: Border.all(
                                               color:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .primary,
                                               width: 2.0,
                                             ),
@@ -454,7 +454,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                                     width: 100.0,
                                                     height: 100.0,
                                                     decoration: BoxDecoration(
-                                                      color: FlutterFlowTheme
+                                                      color: AppTheme
                                                               .of(context)
                                                           .secondaryBackground,
                                                       borderRadius:
@@ -474,7 +474,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                                       ),
                                                       textAlign:
                                                           TextAlign.center,
-                                                      style: FlutterFlowTheme
+                                                      style: AppTheme
                                                               .of(context)
                                                           .bodyLarge
                                                           .override(
@@ -484,7 +484,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                                                   FontWeight
                                                                       .bold,
                                                               fontStyle:
-                                                                  FlutterFlowTheme.of(
+                                                                  AppTheme.of(
                                                                           context)
                                                                       .bodyLarge
                                                                       .fontStyle,
@@ -493,7 +493,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                                             fontWeight:
                                                                 FontWeight.bold,
                                                             fontStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodyLarge
                                                                     .fontStyle,
@@ -517,26 +517,26 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                   children: [
                                     Text(
                                       'Group Chat',
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .bodyLarge
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontStyle,
                                             ),
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyLarge
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyLarge
                                                     .fontStyle,
                                           ),
@@ -550,29 +550,29 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                               .toString(),
                                           '2',
                                         )} members',
-                                        style: FlutterFlowTheme.of(context)
+                                        style: AppTheme.of(context)
                                             .labelSmall
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelSmall
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelSmall
                                                         .fontStyle,
                                               ),
                                               color:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .primary,
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelSmall
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelSmall
                                                       .fontStyle,
                                             ),
@@ -623,21 +623,21 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                       },
                     );
                   },
-                  child: FlutterFlowIconButton(
-                    borderColor: FlutterFlowTheme.of(context).alternate,
+                  child: AppIconButton(
+                    borderColor: AppTheme.of(context).alternate,
                     borderRadius: 12.0,
                     borderWidth: 2.0,
                     buttonSize: 40.0,
-                    fillColor: FlutterFlowTheme.of(context).primaryBackground,
+                    fillColor: AppTheme.of(context).primaryBackground,
                     icon: Icon(
                       Icons.more_vert,
-                      color: FlutterFlowTheme.of(context).primaryText,
+                      color: AppTheme.of(context).primaryText,
                       size: 24.0,
                     ),
                     onPressed: () async {
                       await showModalBottomSheet(
                         isScrollControlled: true,
-                        backgroundColor: FlutterFlowTheme.of(context).accent4,
+                        backgroundColor: AppTheme.of(context).accent4,
                         barrierColor: Colors.white,
                         enableDrag: false,
                         context: context,
@@ -670,13 +670,8 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
         ),
         body: SafeArea(
           top: true,
-          child: wrapWithModel(
-            model: _model.chatThreadComponentModel,
-            updateCallback: () => safeSetState(() {}),
-            updateOnChange: true,
-            child: ChatThreadComponentWidget(
-              chatRef: widget.chatRef,
-            ),
+          child: ChatThreadComponentWidget(
+            chatRef: widget.chatRef,
           ),
         ),
       ),

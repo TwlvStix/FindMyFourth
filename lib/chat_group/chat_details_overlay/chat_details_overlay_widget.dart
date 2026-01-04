@@ -1,10 +1,10 @@
 import '/backend/backend.dart';
 import '/chat_group/delete_dialog/delete_dialog_widget.dart';
 import '/chat_group/user_list_small/user_list_small_widget.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
+import '/core/widgets/app_icon_button.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/widgets/app_button.dart';
 import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
@@ -89,22 +89,22 @@ class _ChatDetailsOverlayWidgetState extends State<ChatDetailsOverlayWidget> {
                               16.0, 0.0, 0.0, 0.0),
                           child: Text(
                             'Chat Details',
-                            style: FlutterFlowTheme.of(context)
+                            style: AppTheme.of(context)
                                 .headlineSmall
                                 .override(
                                   font: GoogleFonts.outfit(
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                    fontWeight: AppTheme.of(context)
                                         .headlineSmall
                                         .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .headlineSmall
                                         .fontStyle,
                                   ),
                                   letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
+                                  fontWeight: AppTheme.of(context)
                                       .headlineSmall
                                       .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
+                                  fontStyle: AppTheme.of(context)
                                       .headlineSmall
                                       .fontStyle,
                                 ),
@@ -113,15 +113,15 @@ class _ChatDetailsOverlayWidgetState extends State<ChatDetailsOverlayWidget> {
                         Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 16.0, 0.0),
-                          child: FlutterFlowIconButton(
-                            borderColor: FlutterFlowTheme.of(context).alternate,
+                          child: AppIconButton(
+                            borderColor: AppTheme.of(context).alternate,
                             borderRadius: 12.0,
                             borderWidth: 1.0,
                             buttonSize: 40.0,
-                            fillColor: FlutterFlowTheme.of(context).accent4,
+                            fillColor: AppTheme.of(context).accent4,
                             icon: Icon(
                               Icons.close_rounded,
-                              color: FlutterFlowTheme.of(context).primaryText,
+                              color: AppTheme.of(context).primaryText,
                               size: 24.0,
                             ),
                             onPressed: () async {
@@ -148,26 +148,26 @@ class _ChatDetailsOverlayWidgetState extends State<ChatDetailsOverlayWidget> {
                                 '--',
                               ),
                               style: TextStyle(
-                                color: FlutterFlowTheme.of(context).primary,
+                                color: AppTheme.of(context).primary,
                                 fontWeight: FontWeight.bold,
                               ),
                             )
                           ],
                           style:
-                              FlutterFlowTheme.of(context).labelMedium.override(
+                              AppTheme.of(context).labelMedium.override(
                                     font: GoogleFonts.outfit(
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .labelMedium
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .labelMedium
                                           .fontStyle,
                                     ),
                                     letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                    fontWeight: AppTheme.of(context)
                                         .labelMedium
                                         .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .labelMedium
                                         .fontStyle,
                                   ),
@@ -180,20 +180,20 @@ class _ChatDetailsOverlayWidgetState extends State<ChatDetailsOverlayWidget> {
                       child: Text(
                         'In this chat',
                         style:
-                            FlutterFlowTheme.of(context).labelMedium.override(
+                            AppTheme.of(context).labelMedium.override(
                                   font: GoogleFonts.outfit(
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                    fontWeight: AppTheme.of(context)
                                         .labelMedium
                                         .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .labelMedium
                                         .fontStyle,
                                   ),
                                   letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
+                                  fontWeight: AppTheme.of(context)
                                       .labelMedium
                                       .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
+                                  fontStyle: AppTheme.of(context)
                                       .labelMedium
                                       .fontStyle,
                                 ),
@@ -237,21 +237,12 @@ class _ChatDetailsOverlayWidgetState extends State<ChatDetailsOverlayWidget> {
                                     final userListSmallUsersRecord =
                                         snapshot.data!;
 
-                                    return wrapWithModel(
-                                      model:
-                                          _model.userListSmallModels.getModel(
-                                        chatUsersItem.id,
-                                        chatUsersIndex,
+                                    return UserListSmallWidget(
+                                      key: Key(
+                                        'Key258_${chatUsersItem.id}',
                                       ),
-                                      updateCallback: () => safeSetState(() {}),
-                                      updateOnChange: true,
-                                      child: UserListSmallWidget(
-                                        key: Key(
-                                          'Key258_${chatUsersItem.id}',
-                                        ),
-                                        userRef: userListSmallUsersRecord,
-                                        action: () async {},
-                                      ),
+                                      userRef: userListSmallUsersRecord,
+                                      action: () async {},
                                     );
                                   },
                                 );
@@ -270,21 +261,17 @@ class _ChatDetailsOverlayWidgetState extends State<ChatDetailsOverlayWidget> {
                           borderRadius: BorderRadius.circular(12.0),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: FlutterFlowTheme.of(context)
+                              color: AppTheme.of(context)
                                   .secondaryBackground,
                               borderRadius: BorderRadius.circular(12.0),
                               border: Border.all(
-                                color: FlutterFlowTheme.of(context).alternate,
+                                color: AppTheme.of(context).alternate,
                               ),
                             ),
-                            child: wrapWithModel(
-                              model: _model.deleteDialogModel,
-                              updateCallback: () => safeSetState(() {}),
-                              updateOnChange: true,
-                              child: DeleteDialogWidget(
-                                chatList: widget.chatRef,
-                                inviteAction: () async {
-                                  Navigator.pop(context);
+                            child: DeleteDialogWidget(
+                              chatList: widget.chatRef,
+                              inviteAction: () async {
+                                Navigator.pop(context);
 
                                   context.pushNamed(
                                     Chat2InviteUsersWidget.routeName,
@@ -304,59 +291,51 @@ class _ChatDetailsOverlayWidgetState extends State<ChatDetailsOverlayWidget> {
                                       ),
                                     },
                                   );
-                                },
-                                deleteAction: () async {
-                                  await widget.chatRef!.reference.delete();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'You have successfully deleted a chat!',
-                                        style: FlutterFlowTheme.of(context)
-                                            .titleSmall
-                                            .override(
-                                              font: GoogleFonts.outfit(
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleSmall
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleSmall
-                                                        .fontStyle,
-                                              ),
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .info,
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleSmall
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleSmall
-                                                      .fontStyle,
+                              },
+                              deleteAction: () async {
+                                await widget.chatRef!.reference.delete();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'You have successfully deleted a chat!',
+                                      style: AppTheme.of(context)
+                                          .titleSmall
+                                          .override(
+                                            font: GoogleFonts.outfit(
+                                              fontWeight: AppTheme.of(context)
+                                                  .titleSmall
+                                                  .fontWeight,
+                                              fontStyle: AppTheme.of(context)
+                                                  .titleSmall
+                                                  .fontStyle,
                                             ),
-                                      ),
-                                      duration: Duration(milliseconds: 3000),
-                                      backgroundColor:
-                                          FlutterFlowTheme.of(context).error,
+                                            color: AppTheme.of(context).info,
+                                            letterSpacing: 0.0,
+                                            fontWeight: AppTheme.of(context)
+                                                .titleSmall
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .titleSmall
+                                                .fontStyle,
+                                          ),
                                     ),
-                                  );
+                                    duration: Duration(milliseconds: 3000),
+                                    backgroundColor: AppTheme.of(context).error,
+                                  ),
+                                );
 
-                                  context.pushNamed(
-                                    ChatWidget.routeName,
-                                    extra: <String, dynamic>{
-                                      kTransitionInfoKey: TransitionInfo(
-                                        hasTransition: true,
-                                        transitionType:
-                                            PageTransitionType.leftToRight,
-                                        duration: Duration(milliseconds: 220),
-                                      ),
-                                    },
-                                  );
-                                },
-                              ),
+                                context.pushNamed(
+                                  ChatWidget.routeName,
+                                  extra: <String, dynamic>{
+                                    kTransitionInfoKey: TransitionInfo(
+                                      hasTransition: true,
+                                      transitionType:
+                                          PageTransitionType.leftToRight,
+                                      duration: Duration(milliseconds: 220),
+                                    ),
+                                  },
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -365,12 +344,12 @@ class _ChatDetailsOverlayWidgetState extends State<ChatDetailsOverlayWidget> {
                     Padding(
                       padding: EdgeInsetsDirectional.fromSTEB(
                           16.0, 16.0, 16.0, 44.0),
-                      child: FFButtonWidget(
+                      child: AppButton(
                         onPressed: () async {
                           Navigator.pop(context);
                         },
                         text: 'Close',
-                        options: FFButtonOptions(
+                        options: AppButtonOptions(
                           width: double.infinity,
                           height: 52.0,
                           padding: EdgeInsetsDirectional.fromSTEB(
@@ -378,39 +357,39 @@ class _ChatDetailsOverlayWidgetState extends State<ChatDetailsOverlayWidget> {
                           iconPadding: EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
                           color:
-                              FlutterFlowTheme.of(context).secondaryBackground,
+                              AppTheme.of(context).secondaryBackground,
                           textStyle:
-                              FlutterFlowTheme.of(context).titleLarge.override(
+                              AppTheme.of(context).titleLarge.override(
                                     font: GoogleFonts.outfit(
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .titleLarge
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .titleLarge
                                           .fontStyle,
                                     ),
                                     fontSize: 18.0,
                                     letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                    fontWeight: AppTheme.of(context)
                                         .titleLarge
                                         .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .titleLarge
                                         .fontStyle,
                                   ),
                           elevation: 0.0,
                           borderSide: BorderSide(
-                            color: FlutterFlowTheme.of(context).alternate,
+                            color: AppTheme.of(context).alternate,
                             width: 2.0,
                           ),
                           borderRadius: BorderRadius.circular(12.0),
-                          hoverColor: FlutterFlowTheme.of(context).alternate,
+                          hoverColor: AppTheme.of(context).alternate,
                           hoverBorderSide: BorderSide(
-                            color: FlutterFlowTheme.of(context).alternate,
+                            color: AppTheme.of(context).alternate,
                             width: 2.0,
                           ),
                           hoverTextColor:
-                              FlutterFlowTheme.of(context).primaryText,
+                              AppTheme.of(context).primaryText,
                           hoverElevation: 3.0,
                         ),
                       ),
