@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>357406229935-1l8fsgi4n77o2qdjmr599phggtaeb36h.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.357406229935-1l8fsgi4n77o2qdjmr599phggtaeb36h</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>357406229935-b80gfcvite6up8auvsclnp7o5u8vf67p.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCV0WbNO3nEsE9Loc7MnqEtOCNZik_g5Zo</string>
+	<key>GCM_SENDER_ID</key>
+	<string>357406229935</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.mycompany.findmyfourth</string>
+	<key>PROJECT_ID</key>
+	<string>find-my-fourth</string>
+	<key>STORAGE_BUCKET</key>
+	<string>find-my-fourth.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:357406229935:ios:124eb2f4d52beb9ae9db5a</string>
+	<key>DATABASE_URL</key>
+	<string>https://find-my-fourth-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>
