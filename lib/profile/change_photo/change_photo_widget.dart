@@ -31,7 +31,11 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
     super.initState();
     _model = createModel(context, () => ChangePhotoModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -234,7 +238,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                       selectedMedia.every((m) =>
                                           validateFileFormat(
                                               m.storagePath, context))) {
-                                    safeSetState(() => _model
+                                    if (mounted) setState(() => _model
                                         .isDataUploading_uploadDataJ3j = true);
                                     var selectedUploadedFiles =
                                         <FFUploadedFile>[];
@@ -272,14 +276,14 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                             selectedMedia.length &&
                                         downloadUrls.length ==
                                             selectedMedia.length) {
-                                      safeSetState(() {
+                                      if (mounted) setState(() {
                                         _model.uploadedLocalFile_uploadDataJ3j =
                                             selectedUploadedFiles.first;
                                         _model.uploadedFileUrl_uploadDataJ3j =
                                             downloadUrls.first;
                                       });
                                     } else {
-                                      safeSetState(() {});
+                                      if (mounted) setState(() {});
                                       return;
                                     }
                                   }

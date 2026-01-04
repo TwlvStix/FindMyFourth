@@ -48,15 +48,19 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
         // addChatUsers_ToList
         _model.friendsList =
             widget.chatRef!.users.toList().cast<DocumentReference>();
-        safeSetState(() {});
+        if (mounted) setState(() {});
       } else {
         // addUser_ToList
         _model.addToFriendsList(currentUserReference!);
-        safeSetState(() {});
+        if (mounted) setState(() {});
       }
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -139,7 +143,12 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                   size: 24.0,
                 ),
                 onPressed: () async {
-                  context.safePop();
+                  final router = GoRouter.of(context);
+                  if (router.canPop()) {
+                    router.pop();
+                  } else {
+                    router.go('/');
+                  }
                 },
               ),
             ),
@@ -392,7 +401,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                                                                 .reference) ==
                                                         true,
                                             onChanged: (newValue) async {
-                                              safeSetState(() =>
+                                              if (mounted) setState(() =>
                                                   _model.checkboxListTileValueMap[
                                                           listViewUsersRecord] =
                                                       newValue!);
@@ -401,13 +410,13 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                                                 _model.addToFriendsList(
                                                     listViewUsersRecord
                                                         .reference);
-                                                safeSetState(() {});
+                                                if (mounted) setState(() {});
                                               } else {
                                                 // removeUsser
                                                 _model.removeFromFriendsList(
                                                     listViewUsersRecord
                                                         .reference);
-                                                safeSetState(() {});
+                                                if (mounted) setState(() {});
                                               }
                                             },
                                             title: Text(
@@ -659,7 +668,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                         );
                       }
 
-                      safeSetState(() {});
+                      if (mounted) setState(() {});
                     },
                     text: widget.chatRef != null
                         ? 'Add to Chat'

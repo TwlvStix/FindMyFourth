@@ -74,7 +74,11 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
     ));
     _model.emailFocusNode ??= FocusNode();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -224,7 +228,11 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                           ),
                                         );
                                       },
-                                    ).then((value) => safeSetState(() {}));
+                                    ).then((value) {
+                                      if (mounted) {
+                                        setState(() {});
+                                      }
+                                    });
                                   },
                                 ),
                               ),
@@ -951,8 +959,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                         'GC',
                                                       ))
                                               .toList(),
-                                          onChanged: (val) => safeSetState(
-                                              () => _model.coursesValue = val),
+                                          onChanged: (val) {
+                                            if (mounted) {
+                                              setState(
+                                                  () => _model.coursesValue = val);
+                                            }
+                                          },
                                           width: 359.0,
                                           height: 50.0,
                                           searchHintTextStyle: AppTheme
@@ -1204,7 +1216,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                 0,
                                               ),
                                               updateCount: (count) =>
-                                                  safeSetState(() => _model
+                                                  if (mounted) setState(() => _model
                                                       .handicapValue = count),
                                               stepSize: 1,
                                             ),
@@ -1355,7 +1367,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                 0,
                                               ),
                                               updateCount: (count) =>
-                                                  safeSetState(() => _model
+                                                  if (mounted) setState(() => _model
                                                       .drinksValue = count),
                                               stepSize: 1,
                                               minimum: 0,
@@ -1508,7 +1520,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                 0,
                                               ),
                                               updateCount: (count) =>
-                                                  safeSetState(() => _model
+                                                  if (mounted) setState(() => _model
                                                       .musicValue = count),
                                               stepSize: 1,
                                               minimum: 0,
@@ -1661,7 +1673,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                 0,
                                               ),
                                               updateCount: (count) =>
-                                                  safeSetState(() => _model
+                                                  if (mounted) setState(() => _model
                                                       .playmoneyValue = count),
                                               stepSize: 1,
                                               minimum: 0,
@@ -1814,7 +1826,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                 0,
                                               ),
                                               updateCount: (count) =>
-                                                  safeSetState(() => _model
+                                                  if (mounted) setState(() => _model
                                                       .paceplayValue = count),
                                               stepSize: 1,
                                               minimum: 0,
@@ -1838,7 +1850,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                     AppState().theusernames =
                                         functions.usernameCreator(
                                             _model.usernameTextController.text);
-                                    safeSetState(() {});
+                                    if (mounted) setState(() {});
                                     if (currentUserDisplayName ==
                                         AppState().theusernames) {
                                       await currentUserReference!
@@ -1937,7 +1949,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                       }
                                     }
 
-                                    safeSetState(() {});
+                                    if (mounted) setState(() {});
                                   },
                                   text: 'Save Profile',
                                   options: AppButtonOptions(

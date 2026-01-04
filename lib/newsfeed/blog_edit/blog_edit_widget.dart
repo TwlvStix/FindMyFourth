@@ -41,7 +41,11 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
 
     _model.inputContentFocusNode ??= FocusNode();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -87,7 +91,12 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
               onTap: () async {
-                context.safePop();
+                final router = GoRouter.of(context);
+                if (router.canPop()) {
+                  router.pop();
+                } else {
+                  router.go('/');
+                }
               },
               child: Icon(
                 Icons.arrow_back_ios,
@@ -389,7 +398,7 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                       if (selectedMedia != null &&
                           selectedMedia.every((m) =>
                               validateFileFormat(m.storagePath, context))) {
-                        safeSetState(() =>
+                        if (mounted) setState(() =>
                             _model.isDataUploading_editPicNewsfeed = true);
                         var selectedUploadedFiles = <FFUploadedFile>[];
 
@@ -421,14 +430,14 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                         if (selectedUploadedFiles.length ==
                                 selectedMedia.length &&
                             downloadUrls.length == selectedMedia.length) {
-                          safeSetState(() {
+                          if (mounted) setState(() {
                             _model.uploadedLocalFile_editPicNewsfeed =
                                 selectedUploadedFiles.first;
                             _model.uploadedFileUrl_editPicNewsfeed =
                                 downloadUrls.first;
                           });
                         } else {
-                          safeSetState(() {});
+                          if (mounted) setState(() {});
                           return;
                         }
                       }

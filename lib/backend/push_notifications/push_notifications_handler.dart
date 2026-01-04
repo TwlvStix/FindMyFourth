@@ -43,7 +43,7 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
     }
     _handledMessageIds.add(message.messageId);
 
-    safeSetState(() => _loading = true);
+    if (mounted) setState(() => _loading = true);
     try {
       final initialPageName = message.data['initialPageName'] as String;
       final initialParameterData = getInitialParameterData(message.data);
@@ -67,7 +67,7 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
     } catch (e) {
       print('Error: $e');
     } finally {
-      safeSetState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
   }
 

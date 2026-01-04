@@ -30,7 +30,11 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
     _model.enterEmailTextController ??= TextEditingController();
     _model.enterEmailFocusNode ??= FocusNode();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override

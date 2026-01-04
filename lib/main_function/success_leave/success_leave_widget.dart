@@ -27,7 +27,11 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
     super.initState();
     _model = createModel(context, () => SuccessLeaveModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
