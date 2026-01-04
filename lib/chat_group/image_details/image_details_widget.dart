@@ -168,7 +168,7 @@ class _ImageDetailsWidgetState extends State<ImageDetailsWidget>
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(12.0, 12.0, 12.0, 32.0),
                 child: FutureBuilder<UsersRecord>(
-                  future: FFAppState().userDocQuery(
+                  future: AppState().userDocQuery(
                     uniqueQueryKey: widget.chatMessage?.reference.id,
                     requestFn: () =>
                         UsersRecord.getDocumentOnce(widget.chatMessage!.user!),
