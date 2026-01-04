@@ -55,7 +55,11 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
         TextEditingController(text: currentUserEmail);
     _model.emailFocusNode ??= FocusNode();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -222,7 +226,11 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                               ),
                                             );
                                           },
-                                        ).then((value) => safeSetState(() {}));
+                                        ).then((value) {
+                                          if (mounted) {
+                                            setState(() {});
+                                          }
+                                        });
                                       },
                                     ),
                                   ),
@@ -932,9 +940,12 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                       'GC',
                                                     ))
                                                 .toList(),
-                                            onChanged: (val) => safeSetState(
-                                                () =>
-                                                    _model.coursesValue = val),
+                                            onChanged: (val) {
+                                              if (mounted) {
+                                                setState(() => _model
+                                                    .coursesValue = val);
+                                              }
+                                            },
                                             width: 362.0,
                                             height: 50.0,
                                             searchHintTextStyle:
@@ -1182,7 +1193,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                 count: _model.handicapValue ??=
                                                     0,
                                                 updateCount: (count) =>
-                                                    safeSetState(() => _model
+                                                    if (mounted) setState(() => _model
                                                         .handicapValue = count),
                                                 stepSize: 1,
                                               ),
@@ -1321,7 +1332,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                 ),
                                                 count: _model.drinksValue ??= 0,
                                                 updateCount: (count) =>
-                                                    safeSetState(() => _model
+                                                    if (mounted) setState(() => _model
                                                         .drinksValue = count),
                                                 stepSize: 1,
                                                 minimum: 0,
@@ -1462,7 +1473,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                 ),
                                                 count: _model.musicValue ??= 0,
                                                 updateCount: (count) =>
-                                                    safeSetState(() => _model
+                                                    if (mounted) setState(() => _model
                                                         .musicValue = count),
                                                 stepSize: 1,
                                                 minimum: 0,
@@ -1604,7 +1615,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                 count: _model.playmoneyValue ??=
                                                     0,
                                                 updateCount: (count) =>
-                                                    safeSetState(() =>
+                                                    if (mounted) setState(() =>
                                                         _model.playmoneyValue =
                                                             count),
                                                 stepSize: 1,
@@ -1747,7 +1758,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                 count: _model.paceplayValue ??=
                                                     0,
                                                 updateCount: (count) =>
-                                                    safeSetState(() => _model
+                                                    if (mounted) setState(() => _model
                                                         .paceplayValue = count),
                                                 stepSize: 1,
                                                 minimum: 0,
@@ -1774,7 +1785,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                         AppState().theusernames =
                                             functions.usernameCreator(_model
                                                 .usernameTextController.text);
-                                        safeSetState(() {});
+                                        if (mounted) setState(() {});
                                         if (functions.usernameChecker(
                                                 AppState().theusernames,
                                                 createProfileVerificationDashRecord!
@@ -1899,7 +1910,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                           AppState().theusernames =
                                               functions.usernameCreator(_model
                                                   .usernameTextController.text);
-                                          safeSetState(() {});
+                                          if (mounted) setState(() {});
                                           _model.usernamesQuery =
                                               await queryUsersRecordOnce(
                                             queryBuilder: (usersRecord) =>
@@ -2013,7 +2024,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                             );
                                           }
 
-                                          safeSetState(() {});
+                                          if (mounted) setState(() {});
                                         },
                                         text: 'Save Profile',
                                         options: AppButtonOptions(

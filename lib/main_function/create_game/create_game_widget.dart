@@ -48,7 +48,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
     )}');
     _model.gameNameFocusNode ??= FocusNode();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -237,7 +241,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     onChanged: (_) => EasyDebounce.debounce(
                                       '_model.gameNameTextController',
                                       Duration(milliseconds: 2000),
-                                      () => safeSetState(() {}),
+                                      () {
+                                        if (mounted) {
+                                          setState(() {});
+                                        }
+                                      },
                                     ),
                                     autofocus: true,
                                     textCapitalization: TextCapitalization.none,
@@ -333,7 +341,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                               onTap: () async {
                                                 _model.gameNameTextController
                                                     ?.clear();
-                                                safeSetState(() {});
+                                                if (mounted) setState(() {});
                                               },
                                               child: Icon(
                                                 Icons.clear,
@@ -826,7 +834,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
 
                                                 if (_datePickedDate != null &&
                                                     _datePickedTime != null) {
-                                                  safeSetState(() {
+                                                  if (mounted) setState(() {
                                                     _model.datePicked =
                                                         DateTime(
                                                       _datePickedDate.year,
@@ -838,7 +846,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                   });
                                                 } else if (_model.datePicked !=
                                                     null) {
-                                                  safeSetState(() {
+                                                  if (mounted) setState(() {
                                                     _model.datePicked =
                                                         getCurrentTimestamp;
                                                   });
@@ -903,8 +911,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         _model.friendsValueController ??=
                                             FormFieldController<String>(null),
                                     options: ['Friends', 'Public'],
-                                    onChanged: (val) => safeSetState(
-                                        () => _model.friendsValue = val),
+                                    onChanged: (val) {
+                                      if (mounted) {
+                                        setState(
+                                            () => _model.friendsValue = val);
+                                      }
+                                    },
                                     width: 300.0,
                                     height: 50.0,
                                     textStyle: AppTheme.of(context)
@@ -1027,7 +1039,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             .map((e) => e.name)
                                             .toList(),
                                         onChanged: (val) async {
-                                          safeSetState(
+                                          if (mounted) setState(
                                               () => _model.courseValue = val);
                                           _model.selectedCourse =
                                               await queryCourseRecordOnce(
@@ -1039,7 +1051,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             singleRecord: true,
                                           ).then((s) => s.firstOrNull);
 
-                                          safeSetState(() {});
+                                          if (mounted) setState(() {});
                                         },
                                         width: 300.0,
                                         height: 50.0,
@@ -1182,8 +1194,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     controller: _model.memberValueController ??=
                                         FormFieldController<String>(null),
                                     options: ['Yes', 'No'],
-                                    onChanged: (val) => safeSetState(
-                                        () => _model.memberValue = val),
+                                    onChanged: (val) {
+                                      if (mounted) {
+                                        setState(
+                                            () => _model.memberValue = val);
+                                      }
+                                    },
                                     width: 300.0,
                                     height: 50.0,
                                     searchHintTextStyle:
@@ -1388,8 +1404,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             ),
                                       ),
                                       count: _model.countControllerValue ??= 1,
-                                      updateCount: (count) => safeSetState(() =>
-                                          _model.countControllerValue = count),
+                                      updateCount: (count) {
+                                        if (mounted) {
+                                          setState(() => _model
+                                              .countControllerValue = count);
+                                        }
+                                      },
                                       stepSize: 1,
                                       minimum: 1,
                                       maximum: 3,
@@ -1447,8 +1467,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       'Relaxed',
                                       'Open to Discuss'
                                     ],
-                                    onChanged: (val) => safeSetState(
-                                        () => _model.rulesSetValue = val),
+                                    onChanged: (val) {
+                                      if (mounted) {
+                                        setState(
+                                            () => _model.rulesSetValue = val);
+                                      }
+                                    },
                                     width: 300.0,
                                     height: 50.0,
                                     textStyle: AppTheme.of(context)
@@ -1554,8 +1578,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       'All Fun',
                                       'Open to Discuss'
                                     ],
-                                    onChanged: (val) => safeSetState(
-                                        () => _model.styleGameValue = val),
+                                    onChanged: (val) {
+                                      if (mounted) {
+                                        setState(
+                                            () => _model.styleGameValue = val);
+                                      }
+                                    },
                                     width: 300.0,
                                     height: 50.0,
                                     textStyle: AppTheme.of(context)
@@ -1657,8 +1685,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       'For Fun',
                                       'Open to Discuss'
                                     ],
-                                    onChanged: (val) => safeSetState(
-                                        () => _model.gameTypeValue = val),
+                                    onChanged: (val) {
+                                      if (mounted) {
+                                        setState(
+                                            () => _model.gameTypeValue = val);
+                                      }
+                                    },
                                     width: 300.0,
                                     height: 50.0,
                                     textStyle: AppTheme.of(context)
@@ -1758,8 +1790,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       'Game',
                                       'FUN'
                                     ],
-                                    onChanged: (val) => safeSetState(
-                                        () => _model.scoringValue = val),
+                                    onChanged: (val) {
+                                      if (mounted) {
+                                        setState(
+                                            () => _model.scoringValue = val);
+                                      }
+                                    },
                                     width: 300.0,
                                     height: 50.0,
                                     textStyle: AppTheme.of(context)
@@ -2004,7 +2040,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       }),
                                     ]);
 
-                                    safeSetState(() {});
+                                    if (mounted) setState(() {});
                                   },
                                   text: 'Submit Game',
                                   options: AppButtonOptions(

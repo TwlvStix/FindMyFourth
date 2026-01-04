@@ -38,7 +38,11 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     super.initState();
     _model = createModel(context, () => JoinGameDetailedModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -84,7 +88,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
               onTap: () async {
-                context.safePop();
+                final router = GoRouter.of(context);
+                if (router.canPop()) {
+                  router.pop();
+                } else {
+                  router.go('/');
+                }
               },
               child: Icon(
                 Icons.chevron_left_rounded,
@@ -965,7 +974,11 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                         ),
                                       );
                                     },
-                                  ).then((value) => safeSetState(() {}));
+                                  ).then((value) {
+                                    if (mounted) {
+                                      setState(() {});
+                                    }
+                                  });
                                 } else {
                                   await showDialog(
                                     context: context,

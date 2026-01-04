@@ -39,7 +39,11 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
     super.initState();
     _model = createModel(context, () => ChatThreadUpdateModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override

@@ -5,11 +5,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
-import 'package:from_css_color/from_css_color.dart';
 import 'dart:math' show pow, pi, sin;
 import 'package:intl/intl.dart';
-import 'package:json_path/json_path.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../main.dart';
@@ -28,21 +25,9 @@ export 'package:cloud_firestore/cloud_firestore.dart'
     show DocumentReference, FirebaseFirestore;
 export 'package:page_transition/page_transition.dart';
 export 'navigation/app_router.dart';
+export 'utils/formatting_utils.dart';
 
 final RouteObserver<ModalRoute> routeObserver = RouteObserver<ModalRoute>();
-
-T valueOrDefault<T>(T? value, T defaultValue) =>
-    (value is String && value.isEmpty) || value == null ? defaultValue : value;
-
-String dateTimeFormat(String format, DateTime? dateTime, {String? locale}) {
-  if (dateTime == null) {
-    return '';
-  }
-  if (format == 'relative') {
-    return timeago.format(dateTime, locale: locale, allowFromNow: true);
-  }
-  return DateFormat(format, locale).format(dateTime);
-}
 
 Theme wrapInMaterialDatePickerTheme(
   BuildContext context,
@@ -198,98 +183,6 @@ Future launchURL(String url) async {
   }
 }
 
-Color colorFromCssString(String color, {Color? defaultColor}) {
-  try {
-    return fromCssColor(color);
-  } catch (_) {}
-  return defaultColor ?? Colors.black;
-}
-
-enum FormatType {
-  decimal,
-  percent,
-  scientific,
-  compact,
-  compactLong,
-  custom,
-}
-
-enum DecimalType {
-  automatic,
-  periodDecimal,
-  commaDecimal,
-}
-
-String formatNumber(
-  num? value, {
-  required FormatType formatType,
-  DecimalType? decimalType,
-  String? currency,
-  bool toLowerCase = false,
-  String? format,
-  String? locale,
-}) {
-  if (value == null) {
-    return '';
-  }
-  var formattedValue = '';
-  switch (formatType) {
-    case FormatType.decimal:
-      switch (decimalType!) {
-        case DecimalType.automatic:
-          formattedValue = NumberFormat.decimalPattern().format(value);
-          break;
-        case DecimalType.periodDecimal:
-          if (currency != null) {
-            formattedValue = NumberFormat('#,##0.00', 'en_US').format(value);
-          } else {
-            formattedValue = NumberFormat.decimalPattern('en_US').format(value);
-          }
-          break;
-        case DecimalType.commaDecimal:
-          if (currency != null) {
-            formattedValue = NumberFormat('#,##0.00', 'es_PA').format(value);
-          } else {
-            formattedValue = NumberFormat.decimalPattern('es_PA').format(value);
-          }
-          break;
-      }
-      break;
-    case FormatType.percent:
-      formattedValue = NumberFormat.percentPattern().format(value);
-      break;
-    case FormatType.scientific:
-      formattedValue = NumberFormat.scientificPattern().format(value);
-      if (toLowerCase) {
-        formattedValue = formattedValue.toLowerCase();
-      }
-      break;
-    case FormatType.compact:
-      formattedValue = NumberFormat.compact().format(value);
-      break;
-    case FormatType.compactLong:
-      formattedValue = NumberFormat.compactLong().format(value);
-      break;
-    case FormatType.custom:
-      final hasLocale = locale != null && locale.isNotEmpty;
-      formattedValue =
-          NumberFormat(format, hasLocale ? locale : null).format(value);
-  }
-
-  if (formattedValue.isEmpty) {
-    return value.toString();
-  }
-
-  if (currency != null) {
-    final currencySymbol = currency.isNotEmpty
-        ? currency
-        : NumberFormat.simpleCurrency().format(0.0).substring(0, 1);
-    formattedValue = '$currencySymbol$formattedValue';
-  }
-
-  return formattedValue;
-}
-
 DateTime get getCurrentTimestamp => DateTime.now();
 DateTime dateTimeFromSecondsSinceEpoch(int seconds) {
   return DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
@@ -327,36 +220,6 @@ T? castToType<T>(dynamic value) {
   return value as T;
 }
 
-dynamic getJsonField(
-  dynamic response,
-  String jsonPath, [
-  bool isForList = false,
-]) {
-  final field = JsonPath(jsonPath).read(response);
-  if (field.isEmpty) {
-    return null;
-  }
-  if (field.length > 1) {
-    return field.map((f) => f.value).toList();
-  }
-  final value = field.first.value;
-  if (isForList) {
-    return value is! Iterable
-        ? [value]
-        : (value is List ? value : value.toList());
-  }
-  return value;
-}
-
-Rect? getWidgetBoundingBox(BuildContext context) {
-  try {
-    final renderBox = context.findRenderObject() as RenderBox?;
-    return renderBox!.localToGlobal(Offset.zero) & renderBox.size;
-  } catch (_) {
-    return null;
-  }
-}
-
 bool get isAndroid => !kIsWeb && Platform.isAndroid;
 bool get isiOS => !kIsWeb && Platform.isIOS;
 bool get isWeb => kIsWeb;
@@ -389,8 +252,6 @@ const kTextValidatorUsernameRegex = r'^[a-zA-Z][a-zA-Z0-9_-]{2,16}$';
 // https://stackoverflow.com/a/201378
 const kTextValidatorEmailRegex =
     "^(?:[a-zA-Z0-9!#\$%&\'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#\$%&\'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])\$";
-const kTextValidatorWebsiteRegex =
-    r'(https?:\/\/)?(www\.)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,10}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)|(https?:\/\/)?(www\.)?(?!ww)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,10}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)';
 
 extension FFTextEditingControllerExt on TextEditingController? {
   String get text => this == null ? '' : this!.text;
@@ -514,16 +375,6 @@ extension ListDivideExt<T extends Widget> on Iterable<T> {
           .toList();
 }
 
-extension StatefulWidgetExtensions on State<StatefulWidget> {
-  /// Check if the widget exist before safely setting state.
-  void safeSetState(VoidCallback fn) {
-    if (mounted) {
-      // ignore: invalid_use_of_protected_member
-      setState(fn);
-    }
-  }
-}
-
 // For iOS 16 and below, set the status bar color to match the app's theme.
 // https://github.com/flutter/flutter/issues/41067
 Brightness? _lastBrightness;
@@ -596,8 +447,3 @@ extension ListUniqueExt<T> on Iterable<T> {
     return distinctList;
   }
 }
-
-String getCurrentRoute(BuildContext context) =>
-    context.mounted ? MyApp.of(context).getRoute() : '';
-List<String> getCurrentRouteStack(BuildContext context) =>
-    context.mounted ? MyApp.of(context).getRouteStack() : [];
