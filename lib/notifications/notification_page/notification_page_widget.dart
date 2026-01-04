@@ -31,6 +31,24 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
     super.initState();
     _model = createModel(context, () => NotificationPageModel());
 
+    _model.notifyAll =
+        valueOrDefault<bool>(currentUserDocument?.notifyAll, false);
+    _model.notifyMoneyGame =
+        valueOrDefault<bool>(currentUserDocument?.notifyMoneyGame, false);
+    _model.notifyVegasGame =
+        valueOrDefault<bool>(currentUserDocument?.notifyVegasGame, false);
+    _model.notifyCompetitiveGame = valueOrDefault<bool>(
+        currentUserDocument?.notifyCompetitiveGame, false);
+    _model.notifyForFun =
+        valueOrDefault<bool>(currentUserDocument?.notifyForFun, false);
+    _model.notifyOnlyFromFriends = valueOrDefault<bool>(
+        currentUserDocument?.notifyOnlyFromFriends, false);
+    _model.notifyMemberDiscount = valueOrDefault<bool>(
+        currentUserDocument?.notifyMemberDiscount, false);
+    _model.notifyOff =
+        valueOrDefault<bool>(currentUserDocument?.notifyOff, false);
+    _model.switchValue = _model.notifyAll ?? false;
+
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       _model.notifyAll =
@@ -49,10 +67,9 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
           currentUserDocument?.notifyMemberDiscount, false);
       _model.notifyOff =
           valueOrDefault<bool>(currentUserDocument?.notifyOff, false);
+      _model.switchValue = _model.notifyAll ?? false;
       safeSetState(() {});
     });
-
-    _model.switchValue = _model.switchListTileValue1!;
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
