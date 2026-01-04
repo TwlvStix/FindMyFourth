@@ -998,7 +998,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 5.0, 0.0, 0.0),
                                   child: StreamBuilder<List<CourseRecord>>(
-                                    stream: FFAppState().getCourses(
+                                    stream: AppState().getCourses(
                                       requestFn: () => queryCourseRecord(),
                                     ),
                                     builder: (context, snapshot) {

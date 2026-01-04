@@ -86,7 +86,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<FFAppState>();
+    context.watch<AppState>();
 
     return GestureDetector(
       onTap: () {
@@ -913,7 +913,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                   AuthUserStreamWidget(
                                     builder: (context) =>
                                         StreamBuilder<List<CourseRecord>>(
-                                      stream: FFAppState().getCourses(
+                                      stream: AppState().getCourses(
                                         requestFn: () => queryCourseRecord(),
                                       ),
                                       builder: (context, snapshot) {
@@ -1835,12 +1835,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                     0.0, 40.0, 0.0, 0.0),
                                 child: AppButton(
                                   onPressed: () async {
-                                    FFAppState().theusernames =
+                                    AppState().theusernames =
                                         functions.usernameCreator(
                                             _model.usernameTextController.text);
                                     safeSetState(() {});
                                     if (currentUserDisplayName ==
-                                        FFAppState().theusernames) {
+                                        AppState().theusernames) {
                                       await currentUserReference!
                                           .update(createUsersRecordData(
                                         email: _model.emailTextController.text,
@@ -1848,7 +1848,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                         phoneNumber:
                                             _model.phoneNumTextController.text,
                                         handicap: _model.handicapValue,
-                                        displayName: FFAppState().theusernames,
+                                        displayName: AppState().theusernames,
                                         firstName:
                                             _model.firstNameTextController.text,
                                         lastName:
@@ -1878,7 +1878,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                         queryBuilder: (usersRecord) =>
                                             usersRecord.where(
                                           'display_name',
-                                          isEqualTo: FFAppState().theusernames,
+                                          isEqualTo: AppState().theusernames,
                                         ),
                                         singleRecord: true,
                                       ).then((s) => s.firstOrNull);
@@ -1912,7 +1912,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               .phoneNumTextController.text,
                                           handicap: _model.handicapValue,
                                           displayName:
-                                              FFAppState().theusernames,
+                                              AppState().theusernames,
                                           firstName: _model
                                               .firstNameTextController.text,
                                           lastName: _model
