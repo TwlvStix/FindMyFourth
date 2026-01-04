@@ -1,6 +1,6 @@
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -51,9 +51,9 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).tertiary,
+        backgroundColor: AppTheme.of(context).tertiary,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).tertiary,
+          backgroundColor: AppTheme.of(context).tertiary,
           automaticallyImplyLeading: false,
           leading: InkWell(
             splashColor: Colors.transparent,
@@ -65,7 +65,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
             },
             child: Icon(
               Icons.arrow_back_rounded,
-              color: FlutterFlowTheme.of(context).primaryBtnText,
+              color: AppTheme.of(context).primaryBtnText,
               size: 30.0,
             ),
           ),
@@ -96,7 +96,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                               width: 100.0,
                               height: 100.0,
                               decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
+                                color: AppTheme.of(context)
                                     .secondaryBackground,
                                 shape: BoxShape.circle,
                               ),
@@ -141,25 +141,25 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                             widget.userRef?.firstName,
                             'First',
                           ),
-                          style: FlutterFlowTheme.of(context)
+                          style: AppTheme.of(context)
                               .bodyMedium
                               .override(
                                 font: GoogleFonts.outfit(
-                                  fontWeight: FlutterFlowTheme.of(context)
+                                  fontWeight: AppTheme.of(context)
                                       .bodyMedium
                                       .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
+                                  fontStyle: AppTheme.of(context)
                                       .bodyMedium
                                       .fontStyle,
                                 ),
                                 color:
-                                    FlutterFlowTheme.of(context).primaryBtnText,
+                                    AppTheme.of(context).primaryBtnText,
                                 fontSize: 18.0,
                                 letterSpacing: 0.0,
-                                fontWeight: FlutterFlowTheme.of(context)
+                                fontWeight: AppTheme.of(context)
                                     .bodyMedium
                                     .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
+                                fontStyle: AppTheme.of(context)
                                     .bodyMedium
                                     .fontStyle,
                               ),
@@ -172,25 +172,25 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                               widget.userRef?.lastName,
                               'last',
                             ),
-                            style: FlutterFlowTheme.of(context)
+                            style: AppTheme.of(context)
                                 .bodyMedium
                                 .override(
                                   font: GoogleFonts.outfit(
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                    fontWeight: AppTheme.of(context)
                                         .bodyMedium
                                         .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .bodyMedium
                                         .fontStyle,
                                   ),
-                                  color: FlutterFlowTheme.of(context)
+                                  color: AppTheme.of(context)
                                       .primaryBtnText,
                                   fontSize: 18.0,
                                   letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
+                                  fontWeight: AppTheme.of(context)
                                       .bodyMedium
                                       .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
+                                  fontStyle: AppTheme.of(context)
                                       .bodyMedium
                                       .fontStyle,
                                 ),
@@ -211,25 +211,25 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                             widget.userRef?.displayName,
                             'Dis_Name',
                           ),
-                          style: FlutterFlowTheme.of(context)
+                          style: AppTheme.of(context)
                               .bodyMedium
                               .override(
                                 font: GoogleFonts.outfit(
-                                  fontWeight: FlutterFlowTheme.of(context)
+                                  fontWeight: AppTheme.of(context)
                                       .bodyMedium
                                       .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
+                                  fontStyle: AppTheme.of(context)
                                       .bodyMedium
                                       .fontStyle,
                                 ),
                                 color:
-                                    FlutterFlowTheme.of(context).primaryBtnText,
+                                    AppTheme.of(context).primaryBtnText,
                                 fontSize: 18.0,
                                 letterSpacing: 0.0,
-                                fontWeight: FlutterFlowTheme.of(context)
+                                fontWeight: AppTheme.of(context)
                                     .bodyMedium
                                     .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
+                                fontStyle: AppTheme.of(context)
                                     .bodyMedium
                                     .fontStyle,
                               ),
@@ -242,25 +242,25 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                               widget.userRef?.phoneNumber,
                               '999-9999',
                             ),
-                            style: FlutterFlowTheme.of(context)
+                            style: AppTheme.of(context)
                                 .bodyMedium
                                 .override(
                                   font: GoogleFonts.outfit(
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                    fontWeight: AppTheme.of(context)
                                         .bodyMedium
                                         .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .bodyMedium
                                         .fontStyle,
                                   ),
-                                  color: FlutterFlowTheme.of(context)
+                                  color: AppTheme.of(context)
                                       .primaryBtnText,
                                   fontSize: 18.0,
                                   letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
+                                  fontWeight: AppTheme.of(context)
                                       .bodyMedium
                                       .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
+                                  fontStyle: AppTheme.of(context)
                                       .bodyMedium
                                       .fontStyle,
                                 ),
@@ -281,25 +281,25 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                             widget.userRef?.email,
                             '@gmail.com',
                           ),
-                          style: FlutterFlowTheme.of(context)
+                          style: AppTheme.of(context)
                               .bodyMedium
                               .override(
                                 font: GoogleFonts.outfit(
-                                  fontWeight: FlutterFlowTheme.of(context)
+                                  fontWeight: AppTheme.of(context)
                                       .bodyMedium
                                       .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
+                                  fontStyle: AppTheme.of(context)
                                       .bodyMedium
                                       .fontStyle,
                                 ),
                                 color:
-                                    FlutterFlowTheme.of(context).primaryBtnText,
+                                    AppTheme.of(context).primaryBtnText,
                                 fontSize: 18.0,
                                 letterSpacing: 0.0,
-                                fontWeight: FlutterFlowTheme.of(context)
+                                fontWeight: AppTheme.of(context)
                                     .bodyMedium
                                     .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
+                                fontStyle: AppTheme.of(context)
                                     .bodyMedium
                                     .fontStyle,
                               ),
@@ -312,7 +312,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                       width: double.infinity,
                       height: 400.0,
                       decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
+                        color: AppTheme.of(context).secondaryBackground,
                         boxShadow: [
                           BoxShadow(
                             blurRadius: 3.0,
@@ -356,7 +356,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                   0.0, 8.0, 16.0, 8.0),
                                           child: FaIcon(
                                             FontAwesomeIcons.mapMarkerAlt,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
@@ -369,7 +369,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                             child: Text(
                                               'Home Course',
                                               textAlign: TextAlign.start,
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .bodyMedium
                                                   .override(
@@ -377,7 +377,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -385,7 +385,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                     letterSpacing: 0.0,
                                                     fontWeight: FontWeight.w500,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodyMedium
                                                             .fontStyle,
@@ -418,7 +418,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                   'TWLV',
                                                 ),
                                                 textAlign: TextAlign.start,
-                                                style: FlutterFlowTheme.of(
+                                                style: AppTheme.of(
                                                         context)
                                                     .bodyMedium
                                                     .override(
@@ -426,7 +426,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                         fontWeight:
                                                             FontWeight.w500,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
@@ -436,7 +436,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -462,7 +462,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                   0.0, 8.0, 16.0, 8.0),
                                           child: FaIcon(
                                             FontAwesomeIcons.golfBall,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
@@ -475,7 +475,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                             child: Text(
                                               'Handicap',
                                               textAlign: TextAlign.start,
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .bodyMedium
                                                   .override(
@@ -483,7 +483,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -491,7 +491,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                     letterSpacing: 0.0,
                                                     fontWeight: FontWeight.w500,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodyMedium
                                                             .fontStyle,
@@ -514,7 +514,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                   '6',
                                                 ),
                                                 textAlign: TextAlign.start,
-                                                style: FlutterFlowTheme.of(
+                                                style: AppTheme.of(
                                                         context)
                                                     .bodyMedium
                                                     .override(
@@ -522,7 +522,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                         fontWeight:
                                                             FontWeight.w500,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
@@ -532,7 +532,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -558,7 +558,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                   0.0, 8.0, 16.0, 8.0),
                                           child: Icon(
                                             Icons.local_drink,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
@@ -571,7 +571,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                             child: Text(
                                               'Drinks',
                                               textAlign: TextAlign.start,
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .bodyMedium
                                                   .override(
@@ -579,7 +579,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -587,7 +587,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                     letterSpacing: 0.0,
                                                     fontWeight: FontWeight.w500,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodyMedium
                                                             .fontStyle,
@@ -610,7 +610,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                   '0',
                                                 ),
                                                 textAlign: TextAlign.start,
-                                                style: FlutterFlowTheme.of(
+                                                style: AppTheme.of(
                                                         context)
                                                     .bodyMedium
                                                     .override(
@@ -618,7 +618,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                         fontWeight:
                                                             FontWeight.w500,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
@@ -628,7 +628,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -654,7 +654,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                   0.0, 8.0, 16.0, 8.0),
                                           child: FaIcon(
                                             FontAwesomeIcons.music,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
@@ -667,7 +667,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                             child: Text(
                                               'Music',
                                               textAlign: TextAlign.start,
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .bodyMedium
                                                   .override(
@@ -675,7 +675,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -683,7 +683,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                     letterSpacing: 0.0,
                                                     fontWeight: FontWeight.w500,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodyMedium
                                                             .fontStyle,
@@ -706,7 +706,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                   '5',
                                                 ),
                                                 textAlign: TextAlign.start,
-                                                style: FlutterFlowTheme.of(
+                                                style: AppTheme.of(
                                                         context)
                                                     .bodyMedium
                                                     .override(
@@ -714,7 +714,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                         fontWeight:
                                                             FontWeight.w500,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
@@ -724,7 +724,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -750,7 +750,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                   0.0, 8.0, 16.0, 8.0),
                                           child: FaIcon(
                                             FontAwesomeIcons.moneyBillAlt,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
@@ -763,7 +763,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                             child: Text(
                                               'Play for Money',
                                               textAlign: TextAlign.start,
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .bodyMedium
                                                   .override(
@@ -771,7 +771,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -779,7 +779,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                     letterSpacing: 0.0,
                                                     fontWeight: FontWeight.w500,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodyMedium
                                                             .fontStyle,
@@ -802,7 +802,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                   '5',
                                                 ),
                                                 textAlign: TextAlign.start,
-                                                style: FlutterFlowTheme.of(
+                                                style: AppTheme.of(
                                                         context)
                                                     .bodyMedium
                                                     .override(
@@ -810,7 +810,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                         fontWeight:
                                                             FontWeight.w500,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
@@ -820,7 +820,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -846,7 +846,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                   0.0, 8.0, 16.0, 8.0),
                                           child: FaIcon(
                                             FontAwesomeIcons.clock,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
@@ -859,7 +859,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                             child: Text(
                                               'Pace of Play',
                                               textAlign: TextAlign.start,
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .bodyMedium
                                                   .override(
@@ -867,7 +867,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -875,7 +875,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                     letterSpacing: 0.0,
                                                     fontWeight: FontWeight.w500,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodyMedium
                                                             .fontStyle,
@@ -898,7 +898,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                   '5',
                                                 ),
                                                 textAlign: TextAlign.start,
-                                                style: FlutterFlowTheme.of(
+                                                style: AppTheme.of(
                                                         context)
                                                     .bodyMedium
                                                     .override(
@@ -906,7 +906,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                         fontWeight:
                                                             FontWeight.w500,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
@@ -916,7 +916,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,

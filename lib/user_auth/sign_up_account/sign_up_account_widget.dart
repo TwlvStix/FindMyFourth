@@ -1,7 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/widgets/app_button.dart';
 import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:easy_debounce/easy_debounce.dart';
@@ -69,7 +69,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                 width: 100.0,
                 height: double.infinity,
                 decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  color: AppTheme.of(context).secondaryBackground,
                   image: DecorationImage(
                     fit: BoxFit.cover,
                     image: Image.asset(
@@ -102,25 +102,25 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                               children: [
                                 Text(
                                   'Create an account',
-                                  style: FlutterFlowTheme.of(context)
+                                  style: AppTheme.of(context)
                                       .displaySmall
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .displaySmall
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .displaySmall
                                                   .fontStyle,
                                         ),
                                         fontSize: 32.0,
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .displaySmall
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .displaySmall
                                             .fontStyle,
                                       ),
@@ -130,27 +130,27 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       0.0, 12.0, 0.0, 24.0),
                                   child: Text(
                                     'Let\'s get started by filling out the form below.',
-                                    style: FlutterFlowTheme.of(context)
+                                    style: AppTheme.of(context)
                                         .labelMedium
                                         .override(
                                           font: GoogleFonts.outfit(
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontStyle,
                                           ),
                                           color: Colors.white,
                                           letterSpacing: 0.0,
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontStyle,
                                         ),
@@ -176,33 +176,33 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       obscureText: false,
                                       decoration: InputDecoration(
                                         labelText: 'Email',
-                                        labelStyle: FlutterFlowTheme.of(context)
+                                        labelStyle: AppTheme.of(context)
                                             .bodyLarge
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyLarge
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyLarge
                                                         .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontStyle,
                                             ),
                                         alignLabelWithHint: false,
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .primaryBackground,
                                             width: 2.0,
                                           ),
@@ -211,7 +211,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .primary,
                                             width: 2.0,
                                           ),
@@ -220,7 +220,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         errorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .error,
                                             width: 2.0,
                                           ),
@@ -229,7 +229,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         focusedErrorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .error,
                                             width: 2.0,
                                           ),
@@ -237,7 +237,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                               BorderRadius.circular(12.0),
                                         ),
                                         filled: true,
-                                        fillColor: FlutterFlowTheme.of(context)
+                                        fillColor: AppTheme.of(context)
                                             .primaryBackground,
                                         suffixIcon: _model
                                                 .emailAddressTextController!
@@ -258,31 +258,31 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                               )
                                             : null,
                                       ),
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .bodyLarge
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontStyle,
                                             ),
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyLarge
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyLarge
                                                     .fontStyle,
                                           ),
                                       keyboardType: TextInputType.emailAddress,
-                                      cursorColor: FlutterFlowTheme.of(context)
+                                      cursorColor: AppTheme.of(context)
                                           .primaryText,
                                       validator: _model
                                           .emailAddressTextControllerValidator
@@ -304,32 +304,32 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       obscureText: !_model.passwordVisibility,
                                       decoration: InputDecoration(
                                         labelText: 'Password',
-                                        labelStyle: FlutterFlowTheme.of(context)
+                                        labelStyle: AppTheme.of(context)
                                             .labelLarge
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelLarge
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelLarge
                                                         .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelLarge
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelLarge
                                                       .fontStyle,
                                             ),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .primaryBackground,
                                             width: 2.0,
                                           ),
@@ -338,7 +338,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .primary,
                                             width: 2.0,
                                           ),
@@ -347,7 +347,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         errorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .error,
                                             width: 2.0,
                                           ),
@@ -356,7 +356,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         focusedErrorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .error,
                                             width: 2.0,
                                           ),
@@ -364,7 +364,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                               BorderRadius.circular(12.0),
                                         ),
                                         filled: true,
-                                        fillColor: FlutterFlowTheme.of(context)
+                                        fillColor: AppTheme.of(context)
                                             .primaryBackground,
                                         suffixIcon: InkWell(
                                           onTap: () => safeSetState(
@@ -377,36 +377,36 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             _model.passwordVisibility
                                                 ? Icons.visibility_outlined
                                                 : Icons.visibility_off_outlined,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
                                         ),
                                       ),
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .bodyLarge
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontStyle,
                                             ),
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyLarge
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyLarge
                                                     .fontStyle,
                                           ),
-                                      cursorColor: FlutterFlowTheme.of(context)
+                                      cursorColor: AppTheme.of(context)
                                           .primaryText,
                                       validator: _model
                                           .passwordTextControllerValidator
@@ -431,32 +431,32 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                           !_model.passwordConfirmVisibility,
                                       decoration: InputDecoration(
                                         labelText: 'Confirm Password',
-                                        labelStyle: FlutterFlowTheme.of(context)
+                                        labelStyle: AppTheme.of(context)
                                             .labelLarge
                                             .override(
                                               font: GoogleFonts.outfit(
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelLarge
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelLarge
                                                         .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelLarge
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelLarge
                                                       .fontStyle,
                                             ),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .primaryBackground,
                                             width: 2.0,
                                           ),
@@ -465,7 +465,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .primary,
                                             width: 2.0,
                                           ),
@@ -474,7 +474,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         errorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .error,
                                             width: 2.0,
                                           ),
@@ -483,7 +483,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         focusedErrorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .error,
                                             width: 2.0,
                                           ),
@@ -491,7 +491,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                               BorderRadius.circular(12.0),
                                         ),
                                         filled: true,
-                                        fillColor: FlutterFlowTheme.of(context)
+                                        fillColor: AppTheme.of(context)
                                             .primaryBackground,
                                         suffixIcon: InkWell(
                                           onTap: () => safeSetState(
@@ -506,37 +506,37 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             _model.passwordConfirmVisibility
                                                 ? Icons.visibility_outlined
                                                 : Icons.visibility_off_outlined,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
                                         ),
                                       ),
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .bodyLarge
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyLarge
                                                       .fontStyle,
                                             ),
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyLarge
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyLarge
                                                     .fontStyle,
                                           ),
                                       minLines: 1,
-                                      cursorColor: FlutterFlowTheme.of(context)
+                                      cursorColor: AppTheme.of(context)
                                           .primaryText,
                                       validator: _model
                                           .passwordConfirmTextControllerValidator
@@ -547,7 +547,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, 16.0),
-                                  child: FFButtonWidget(
+                                  child: AppButton(
                                     onPressed: () async {
                                       GoRouter.of(context).prepareAuthEvent();
                                       if (_model.passwordTextController.text !=
@@ -589,7 +589,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       );
                                     },
                                     text: 'Create Account',
-                                    options: FFButtonOptions(
+                                    options: AppButtonOptions(
                                       width: double.infinity,
                                       height: 44.0,
                                       padding: EdgeInsetsDirectional.fromSTEB(
@@ -598,28 +598,28 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                           EdgeInsetsDirectional.fromSTEB(
                                               0.0, 0.0, 0.0, 0.0),
                                       color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      textStyle: FlutterFlowTheme.of(context)
+                                          AppTheme.of(context).primary,
+                                      textStyle: AppTheme.of(context)
                                           .titleSmall
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .titleSmall
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .titleSmall
                                                       .fontStyle,
                                             ),
                                             color: Colors.white,
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .titleSmall
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .titleSmall
                                                     .fontStyle,
                                           ),
@@ -652,7 +652,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                               height: 2.0,
                                               decoration: BoxDecoration(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .alternate,
                                               ),
                                             ),
@@ -666,7 +666,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             height: 32.0,
                                             decoration: BoxDecoration(
                                               color:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .secondaryBackground,
                                             ),
                                             alignment:
@@ -674,30 +674,30 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             child: Text(
                                               'OR',
                                               style:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelLarge
                                                       .override(
                                                         font:
                                                             GoogleFonts.outfit(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .labelLarge
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .labelLarge
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .labelLarge
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .labelLarge
                                                                 .fontStyle,
@@ -712,7 +712,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, 16.0),
-                                  child: FFButtonWidget(
+                                  child: AppButton(
                                     onPressed: () async {
                                       GoRouter.of(context).prepareAuthEvent();
                                       final user = await authManager
@@ -740,7 +740,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       FontAwesomeIcons.google,
                                       size: 20.0,
                                     ),
-                                    options: FFButtonOptions(
+                                    options: AppButtonOptions(
                                       width: double.infinity,
                                       height: 44.0,
                                       padding: EdgeInsetsDirectional.fromSTEB(
@@ -748,41 +748,41 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       iconPadding:
                                           EdgeInsetsDirectional.fromSTEB(
                                               0.0, 0.0, 0.0, 0.0),
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .secondaryBackground,
-                                      textStyle: FlutterFlowTheme.of(context)
+                                      textStyle: AppTheme.of(context)
                                           .titleSmall
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .titleSmall
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .titleSmall
                                                       .fontStyle,
                                             ),
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .primaryText,
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .titleSmall
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .titleSmall
                                                     .fontStyle,
                                           ),
                                       elevation: 0.0,
                                       borderSide: BorderSide(
-                                        color: FlutterFlowTheme.of(context)
+                                        color: AppTheme.of(context)
                                             .alternate,
                                         width: 2.0,
                                       ),
                                       borderRadius: BorderRadius.circular(12.0),
-                                      hoverColor: FlutterFlowTheme.of(context)
+                                      hoverColor: AppTheme.of(context)
                                           .primaryBackground,
                                     ),
                                   ),
@@ -792,7 +792,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                     : Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             0.0, 0.0, 0.0, 16.0),
-                                        child: FFButtonWidget(
+                                        child: AppButton(
                                           onPressed: () async {
                                             GoRouter.of(context)
                                                 .prepareAuthEvent();
@@ -823,7 +823,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             FontAwesomeIcons.apple,
                                             size: 20.0,
                                           ),
-                                          options: FFButtonOptions(
+                                          options: AppButtonOptions(
                                             width: double.infinity,
                                             height: 44.0,
                                             padding:
@@ -832,36 +832,36 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             iconPadding:
                                                 EdgeInsetsDirectional.fromSTEB(
                                                     0.0, 0.0, 0.0, 0.0),
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryBackground,
                                             textStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .titleSmall
                                                     .override(
                                                       font: GoogleFonts.outfit(
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .titleSmall
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .titleSmall
                                                                 .fontStyle,
                                                       ),
                                                       color:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .primaryText,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .titleSmall
                                                               .fontWeight,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .titleSmall
                                                               .fontStyle,
@@ -869,14 +869,14 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             elevation: 0.0,
                                             borderSide: BorderSide(
                                               color:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .alternate,
                                               width: 2.0,
                                             ),
                                             borderRadius:
                                                 BorderRadius.circular(12.0),
                                             hoverColor:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .primaryBackground,
                                           ),
                                         ),
@@ -916,7 +916,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             ),
                                             TextSpan(
                                               text: ' Sign In here',
-                                              style: FlutterFlowTheme.of(
+                                              style: AppTheme.of(
                                                       context)
                                                   .bodyMedium
                                                   .override(
@@ -924,7 +924,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                       fontWeight:
                                                           FontWeight.w600,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -933,24 +933,24 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                     letterSpacing: 0.0,
                                                     fontWeight: FontWeight.w600,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodyMedium
                                                             .fontStyle,
                                                   ),
                                             )
                                           ],
-                                          style: FlutterFlowTheme.of(context)
+                                          style: AppTheme.of(context)
                                               .bodyMedium
                                               .override(
                                                 font: GoogleFonts.outfit(
                                                   fontWeight:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .bodyMedium
                                                           .fontWeight,
                                                   fontStyle:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .bodyMedium
                                                           .fontStyle,
@@ -958,11 +958,11 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                 color: Colors.white,
                                                 letterSpacing: 0.0,
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyMedium
                                                         .fontStyle,
                                               ),
@@ -996,8 +996,8 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          FlutterFlowTheme.of(context).primary,
-                          FlutterFlowTheme.of(context).secondary
+                          AppTheme.of(context).primary,
+                          AppTheme.of(context).secondary
                         ],
                         stops: [0.0, 1.0],
                         begin: AlignmentDirectional(1.0, -1.0),
@@ -1017,7 +1017,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                               maxWidth: 400.0,
                             ),
                             decoration: BoxDecoration(
-                              color: FlutterFlowTheme.of(context)
+                              color: AppTheme.of(context)
                                   .secondaryBackground,
                               boxShadow: [
                                 BoxShadow(
@@ -1031,7 +1031,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                               ],
                               borderRadius: BorderRadius.circular(8.0),
                               border: Border.all(
-                                color: FlutterFlowTheme.of(context)
+                                color: AppTheme.of(context)
                                     .primaryBackground,
                                 width: 2.0,
                               ),
@@ -1066,7 +1066,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                 ),
                                                 child: Icon(
                                                   Icons.person,
-                                                  color: FlutterFlowTheme.of(
+                                                  color: AppTheme.of(
                                                           context)
                                                       .primary,
                                                   size: 24.0,
@@ -1076,30 +1076,30 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             Text(
                                               'UserName',
                                               style:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .titleMedium
                                                       .override(
                                                         font:
                                                             GoogleFonts.outfit(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .titleMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .titleMedium
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .titleMedium
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .titleMedium
                                                                 .fontStyle,
@@ -1115,30 +1115,30 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             Text(
                                               'Overall',
                                               style:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodySmall
                                                       .override(
                                                         font:
                                                             GoogleFonts.outfit(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodySmall
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodySmall
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodySmall
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodySmall
                                                                 .fontStyle,
@@ -1153,31 +1153,31 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                           0.0, 0.0, 4.0, 0.0),
                                                   child: Text(
                                                     '5',
-                                                    style: FlutterFlowTheme.of(
+                                                    style: AppTheme.of(
                                                             context)
                                                         .headlineMedium
                                                         .override(
                                                           font: GoogleFonts
                                                               .outfit(
                                                             fontWeight:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .headlineMedium
                                                                     .fontWeight,
                                                             fontStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .headlineMedium
                                                                     .fontStyle,
                                                           ),
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .headlineMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .headlineMedium
                                                                   .fontStyle,
@@ -1186,7 +1186,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                 ),
                                                 Icon(
                                                   Icons.star_rounded,
-                                                  color: FlutterFlowTheme.of(
+                                                  color: AppTheme.of(
                                                           context)
                                                       .primary,
                                                   size: 20.0,
@@ -1207,29 +1207,29 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         Expanded(
                                           child: AutoSizeText(
                                             'Nice outdoor courts, solid concrete and good hoops for the neighborhood.',
-                                            style: FlutterFlowTheme.of(context)
+                                            style: AppTheme.of(context)
                                                 .bodyMedium
                                                 .override(
                                                   font: GoogleFonts.outfit(
                                                     fontWeight:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodyMedium
                                                             .fontWeight,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodyMedium
                                                             .fontStyle,
                                                   ),
                                                   letterSpacing: 0.0,
                                                   fontWeight:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .bodyMedium
                                                           .fontWeight,
                                                   fontStyle:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .bodyMedium
                                                           .fontStyle,

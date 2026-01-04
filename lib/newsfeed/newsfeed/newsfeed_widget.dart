@@ -1,11 +1,11 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_animations.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/custom_functions.dart' as functions;
+import '/core/animations.dart';
+import '/core/widgets/app_icon_button.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/widgets/app_button.dart';
+import '/core/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -125,7 +125,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
         // Customize what your widget looks like when it's loading.
         if (!snapshot.hasData) {
           return Scaffold(
-            backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+            backgroundColor: AppTheme.of(context).primaryBackground,
             body: Center(
               child: SizedBox(
                 width: 50.0,
@@ -147,18 +147,18 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
           },
           child: Scaffold(
             key: scaffoldKey,
-            backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+            backgroundColor: AppTheme.of(context).primaryBackground,
             appBar: AppBar(
-              backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+              backgroundColor: AppTheme.of(context).primaryBackground,
               automaticallyImplyLeading: false,
-              leading: FlutterFlowIconButton(
+              leading: AppIconButton(
                 borderColor: Colors.transparent,
                 borderRadius: 30.0,
                 borderWidth: 1.0,
                 buttonSize: 55.0,
                 icon: Icon(
                   Icons.arrow_back_sharp,
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   size: 25.0,
                 ),
                 onPressed: () async {
@@ -167,36 +167,36 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
               ),
               title: Text(
                 'Twlv Stix News',
-                style: FlutterFlowTheme.of(context).headlineMedium.override(
+                style: AppTheme.of(context).headlineMedium.override(
                       font: GoogleFonts.outfit(
-                        fontWeight: FlutterFlowTheme.of(context)
+                        fontWeight: AppTheme.of(context)
                             .headlineMedium
                             .fontWeight,
-                        fontStyle: FlutterFlowTheme.of(context)
+                        fontStyle: AppTheme.of(context)
                             .headlineMedium
                             .fontStyle,
                       ),
-                      color: FlutterFlowTheme.of(context).primary,
+                      color: AppTheme.of(context).primary,
                       fontSize: 22.0,
                       letterSpacing: 0.0,
-                      fontWeight: FlutterFlowTheme.of(context)
+                      fontWeight: AppTheme.of(context)
                           .headlineMedium
                           .fontWeight,
                       fontStyle:
-                          FlutterFlowTheme.of(context).headlineMedium.fontStyle,
+                          AppTheme.of(context).headlineMedium.fontStyle,
                     ),
               ),
               actions: [
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 15.0, 0.0),
-                  child: FlutterFlowIconButton(
+                  child: AppIconButton(
                     borderRadius: 20.0,
                     borderWidth: 1.0,
                     buttonSize: 40.0,
-                    fillColor: FlutterFlowTheme.of(context).primaryBackground,
+                    fillColor: AppTheme.of(context).primaryBackground,
                     icon: Icon(
                       Icons.person_outline_outlined,
-                      color: FlutterFlowTheme.of(context).primary,
+                      color: AppTheme.of(context).primary,
                       size: 30.0,
                     ),
                     onPressed: () async {
@@ -215,14 +215,14 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                 ),
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
-                  child: FlutterFlowIconButton(
+                  child: AppIconButton(
                     borderRadius: 20.0,
                     borderWidth: 1.0,
                     buttonSize: 40.0,
-                    fillColor: FlutterFlowTheme.of(context).primaryBackground,
+                    fillColor: AppTheme.of(context).primaryBackground,
                     icon: Icon(
                       Icons.search_sharp,
-                      color: FlutterFlowTheme.of(context).primary,
+                      color: AppTheme.of(context).primary,
                       size: 26.0,
                     ),
                     onPressed: () async {
@@ -267,31 +267,31 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                 obscureText: false,
                                 decoration: InputDecoration(
                                   hintText: 'Search…',
-                                  hintStyle: FlutterFlowTheme.of(context)
+                                  hintStyle: AppTheme.of(context)
                                       .bodySmall
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodySmall
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodySmall
                                                   .fontStyle,
                                         ),
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .bodySmall
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodySmall
                                             .fontStyle,
                                       ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
                                       color:
-                                          FlutterFlowTheme.of(context).primary,
+                                          AppTheme.of(context).primary,
                                       width: 1.0,
                                     ),
                                     borderRadius: const BorderRadius.only(
@@ -330,22 +330,22 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                     ),
                                   ),
                                 ),
-                                style: FlutterFlowTheme.of(context)
+                                style: AppTheme.of(context)
                                     .bodyMedium
                                     .override(
                                       font: GoogleFonts.outfit(
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .bodyMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
                                       letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .bodyMedium
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
@@ -358,7 +358,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 10.0, 5.0, 0.0),
-                            child: FFButtonWidget(
+                            child: AppButton(
                               onPressed: () async {
                                 safeSetState(() {
                                   _model.simpleSearchResults = TextSearch(
@@ -393,31 +393,31 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                 }
                               },
                               text: 'SEARCH',
-                              options: FFButtonOptions(
+                              options: AppButtonOptions(
                                 width: 100.0,
                                 height: 40.0,
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 0.0, 0.0),
                                 iconPadding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 0.0, 0.0),
-                                color: FlutterFlowTheme.of(context).primary,
-                                textStyle: FlutterFlowTheme.of(context)
+                                color: AppTheme.of(context).primary,
+                                textStyle: AppTheme.of(context)
                                     .titleSmall
                                     .override(
                                       font: GoogleFonts.outfit(
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .titleSmall
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .titleSmall
                                             .fontStyle,
                                       ),
                                       color: Colors.white,
                                       letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .titleSmall
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .titleSmall
                                           .fontStyle,
                                     ),
@@ -439,17 +439,17 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 10.0, 0.0, 0.0),
                               child: AuthUserStreamWidget(
-                                builder: (context) => FlutterFlowIconButton(
+                                builder: (context) => AppIconButton(
                                   borderColor:
-                                      FlutterFlowTheme.of(context).primary,
+                                      AppTheme.of(context).primary,
                                   borderRadius: 20.0,
                                   borderWidth: 1.0,
                                   buttonSize: 40.0,
                                   fillColor:
-                                      FlutterFlowTheme.of(context).primary,
+                                      AppTheme.of(context).primary,
                                   icon: Icon(
                                     Icons.add,
-                                    color: FlutterFlowTheme.of(context)
+                                    color: AppTheme.of(context)
                                         .primaryBtnText,
                                     size: 24.0,
                                   ),
@@ -496,7 +496,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                 child: Container(
                                   width: 100.0,
                                   decoration: BoxDecoration(
-                                    color: FlutterFlowTheme.of(context)
+                                    color: AppTheme.of(context)
                                         .secondaryBackground,
                                   ),
                                   child: Column(
@@ -573,7 +573,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                                   1.0, 1.0),
                                               child: AuthUserStreamWidget(
                                                 builder: (context) =>
-                                                    FlutterFlowIconButton(
+                                                    AppIconButton(
                                                   borderColor:
                                                       Colors.transparent,
                                                   borderRadius: 30.0,
@@ -581,7 +581,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                                   buttonSize: 60.0,
                                                   icon: Icon(
                                                     Icons.delete,
-                                                    color: FlutterFlowTheme.of(
+                                                    color: AppTheme.of(
                                                             context)
                                                         .secondary,
                                                     size: 30.0,
@@ -608,30 +608,30 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                             Text(
                                               postsItem.title,
                                               style:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .headlineMedium
                                                       .override(
                                                         font:
                                                             GoogleFonts.outfit(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .headlineMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .headlineMedium
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .headlineMedium
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .headlineMedium
                                                                 .fontStyle,
@@ -654,30 +654,30 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                                 replacement: '…',
                                               ),
                                               style:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodySmall
                                                       .override(
                                                         font:
                                                             GoogleFonts.outfit(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodySmall
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodySmall
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodySmall
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodySmall
                                                                 .fontStyle,

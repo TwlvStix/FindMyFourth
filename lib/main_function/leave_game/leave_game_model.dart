@@ -1,8 +1,8 @@
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_util.dart';
 import 'leave_game_widget.dart' show LeaveGameWidget;
 import 'package:flutter/material.dart';
 
-class LeaveGameModel extends FlutterFlowModel<LeaveGameWidget> {
+class LeaveGameModel extends AppModel<LeaveGameWidget> {
   @override
   void initState(BuildContext context) {}
 

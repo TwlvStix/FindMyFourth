@@ -1,9 +1,9 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
+import '/core/widgets/app_icon_button.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/widgets/app_button.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -51,18 +51,18 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBtnText,
+        backgroundColor: AppTheme.of(context).primaryBtnText,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+          backgroundColor: AppTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
-          leading: FlutterFlowIconButton(
+          leading: AppIconButton(
             borderColor: Colors.transparent,
             borderRadius: 30.0,
             borderWidth: 1.0,
             buttonSize: 55.0,
             icon: Icon(
               Icons.arrow_back_ios,
-              color: FlutterFlowTheme.of(context).primary,
+              color: AppTheme.of(context).primary,
               size: 25.0,
             ),
             onPressed: () async {
@@ -71,31 +71,31 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
           ),
           title: Text(
             'My  Games',
-            style: FlutterFlowTheme.of(context).headlineLarge.override(
+            style: AppTheme.of(context).headlineLarge.override(
                   font: GoogleFonts.outfit(
                     fontWeight: FontWeight.w500,
                     fontStyle:
-                        FlutterFlowTheme.of(context).headlineLarge.fontStyle,
+                        AppTheme.of(context).headlineLarge.fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   fontSize: 24.0,
                   letterSpacing: 0.0,
                   fontWeight: FontWeight.w500,
                   fontStyle:
-                      FlutterFlowTheme.of(context).headlineLarge.fontStyle,
+                      AppTheme.of(context).headlineLarge.fontStyle,
                 ),
           ),
           actions: [
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 15.0, 0.0),
-              child: FlutterFlowIconButton(
+              child: AppIconButton(
                 borderRadius: 20.0,
                 borderWidth: 1.0,
                 buttonSize: 40.0,
-                fillColor: FlutterFlowTheme.of(context).primaryBackground,
+                fillColor: AppTheme.of(context).primaryBackground,
                 icon: Icon(
                   Icons.person_outline_outlined,
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   size: 30.0,
                 ),
                 onPressed: () async {
@@ -114,14 +114,14 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
             ),
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
-              child: FlutterFlowIconButton(
+              child: AppIconButton(
                 borderRadius: 20.0,
                 borderWidth: 1.0,
                 buttonSize: 40.0,
-                fillColor: FlutterFlowTheme.of(context).primaryBackground,
+                fillColor: AppTheme.of(context).primaryBackground,
                 icon: Icon(
                   Icons.search_sharp,
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   size: 26.0,
                 ),
                 onPressed: () async {
@@ -146,7 +146,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
           width: double.infinity,
           height: double.infinity,
           decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).secondaryBackground,
+            color: AppTheme.of(context).secondaryBackground,
             image: DecorationImage(
               fit: BoxFit.cover,
               image: Image.asset(
@@ -257,30 +257,30 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                   listViewGamesRecord.nameGame,
                                                   'Game Name',
                                                 ),
-                                                style: FlutterFlowTheme.of(
+                                                style: AppTheme.of(
                                                         context)
                                                     .bodyMedium
                                                     .override(
                                                       font: GoogleFonts.outfit(
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
                                                       ),
                                                       letterSpacing: 0.0,
                                                       fontWeight:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontWeight,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -301,7 +301,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                               .date),
                                                       'Friday',
                                                     ),
-                                                    style: FlutterFlowTheme.of(
+                                                    style: AppTheme.of(
                                                             context)
                                                         .bodyMedium
                                                         .override(
@@ -311,7 +311,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                                 FontWeight
                                                                     .normal,
                                                             fontStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
@@ -320,7 +320,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontStyle,
@@ -328,7 +328,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                   ),
                                                   Text(
                                                     ',',
-                                                    style: FlutterFlowTheme.of(
+                                                    style: AppTheme.of(
                                                             context)
                                                         .bodyMedium
                                                         .override(
@@ -338,7 +338,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                                 FontWeight
                                                                     .normal,
                                                             fontStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
@@ -347,7 +347,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontStyle,
@@ -366,7 +366,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                                 .date),
                                                         'July',
                                                       ),
-                                                      style: FlutterFlowTheme
+                                                      style: AppTheme
                                                               .of(context)
                                                           .bodyMedium
                                                           .override(
@@ -376,7 +376,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                                   FontWeight
                                                                       .normal,
                                                               fontStyle:
-                                                                  FlutterFlowTheme.of(
+                                                                  AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontStyle,
@@ -386,7 +386,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                                 FontWeight
                                                                     .normal,
                                                             fontStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
@@ -406,7 +406,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                                 .date),
                                                         '16',
                                                       ),
-                                                      style: FlutterFlowTheme
+                                                      style: AppTheme
                                                               .of(context)
                                                           .bodyMedium
                                                           .override(
@@ -416,7 +416,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                                   FontWeight
                                                                       .normal,
                                                               fontStyle:
-                                                                  FlutterFlowTheme.of(
+                                                                  AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontStyle,
@@ -426,7 +426,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                                 FontWeight
                                                                     .normal,
                                                             fontStyle:
-                                                                FlutterFlowTheme.of(
+                                                                AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
@@ -447,29 +447,29 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                         '9:00',
                                                       ),
                                                       style:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .override(
                                                                 font:
                                                                     GoogleFonts
                                                                         .outfit(
-                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                  fontWeight: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .bodyMedium
                                                                       .fontStyle,
                                                                 ),
                                                                 letterSpacing:
                                                                     0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
+                                                                fontWeight: AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
+                                                                fontStyle: AppTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .fontStyle,
@@ -484,30 +484,30 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                       .coursePlay,
                                                   'Course',
                                                 ),
-                                                style: FlutterFlowTheme.of(
+                                                style: AppTheme.of(
                                                         context)
                                                     .bodyMedium
                                                     .override(
                                                       font: GoogleFonts.outfit(
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
                                                       ),
                                                       letterSpacing: 0.0,
                                                       fontWeight:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontWeight,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -520,7 +520,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                       Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             0.0, 0.0, 5.0, 0.0),
-                                        child: FFButtonWidget(
+                                        child: AppButton(
                                           onPressed: () async {
                                             context.pushNamed(
                                               GameJoinedDetailedWidget
@@ -545,7 +545,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                             );
                                           },
                                           text: 'View',
-                                          options: FFButtonOptions(
+                                          options: AppButtonOptions(
                                             width: 54.0,
                                             height: 47.0,
                                             padding:
@@ -556,14 +556,14 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                     0.0, 0.0, 0.0, 0.0),
                                             color: Color(0xFF253551),
                                             textStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .override(
                                                       font: GoogleFonts.outfit(
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
@@ -574,7 +574,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
@@ -592,9 +592,9 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                       Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             5.0, 0.0, 0.0, 0.0),
-                                        child: FlutterFlowIconButton(
+                                        child: AppIconButton(
                                           borderColor:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .primary,
                                           borderRadius: 20.0,
                                           borderWidth: 1.0,

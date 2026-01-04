@@ -3,29 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
-Widget wrapWithModel<T extends FlutterFlowModel>({
-  required T model,
-  required Widget child,
-  required VoidCallback updateCallback,
-  bool updateOnChange = false,
-}) {
-  // Set the component to optionally update the page on updates.
-  model.setOnUpdate(
-    onUpdate: updateCallback,
-    updateOnChange: updateOnChange,
-  );
-  // Models for components within a page will be disposed by the page's model,
-  // so we don't want the component widget to dispose them until the page is
-  // itself disposed.
-  model.disposeOnWidgetDisposal = false;
-  // Wrap in a Provider so that the model can be accessed by the component.
-  return Provider<T>.value(
-    value: model,
-    child: child,
-  );
-}
-
-T createModel<T extends FlutterFlowModel>(
+T createModel<T extends AppModel>(
   BuildContext context,
   T Function() defaultBuilder,
 ) {
@@ -34,7 +12,7 @@ T createModel<T extends FlutterFlowModel>(
   return model;
 }
 
-abstract class FlutterFlowModel<W extends Widget> {
+abstract class AppModel<W extends Widget> {
   // Initialization methods
   bool _isInitialized = false;
   void initState(BuildContext context);
@@ -78,7 +56,7 @@ abstract class FlutterFlowModel<W extends Widget> {
   // Function to call when the model receives an update.
   VoidCallback _updateCallback = () {};
   void onUpdate() => updateOnChange ? _updateCallback() : () {};
-  FlutterFlowModel setOnUpdate({
+  AppModel setOnUpdate({
     bool updateOnChange = false,
     required VoidCallback onUpdate,
   }) =>
@@ -92,8 +70,8 @@ abstract class FlutterFlowModel<W extends Widget> {
   }
 }
 
-class FlutterFlowDynamicModels<T extends FlutterFlowModel> {
-  FlutterFlowDynamicModels(this.defaultBuilder);
+class AppDynamicModels<T extends AppModel> {
+  AppDynamicModels(this.defaultBuilder);
 
   final T Function() defaultBuilder;
   final Map<String, T> _childrenModels = {};

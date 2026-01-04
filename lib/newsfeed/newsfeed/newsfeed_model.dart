@@ -1,10 +1,10 @@
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_util.dart';
 import '/index.dart';
 import 'newsfeed_widget.dart' show NewsfeedWidget;
 import 'package:flutter/material.dart';
 
-class NewsfeedModel extends FlutterFlowModel<NewsfeedWidget> {
+class NewsfeedModel extends AppModel<NewsfeedWidget> {
   ///  State fields for stateful widgets in this page.
 
   // State field(s) for inputSearch widget.

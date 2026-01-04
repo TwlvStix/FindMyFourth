@@ -1,10 +1,10 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/upload_data.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/widgets/app_button.dart';
+import '/core/upload_data.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -51,9 +51,9 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+      backgroundColor: AppTheme.of(context).secondaryBackground,
       appBar: AppBar(
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: AppTheme.of(context).secondaryBackground,
         automaticallyImplyLeading: false,
         leading: InkWell(
           splashColor: Colors.transparent,
@@ -65,22 +65,22 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
           },
           child: Icon(
             Icons.arrow_back_ios,
-            color: FlutterFlowTheme.of(context).secondaryText,
+            color: AppTheme.of(context).secondaryText,
             size: 20.0,
           ),
         ),
         title: Text(
           'Create Post',
-          style: FlutterFlowTheme.of(context).bodyMedium.override(
+          style: AppTheme.of(context).bodyMedium.override(
                 font: GoogleFonts.outfit(
                   fontWeight: FontWeight.w500,
-                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                  fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
                 ),
-                color: FlutterFlowTheme.of(context).primary,
+                color: AppTheme.of(context).primary,
                 fontSize: 26.0,
                 letterSpacing: 0.0,
                 fontWeight: FontWeight.w500,
-                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
               ),
         ),
         actions: [],
@@ -105,20 +105,20 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                     decoration: InputDecoration(
                       hintText: 'Enter title',
                       hintStyle:
-                          FlutterFlowTheme.of(context).bodySmall.override(
+                          AppTheme.of(context).bodySmall.override(
                                 font: GoogleFonts.outfit(
-                                  fontWeight: FlutterFlowTheme.of(context)
+                                  fontWeight: AppTheme.of(context)
                                       .bodySmall
                                       .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
+                                  fontStyle: AppTheme.of(context)
                                       .bodySmall
                                       .fontStyle,
                                 ),
                                 letterSpacing: 0.0,
-                                fontWeight: FlutterFlowTheme.of(context)
+                                fontWeight: AppTheme.of(context)
                                     .bodySmall
                                     .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
+                                fontStyle: AppTheme.of(context)
                                     .bodySmall
                                     .fontStyle,
                               ),
@@ -163,21 +163,21 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                         ),
                       ),
                     ),
-                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    style: AppTheme.of(context).bodyMedium.override(
                           font: GoogleFonts.outfit(
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .bodyMedium
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .bodyMedium
                                 .fontStyle,
                           ),
                           letterSpacing: 0.0,
-                          fontWeight: FlutterFlowTheme.of(context)
+                          fontWeight: AppTheme.of(context)
                               .bodyMedium
                               .fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              AppTheme.of(context).bodyMedium.fontStyle,
                         ),
                     validator: _model.inputTitleTextControllerValidator
                         .asValidator(context),
@@ -211,30 +211,30 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                                 obscureText: false,
                                 decoration: InputDecoration(
                                   hintText: 'Enter post details here...',
-                                  hintStyle: FlutterFlowTheme.of(context)
+                                  hintStyle: AppTheme.of(context)
                                       .bodySmall
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodySmall
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodySmall
                                                   .fontStyle,
                                         ),
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .bodySmall
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodySmall
                                             .fontStyle,
                                       ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .primaryBackground,
                                       width: 2.0,
                                     ),
@@ -265,22 +265,22 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                                       EdgeInsetsDirectional.fromSTEB(
                                           20.0, 32.0, 20.0, 12.0),
                                 ),
-                                style: FlutterFlowTheme.of(context)
+                                style: AppTheme.of(context)
                                     .bodyMedium
                                     .override(
                                       font: GoogleFonts.outfit(
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .bodyMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
                                       letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .bodyMedium
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
@@ -316,7 +316,7 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                   fit: BoxFit.cover,
                 ),
               ),
-              FFButtonWidget(
+              AppButton(
                 onPressed: () async {
                   final selectedMedia = await selectMediaWithSourceBottomSheet(
                     context: context,
@@ -324,7 +324,7 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                     maxHeight: 200.00,
                     allowPhoto: true,
                     backgroundColor:
-                        FlutterFlowTheme.of(context).primaryBtnText,
+                        AppTheme.of(context).primaryBtnText,
                     textColor: Color(0xFF253551),
                   );
                   if (selectedMedia != null &&
@@ -373,28 +373,28 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                   }
                 },
                 text: 'Upload Image',
-                options: FFButtonOptions(
+                options: AppButtonOptions(
                   width: 150.0,
                   height: 50.0,
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   iconPadding:
                       EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   color: Color(0xFFA9A9A9),
-                  textStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                  textStyle: AppTheme.of(context).labelMedium.override(
                         font: GoogleFonts.outfit(
-                          fontWeight: FlutterFlowTheme.of(context)
+                          fontWeight: AppTheme.of(context)
                               .labelMedium
                               .fontWeight,
-                          fontStyle: FlutterFlowTheme.of(context)
+                          fontStyle: AppTheme.of(context)
                               .labelMedium
                               .fontStyle,
                         ),
                         color: Colors.white,
                         letterSpacing: 0.0,
                         fontWeight:
-                            FlutterFlowTheme.of(context).labelMedium.fontWeight,
+                            AppTheme.of(context).labelMedium.fontWeight,
                         fontStyle:
-                            FlutterFlowTheme.of(context).labelMedium.fontStyle,
+                            AppTheme.of(context).labelMedium.fontStyle,
                       ),
                   elevation: 2.0,
                   borderSide: BorderSide(
@@ -407,7 +407,7 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
           ),
           Padding(
             padding: EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
-            child: FFButtonWidget(
+            child: AppButton(
               onPressed: () async {
                 await PostsRecord.collection.doc().set(createPostsRecordData(
                       content: _model.inputContentTextController.text,
@@ -428,24 +428,24 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                 );
               },
               text: 'Create Post',
-              options: FFButtonOptions(
+              options: AppButtonOptions(
                 width: 270.0,
                 height: 50.0,
                 padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                 iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                color: FlutterFlowTheme.of(context).primary,
-                textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                color: AppTheme.of(context).primary,
+                textStyle: AppTheme.of(context).titleSmall.override(
                       font: GoogleFonts.lexendDeca(
                         fontWeight: FontWeight.w500,
                         fontStyle:
-                            FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                            AppTheme.of(context).titleSmall.fontStyle,
                       ),
                       color: Colors.white,
                       fontSize: 20.0,
                       letterSpacing: 0.0,
                       fontWeight: FontWeight.w500,
                       fontStyle:
-                          FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                          AppTheme.of(context).titleSmall.fontStyle,
                     ),
                 elevation: 3.0,
                 borderSide: BorderSide(

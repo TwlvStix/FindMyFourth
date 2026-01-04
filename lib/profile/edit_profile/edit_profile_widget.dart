@@ -1,14 +1,14 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_count_controller.dart';
-import '/flutter_flow/flutter_flow_drop_down.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/form_field_controller.dart';
+import '/core/widgets/app_count_controller.dart';
+import '/core/widgets/app_drop_down.dart';
+import '/core/widgets/app_icon_button.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/widgets/app_button.dart';
+import '/core/form_field_controller.dart';
 import '/profile/change_photo/change_photo_widget.dart';
-import '/flutter_flow/custom_functions.dart' as functions;
+import '/core/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -95,18 +95,18 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).tertiary,
+        backgroundColor: AppTheme.of(context).tertiary,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).tertiary,
+          backgroundColor: AppTheme.of(context).tertiary,
           automaticallyImplyLeading: false,
-          leading: FlutterFlowIconButton(
+          leading: AppIconButton(
             borderColor: Colors.transparent,
             borderRadius: 30.0,
             borderWidth: 1.0,
             buttonSize: 60.0,
             icon: Icon(
               Icons.arrow_back_rounded,
-              color: FlutterFlowTheme.of(context).info,
+              color: AppTheme.of(context).info,
               size: 30.0,
             ),
             onPressed: () async {
@@ -140,7 +140,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                               width: 100.0,
                               height: 100.0,
                               decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
+                                color: AppTheme.of(context)
                                     .secondaryBackground,
                                 shape: BoxShape.circle,
                               ),
@@ -182,25 +182,25 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                 width: 44.0,
                                 height: 44.0,
                                 decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
+                                  color: AppTheme.of(context)
                                       .secondaryBackground,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: FlutterFlowTheme.of(context)
+                                    color: AppTheme.of(context)
                                         .secondaryText,
                                     width: 4.0,
                                   ),
                                 ),
-                                child: FlutterFlowIconButton(
+                                child: AppIconButton(
                                   borderColor:
-                                      FlutterFlowTheme.of(context).primary,
+                                      AppTheme.of(context).primary,
                                   borderRadius: 20.0,
                                   borderWidth: 1.0,
                                   buttonSize: 40.0,
                                   fillColor: Colors.white,
                                   icon: Icon(
                                     Icons.edit,
-                                    color: FlutterFlowTheme.of(context)
+                                    color: AppTheme.of(context)
                                         .primaryText,
                                     size: 24.0,
                                   ),
@@ -253,52 +253,52 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                 obscureText: false,
                                 decoration: InputDecoration(
                                   labelText: 'First Name',
-                                  labelStyle: FlutterFlowTheme.of(context)
+                                  labelStyle: AppTheme.of(context)
                                       .labelMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontStyle,
                                         ),
                                         color: Colors.white,
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelMedium
                                             .fontStyle,
                                       ),
-                                  hintStyle: FlutterFlowTheme.of(context)
+                                  hintStyle: AppTheme.of(context)
                                       .labelMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontStyle,
                                         ),
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelMedium
                                             .fontStyle,
                                       ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .alternate,
                                       width: 2.0,
                                     ),
@@ -307,32 +307,32 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                   focusedBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
                                       color:
-                                          FlutterFlowTheme.of(context).primary,
+                                          AppTheme.of(context).primary,
                                       width: 2.0,
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
                                   errorBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context).error,
+                                      color: AppTheme.of(context).error,
                                       width: 2.0,
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
                                   focusedErrorBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context).error,
+                                      color: AppTheme.of(context).error,
                                       width: 2.0,
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
                                 ),
-                                style: FlutterFlowTheme.of(context)
+                                style: AppTheme.of(context)
                                     .bodyMedium
                                     .override(
                                       font: GoogleFonts.outfit(
                                         fontWeight: FontWeight.normal,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
@@ -340,7 +340,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                       fontSize: 16.0,
                                       letterSpacing: 0.0,
                                       fontWeight: FontWeight.normal,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
@@ -364,52 +364,52 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                 obscureText: false,
                                 decoration: InputDecoration(
                                   labelText: 'Last Name',
-                                  labelStyle: FlutterFlowTheme.of(context)
+                                  labelStyle: AppTheme.of(context)
                                       .labelMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontStyle,
                                         ),
                                         color: Colors.white,
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelMedium
                                             .fontStyle,
                                       ),
-                                  hintStyle: FlutterFlowTheme.of(context)
+                                  hintStyle: AppTheme.of(context)
                                       .labelMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontStyle,
                                         ),
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelMedium
                                             .fontStyle,
                                       ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .alternate,
                                       width: 2.0,
                                     ),
@@ -418,32 +418,32 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                   focusedBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
                                       color:
-                                          FlutterFlowTheme.of(context).primary,
+                                          AppTheme.of(context).primary,
                                       width: 2.0,
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
                                   errorBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context).error,
+                                      color: AppTheme.of(context).error,
                                       width: 2.0,
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
                                   focusedErrorBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context).error,
+                                      color: AppTheme.of(context).error,
                                       width: 2.0,
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
                                 ),
-                                style: FlutterFlowTheme.of(context)
+                                style: AppTheme.of(context)
                                     .bodyMedium
                                     .override(
                                       font: GoogleFonts.outfit(
                                         fontWeight: FontWeight.normal,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
@@ -451,7 +451,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                       fontSize: 16.0,
                                       letterSpacing: 0.0,
                                       fontWeight: FontWeight.normal,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
@@ -485,52 +485,52 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                 obscureText: false,
                                 decoration: InputDecoration(
                                   labelText: 'Display Name',
-                                  labelStyle: FlutterFlowTheme.of(context)
+                                  labelStyle: AppTheme.of(context)
                                       .labelMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontStyle,
                                         ),
                                         color: Colors.white,
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelMedium
                                             .fontStyle,
                                       ),
-                                  hintStyle: FlutterFlowTheme.of(context)
+                                  hintStyle: AppTheme.of(context)
                                       .labelMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontStyle,
                                         ),
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelMedium
                                             .fontStyle,
                                       ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .alternate,
                                       width: 2.0,
                                     ),
@@ -539,32 +539,32 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                   focusedBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
                                       color:
-                                          FlutterFlowTheme.of(context).primary,
+                                          AppTheme.of(context).primary,
                                       width: 2.0,
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
                                   errorBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context).error,
+                                      color: AppTheme.of(context).error,
                                       width: 2.0,
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
                                   focusedErrorBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context).error,
+                                      color: AppTheme.of(context).error,
                                       width: 2.0,
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
                                 ),
-                                style: FlutterFlowTheme.of(context)
+                                style: AppTheme.of(context)
                                     .bodyMedium
                                     .override(
                                       font: GoogleFonts.outfit(
                                         fontWeight: FontWeight.normal,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
@@ -572,7 +572,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                       fontSize: 16.0,
                                       letterSpacing: 0.0,
                                       fontWeight: FontWeight.normal,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
@@ -596,52 +596,52 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                 obscureText: false,
                                 decoration: InputDecoration(
                                   labelText: 'Phone #',
-                                  labelStyle: FlutterFlowTheme.of(context)
+                                  labelStyle: AppTheme.of(context)
                                       .labelMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontStyle,
                                         ),
                                         color: Colors.white,
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelMedium
                                             .fontStyle,
                                       ),
-                                  hintStyle: FlutterFlowTheme.of(context)
+                                  hintStyle: AppTheme.of(context)
                                       .labelMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelMedium
                                                   .fontStyle,
                                         ),
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelMedium
                                             .fontStyle,
                                       ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .alternate,
                                       width: 2.0,
                                     ),
@@ -650,32 +650,32 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                   focusedBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
                                       color:
-                                          FlutterFlowTheme.of(context).primary,
+                                          AppTheme.of(context).primary,
                                       width: 2.0,
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
                                   errorBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context).error,
+                                      color: AppTheme.of(context).error,
                                       width: 2.0,
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
                                   focusedErrorBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context).error,
+                                      color: AppTheme.of(context).error,
                                       width: 2.0,
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
                                 ),
-                                style: FlutterFlowTheme.of(context)
+                                style: AppTheme.of(context)
                                     .bodyMedium
                                     .override(
                                       font: GoogleFonts.outfit(
                                         fontWeight: FontWeight.normal,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
@@ -683,7 +683,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                       fontSize: 16.0,
                                       letterSpacing: 0.0,
                                       fontWeight: FontWeight.normal,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
@@ -717,81 +717,81 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                               obscureText: false,
                               decoration: InputDecoration(
                                 labelText: 'Email',
-                                labelStyle: FlutterFlowTheme.of(context)
+                                labelStyle: AppTheme.of(context)
                                     .labelMedium
                                     .override(
                                       font: GoogleFonts.outfit(
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelMedium
                                             .fontStyle,
                                       ),
                                       color: Colors.white,
                                       letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .labelMedium
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .labelMedium
                                           .fontStyle,
                                     ),
-                                hintStyle: FlutterFlowTheme.of(context)
+                                hintStyle: AppTheme.of(context)
                                     .labelMedium
                                     .override(
                                       font: GoogleFonts.outfit(
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelMedium
                                             .fontStyle,
                                       ),
                                       letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .labelMedium
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .labelMedium
                                           .fontStyle,
                                     ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
                                     color:
-                                        FlutterFlowTheme.of(context).alternate,
+                                        AppTheme.of(context).alternate,
                                     width: 2.0,
                                   ),
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                    color: FlutterFlowTheme.of(context).primary,
+                                    color: AppTheme.of(context).primary,
                                     width: 2.0,
                                   ),
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                                 errorBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                    color: FlutterFlowTheme.of(context).error,
+                                    color: AppTheme.of(context).error,
                                     width: 2.0,
                                   ),
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                                 focusedErrorBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                    color: FlutterFlowTheme.of(context).error,
+                                    color: AppTheme.of(context).error,
                                     width: 2.0,
                                   ),
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                               ),
-                              style: FlutterFlowTheme.of(context)
+                              style: AppTheme.of(context)
                                   .bodyMedium
                                   .override(
                                     font: GoogleFonts.outfit(
                                       fontWeight: FontWeight.normal,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
@@ -799,7 +799,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                     fontSize: 16.0,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.normal,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .bodyMedium
                                         .fontStyle,
                                   ),
@@ -818,7 +818,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                       width: double.infinity,
                       height: 400.0,
                       decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
+                        color: AppTheme.of(context).secondaryBackground,
                         boxShadow: [
                           BoxShadow(
                             blurRadius: 3.0,
@@ -862,7 +862,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                   0.0, 8.0, 16.0, 8.0),
                                           child: FaIcon(
                                             FontAwesomeIcons.mapMarkerAlt,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
@@ -876,30 +876,30 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               'Home Course',
                                               textAlign: TextAlign.start,
                                               style:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .override(
                                                         font:
                                                             GoogleFonts.outfit(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
@@ -934,7 +934,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                             coursesCourseRecordList =
                                             snapshot.data!;
 
-                                        return FlutterFlowDropDown<String>(
+                                        return AppDropDown<String>(
                                           controller:
                                               _model.coursesValueController ??=
                                                   FormFieldController<String>(
@@ -955,81 +955,81 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               () => _model.coursesValue = val),
                                           width: 359.0,
                                           height: 50.0,
-                                          searchHintTextStyle: FlutterFlowTheme
+                                          searchHintTextStyle: AppTheme
                                                   .of(context)
                                               .labelMedium
                                               .override(
                                                 font: GoogleFonts.outfit(
                                                   fontWeight:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .labelMedium
                                                           .fontWeight,
                                                   fontStyle:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .labelMedium
                                                           .fontStyle,
                                                 ),
                                                 letterSpacing: 0.0,
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .labelMedium
                                                         .fontStyle,
                                               ),
-                                          searchTextStyle: FlutterFlowTheme.of(
+                                          searchTextStyle: AppTheme.of(
                                                   context)
                                               .bodyMedium
                                               .override(
                                                 font: GoogleFonts.outfit(
                                                   fontWeight:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .bodyMedium
                                                           .fontWeight,
                                                   fontStyle:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .bodyMedium
                                                           .fontStyle,
                                                 ),
                                                 letterSpacing: 0.0,
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyMedium
                                                         .fontStyle,
                                               ),
-                                          textStyle: FlutterFlowTheme.of(
+                                          textStyle: AppTheme.of(
                                                   context)
                                               .bodyMedium
                                               .override(
                                                 font: GoogleFonts.outfit(
                                                   fontWeight:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .bodyMedium
                                                           .fontWeight,
                                                   fontStyle:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .bodyMedium
                                                           .fontStyle,
                                                 ),
                                                 letterSpacing: 0.0,
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .bodyMedium
                                                         .fontStyle,
                                               ),
@@ -1037,16 +1037,16 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               'Search for your course',
                                           icon: Icon(
                                             Icons.keyboard_arrow_down_rounded,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
                                           fillColor:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .secondaryBackground,
                                           elevation: 2.0,
                                           borderColor:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .alternate,
                                           borderWidth: 2.0,
                                           borderRadius: 8.0,
@@ -1075,7 +1075,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                   0.0, 8.0, 16.0, 8.0),
                                           child: FaIcon(
                                             FontAwesomeIcons.golfBall,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
@@ -1089,30 +1089,30 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               'Handicap',
                                               textAlign: TextAlign.start,
                                               style:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .override(
                                                         font:
                                                             GoogleFonts.outfit(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
@@ -1126,27 +1126,27 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                             height: 50.0,
                                             decoration: BoxDecoration(
                                               color:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .secondaryBackground,
                                               borderRadius:
                                                   BorderRadius.circular(8.0),
                                               shape: BoxShape.rectangle,
                                               border: Border.all(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .alternate,
                                                 width: 2.0,
                                               ),
                                             ),
-                                            child: FlutterFlowCountController(
+                                            child: AppCountController(
                                               decrementIconBuilder: (enabled) =>
                                                   FaIcon(
                                                 FontAwesomeIcons.minus,
                                                 color: enabled
-                                                    ? FlutterFlowTheme.of(
+                                                    ? AppTheme.of(
                                                             context)
                                                         .secondaryText
-                                                    : FlutterFlowTheme.of(
+                                                    : AppTheme.of(
                                                             context)
                                                         .alternate,
                                                 size: 10.0,
@@ -1155,28 +1155,28 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                   FaIcon(
                                                 FontAwesomeIcons.plus,
                                                 color: enabled
-                                                    ? FlutterFlowTheme.of(
+                                                    ? AppTheme.of(
                                                             context)
                                                         .primary
-                                                    : FlutterFlowTheme.of(
+                                                    : AppTheme.of(
                                                             context)
                                                         .alternate,
                                                 size: 10.0,
                                               ),
                                               countBuilder: (count) => Text(
                                                 count.toString(),
-                                                style: FlutterFlowTheme.of(
+                                                style: AppTheme.of(
                                                         context)
                                                     .titleLarge
                                                     .override(
                                                       font: GoogleFonts.outfit(
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .titleLarge
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .titleLarge
                                                                 .fontStyle,
@@ -1184,12 +1184,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                       fontSize: 15.0,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .titleLarge
                                                               .fontWeight,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .titleLarge
                                                               .fontStyle,
@@ -1227,7 +1227,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                   0.0, 8.0, 16.0, 8.0),
                                           child: Icon(
                                             Icons.local_drink,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
@@ -1241,30 +1241,30 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               'Drinks',
                                               textAlign: TextAlign.start,
                                               style:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .override(
                                                         font:
                                                             GoogleFonts.outfit(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
@@ -1278,27 +1278,27 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                             height: 50.0,
                                             decoration: BoxDecoration(
                                               color:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .secondaryBackground,
                                               borderRadius:
                                                   BorderRadius.circular(8.0),
                                               shape: BoxShape.rectangle,
                                               border: Border.all(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .alternate,
                                                 width: 2.0,
                                               ),
                                             ),
-                                            child: FlutterFlowCountController(
+                                            child: AppCountController(
                                               decrementIconBuilder: (enabled) =>
                                                   FaIcon(
                                                 FontAwesomeIcons.minus,
                                                 color: enabled
-                                                    ? FlutterFlowTheme.of(
+                                                    ? AppTheme.of(
                                                             context)
                                                         .secondaryText
-                                                    : FlutterFlowTheme.of(
+                                                    : AppTheme.of(
                                                             context)
                                                         .alternate,
                                                 size: 10.0,
@@ -1307,28 +1307,28 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                   FaIcon(
                                                 FontAwesomeIcons.plus,
                                                 color: enabled
-                                                    ? FlutterFlowTheme.of(
+                                                    ? AppTheme.of(
                                                             context)
                                                         .primary
-                                                    : FlutterFlowTheme.of(
+                                                    : AppTheme.of(
                                                             context)
                                                         .alternate,
                                                 size: 10.0,
                                               ),
                                               countBuilder: (count) => Text(
                                                 count.toString(),
-                                                style: FlutterFlowTheme.of(
+                                                style: AppTheme.of(
                                                         context)
                                                     .titleLarge
                                                     .override(
                                                       font: GoogleFonts.outfit(
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .titleLarge
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .titleLarge
                                                                 .fontStyle,
@@ -1336,12 +1336,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                       fontSize: 15.0,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .titleLarge
                                                               .fontWeight,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .titleLarge
                                                               .fontStyle,
@@ -1380,7 +1380,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                   0.0, 8.0, 16.0, 8.0),
                                           child: FaIcon(
                                             FontAwesomeIcons.music,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
@@ -1394,30 +1394,30 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               'Music',
                                               textAlign: TextAlign.start,
                                               style:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .override(
                                                         font:
                                                             GoogleFonts.outfit(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
@@ -1431,27 +1431,27 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                             height: 50.0,
                                             decoration: BoxDecoration(
                                               color:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .secondaryBackground,
                                               borderRadius:
                                                   BorderRadius.circular(8.0),
                                               shape: BoxShape.rectangle,
                                               border: Border.all(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .alternate,
                                                 width: 2.0,
                                               ),
                                             ),
-                                            child: FlutterFlowCountController(
+                                            child: AppCountController(
                                               decrementIconBuilder: (enabled) =>
                                                   FaIcon(
                                                 FontAwesomeIcons.minus,
                                                 color: enabled
-                                                    ? FlutterFlowTheme.of(
+                                                    ? AppTheme.of(
                                                             context)
                                                         .secondaryText
-                                                    : FlutterFlowTheme.of(
+                                                    : AppTheme.of(
                                                             context)
                                                         .alternate,
                                                 size: 10.0,
@@ -1460,28 +1460,28 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                   FaIcon(
                                                 FontAwesomeIcons.plus,
                                                 color: enabled
-                                                    ? FlutterFlowTheme.of(
+                                                    ? AppTheme.of(
                                                             context)
                                                         .primary
-                                                    : FlutterFlowTheme.of(
+                                                    : AppTheme.of(
                                                             context)
                                                         .alternate,
                                                 size: 10.0,
                                               ),
                                               countBuilder: (count) => Text(
                                                 count.toString(),
-                                                style: FlutterFlowTheme.of(
+                                                style: AppTheme.of(
                                                         context)
                                                     .titleLarge
                                                     .override(
                                                       font: GoogleFonts.outfit(
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .titleLarge
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .titleLarge
                                                                 .fontStyle,
@@ -1489,12 +1489,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                       fontSize: 15.0,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .titleLarge
                                                               .fontWeight,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .titleLarge
                                                               .fontStyle,
@@ -1533,7 +1533,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                   0.0, 8.0, 16.0, 8.0),
                                           child: FaIcon(
                                             FontAwesomeIcons.moneyBillAlt,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
@@ -1547,30 +1547,30 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               'Play for Money',
                                               textAlign: TextAlign.start,
                                               style:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .override(
                                                         font:
                                                             GoogleFonts.outfit(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
@@ -1584,27 +1584,27 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                             height: 50.0,
                                             decoration: BoxDecoration(
                                               color:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .secondaryBackground,
                                               borderRadius:
                                                   BorderRadius.circular(8.0),
                                               shape: BoxShape.rectangle,
                                               border: Border.all(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .alternate,
                                                 width: 2.0,
                                               ),
                                             ),
-                                            child: FlutterFlowCountController(
+                                            child: AppCountController(
                                               decrementIconBuilder: (enabled) =>
                                                   FaIcon(
                                                 FontAwesomeIcons.minus,
                                                 color: enabled
-                                                    ? FlutterFlowTheme.of(
+                                                    ? AppTheme.of(
                                                             context)
                                                         .secondaryText
-                                                    : FlutterFlowTheme.of(
+                                                    : AppTheme.of(
                                                             context)
                                                         .alternate,
                                                 size: 10.0,
@@ -1613,28 +1613,28 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                   FaIcon(
                                                 FontAwesomeIcons.plus,
                                                 color: enabled
-                                                    ? FlutterFlowTheme.of(
+                                                    ? AppTheme.of(
                                                             context)
                                                         .primary
-                                                    : FlutterFlowTheme.of(
+                                                    : AppTheme.of(
                                                             context)
                                                         .alternate,
                                                 size: 10.0,
                                               ),
                                               countBuilder: (count) => Text(
                                                 count.toString(),
-                                                style: FlutterFlowTheme.of(
+                                                style: AppTheme.of(
                                                         context)
                                                     .titleLarge
                                                     .override(
                                                       font: GoogleFonts.outfit(
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .titleLarge
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .titleLarge
                                                                 .fontStyle,
@@ -1642,12 +1642,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                       fontSize: 15.0,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .titleLarge
                                                               .fontWeight,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .titleLarge
                                                               .fontStyle,
@@ -1686,7 +1686,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                   0.0, 8.0, 16.0, 8.0),
                                           child: FaIcon(
                                             FontAwesomeIcons.clock,
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .secondaryText,
                                             size: 24.0,
                                           ),
@@ -1700,30 +1700,30 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               'Pace of Play',
                                               textAlign: TextAlign.start,
                                               style:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .override(
                                                         font:
                                                             GoogleFonts.outfit(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .bodyMedium
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .bodyMedium
                                                                 .fontStyle,
@@ -1737,27 +1737,27 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                             height: 50.0,
                                             decoration: BoxDecoration(
                                               color:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .secondaryBackground,
                                               borderRadius:
                                                   BorderRadius.circular(8.0),
                                               shape: BoxShape.rectangle,
                                               border: Border.all(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .alternate,
                                                 width: 2.0,
                                               ),
                                             ),
-                                            child: FlutterFlowCountController(
+                                            child: AppCountController(
                                               decrementIconBuilder: (enabled) =>
                                                   FaIcon(
                                                 FontAwesomeIcons.minus,
                                                 color: enabled
-                                                    ? FlutterFlowTheme.of(
+                                                    ? AppTheme.of(
                                                             context)
                                                         .secondaryText
-                                                    : FlutterFlowTheme.of(
+                                                    : AppTheme.of(
                                                             context)
                                                         .alternate,
                                                 size: 10.0,
@@ -1766,28 +1766,28 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                   FaIcon(
                                                 FontAwesomeIcons.plus,
                                                 color: enabled
-                                                    ? FlutterFlowTheme.of(
+                                                    ? AppTheme.of(
                                                             context)
                                                         .primary
-                                                    : FlutterFlowTheme.of(
+                                                    : AppTheme.of(
                                                             context)
                                                         .alternate,
                                                 size: 10.0,
                                               ),
                                               countBuilder: (count) => Text(
                                                 count.toString(),
-                                                style: FlutterFlowTheme.of(
+                                                style: AppTheme.of(
                                                         context)
                                                     .titleLarge
                                                     .override(
                                                       font: GoogleFonts.outfit(
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .titleLarge
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .titleLarge
                                                                 .fontStyle,
@@ -1795,12 +1795,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                       fontSize: 15.0,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .titleLarge
                                                               .fontWeight,
                                                       fontStyle:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .titleLarge
                                                               .fontStyle,
@@ -1833,7 +1833,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                               child: Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 40.0, 0.0, 0.0),
-                                child: FFButtonWidget(
+                                child: AppButton(
                                   onPressed: () async {
                                     FFAppState().theusernames =
                                         functions.usernameCreator(
@@ -1890,7 +1890,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                               'This Username is Taken. Please chose another Name.',
                                               style: GoogleFonts.roboto(
                                                 color:
-                                                    FlutterFlowTheme.of(context)
+                                                    AppTheme.of(context)
                                                         .secondaryBackground,
                                                 fontSize: 15.0,
                                               ),
@@ -1898,7 +1898,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                             duration:
                                                 Duration(milliseconds: 1500),
                                             backgroundColor:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .primary,
                                           ),
                                         );
@@ -1940,34 +1940,34 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                     safeSetState(() {});
                                   },
                                   text: 'Save Profile',
-                                  options: FFButtonOptions(
+                                  options: AppButtonOptions(
                                     height: 40.0,
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         24.0, 0.0, 24.0, 0.0),
                                     iconPadding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 0.0, 0.0, 0.0),
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    textStyle: FlutterFlowTheme.of(context)
+                                    color: AppTheme.of(context).primary,
+                                    textStyle: AppTheme.of(context)
                                         .headlineMedium
                                         .override(
                                           font: GoogleFonts.outfit(
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .headlineMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .headlineMedium
                                                     .fontStyle,
                                           ),
                                           color: Colors.white,
                                           letterSpacing: 0.0,
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .headlineMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .headlineMedium
                                                   .fontStyle,
                                         ),

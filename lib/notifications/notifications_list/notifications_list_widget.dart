@@ -1,5 +1,5 @@
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'notifications_list_model.dart';
@@ -45,24 +45,24 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: AppTheme.of(context).primaryBackground,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+          backgroundColor: AppTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
           title: Text(
             'Notifications',
-            style: FlutterFlowTheme.of(context).headlineLarge.override(
+            style: AppTheme.of(context).headlineLarge.override(
                   font: GoogleFonts.outfit(
                     fontWeight:
-                        FlutterFlowTheme.of(context).headlineLarge.fontWeight,
+                        AppTheme.of(context).headlineLarge.fontWeight,
                     fontStyle:
-                        FlutterFlowTheme.of(context).headlineLarge.fontStyle,
+                        AppTheme.of(context).headlineLarge.fontStyle,
                   ),
                   letterSpacing: 0.0,
                   fontWeight:
-                      FlutterFlowTheme.of(context).headlineLarge.fontWeight,
+                      AppTheme.of(context).headlineLarge.fontWeight,
                   fontStyle:
-                      FlutterFlowTheme.of(context).headlineLarge.fontStyle,
+                      AppTheme.of(context).headlineLarge.fontStyle,
                 ),
           ),
           actions: [],
@@ -83,7 +83,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  color: AppTheme.of(context).secondaryBackground,
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 3.0,
@@ -96,7 +96,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                   ],
                   borderRadius: BorderRadius.circular(12.0),
                   border: Border.all(
-                    color: FlutterFlowTheme.of(context).alternate,
+                    color: AppTheme.of(context).alternate,
                     width: 1.0,
                   ),
                 ),
@@ -110,16 +110,16 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                         width: 32.0,
                         height: 32.0,
                         decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).primary,
+                          color: AppTheme.of(context).primary,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: FlutterFlowTheme.of(context).primary,
+                            color: AppTheme.of(context).primary,
                             width: 2.0,
                           ),
                         ),
                         child: Icon(
                           Icons.person_add_rounded,
-                          color: FlutterFlowTheme.of(context).primaryBtnText,
+                          color: AppTheme.of(context).primaryBtnText,
                           size: 16.0,
                         ),
                       ),
@@ -135,22 +135,22 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               Text(
                                 'Friend Request',
                                 maxLines: 1,
-                                style: FlutterFlowTheme.of(context)
+                                style: AppTheme.of(context)
                                     .bodyLarge
                                     .override(
                                       font: GoogleFonts.outfit(
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .bodyLarge
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyLarge
                                             .fontStyle,
                                       ),
                                       letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .bodyLarge
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyLarge
                                           .fontStyle,
                                     ),
@@ -161,21 +161,21 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                 child: Text(
                                   'John Smith has requested to be friends.',
                                   maxLines: 2,
-                                  style: FlutterFlowTheme.of(context)
+                                  style: AppTheme.of(context)
                                       .bodyMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight: FontWeight.normal,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
-                                        color: FlutterFlowTheme.of(context)
+                                        color: AppTheme.of(context)
                                             .primaryText,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.normal,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
@@ -191,12 +191,12 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                       width: 44.0,
                                       height: 44.0,
                                       decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context)
+                                        color: AppTheme.of(context)
                                             .secondaryBackground,
                                         borderRadius:
                                             BorderRadius.circular(12.0),
                                         border: Border.all(
-                                          color: FlutterFlowTheme.of(context)
+                                          color: AppTheme.of(context)
                                               .alternate,
                                         ),
                                       ),
@@ -226,29 +226,29 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                         children: [
                                           Text(
                                             'Haily Brown',
-                                            style: FlutterFlowTheme.of(context)
+                                            style: AppTheme.of(context)
                                                 .bodyLarge
                                                 .override(
                                                   font: GoogleFonts.outfit(
                                                     fontWeight:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodyLarge
                                                             .fontWeight,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodyLarge
                                                             .fontStyle,
                                                   ),
                                                   letterSpacing: 0.0,
                                                   fontWeight:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .bodyLarge
                                                           .fontWeight,
                                                   fontStyle:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .bodyLarge
                                                           .fontStyle,
@@ -261,30 +261,30 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                             child: Text(
                                               '@brownisthenewblack',
                                               style:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelSmall
                                                       .override(
                                                         font:
                                                             GoogleFonts.outfit(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .labelSmall
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .labelSmall
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .labelSmall
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .labelSmall
                                                                 .fontStyle,
@@ -302,26 +302,26 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                     0.0, 8.0, 0.0, 4.0),
                                 child: Text(
                                   '2 hours ago',
-                                  style: FlutterFlowTheme.of(context)
+                                  style: AppTheme.of(context)
                                       .labelSmall
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelSmall
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelSmall
                                                   .fontStyle,
                                         ),
-                                        color: FlutterFlowTheme.of(context)
+                                        color: AppTheme.of(context)
                                             .secondaryText,
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelSmall
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelSmall
                                             .fontStyle,
                                       ),
@@ -341,7 +341,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  color: AppTheme.of(context).secondaryBackground,
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 3.0,
@@ -354,7 +354,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                   ],
                   borderRadius: BorderRadius.circular(12.0),
                   border: Border.all(
-                    color: FlutterFlowTheme.of(context).alternate,
+                    color: AppTheme.of(context).alternate,
                     width: 1.0,
                   ),
                 ),
@@ -368,16 +368,16 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                         width: 32.0,
                         height: 32.0,
                         decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).primary,
+                          color: AppTheme.of(context).primary,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: FlutterFlowTheme.of(context).primary,
+                            color: AppTheme.of(context).primary,
                             width: 2.0,
                           ),
                         ),
                         child: Icon(
                           Icons.person_add_rounded,
-                          color: FlutterFlowTheme.of(context).primaryBtnText,
+                          color: AppTheme.of(context).primaryBtnText,
                           size: 16.0,
                         ),
                       ),
@@ -393,22 +393,22 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               Text(
                                 'Friend Request',
                                 maxLines: 1,
-                                style: FlutterFlowTheme.of(context)
+                                style: AppTheme.of(context)
                                     .bodyLarge
                                     .override(
                                       font: GoogleFonts.outfit(
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .bodyLarge
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyLarge
                                             .fontStyle,
                                       ),
                                       letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .bodyLarge
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyLarge
                                           .fontStyle,
                                     ),
@@ -419,21 +419,21 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                 child: Text(
                                   'John Smith has requested to be friends.',
                                   maxLines: 2,
-                                  style: FlutterFlowTheme.of(context)
+                                  style: AppTheme.of(context)
                                       .bodyMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight: FontWeight.normal,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
-                                        color: FlutterFlowTheme.of(context)
+                                        color: AppTheme.of(context)
                                             .primaryText,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.normal,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
@@ -449,12 +449,12 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                       width: 44.0,
                                       height: 44.0,
                                       decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context)
+                                        color: AppTheme.of(context)
                                             .secondaryBackground,
                                         borderRadius:
                                             BorderRadius.circular(12.0),
                                         border: Border.all(
-                                          color: FlutterFlowTheme.of(context)
+                                          color: AppTheme.of(context)
                                               .alternate,
                                         ),
                                       ),
@@ -484,29 +484,29 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                         children: [
                                           Text(
                                             'John Smith',
-                                            style: FlutterFlowTheme.of(context)
+                                            style: AppTheme.of(context)
                                                 .bodyLarge
                                                 .override(
                                                   font: GoogleFonts.outfit(
                                                     fontWeight:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodyLarge
                                                             .fontWeight,
                                                     fontStyle:
-                                                        FlutterFlowTheme.of(
+                                                        AppTheme.of(
                                                                 context)
                                                             .bodyLarge
                                                             .fontStyle,
                                                   ),
                                                   letterSpacing: 0.0,
                                                   fontWeight:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .bodyLarge
                                                           .fontWeight,
                                                   fontStyle:
-                                                      FlutterFlowTheme.of(
+                                                      AppTheme.of(
                                                               context)
                                                           .bodyLarge
                                                           .fontStyle,
@@ -519,30 +519,30 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                             child: Text(
                                               '@johnsmithly',
                                               style:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelSmall
                                                       .override(
                                                         font:
                                                             GoogleFonts.outfit(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .labelSmall
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              FlutterFlowTheme.of(
+                                                              AppTheme.of(
                                                                       context)
                                                                   .labelSmall
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .labelSmall
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .labelSmall
                                                                 .fontStyle,
@@ -560,26 +560,26 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                     0.0, 8.0, 0.0, 4.0),
                                 child: Text(
                                   '2 hours ago',
-                                  style: FlutterFlowTheme.of(context)
+                                  style: AppTheme.of(context)
                                       .labelSmall
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelSmall
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelSmall
                                                   .fontStyle,
                                         ),
-                                        color: FlutterFlowTheme.of(context)
+                                        color: AppTheme.of(context)
                                             .secondaryText,
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelSmall
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelSmall
                                             .fontStyle,
                                       ),
@@ -599,7 +599,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  color: AppTheme.of(context).secondaryBackground,
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 3.0,
@@ -612,7 +612,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                   ],
                   borderRadius: BorderRadius.circular(12.0),
                   border: Border.all(
-                    color: FlutterFlowTheme.of(context).alternate,
+                    color: AppTheme.of(context).alternate,
                     width: 1.0,
                   ),
                 ),
@@ -626,16 +626,16 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                         width: 32.0,
                         height: 32.0,
                         decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).primary,
+                          color: AppTheme.of(context).primary,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: FlutterFlowTheme.of(context).primary,
+                            color: AppTheme.of(context).primary,
                             width: 2.0,
                           ),
                         ),
                         child: Icon(
                           Icons.add_comment_rounded,
-                          color: FlutterFlowTheme.of(context).primaryBtnText,
+                          color: AppTheme.of(context).primaryBtnText,
                           size: 16.0,
                         ),
                       ),
@@ -651,22 +651,22 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               Text(
                                 'New Comment!',
                                 maxLines: 1,
-                                style: FlutterFlowTheme.of(context)
+                                style: AppTheme.of(context)
                                     .bodyLarge
                                     .override(
                                       font: GoogleFonts.outfit(
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .bodyLarge
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyLarge
                                             .fontStyle,
                                       ),
                                       letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .bodyLarge
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyLarge
                                           .fontStyle,
                                     ),
@@ -677,21 +677,21 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                 child: Text(
                                   '\"You are so awesome! Keep it up!\"',
                                   maxLines: 2,
-                                  style: FlutterFlowTheme.of(context)
+                                  style: AppTheme.of(context)
                                       .bodyMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight: FontWeight.normal,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
-                                        color: FlutterFlowTheme.of(context)
+                                        color: AppTheme.of(context)
                                             .primaryText,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.normal,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
@@ -715,26 +715,26 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                     0.0, 8.0, 0.0, 4.0),
                                 child: Text(
                                   '2 hours ago',
-                                  style: FlutterFlowTheme.of(context)
+                                  style: AppTheme.of(context)
                                       .labelSmall
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelSmall
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelSmall
                                                   .fontStyle,
                                         ),
-                                        color: FlutterFlowTheme.of(context)
+                                        color: AppTheme.of(context)
                                             .secondaryText,
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelSmall
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelSmall
                                             .fontStyle,
                                       ),
@@ -754,7 +754,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  color: AppTheme.of(context).secondaryBackground,
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 3.0,
@@ -767,7 +767,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                   ],
                   borderRadius: BorderRadius.circular(12.0),
                   border: Border.all(
-                    color: FlutterFlowTheme.of(context).alternate,
+                    color: AppTheme.of(context).alternate,
                     width: 1.0,
                   ),
                 ),
@@ -781,16 +781,16 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                         width: 32.0,
                         height: 32.0,
                         decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).primary,
+                          color: AppTheme.of(context).primary,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: FlutterFlowTheme.of(context).primary,
+                            color: AppTheme.of(context).primary,
                             width: 2.0,
                           ),
                         ),
                         child: Icon(
                           Icons.favorite_border,
-                          color: FlutterFlowTheme.of(context).primaryBtnText,
+                          color: AppTheme.of(context).primaryBtnText,
                           size: 16.0,
                         ),
                       ),
@@ -806,22 +806,22 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               Text(
                                 'New Like!',
                                 maxLines: 1,
-                                style: FlutterFlowTheme.of(context)
+                                style: AppTheme.of(context)
                                     .bodyLarge
                                     .override(
                                       font: GoogleFonts.outfit(
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .bodyLarge
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyLarge
                                             .fontStyle,
                                       ),
                                       letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .bodyLarge
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyLarge
                                           .fontStyle,
                                     ),
@@ -832,21 +832,21 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                 child: Text(
                                   'You have a new like from John Smith.',
                                   maxLines: 2,
-                                  style: FlutterFlowTheme.of(context)
+                                  style: AppTheme.of(context)
                                       .bodyMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight: FontWeight.normal,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
-                                        color: FlutterFlowTheme.of(context)
+                                        color: AppTheme.of(context)
                                             .primaryText,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.normal,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
@@ -857,24 +857,24 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                     0.0, 8.0, 0.0, 4.0),
                                 child: Text(
                                   '2 hours ago',
-                                  style: FlutterFlowTheme.of(context)
+                                  style: AppTheme.of(context)
                                       .labelSmall
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelSmall
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .labelSmall
                                                   .fontStyle,
                                         ),
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .labelSmall
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .labelSmall
                                             .fontStyle,
                                       ),

@@ -1,7 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/widgets/app_button.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'recover_password_model.dart';
@@ -49,27 +49,27 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: AppTheme.of(context).primaryBackground,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+          backgroundColor: AppTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
           title: Text(
             'Recover Password',
             textAlign: TextAlign.center,
-            style: FlutterFlowTheme.of(context).displaySmall.override(
+            style: AppTheme.of(context).displaySmall.override(
                   font: GoogleFonts.outfit(
                     fontWeight:
-                        FlutterFlowTheme.of(context).displaySmall.fontWeight,
+                        AppTheme.of(context).displaySmall.fontWeight,
                     fontStyle:
-                        FlutterFlowTheme.of(context).displaySmall.fontStyle,
+                        AppTheme.of(context).displaySmall.fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   fontSize: 24.0,
                   letterSpacing: 0.0,
                   fontWeight:
-                      FlutterFlowTheme.of(context).displaySmall.fontWeight,
+                      AppTheme.of(context).displaySmall.fontWeight,
                   fontStyle:
-                      FlutterFlowTheme.of(context).displaySmall.fontStyle,
+                      AppTheme.of(context).displaySmall.fontStyle,
                 ),
           ),
           actions: [],
@@ -92,29 +92,29 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                         width: 100.0,
                         height: 100.0,
                         decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).primaryBackground,
+                          color: AppTheme.of(context).primaryBackground,
                         ),
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
                               20.0, 20.0, 20.0, 0.0),
                           child: Text(
                             'We will send you an email with a link to reset your password, please enter the email associated with your account below. ',
-                            style: FlutterFlowTheme.of(context)
+                            style: AppTheme.of(context)
                                 .bodyMedium
                                 .override(
                                   font: GoogleFonts.outfit(
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                    fontWeight: AppTheme.of(context)
                                         .bodyMedium
                                         .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .bodyMedium
                                         .fontStyle,
                                   ),
                                   letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
+                                  fontWeight: AppTheme.of(context)
                                       .bodyMedium
                                       .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
+                                  fontStyle: AppTheme.of(context)
                                       .bodyMedium
                                       .fontStyle,
                                 ),
@@ -161,21 +161,21 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                               obscureText: false,
                               decoration: InputDecoration(
                                 labelText: 'Enter Email Here',
-                                labelStyle: FlutterFlowTheme.of(context)
+                                labelStyle: AppTheme.of(context)
                                     .titleSmall
                                     .override(
                                       font: GoogleFonts.outfit(
                                         fontWeight: FontWeight.w500,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .titleSmall
                                             .fontStyle,
                                       ),
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .primaryBtnText,
                                       fontSize: 18.0,
                                       letterSpacing: 0.0,
                                       fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .titleSmall
                                           .fontStyle,
                                     ),
@@ -184,21 +184,21 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                                 errorBorder: InputBorder.none,
                                 focusedErrorBorder: InputBorder.none,
                               ),
-                              style: FlutterFlowTheme.of(context)
+                              style: AppTheme.of(context)
                                   .titleMedium
                                   .override(
                                     font: GoogleFonts.outfit(
                                       fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .titleMedium
                                           .fontStyle,
                                     ),
-                                    color: FlutterFlowTheme.of(context)
+                                    color: AppTheme.of(context)
                                         .primaryBtnText,
                                     fontSize: 18.0,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w500,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .titleMedium
                                         .fontStyle,
                                   ),
@@ -217,7 +217,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
               ),
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-                child: FFButtonWidget(
+                child: AppButton(
                   onPressed: () async {
                     if (_model.enterEmailTextController.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -235,18 +235,18 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                     );
                   },
                   text: 'Send Link',
-                  options: FFButtonOptions(
+                  options: AppButtonOptions(
                     width: 200.0,
                     height: 40.0,
                     padding:
                         EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
                     iconPadding:
                         EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                    color: FlutterFlowTheme.of(context).primary,
-                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                    color: AppTheme.of(context).primary,
+                    textStyle: AppTheme.of(context).titleSmall.override(
                           font: GoogleFonts.outfit(
                             fontWeight: FontWeight.bold,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .titleSmall
                                 .fontStyle,
                           ),
@@ -254,7 +254,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                           letterSpacing: 0.0,
                           fontWeight: FontWeight.bold,
                           fontStyle:
-                              FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                              AppTheme.of(context).titleSmall.fontStyle,
                         ),
                     elevation: 6.0,
                     borderSide: BorderSide(

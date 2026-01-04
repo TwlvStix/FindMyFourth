@@ -1,8 +1,8 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_animations.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/animations.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -95,7 +95,7 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
             maxWidth: 600.0,
           ),
           decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).secondaryBackground,
+            color: AppTheme.of(context).secondaryBackground,
             borderRadius: BorderRadius.circular(12.0),
           ),
           child: Padding(
@@ -109,20 +109,20 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                   child: Text(
                     'Options',
                     textAlign: TextAlign.start,
-                    style: FlutterFlowTheme.of(context).labelMedium.override(
+                    style: AppTheme.of(context).labelMedium.override(
                           font: GoogleFonts.outfit(
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .labelMedium
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .labelMedium
                                 .fontStyle,
                           ),
                           letterSpacing: 0.0,
-                          fontWeight: FlutterFlowTheme.of(context)
+                          fontWeight: AppTheme.of(context)
                               .labelMedium
                               .fontWeight,
-                          fontStyle: FlutterFlowTheme.of(context)
+                          fontStyle: AppTheme.of(context)
                               .labelMedium
                               .fontStyle,
                         ),
@@ -145,8 +145,8 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: _model.mouseRegionHovered1
-                            ? FlutterFlowTheme.of(context).primaryBackground
-                            : FlutterFlowTheme.of(context).secondaryBackground,
+                            ? AppTheme.of(context).primaryBackground
+                            : AppTheme.of(context).secondaryBackground,
                       ),
                       child: Padding(
                         padding:
@@ -159,7 +159,7 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                                   12.0, 0.0, 0.0, 0.0),
                               child: Icon(
                                 Icons.group_add_rounded,
-                                color: FlutterFlowTheme.of(context).primaryText,
+                                color: AppTheme.of(context).primaryText,
                                 size: 20.0,
                               ),
                             ),
@@ -169,24 +169,24 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                                     12.0, 0.0, 0.0, 0.0),
                                 child: Text(
                                   'Invite Users',
-                                  style: FlutterFlowTheme.of(context)
+                                  style: AppTheme.of(context)
                                       .bodyMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .bodyMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
@@ -208,7 +208,7 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                 if (widget.chatList?.userA == currentUserReference)
                   Divider(
                     thickness: 1.0,
-                    color: FlutterFlowTheme.of(context).alternate,
+                    color: AppTheme.of(context).alternate,
                   ),
                 MouseRegion(
                   opaque: false,
@@ -228,8 +228,8 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: _model.mouseRegionHovered2
-                            ? FlutterFlowTheme.of(context).primaryBackground
-                            : FlutterFlowTheme.of(context).secondaryBackground,
+                            ? AppTheme.of(context).primaryBackground
+                            : AppTheme.of(context).secondaryBackground,
                       ),
                       child: Padding(
                         padding:
@@ -242,7 +242,7 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                                   12.0, 0.0, 0.0, 0.0),
                               child: Icon(
                                 Icons.delete_outline_rounded,
-                                color: FlutterFlowTheme.of(context).error,
+                                color: AppTheme.of(context).error,
                                 size: 20.0,
                               ),
                             ),
@@ -252,26 +252,26 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                                     12.0, 0.0, 0.0, 0.0),
                                 child: Text(
                                   'Delete Chat',
-                                  style: FlutterFlowTheme.of(context)
+                                  style: AppTheme.of(context)
                                       .bodyMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
                                         color:
-                                            FlutterFlowTheme.of(context).error,
+                                            AppTheme.of(context).error,
                                         letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                        fontWeight: AppTheme.of(context)
                                             .bodyMedium
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
@@ -293,7 +293,7 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                 if (_model.showDelete == true)
                   Divider(
                     thickness: 1.0,
-                    color: FlutterFlowTheme.of(context).alternate,
+                    color: AppTheme.of(context).alternate,
                   ),
                 if (_model.showDelete == true)
                   MouseRegion(
@@ -305,8 +305,8 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: _model.mouseRegionHovered3
-                            ? FlutterFlowTheme.of(context).primaryBackground
-                            : FlutterFlowTheme.of(context).secondaryBackground,
+                            ? AppTheme.of(context).primaryBackground
+                            : AppTheme.of(context).secondaryBackground,
                       ),
                       child: Padding(
                         padding:
@@ -325,26 +325,26 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                                     child: Text(
                                       'Confirm Delete',
                                       textAlign: TextAlign.start,
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .labelMedium
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontStyle,
                                             ),
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontStyle,
                                           ),
@@ -355,26 +355,26 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                                         12.0, 0.0, 0.0, 0.0),
                                     child: Text(
                                       'You can\'t undo this action.',
-                                      style: FlutterFlowTheme.of(context)
+                                      style: AppTheme.of(context)
                                           .bodyMedium
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .fontStyle,
                                             ),
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontStyle,
                                           ),
@@ -396,21 +396,21 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                                 },
                                 child: Text(
                                   'Delete',
-                                  style: FlutterFlowTheme.of(context)
+                                  style: AppTheme.of(context)
                                       .bodyMedium
                                       .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight: FontWeight.bold,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
                                         color:
-                                            FlutterFlowTheme.of(context).error,
+                                            AppTheme.of(context).error,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.bold,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                        fontStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),

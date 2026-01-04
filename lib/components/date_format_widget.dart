@@ -1,5 +1,5 @@
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'date_format_model.dart';
@@ -52,32 +52,32 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
             dateTimeFormat("EEEE", widget.date),
             'Friday',
           ),
-          style: FlutterFlowTheme.of(context).bodyLarge.override(
+          style: AppTheme.of(context).bodyLarge.override(
                 font: GoogleFonts.outfit(
-                  fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
-                  fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                  fontWeight: AppTheme.of(context).bodyLarge.fontWeight,
+                  fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                 ),
-                color: FlutterFlowTheme.of(context).primaryBtnText,
+                color: AppTheme.of(context).primaryBtnText,
                 letterSpacing: 0.0,
-                fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
-                fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                fontWeight: AppTheme.of(context).bodyLarge.fontWeight,
+                fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
               ),
         ),
         Text(
           ',',
-          style: FlutterFlowTheme.of(context).headlineMedium.override(
+          style: AppTheme.of(context).headlineMedium.override(
                 font: GoogleFonts.outfit(
                   fontWeight:
-                      FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+                      AppTheme.of(context).headlineMedium.fontWeight,
                   fontStyle:
-                      FlutterFlowTheme.of(context).headlineMedium.fontStyle,
+                      AppTheme.of(context).headlineMedium.fontStyle,
                 ),
                 color: Colors.white,
                 letterSpacing: 0.0,
                 fontWeight:
-                    FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+                    AppTheme.of(context).headlineMedium.fontWeight,
                 fontStyle:
-                    FlutterFlowTheme.of(context).headlineMedium.fontStyle,
+                    AppTheme.of(context).headlineMedium.fontStyle,
               ),
         ),
         Padding(
@@ -87,16 +87,16 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
               dateTimeFormat("MMMM", widget.date),
               'July',
             ),
-            style: FlutterFlowTheme.of(context).bodyLarge.override(
+            style: AppTheme.of(context).bodyLarge.override(
                   font: GoogleFonts.outfit(
                     fontWeight:
-                        FlutterFlowTheme.of(context).bodyLarge.fontWeight,
-                    fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                        AppTheme.of(context).bodyLarge.fontWeight,
+                    fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                   ),
                   color: Colors.white,
                   letterSpacing: 0.0,
-                  fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
-                  fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                  fontWeight: AppTheme.of(context).bodyLarge.fontWeight,
+                  fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                 ),
           ),
         ),
@@ -107,16 +107,16 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
               dateTimeFormat("d", widget.date),
               '1',
             ),
-            style: FlutterFlowTheme.of(context).bodyLarge.override(
+            style: AppTheme.of(context).bodyLarge.override(
                   font: GoogleFonts.outfit(
                     fontWeight:
-                        FlutterFlowTheme.of(context).bodyLarge.fontWeight,
-                    fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                        AppTheme.of(context).bodyLarge.fontWeight,
+                    fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                   ),
                   color: Colors.white,
                   letterSpacing: 0.0,
-                  fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
-                  fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                  fontWeight: AppTheme.of(context).bodyLarge.fontWeight,
+                  fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                 ),
           ),
         ),
@@ -127,16 +127,16 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
               dateTimeFormat("jm", widget.date),
               '00:00',
             ),
-            style: FlutterFlowTheme.of(context).bodyLarge.override(
+            style: AppTheme.of(context).bodyLarge.override(
                   font: GoogleFonts.outfit(
                     fontWeight:
-                        FlutterFlowTheme.of(context).bodyLarge.fontWeight,
-                    fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                        AppTheme.of(context).bodyLarge.fontWeight,
+                    fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                   ),
                   color: Colors.white,
                   letterSpacing: 0.0,
-                  fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
-                  fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                  fontWeight: AppTheme.of(context).bodyLarge.fontWeight,
+                  fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                 ),
           ),
         ),
