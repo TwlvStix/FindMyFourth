@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'auth/firebase_auth/firebase_user_provider.dart';
 import 'auth/firebase_auth/auth_util.dart';
@@ -101,6 +102,11 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    const appColors = AppThemeColors.light;
+    final textTheme = GoogleFonts.outfitTextTheme().apply(
+      bodyColor: appColors.primaryText,
+      displayColor: appColors.primaryText,
+    );
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Find My Fourth',
@@ -114,6 +120,21 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         brightness: Brightness.light,
         extensions: const [AppThemeColors.light],
+        textTheme: textTheme,
+        primaryTextTheme: textTheme,
+        scaffoldBackgroundColor: appColors.primaryBackground,
+        colorScheme: ColorScheme.light(
+          primary: appColors.primary,
+          secondary: appColors.secondary,
+          error: appColors.error,
+          surface: appColors.secondaryBackground,
+          background: appColors.primaryBackground,
+          onPrimary: appColors.primaryBtnText,
+          onSecondary: appColors.primaryText,
+          onSurface: appColors.primaryText,
+          onBackground: appColors.primaryText,
+          onError: appColors.info,
+        ),
         scrollbarTheme: ScrollbarThemeData(
           thumbVisibility: WidgetStateProperty.all(false),
           thickness: WidgetStateProperty.all(5.0),
