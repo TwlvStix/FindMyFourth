@@ -29,3 +29,15 @@ ios/Flutter/App.framework
 ios/Flutter/App.podspec
 ios/Flutter/Generated.xcconfig
 ios/Flutter/ephemeral/
+
+# Flutter generated
+.flutter-plugins-dependencies
+
+# iOS CocoaPods + Flutter ephemeral
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/ephemeral/
+
+# Flutter build output
+build/
+.dart_tool/
