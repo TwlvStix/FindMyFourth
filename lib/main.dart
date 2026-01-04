@@ -22,10 +22,10 @@ void main() async {
 
   await initFirebase();
 
-  final appState = FFAppState(); // Initialize FFAppState
+  final appState = AppState();
   await appState.initializePersistedState();
 
-  runApp(ChangeNotifierProvider(
+  runApp(ChangeNotifierProvider<AppState>(
     create: (context) => appState,
     child: MyApp(),
   ));

@@ -67,7 +67,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<FFAppState>();
+    context.watch<AppState>();
 
     return StreamBuilder<List<VerificationDashRecord>>(
       stream: queryVerificationDashRecord(
@@ -1771,12 +1771,12 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                       hoverColor: Colors.transparent,
                                       highlightColor: Colors.transparent,
                                       onLongPress: () async {
-                                        FFAppState().theusernames =
+                                        AppState().theusernames =
                                             functions.usernameCreator(_model
                                                 .usernameTextController.text);
                                         safeSetState(() {});
                                         if (functions.usernameChecker(
-                                                FFAppState().theusernames,
+                                                AppState().theusernames,
                                                 createProfileVerificationDashRecord!
                                                     .usernames
                                                     .toList()) ==
@@ -1796,7 +1796,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                             lastName: _model
                                                 .lastNameTextController.text,
                                             displayName:
-                                                FFAppState().theusernames,
+                                                AppState().theusernames,
                                           ));
 
                                           await createProfileVerificationDashRecord
@@ -1806,7 +1806,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                               {
                                                 'usernames':
                                                     FieldValue.arrayUnion([
-                                                  FFAppState().theusernames
+                                                  AppState().theusernames
                                                 ]),
                                               },
                                             ),
@@ -1896,7 +1896,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                       },
                                       child: AppButton(
                                         onPressed: () async {
-                                          FFAppState().theusernames =
+                                          AppState().theusernames =
                                               functions.usernameCreator(_model
                                                   .usernameTextController.text);
                                           safeSetState(() {});
@@ -1906,7 +1906,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                 usersRecord.where(
                                               'display_name',
                                               isEqualTo:
-                                                  FFAppState().theusernames,
+                                                  AppState().theusernames,
                                             ),
                                             singleRecord: true,
                                           ).then((s) => s.firstOrNull);
@@ -1946,7 +1946,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                               lastName: _model
                                                   .lastNameTextController.text,
                                               displayName:
-                                                  FFAppState().theusernames,
+                                                  AppState().theusernames,
                                               paceOfPlay: _model.paceplayValue,
                                               playForMoney:
                                                   _model.playmoneyValue,

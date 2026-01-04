@@ -234,7 +234,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             16.0, 12.0, 12.0, 12.0),
                                         child: FutureBuilder<UsersRecord>(
-                                          future: FFAppState().userDocQuery(
+                                          future: AppState().userDocQuery(
                                             uniqueQueryKey: listViewChatsRecord
                                                 .reference.id,
                                             requestFn: () =>
@@ -542,7 +542,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             16.0, 12.0, 12.0, 12.0),
                                         child: FutureBuilder<UsersRecord>(
-                                          future: FFAppState().userDocQuery(
+                                          future: AppState().userDocQuery(
                                             uniqueQueryKey: listViewChatsRecord
                                                 .reference.id,
                                             requestFn: () =>
@@ -848,7 +848,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             16.0, 12.0, 12.0, 12.0),
                                         child: FutureBuilder<UsersRecord>(
-                                          future: FFAppState().userDocQuery(
+                                          future: AppState().userDocQuery(
                                             uniqueQueryKey: listViewChatsRecord
                                                 .reference.id,
                                             requestFn: () =>
