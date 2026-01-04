@@ -32,7 +32,11 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
     super.initState();
     _model = createModel(context, () => GamesJoinedModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -66,7 +70,12 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
               size: 25.0,
             ),
             onPressed: () async {
-              context.safePop();
+              final router = GoRouter.of(context);
+              if (router.canPop()) {
+                router.pop();
+              } else {
+                router.go('/');
+              }
             },
           ),
           title: Text(
@@ -624,7 +633,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                               },
                                             );
 
-                                            safeSetState(() {});
+                                            if (mounted) setState(() {});
                                           },
                                         ),
                                       ),

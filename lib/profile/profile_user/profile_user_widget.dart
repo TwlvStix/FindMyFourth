@@ -32,7 +32,11 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
     super.initState();
     _model = createModel(context, () => ProfileUserModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -61,7 +65,12 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
             hoverColor: Colors.transparent,
             highlightColor: Colors.transparent,
             onTap: () async {
-              context.safePop();
+              final router = GoRouter.of(context);
+              if (router.canPop()) {
+                router.pop();
+              } else {
+                router.go('/');
+              }
             },
             child: Icon(
               Icons.arrow_back_rounded,

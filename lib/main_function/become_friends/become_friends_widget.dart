@@ -37,7 +37,11 @@ class _BecomeFriendsWidgetState extends State<BecomeFriendsWidget> {
     super.initState();
     _model = createModel(context, () => BecomeFriendsModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override

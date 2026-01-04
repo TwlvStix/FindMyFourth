@@ -36,7 +36,11 @@ class _SignInWidgetState extends State<SignInWidget> {
     _model.passwordTextController ??= TextEditingController();
     _model.passwordFocusNode ??= FocusNode();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -330,10 +334,13 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       fillColor: AppTheme.of(context)
                                           .primaryBackground,
                                       suffixIcon: InkWell(
-                                        onTap: () => safeSetState(
-                                          () => _model.passwordVisibility =
-                                              !_model.passwordVisibility,
-                                        ),
+                                        onTap: () {
+                                          if (mounted) {
+                                            setState(() => _model
+                                                    .passwordVisibility =
+                                                !_model.passwordVisibility);
+                                          }
+                                        },
                                         focusNode:
                                             FocusNode(skipTraversal: true),
                                         child: Icon(
@@ -392,9 +399,15 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       return;
                                     }
 
-                                    context.pushNamedAuth(
+                                    if (!context.mounted) {
+                                      return;
+                                    }
+                                    final router = GoRouter.of(context);
+                                    if (router.shouldRedirect(false)) {
+                                      return;
+                                    }
+                                    router.pushNamed(
                                       HomeWidget.routeName,
-                                      context.mounted,
                                       extra: <String, dynamic>{
                                         kTransitionInfoKey: TransitionInfo(
                                           hasTransition: true,
@@ -533,9 +546,15 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       return;
                                     }
 
-                                    context.pushNamedAuth(
+                                    if (!context.mounted) {
+                                      return;
+                                    }
+                                    final router = GoRouter.of(context);
+                                    if (router.shouldRedirect(false)) {
+                                      return;
+                                    }
+                                    router.pushNamed(
                                       HomeWidget.routeName,
-                                      context.mounted,
                                       extra: <String, dynamic>{
                                         kTransitionInfoKey: TransitionInfo(
                                           hasTransition: true,
@@ -612,9 +631,15 @@ class _SignInWidgetState extends State<SignInWidget> {
                                             return;
                                           }
 
-                                          context.pushNamedAuth(
+                                          if (!context.mounted) {
+                                            return;
+                                          }
+                                          final router = GoRouter.of(context);
+                                          if (router.shouldRedirect(false)) {
+                                            return;
+                                          }
+                                          router.pushNamed(
                                             HomeWidget.routeName,
-                                            context.mounted,
                                             extra: <String, dynamic>{
                                               kTransitionInfoKey:
                                                   TransitionInfo(

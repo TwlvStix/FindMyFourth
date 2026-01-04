@@ -36,7 +36,11 @@ class _UserListSmallWidgetState extends State<UserListSmallWidget> {
     super.initState();
     _model = createModel(context, () => UserListSmallModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -216,10 +220,10 @@ class _UserListSmallWidgetState extends State<UserListSmallWidget> {
         ),
       ),
       onEnter: ((event) async {
-        safeSetState(() => _model.iuserHovered = true);
+        if (mounted) setState(() => _model.iuserHovered = true);
       }),
       onExit: ((event) async {
-        safeSetState(() => _model.iuserHovered = false);
+        if (mounted) setState(() => _model.iuserHovered = false);
       }),
     );
   }

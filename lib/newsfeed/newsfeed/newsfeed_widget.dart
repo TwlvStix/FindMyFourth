@@ -107,7 +107,11 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
       this,
     );
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -162,7 +166,12 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                   size: 25.0,
                 ),
                 onPressed: () async {
-                  context.safePop();
+                  final router = GoRouter.of(context);
+                  if (router.canPop()) {
+                    router.pop();
+                  } else {
+                    router.go('/');
+                  }
                 },
               ),
               title: Text(
@@ -360,7 +369,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                 0.0, 10.0, 5.0, 0.0),
                             child: AppButton(
                               onPressed: () async {
-                                safeSetState(() {
+                                if (mounted) setState(() {
                                   _model.simpleSearchResults = TextSearch(
                                     newsfeedPostsRecordList
                                         .map(
@@ -590,7 +599,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                                     await postsItem.reference
                                                         .delete();
 
-                                                    safeSetState(() {});
+                                                    if (mounted) setState(() {});
                                                   },
                                                 ),
                                               ),

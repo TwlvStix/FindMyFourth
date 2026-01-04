@@ -96,9 +96,13 @@ class _MyAppState extends State<MyApp> {
     super.dispose();
   }
 
-  void setThemeMode(ThemeMode mode) => safeSetState(() {
+  void setThemeMode(ThemeMode mode) {
+    if (mounted) {
+      setState(() {
         _themeMode = mode;
       });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -201,10 +205,14 @@ class _NavBarPageState extends State<NavBarPage> {
       body: _currentPage ?? tabs[_currentPageName],
       bottomNavigationBar: GNav(
         selectedIndex: currentIndex,
-        onTabChange: (i) => safeSetState(() {
-          _currentPage = null;
-          _currentPageName = tabs.keys.toList()[i];
-        }),
+        onTabChange: (i) {
+          if (mounted) {
+            setState(() {
+              _currentPage = null;
+              _currentPageName = tabs.keys.toList()[i];
+            });
+          }
+        },
         backgroundColor: Colors.white,
         color: AppTheme.of(context).primary,
         activeColor: Color(0xFF402550),

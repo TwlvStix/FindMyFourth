@@ -42,7 +42,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      safeSetState(() {});
+      if (mounted) setState(() {});
       unawaited(
         () async {
           await widget.chatRef!.reference.update({
@@ -57,7 +57,11 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
       );
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -658,7 +662,11 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                             ),
                           );
                         },
-                      ).then((value) => safeSetState(() {}));
+                      ).then((value) {
+                        if (mounted) {
+                          setState(() {});
+                        }
+                      });
                     },
                   ),
                 ),

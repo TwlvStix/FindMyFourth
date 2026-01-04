@@ -31,7 +31,11 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
     super.initState();
     _model = createModel(context, () => DateFormatModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override

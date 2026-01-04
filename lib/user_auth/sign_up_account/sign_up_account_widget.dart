@@ -40,7 +40,11 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
     _model.passwordConfirmTextController ??= TextEditingController();
     _model.passwordConfirmFocusNode ??= FocusNode();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -168,7 +172,11 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       onChanged: (_) => EasyDebounce.debounce(
                                         '_model.emailAddressTextController',
                                         Duration(milliseconds: 2000),
-                                        () => safeSetState(() {}),
+                                        () {
+                                          if (mounted) {
+                                            setState(() {});
+                                          }
+                                        },
                                       ),
                                       autofocus: true,
                                       autofillHints: [AutofillHints.email],
@@ -248,7 +256,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                   _model
                                                       .emailAddressTextController
                                                       ?.clear();
-                                                  safeSetState(() {});
+                                                  if (mounted) setState(() {});
                                                 },
                                                 child: Icon(
                                                   Icons.clear,
@@ -367,10 +375,13 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         fillColor: AppTheme.of(context)
                                             .primaryBackground,
                                         suffixIcon: InkWell(
-                                          onTap: () => safeSetState(
-                                            () => _model.passwordVisibility =
-                                                !_model.passwordVisibility,
-                                          ),
+                                          onTap: () {
+                                            if (mounted) {
+                                              setState(() => _model
+                                                      .passwordVisibility =
+                                                  !_model.passwordVisibility);
+                                            }
+                                          },
                                           focusNode:
                                               FocusNode(skipTraversal: true),
                                           child: Icon(
@@ -494,12 +505,14 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         fillColor: AppTheme.of(context)
                                             .primaryBackground,
                                         suffixIcon: InkWell(
-                                          onTap: () => safeSetState(
-                                            () => _model
-                                                    .passwordConfirmVisibility =
-                                                !_model
-                                                    .passwordConfirmVisibility,
-                                          ),
+                                          onTap: () {
+                                            if (mounted) {
+                                              setState(() => _model
+                                                      .passwordConfirmVisibility =
+                                                  !_model
+                                                      .passwordConfirmVisibility);
+                                            }
+                                          },
                                           focusNode:
                                               FocusNode(skipTraversal: true),
                                           child: Icon(
@@ -574,9 +587,15 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         return;
                                       }
 
-                                      context.goNamedAuth(
+                                      if (!context.mounted) {
+                                        return;
+                                      }
+                                      final router = GoRouter.of(context);
+                                      if (router.shouldRedirect(false)) {
+                                        return;
+                                      }
+                                      router.goNamed(
                                         CreateProfileWidget.routeName,
-                                        context.mounted,
                                         extra: <String, dynamic>{
                                           kTransitionInfoKey: TransitionInfo(
                                             hasTransition: true,
@@ -721,9 +740,15 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         return;
                                       }
 
-                                      context.pushNamedAuth(
+                                      if (!context.mounted) {
+                                        return;
+                                      }
+                                      final router = GoRouter.of(context);
+                                      if (router.shouldRedirect(false)) {
+                                        return;
+                                      }
+                                      router.pushNamed(
                                         CreateProfileWidget.routeName,
-                                        context.mounted,
                                         extra: <String, dynamic>{
                                           kTransitionInfoKey: TransitionInfo(
                                             hasTransition: true,
@@ -802,9 +827,15 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                               return;
                                             }
 
-                                            context.pushNamedAuth(
+                                            if (!context.mounted) {
+                                              return;
+                                            }
+                                            final router = GoRouter.of(context);
+                                            if (router.shouldRedirect(false)) {
+                                              return;
+                                            }
+                                            router.pushNamed(
                                               HomeWidget.routeName,
-                                              context.mounted,
                                               extra: <String, dynamic>{
                                                 kTransitionInfoKey:
                                                     TransitionInfo(

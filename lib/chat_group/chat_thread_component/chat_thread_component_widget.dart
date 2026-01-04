@@ -47,7 +47,11 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
     _model.textController ??= TextEditingController();
     _model.textFieldFocusNode ??= FocusNode();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -99,7 +103,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                         });
                       }
 
-                      safeSetState(() {});
+                      if (mounted) setState(() {});
                     }();
                   }
                   _model.listViewPreviousSnapshot = snapshot;
@@ -236,7 +240,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                       size: 24.0,
                                     ),
                                     onPressed: () async {
-                                      safeSetState(() {
+                                      if (mounted) setState(() {
                                         _model.isDataUploading_uploadDataJub4 =
                                             false;
                                         _model.uploadedLocalFile_uploadDataJub4 =
@@ -296,7 +300,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                             if (selectedMedia != null &&
                                 selectedMedia.every((m) => validateFileFormat(
                                     m.storagePath, context))) {
-                              safeSetState(() =>
+                              if (mounted) setState(() =>
                                   _model.isDataUploading_uploadDataJub4 = true);
                               var selectedUploadedFiles = <FFUploadedFile>[];
 
@@ -335,7 +339,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                               if (selectedUploadedFiles.length ==
                                       selectedMedia.length &&
                                   downloadUrls.length == selectedMedia.length) {
-                                safeSetState(() {
+                                if (mounted) setState(() {
                                   _model.uploadedLocalFile_uploadDataJub4 =
                                       selectedUploadedFiles.first;
                                   _model.uploadedFileUrl_uploadDataJub4 =
@@ -343,7 +347,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                 });
                                 showUploadMessage(context, 'Success!');
                               } else {
-                                safeSetState(() {});
+                                if (mounted) setState(() {});
                                 showUploadMessage(
                                     context, 'Failed to upload data');
                                 return;
@@ -353,7 +357,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                             if (_model.uploadedFileUrl_uploadDataJub4 != '') {
                               _model.addToImagesUploaded(
                                   _model.uploadedFileUrl_uploadDataJub4);
-                              safeSetState(() {});
+                              if (mounted) setState(() {});
                             }
                           },
                         ),
@@ -427,10 +431,10 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                       });
                                       // clearUsers
                                       _model.lastSeenBy = [];
-                                      safeSetState(() {
+                                      if (mounted) setState(() {
                                         _model.textController?.clear();
                                       });
-                                      safeSetState(() {
+                                      if (mounted) setState(() {
                                         _model.isDataUploading_uploadDataJub4 =
                                             false;
                                         _model.uploadedLocalFile_uploadDataJub4 =
@@ -442,9 +446,9 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                       });
 
                                       _model.imagesUploaded = [];
-                                      safeSetState(() {});
+                                      if (mounted) setState(() {});
 
-                                      safeSetState(() {});
+                                      if (mounted) setState(() {});
                                     },
                                     autofocus: true,
                                     textCapitalization:
@@ -696,10 +700,10 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                         });
                                         // clearUsers
                                         _model.lastSeenBy = [];
-                                        safeSetState(() {
+                                        if (mounted) setState(() {
                                           _model.textController?.clear();
                                         });
-                                        safeSetState(() {
+                                        if (mounted) setState(() {
                                           _model.isDataUploading_uploadDataJub4 =
                                               false;
                                           _model.uploadedLocalFile_uploadDataJub4 =
@@ -711,12 +715,12 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                         });
 
                                         _model.imagesUploaded = [];
-                                        safeSetState(() {});
+                                        if (mounted) setState(() {});
                                       } finally {
                                         await firestoreBatch.commit();
                                       }
 
-                                      safeSetState(() {});
+                                      if (mounted) setState(() {});
                                     },
                                   ),
                                 ),

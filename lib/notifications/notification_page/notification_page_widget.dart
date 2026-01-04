@@ -48,11 +48,15 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
           currentUserDocument?.notifyMemberDiscount, false);
       _model.notifyOff =
           valueOrDefault<bool>(currentUserDocument?.notifyOff, false);
-      safeSetState(() {});
+      if (mounted) setState(() {});
     });
 
     _model.switchValue = _model.switchListTileValue1!;
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -143,7 +147,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 child: SwitchListTile.adaptive(
                   value: _model.switchListTileValue1 ??= _model.notifyAll!,
                   onChanged: (newValue) async {
-                    safeSetState(() => _model.switchListTileValue1 = newValue);
+                    if (mounted) setState(() => _model.switchListTileValue1 = newValue);
                     if (newValue) {
                       _model.notifyAll = true;
                       _model.notifyMoneyGame = true;
@@ -153,10 +157,10 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                       _model.notifyOnlyFromFriends = true;
                       _model.notifyMemberDiscount = true;
                       _model.notifyOff = false;
-                      safeSetState(() {});
+                      if (mounted) setState(() {});
                     } else {
                       _model.notifyAll = false;
-                      safeSetState(() {});
+                      if (mounted) setState(() {});
                     }
                   },
                   title: Text(
@@ -211,7 +215,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
             Switch.adaptive(
               value: _model.switchValue!,
               onChanged: (newValue) async {
-                safeSetState(() => _model.switchValue = newValue);
+                if (mounted) setState(() => _model.switchValue = newValue);
               },
               activeColor: AppTheme.of(context).primary,
               activeTrackColor: AppTheme.of(context).accent1,
@@ -220,7 +224,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
             ),
             ToggleIcon(
               onPressed: () async {
-                safeSetState(
+                if (mounted) setState(
                     () => _model.notifyMoneyGame = !_model.notifyMoneyGame!);
               },
               value: _model.notifyMoneyGame!,
@@ -243,14 +247,14 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   value: _model.switchListTileValue2 ??=
                       _model.notifyMoneyGame!,
                   onChanged: (newValue) async {
-                    safeSetState(() => _model.switchListTileValue2 = newValue);
+                    if (mounted) setState(() => _model.switchListTileValue2 = newValue);
                     if (newValue) {
                       _model.notifyMoneyGame = true;
-                      safeSetState(() {});
+                      if (mounted) setState(() {});
                     } else {
                       _model.notifyAll = false;
                       _model.notifyMoneyGame = false;
-                      safeSetState(() {});
+                      if (mounted) setState(() {});
                     }
                   },
                   title: Text(
@@ -310,14 +314,14 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   value: _model.switchListTileValue3 ??=
                       _model.notifyVegasGame!,
                   onChanged: (newValue) async {
-                    safeSetState(() => _model.switchListTileValue3 = newValue);
+                    if (mounted) setState(() => _model.switchListTileValue3 = newValue);
                     if (newValue) {
                       _model.notifyVegasGame = true;
-                      safeSetState(() {});
+                      if (mounted) setState(() {});
                     } else {
                       _model.notifyAll = false;
                       _model.notifyVegasGame = false;
-                      safeSetState(() {});
+                      if (mounted) setState(() {});
                     }
                   },
                   title: Text(
@@ -377,14 +381,14 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   value: _model.switchListTileValue4 ??=
                       _model.notifyCompetitiveGame!,
                   onChanged: (newValue) async {
-                    safeSetState(() => _model.switchListTileValue4 = newValue);
+                    if (mounted) setState(() => _model.switchListTileValue4 = newValue);
                     if (newValue) {
                       _model.notifyCompetitiveGame = true;
-                      safeSetState(() {});
+                      if (mounted) setState(() {});
                     } else {
                       _model.notifyAll = false;
                       _model.notifyCompetitiveGame = false;
-                      safeSetState(() {});
+                      if (mounted) setState(() {});
                     }
                   },
                   title: Text(
@@ -443,14 +447,14 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 child: SwitchListTile.adaptive(
                   value: _model.switchListTileValue5 ??= _model.notifyForFun!,
                   onChanged: (newValue) async {
-                    safeSetState(() => _model.switchListTileValue5 = newValue);
+                    if (mounted) setState(() => _model.switchListTileValue5 = newValue);
                     if (newValue) {
                       _model.notifyForFun = true;
-                      safeSetState(() {});
+                      if (mounted) setState(() {});
                     } else {
                       _model.notifyAll = false;
                       _model.notifyForFun = false;
-                      safeSetState(() {});
+                      if (mounted) setState(() {});
                     }
                   },
                   title: Text(
@@ -510,14 +514,14 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   value: _model.switchListTileValue6 ??=
                       _model.notifyOnlyFromFriends!,
                   onChanged: (newValue) async {
-                    safeSetState(() => _model.switchListTileValue6 = newValue);
+                    if (mounted) setState(() => _model.switchListTileValue6 = newValue);
                     if (newValue) {
                       _model.notifyOnlyFromFriends = true;
-                      safeSetState(() {});
+                      if (mounted) setState(() {});
                     } else {
                       _model.notifyAll = false;
                       _model.notifyOnlyFromFriends = false;
-                      safeSetState(() {});
+                      if (mounted) setState(() {});
                     }
                   },
                   title: Text(
@@ -575,14 +579,14 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 value: _model.switchListTileValue7 ??=
                     _model.notifyMemberDiscount!,
                 onChanged: (newValue) async {
-                  safeSetState(() => _model.switchListTileValue7 = newValue);
+                  if (mounted) setState(() => _model.switchListTileValue7 = newValue);
                   if (newValue) {
                     _model.notifyMemberDiscount = true;
-                    safeSetState(() {});
+                    if (mounted) setState(() {});
                   } else {
                     _model.notifyAll = false;
                     _model.notifyMemberDiscount = false;
-                    safeSetState(() {});
+                    if (mounted) setState(() {});
                   }
                 },
                 title: Text(
@@ -634,7 +638,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               child: SwitchListTile.adaptive(
                 value: _model.switchListTileValue8 ??= _model.notifyOff!,
                 onChanged: (newValue) async {
-                  safeSetState(() => _model.switchListTileValue8 = newValue);
+                  if (mounted) setState(() => _model.switchListTileValue8 = newValue);
                   if (newValue) {
                     _model.notifyAll = false;
                     _model.notifyMoneyGame = false;
@@ -644,7 +648,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                     _model.notifyOnlyFromFriends = false;
                     _model.notifyMemberDiscount = false;
                     _model.notifyOff = true;
-                    safeSetState(() {});
+                    if (mounted) setState(() {});
                   }
                 },
                 title: Text(
