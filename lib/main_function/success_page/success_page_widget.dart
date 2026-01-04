@@ -1,6 +1,6 @@
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/widgets/app_button.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -41,7 +41,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+      backgroundColor: AppTheme.of(context).secondaryBackground,
       body: SafeArea(
         top: true,
         child: Row(
@@ -58,10 +58,10 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                       width: 140.0,
                       height: 140.0,
                       decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).primary,
+                        color: AppTheme.of(context).primary,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: FlutterFlowTheme.of(context).primaryBtnText,
+                          color: AppTheme.of(context).primaryBtnText,
                           width: 2.0,
                         ),
                       ),
@@ -70,7 +70,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                         padding: EdgeInsets.all(30.0),
                         child: Icon(
                           Icons.check_rounded,
-                          color: FlutterFlowTheme.of(context).primaryBtnText,
+                          color: AppTheme.of(context).primaryBtnText,
                           size: 60.0,
                         ),
                       ),
@@ -81,20 +81,20 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                         EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
                     child: Text(
                       'You are in!',
-                      style: FlutterFlowTheme.of(context).titleLarge.override(
+                      style: AppTheme.of(context).titleLarge.override(
                             font: GoogleFonts.outfit(
-                              fontWeight: FlutterFlowTheme.of(context)
+                              fontWeight: AppTheme.of(context)
                                   .titleLarge
                                   .fontWeight,
-                              fontStyle: FlutterFlowTheme.of(context)
+                              fontStyle: AppTheme.of(context)
                                   .titleLarge
                                   .fontStyle,
                             ),
                             letterSpacing: 0.0,
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .titleLarge
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .titleLarge
                                 .fontStyle,
                           ),
@@ -105,20 +105,20 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                         EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
                     child: Text(
                       'Enjoy the Game',
-                      style: FlutterFlowTheme.of(context).titleLarge.override(
+                      style: AppTheme.of(context).titleLarge.override(
                             font: GoogleFonts.outfit(
-                              fontWeight: FlutterFlowTheme.of(context)
+                              fontWeight: AppTheme.of(context)
                                   .titleLarge
                                   .fontWeight,
-                              fontStyle: FlutterFlowTheme.of(context)
+                              fontStyle: AppTheme.of(context)
                                   .titleLarge
                                   .fontStyle,
                             ),
                             letterSpacing: 0.0,
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .titleLarge
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .titleLarge
                                 .fontStyle,
                           ),
@@ -129,20 +129,20 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                         EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
                     child: Text(
                       'Enjoy the Group',
-                      style: FlutterFlowTheme.of(context).titleLarge.override(
+                      style: AppTheme.of(context).titleLarge.override(
                             font: GoogleFonts.outfit(
-                              fontWeight: FlutterFlowTheme.of(context)
+                              fontWeight: AppTheme.of(context)
                                   .titleLarge
                                   .fontWeight,
-                              fontStyle: FlutterFlowTheme.of(context)
+                              fontStyle: AppTheme.of(context)
                                   .titleLarge
                                   .fontStyle,
                             ),
                             letterSpacing: 0.0,
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .titleLarge
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .titleLarge
                                 .fontStyle,
                           ),
@@ -156,7 +156,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          FFButtonWidget(
+                          AppButton(
                             onPressed: () async {
                               context.pushNamed(
                                 GamesListWidget.routeName,
@@ -171,32 +171,32 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                               );
                             },
                             text: 'Go to Game Lists',
-                            options: FFButtonOptions(
+                            options: AppButtonOptions(
                               width: 230.0,
                               height: 50.0,
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               iconPadding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
-                              color: FlutterFlowTheme.of(context).primary,
-                              textStyle: FlutterFlowTheme.of(context)
+                              color: AppTheme.of(context).primary,
+                              textStyle: AppTheme.of(context)
                                   .bodyLarge
                                   .override(
                                     font: GoogleFonts.outfit(
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                      fontWeight: AppTheme.of(context)
                                           .bodyLarge
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                      fontStyle: AppTheme.of(context)
                                           .bodyLarge
                                           .fontStyle,
                                     ),
-                                    color: FlutterFlowTheme.of(context)
+                                    color: AppTheme.of(context)
                                         .primaryBtnText,
                                     letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
+                                    fontWeight: AppTheme.of(context)
                                         .bodyLarge
                                         .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
+                                    fontStyle: AppTheme.of(context)
                                         .bodyLarge
                                         .fontStyle,
                                   ),

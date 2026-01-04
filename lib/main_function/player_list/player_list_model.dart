@@ -1,10 +1,10 @@
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/form_field_controller.dart';
+import '/core/app_util.dart';
+import '/core/form_field_controller.dart';
 import '/index.dart';
 import 'player_list_widget.dart' show PlayerListWidget;
 import 'package:flutter/material.dart';
 
-class PlayerListModel extends FlutterFlowModel<PlayerListWidget> {
+class PlayerListModel extends AppModel<PlayerListWidget> {
   ///  Local state fields for this page.
 
   List<DocumentReference> playersJoined = [];

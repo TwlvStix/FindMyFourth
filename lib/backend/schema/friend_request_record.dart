@@ -5,7 +5,7 @@ import 'package:collection/collection.dart';
 import '/backend/schema/util/firestore_util.dart';
 
 import 'index.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_util.dart';
 
 class FriendRequestRecord extends FirestoreRecord {
   FriendRequestRecord._(

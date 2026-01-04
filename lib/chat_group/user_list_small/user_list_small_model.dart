@@ -1,8 +1,8 @@
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_util.dart';
 import 'user_list_small_widget.dart' show UserListSmallWidget;
 import 'package:flutter/material.dart';
 
-class UserListSmallModel extends FlutterFlowModel<UserListSmallWidget> {
+class UserListSmallModel extends AppModel<UserListSmallWidget> {
   ///  State fields for stateful widgets in this component.
 
   // State field(s) for iuser widget.

@@ -1,6 +1,6 @@
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/widgets/app_icon_button.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -48,41 +48,41 @@ class _HomeWidgetState extends State<HomeWidget> {
         key: scaffoldKey,
         backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+          backgroundColor: AppTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
           title: Align(
             alignment: AlignmentDirectional(-1.0, 0.0),
             child: Text(
               'Find My 4th',
               textAlign: TextAlign.center,
-              style: FlutterFlowTheme.of(context).headlineSmall.override(
+              style: AppTheme.of(context).headlineSmall.override(
                     font: GoogleFonts.outfit(
                       fontWeight:
-                          FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                          AppTheme.of(context).headlineSmall.fontWeight,
                       fontStyle:
-                          FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                          AppTheme.of(context).headlineSmall.fontStyle,
                     ),
-                    color: FlutterFlowTheme.of(context).primary,
+                    color: AppTheme.of(context).primary,
                     letterSpacing: 0.0,
                     fontWeight:
-                        FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                        AppTheme.of(context).headlineSmall.fontWeight,
                     fontStyle:
-                        FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                        AppTheme.of(context).headlineSmall.fontStyle,
                   ),
             ),
           ),
           actions: [
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 15.0, 0.0),
-              child: FlutterFlowIconButton(
-                borderColor: FlutterFlowTheme.of(context).primaryBackground,
+              child: AppIconButton(
+                borderColor: AppTheme.of(context).primaryBackground,
                 borderRadius: 20.0,
                 borderWidth: 1.0,
                 buttonSize: 40.0,
-                fillColor: FlutterFlowTheme.of(context).primaryBackground,
+                fillColor: AppTheme.of(context).primaryBackground,
                 icon: Icon(
                   Icons.person_outline_outlined,
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   size: 30.0,
                 ),
                 onPressed: () async {
@@ -101,15 +101,15 @@ class _HomeWidgetState extends State<HomeWidget> {
             ),
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
-              child: FlutterFlowIconButton(
-                borderColor: FlutterFlowTheme.of(context).primaryBackground,
+              child: AppIconButton(
+                borderColor: AppTheme.of(context).primaryBackground,
                 borderRadius: 20.0,
                 borderWidth: 1.0,
                 buttonSize: 40.0,
-                fillColor: FlutterFlowTheme.of(context).primaryBackground,
+                fillColor: AppTheme.of(context).primaryBackground,
                 icon: Icon(
                   Icons.search_sharp,
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   size: 26.0,
                 ),
                 onPressed: () async {

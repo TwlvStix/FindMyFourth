@@ -3,12 +3,12 @@ import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/chat_group/chat_thread_update/chat_thread_update_widget.dart';
 import '/chat_group/empty_state_simple/empty_state_simple_widget.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_media_display.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_video_player.dart';
-import '/flutter_flow/upload_data.dart';
+import '/core/widgets/app_icon_button.dart';
+import '/core/media_display.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/video_player.dart';
+import '/core/upload_data.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -63,7 +63,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
       width: double.infinity,
       height: double.infinity,
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).primaryBackground,
+        color: AppTheme.of(context).primaryBackground,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -127,7 +127,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                   return EmptyStateSimpleWidget(
                     icon: Icon(
                       Icons.forum_outlined,
-                      color: FlutterFlowTheme.of(context).primary,
+                      color: AppTheme.of(context).primary,
                       size: 90.0,
                     ),
                     title: 'No Messages',
@@ -150,19 +150,11 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                         listViewChatMessagesRecordList[listViewIndex];
                     return Container(
                       decoration: BoxDecoration(),
-                      child: wrapWithModel(
-                        model: _model.chatThreadUpdateModels.getModel(
-                          listViewChatMessagesRecord.reference.id,
-                          listViewIndex,
+                      child: ChatThreadUpdateWidget(
+                        key: Key(
+                          'Key0rl_${listViewChatMessagesRecord.reference.id}',
                         ),
-                        updateCallback: () => safeSetState(() {}),
-                        updateOnChange: true,
-                        child: ChatThreadUpdateWidget(
-                          key: Key(
-                            'Key0rl_${listViewChatMessagesRecord.reference.id}',
-                          ),
-                          chatMessagesRef: listViewChatMessagesRecord,
-                        ),
+                        chatMessagesRef: listViewChatMessagesRecord,
                       ),
                     );
                   },
@@ -173,7 +165,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).secondaryBackground,
+              color: AppTheme.of(context).secondaryBackground,
               boxShadow: [
                 BoxShadow(
                   blurRadius: 3.0,
@@ -230,17 +222,17 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                 ),
                                 Align(
                                   alignment: AlignmentDirectional(-1.0, -1.0),
-                                  child: FlutterFlowIconButton(
+                                  child: AppIconButton(
                                     borderColor:
-                                        FlutterFlowTheme.of(context).error,
+                                        AppTheme.of(context).error,
                                     borderRadius: 20.0,
                                     borderWidth: 2.0,
                                     buttonSize: 40.0,
-                                    fillColor: FlutterFlowTheme.of(context)
+                                    fillColor: AppTheme.of(context)
                                         .primaryBackground,
                                     icon: Icon(
                                       Icons.delete_outline_rounded,
-                                      color: FlutterFlowTheme.of(context).error,
+                                      color: AppTheme.of(context).error,
                                       size: 24.0,
                                     ),
                                     onPressed: () async {
@@ -277,16 +269,16 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        FlutterFlowIconButton(
-                          borderColor: FlutterFlowTheme.of(context).alternate,
+                        AppIconButton(
+                          borderColor: AppTheme.of(context).alternate,
                           borderRadius: 60.0,
                           borderWidth: 1.0,
                           buttonSize: 40.0,
                           fillColor:
-                              FlutterFlowTheme.of(context).secondaryBackground,
+                              AppTheme.of(context).secondaryBackground,
                           icon: Icon(
                             Icons.add_rounded,
-                            color: FlutterFlowTheme.of(context).secondaryText,
+                            color: AppTheme.of(context).secondaryText,
                             size: 24.0,
                           ),
                           onPressed: () async {
@@ -295,10 +287,10 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                               context: context,
                               allowPhoto: true,
                               allowVideo: true,
-                              backgroundColor: FlutterFlowTheme.of(context)
+                              backgroundColor: AppTheme.of(context)
                                   .secondaryBackground,
                               textColor:
-                                  FlutterFlowTheme.of(context).primaryText,
+                                  AppTheme.of(context).primaryText,
                               pickerFontFamily: 'Outfit',
                             );
                             if (selectedMedia != null &&
@@ -460,82 +452,82 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                     textInputAction: TextInputAction.send,
                                     obscureText: false,
                                     decoration: InputDecoration(
-                                      labelStyle: FlutterFlowTheme.of(context)
+                                      labelStyle: AppTheme.of(context)
                                           .labelMedium
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelMedium
                                                       .fontStyle,
                                             ),
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelMedium
                                                     .fontStyle,
                                           ),
                                       hintText: 'Start typing here...',
-                                      hintStyle: FlutterFlowTheme.of(context)
+                                      hintStyle: AppTheme.of(context)
                                           .labelSmall
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelSmall
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .labelSmall
                                                       .fontStyle,
                                             ),
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelSmall
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .labelSmall
                                                     .fontStyle,
                                           ),
-                                      errorStyle: FlutterFlowTheme.of(context)
+                                      errorStyle: AppTheme.of(context)
                                           .bodyMedium
                                           .override(
                                             font: GoogleFonts.outfit(
                                               fontWeight:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  FlutterFlowTheme.of(context)
+                                                  AppTheme.of(context)
                                                       .bodyMedium
                                                       .fontStyle,
                                             ),
-                                            color: FlutterFlowTheme.of(context)
+                                            color: AppTheme.of(context)
                                                 .error,
                                             fontSize: 12.0,
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontStyle,
                                           ),
                                       enabledBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: FlutterFlowTheme.of(context)
+                                          color: AppTheme.of(context)
                                               .alternate,
                                           width: 1.0,
                                         ),
@@ -544,7 +536,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: FlutterFlowTheme.of(context)
+                                          color: AppTheme.of(context)
                                               .primary,
                                           width: 1.0,
                                         ),
@@ -553,7 +545,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                       ),
                                       errorBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: FlutterFlowTheme.of(context)
+                                          color: AppTheme.of(context)
                                               .error,
                                           width: 1.0,
                                         ),
@@ -562,7 +554,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                       ),
                                       focusedErrorBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: FlutterFlowTheme.of(context)
+                                          color: AppTheme.of(context)
                                               .error,
                                           width: 1.0,
                                         ),
@@ -573,33 +565,33 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                           EdgeInsetsDirectional.fromSTEB(
                                               16.0, 16.0, 56.0, 16.0),
                                     ),
-                                    style: FlutterFlowTheme.of(context)
+                                    style: AppTheme.of(context)
                                         .bodyMedium
                                         .override(
                                           font: GoogleFonts.outfit(
                                             fontWeight:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontWeight,
                                             fontStyle:
-                                                FlutterFlowTheme.of(context)
+                                                AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
                                           fontWeight:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              FlutterFlowTheme.of(context)
+                                              AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
                                     maxLines: 12,
                                     minLines: 1,
                                     cursorColor:
-                                        FlutterFlowTheme.of(context).primary,
+                                        AppTheme.of(context).primary,
                                     validator: _model.textControllerValidator
                                         .asValidator(context),
                                     inputFormatters: [
@@ -623,18 +615,18 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                 child: Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 4.0, 6.0, 4.0),
-                                  child: FlutterFlowIconButton(
-                                    borderColor: FlutterFlowTheme.of(context)
+                                  child: AppIconButton(
+                                    borderColor: AppTheme.of(context)
                                         .secondaryBackground,
                                     borderRadius: 20.0,
                                     borderWidth: 1.0,
                                     buttonSize: 40.0,
                                     fillColor:
-                                        FlutterFlowTheme.of(context).accent1,
+                                        AppTheme.of(context).accent1,
                                     icon: Icon(
                                       Icons.send_rounded,
                                       color:
-                                          FlutterFlowTheme.of(context).primary,
+                                          AppTheme.of(context).primary,
                                       size: 20.0,
                                     ),
                                     onPressed: () async {

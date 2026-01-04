@@ -1,10 +1,10 @@
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_util.dart';
 import '/index.dart';
 import 'tab_friends_widget.dart' show TabFriendsWidget;
 import 'package:flutter/material.dart';
 
-class TabFriendsModel extends FlutterFlowModel<TabFriendsWidget> {
+class TabFriendsModel extends AppModel<TabFriendsWidget> {
   ///  Local state fields for this page.
 
   List<String> reqUserList = [];

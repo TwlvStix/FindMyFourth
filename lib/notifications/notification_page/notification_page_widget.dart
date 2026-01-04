@@ -1,10 +1,9 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_toggle_icon.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
+import '/core/widgets/app_icon_button.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
+import '/core/widgets/app_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -67,17 +66,17 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+      backgroundColor: AppTheme.of(context).secondaryBackground,
       appBar: AppBar(
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: AppTheme.of(context).secondaryBackground,
         automaticallyImplyLeading: false,
-        leading: FlutterFlowIconButton(
+        leading: AppIconButton(
           borderColor: Colors.transparent,
           borderRadius: 30.0,
           buttonSize: 46.0,
           icon: Icon(
             Icons.arrow_back_rounded,
-            color: FlutterFlowTheme.of(context).primaryText,
+            color: AppTheme.of(context).primaryText,
             size: 25.0,
           ),
           onPressed: () async {
@@ -86,17 +85,17 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
         ),
         title: Text(
           'Settings Page',
-          style: FlutterFlowTheme.of(context).headlineSmall.override(
+          style: AppTheme.of(context).headlineSmall.override(
                 font: GoogleFonts.outfit(
                   fontWeight:
-                      FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                      AppTheme.of(context).headlineSmall.fontWeight,
                   fontStyle:
-                      FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                      AppTheme.of(context).headlineSmall.fontStyle,
                 ),
                 letterSpacing: 0.0,
                 fontWeight:
-                    FlutterFlowTheme.of(context).headlineSmall.fontWeight,
-                fontStyle: FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                    AppTheme.of(context).headlineSmall.fontWeight,
+                fontStyle: AppTheme.of(context).headlineSmall.fontStyle,
               ),
         ),
         actions: [],
@@ -115,20 +114,20 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   Expanded(
                     child: Text(
                       'Choose what notifcations you want to recieve below and we will update the settings.',
-                      style: FlutterFlowTheme.of(context).labelMedium.override(
+                      style: AppTheme.of(context).labelMedium.override(
                             font: GoogleFonts.outfit(
-                              fontWeight: FlutterFlowTheme.of(context)
+                              fontWeight: AppTheme.of(context)
                                   .labelMedium
                                   .fontWeight,
-                              fontStyle: FlutterFlowTheme.of(context)
+                              fontStyle: AppTheme.of(context)
                                   .labelMedium
                                   .fontStyle,
                             ),
                             letterSpacing: 0.0,
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .labelMedium
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .labelMedium
                                 .fontStyle,
                           ),
@@ -162,46 +161,46 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   },
                   title: Text(
                     'All Push Notifications',
-                    style: FlutterFlowTheme.of(context).bodyLarge.override(
+                    style: AppTheme.of(context).bodyLarge.override(
                           font: GoogleFonts.outfit(
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .bodyLarge
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .bodyLarge
                                 .fontStyle,
                           ),
                           letterSpacing: 0.0,
                           fontWeight:
-                              FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                              AppTheme.of(context).bodyLarge.fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                              AppTheme.of(context).bodyLarge.fontStyle,
                           lineHeight: 2.0,
                         ),
                   ),
                   subtitle: Text(
                     'Receive Push notifications for any time of game created.',
-                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    style: AppTheme.of(context).bodyMedium.override(
                           font: GoogleFonts.outfit(
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .bodyMedium
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .bodyMedium
                                 .fontStyle,
                           ),
                           color: Color(0xFF8B97A2),
                           letterSpacing: 0.0,
-                          fontWeight: FlutterFlowTheme.of(context)
+                          fontWeight: AppTheme.of(context)
                               .bodyMedium
                               .fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              AppTheme.of(context).bodyMedium.fontStyle,
                         ),
                   ),
-                  tileColor: FlutterFlowTheme.of(context).secondaryBackground,
-                  activeColor: FlutterFlowTheme.of(context).primary,
-                  activeTrackColor: FlutterFlowTheme.of(context).accent1,
+                  tileColor: AppTheme.of(context).secondaryBackground,
+                  activeColor: AppTheme.of(context).primary,
+                  activeTrackColor: AppTheme.of(context).accent1,
                   dense: false,
                   controlAffinity: ListTileControlAffinity.trailing,
                   contentPadding:
@@ -214,10 +213,10 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               onChanged: (newValue) async {
                 safeSetState(() => _model.switchValue = newValue);
               },
-              activeColor: FlutterFlowTheme.of(context).primary,
-              activeTrackColor: FlutterFlowTheme.of(context).accent1,
-              inactiveTrackColor: FlutterFlowTheme.of(context).alternate,
-              inactiveThumbColor: FlutterFlowTheme.of(context).secondaryText,
+              activeColor: AppTheme.of(context).primary,
+              activeTrackColor: AppTheme.of(context).accent1,
+              inactiveTrackColor: AppTheme.of(context).alternate,
+              inactiveThumbColor: AppTheme.of(context).secondaryText,
             ),
             ToggleIcon(
               onPressed: () async {
@@ -227,12 +226,12 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               value: _model.notifyMoneyGame!,
               onIcon: Icon(
                 Icons.check_box,
-                color: FlutterFlowTheme.of(context).primary,
+                color: AppTheme.of(context).primary,
                 size: 25.0,
               ),
               offIcon: Icon(
                 Icons.check_box_outline_blank,
-                color: FlutterFlowTheme.of(context).secondaryText,
+                color: AppTheme.of(context).secondaryText,
                 size: 25.0,
               ),
             ),
@@ -256,46 +255,46 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   },
                   title: Text(
                     'Money Game Notifications',
-                    style: FlutterFlowTheme.of(context).bodyLarge.override(
+                    style: AppTheme.of(context).bodyLarge.override(
                           font: GoogleFonts.outfit(
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .bodyLarge
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .bodyLarge
                                 .fontStyle,
                           ),
                           letterSpacing: 0.0,
                           fontWeight:
-                              FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                              AppTheme.of(context).bodyLarge.fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                              AppTheme.of(context).bodyLarge.fontStyle,
                           lineHeight: 2.0,
                         ),
                   ),
                   subtitle: Text(
                     'Receive Push notifications for games that have money on the line. ',
-                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    style: AppTheme.of(context).bodyMedium.override(
                           font: GoogleFonts.outfit(
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .bodyMedium
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .bodyMedium
                                 .fontStyle,
                           ),
                           color: Color(0xFF8B97A2),
                           letterSpacing: 0.0,
-                          fontWeight: FlutterFlowTheme.of(context)
+                          fontWeight: AppTheme.of(context)
                               .bodyMedium
                               .fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              AppTheme.of(context).bodyMedium.fontStyle,
                         ),
                   ),
-                  tileColor: FlutterFlowTheme.of(context).secondaryBackground,
-                  activeColor: FlutterFlowTheme.of(context).primary,
-                  activeTrackColor: FlutterFlowTheme.of(context).accent1,
+                  tileColor: AppTheme.of(context).secondaryBackground,
+                  activeColor: AppTheme.of(context).primary,
+                  activeTrackColor: AppTheme.of(context).accent1,
                   dense: false,
                   controlAffinity: ListTileControlAffinity.trailing,
                   contentPadding:
@@ -323,46 +322,46 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   },
                   title: Text(
                     'Vegas Game Notifications',
-                    style: FlutterFlowTheme.of(context).bodyLarge.override(
+                    style: AppTheme.of(context).bodyLarge.override(
                           font: GoogleFonts.outfit(
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .bodyLarge
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .bodyLarge
                                 .fontStyle,
                           ),
                           letterSpacing: 0.0,
                           fontWeight:
-                              FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                              AppTheme.of(context).bodyLarge.fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                              AppTheme.of(context).bodyLarge.fontStyle,
                           lineHeight: 2.0,
                         ),
                   ),
                   subtitle: Text(
                     'Receive Push notifications for when a Vegas game is created.',
-                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    style: AppTheme.of(context).bodyMedium.override(
                           font: GoogleFonts.outfit(
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .bodyMedium
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .bodyMedium
                                 .fontStyle,
                           ),
                           color: Color(0xFF8B97A2),
                           letterSpacing: 0.0,
-                          fontWeight: FlutterFlowTheme.of(context)
+                          fontWeight: AppTheme.of(context)
                               .bodyMedium
                               .fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              AppTheme.of(context).bodyMedium.fontStyle,
                         ),
                   ),
-                  tileColor: FlutterFlowTheme.of(context).secondaryBackground,
-                  activeColor: FlutterFlowTheme.of(context).primary,
-                  activeTrackColor: FlutterFlowTheme.of(context).accent1,
+                  tileColor: AppTheme.of(context).secondaryBackground,
+                  activeColor: AppTheme.of(context).primary,
+                  activeTrackColor: AppTheme.of(context).accent1,
                   dense: false,
                   controlAffinity: ListTileControlAffinity.trailing,
                   contentPadding:
@@ -390,46 +389,46 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   },
                   title: Text(
                     'Competitive Game Notifications',
-                    style: FlutterFlowTheme.of(context).bodyLarge.override(
+                    style: AppTheme.of(context).bodyLarge.override(
                           font: GoogleFonts.outfit(
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .bodyLarge
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .bodyLarge
                                 .fontStyle,
                           ),
                           letterSpacing: 0.0,
                           fontWeight:
-                              FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                              AppTheme.of(context).bodyLarge.fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                              AppTheme.of(context).bodyLarge.fontStyle,
                           lineHeight: 2.0,
                         ),
                   ),
                   subtitle: Text(
                     'Receive Push notifications for games that are all about the pressure and you play by the rule book.',
-                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    style: AppTheme.of(context).bodyMedium.override(
                           font: GoogleFonts.outfit(
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .bodyMedium
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .bodyMedium
                                 .fontStyle,
                           ),
                           color: Color(0xFF8B97A2),
                           letterSpacing: 0.0,
-                          fontWeight: FlutterFlowTheme.of(context)
+                          fontWeight: AppTheme.of(context)
                               .bodyMedium
                               .fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              AppTheme.of(context).bodyMedium.fontStyle,
                         ),
                   ),
-                  tileColor: FlutterFlowTheme.of(context).secondaryBackground,
-                  activeColor: FlutterFlowTheme.of(context).primary,
-                  activeTrackColor: FlutterFlowTheme.of(context).accent1,
+                  tileColor: AppTheme.of(context).secondaryBackground,
+                  activeColor: AppTheme.of(context).primary,
+                  activeTrackColor: AppTheme.of(context).accent1,
                   dense: false,
                   controlAffinity: ListTileControlAffinity.trailing,
                   contentPadding:
@@ -456,46 +455,46 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   },
                   title: Text(
                     'For Fun',
-                    style: FlutterFlowTheme.of(context).bodyLarge.override(
+                    style: AppTheme.of(context).bodyLarge.override(
                           font: GoogleFonts.outfit(
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .bodyLarge
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .bodyLarge
                                 .fontStyle,
                           ),
                           letterSpacing: 0.0,
                           fontWeight:
-                              FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                              AppTheme.of(context).bodyLarge.fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                              AppTheme.of(context).bodyLarge.fontStyle,
                           lineHeight: 2.0,
                         ),
                   ),
                   subtitle: Text(
                     'Receive Push notifications for games that are only for fun. You don\'t want anything too serious',
-                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    style: AppTheme.of(context).bodyMedium.override(
                           font: GoogleFonts.outfit(
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .bodyMedium
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .bodyMedium
                                 .fontStyle,
                           ),
                           color: Color(0xFF8B97A2),
                           letterSpacing: 0.0,
-                          fontWeight: FlutterFlowTheme.of(context)
+                          fontWeight: AppTheme.of(context)
                               .bodyMedium
                               .fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              AppTheme.of(context).bodyMedium.fontStyle,
                         ),
                   ),
-                  tileColor: FlutterFlowTheme.of(context).secondaryBackground,
-                  activeColor: FlutterFlowTheme.of(context).primary,
-                  activeTrackColor: FlutterFlowTheme.of(context).accent1,
+                  tileColor: AppTheme.of(context).secondaryBackground,
+                  activeColor: AppTheme.of(context).primary,
+                  activeTrackColor: AppTheme.of(context).accent1,
                   dense: false,
                   controlAffinity: ListTileControlAffinity.trailing,
                   contentPadding:
@@ -523,46 +522,46 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   },
                   title: Text(
                     'Only From Your Friends',
-                    style: FlutterFlowTheme.of(context).bodyLarge.override(
+                    style: AppTheme.of(context).bodyLarge.override(
                           font: GoogleFonts.outfit(
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .bodyLarge
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .bodyLarge
                                 .fontStyle,
                           ),
                           letterSpacing: 0.0,
                           fontWeight:
-                              FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                              AppTheme.of(context).bodyLarge.fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                              AppTheme.of(context).bodyLarge.fontStyle,
                           lineHeight: 2.0,
                         ),
                   ),
                   subtitle: Text(
                     'Receive Push notifications only when your friends make a friends only game',
-                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    style: AppTheme.of(context).bodyMedium.override(
                           font: GoogleFonts.outfit(
-                            fontWeight: FlutterFlowTheme.of(context)
+                            fontWeight: AppTheme.of(context)
                                 .bodyMedium
                                 .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
+                            fontStyle: AppTheme.of(context)
                                 .bodyMedium
                                 .fontStyle,
                           ),
                           color: Color(0xFF8B97A2),
                           letterSpacing: 0.0,
-                          fontWeight: FlutterFlowTheme.of(context)
+                          fontWeight: AppTheme.of(context)
                               .bodyMedium
                               .fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              AppTheme.of(context).bodyMedium.fontStyle,
                         ),
                   ),
-                  tileColor: FlutterFlowTheme.of(context).secondaryBackground,
-                  activeColor: FlutterFlowTheme.of(context).primary,
-                  activeTrackColor: FlutterFlowTheme.of(context).accent1,
+                  tileColor: AppTheme.of(context).secondaryBackground,
+                  activeColor: AppTheme.of(context).primary,
+                  activeTrackColor: AppTheme.of(context).accent1,
                   dense: false,
                   controlAffinity: ListTileControlAffinity.trailing,
                   contentPadding:
@@ -588,42 +587,42 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 },
                 title: Text(
                   'Member Discount',
-                  style: FlutterFlowTheme.of(context).bodyLarge.override(
+                  style: AppTheme.of(context).bodyLarge.override(
                         font: GoogleFonts.outfit(
                           fontWeight:
-                              FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                              AppTheme.of(context).bodyLarge.fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                              AppTheme.of(context).bodyLarge.fontStyle,
                         ),
                         letterSpacing: 0.0,
                         fontWeight:
-                            FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                            AppTheme.of(context).bodyLarge.fontWeight,
                         fontStyle:
-                            FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                            AppTheme.of(context).bodyLarge.fontStyle,
                         lineHeight: 2.0,
                       ),
                 ),
                 subtitle: Text(
                   'Don\'t miss out on the games that may save you some money on green fees.',
-                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  style: AppTheme.of(context).bodyMedium.override(
                         font: GoogleFonts.outfit(
-                          fontWeight: FlutterFlowTheme.of(context)
+                          fontWeight: AppTheme.of(context)
                               .bodyMedium
                               .fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              AppTheme.of(context).bodyMedium.fontStyle,
                         ),
                         color: Color(0xFF8B97A2),
                         letterSpacing: 0.0,
                         fontWeight:
-                            FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                            AppTheme.of(context).bodyMedium.fontWeight,
                         fontStyle:
-                            FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                            AppTheme.of(context).bodyMedium.fontStyle,
                       ),
                 ),
-                tileColor: FlutterFlowTheme.of(context).secondaryBackground,
-                activeColor: FlutterFlowTheme.of(context).primary,
-                activeTrackColor: FlutterFlowTheme.of(context).accent1,
+                tileColor: AppTheme.of(context).secondaryBackground,
+                activeColor: AppTheme.of(context).primary,
+                activeTrackColor: AppTheme.of(context).accent1,
                 dense: false,
                 controlAffinity: ListTileControlAffinity.trailing,
                 contentPadding:
@@ -650,42 +649,42 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 },
                 title: Text(
                   'Turn all Notifications off',
-                  style: FlutterFlowTheme.of(context).bodyLarge.override(
+                  style: AppTheme.of(context).bodyLarge.override(
                         font: GoogleFonts.outfit(
                           fontWeight:
-                              FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                              AppTheme.of(context).bodyLarge.fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                              AppTheme.of(context).bodyLarge.fontStyle,
                         ),
                         letterSpacing: 0.0,
                         fontWeight:
-                            FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                            AppTheme.of(context).bodyLarge.fontWeight,
                         fontStyle:
-                            FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                            AppTheme.of(context).bodyLarge.fontStyle,
                         lineHeight: 2.0,
                       ),
                 ),
                 subtitle: Text(
                   'You don\'t want to receive any heads up on games as they are created.  You will open the app to see yourself. ',
-                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  style: AppTheme.of(context).bodyMedium.override(
                         font: GoogleFonts.outfit(
-                          fontWeight: FlutterFlowTheme.of(context)
+                          fontWeight: AppTheme.of(context)
                               .bodyMedium
                               .fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              AppTheme.of(context).bodyMedium.fontStyle,
                         ),
                         color: Color(0xFF8B97A2),
                         letterSpacing: 0.0,
                         fontWeight:
-                            FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                            AppTheme.of(context).bodyMedium.fontWeight,
                         fontStyle:
-                            FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                            AppTheme.of(context).bodyMedium.fontStyle,
                       ),
                 ),
-                tileColor: FlutterFlowTheme.of(context).secondaryBackground,
-                activeColor: FlutterFlowTheme.of(context).primary,
-                activeTrackColor: FlutterFlowTheme.of(context).accent1,
+                tileColor: AppTheme.of(context).secondaryBackground,
+                activeColor: AppTheme.of(context).primary,
+                activeTrackColor: AppTheme.of(context).accent1,
                 dense: false,
                 controlAffinity: ListTileControlAffinity.trailing,
                 contentPadding:
@@ -694,7 +693,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
             ),
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 24.0),
-              child: FFButtonWidget(
+              child: AppButton(
                 onPressed: () async {
                   await currentUserReference!.update(createUsersRecordData(
                     notifyAll: _model.notifyAll,
@@ -709,27 +708,27 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   context.pop();
                 },
                 text: 'Save Settings',
-                options: FFButtonOptions(
+                options: AppButtonOptions(
                   width: 190.0,
                   height: 50.0,
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   iconPadding:
                       EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                  color: FlutterFlowTheme.of(context).primary,
-                  textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                  color: AppTheme.of(context).primary,
+                  textStyle: AppTheme.of(context).titleSmall.override(
                         font: GoogleFonts.outfit(
-                          fontWeight: FlutterFlowTheme.of(context)
+                          fontWeight: AppTheme.of(context)
                               .titleSmall
                               .fontWeight,
                           fontStyle:
-                              FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                              AppTheme.of(context).titleSmall.fontStyle,
                         ),
                         color: Colors.white,
                         letterSpacing: 0.0,
                         fontWeight:
-                            FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                            AppTheme.of(context).titleSmall.fontWeight,
                         fontStyle:
-                            FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                            AppTheme.of(context).titleSmall.fontStyle,
                       ),
                   elevation: 3.0,
                   borderSide: BorderSide(

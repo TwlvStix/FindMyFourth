@@ -1,9 +1,9 @@
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_util.dart';
 import '/index.dart';
 import 'sign_up_account_widget.dart' show SignUpAccountWidget;
 import 'package:flutter/material.dart';
 
-class SignUpAccountModel extends FlutterFlowModel<SignUpAccountWidget> {
+class SignUpAccountModel extends AppModel<SignUpAccountWidget> {
   ///  State fields for stateful widgets in this page.
 
   // State field(s) for emailAddress widget.

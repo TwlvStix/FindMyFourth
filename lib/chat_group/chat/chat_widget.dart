@@ -1,9 +1,9 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/chat_group/empty_state_simple/empty_state_simple_widget.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/widgets/app_icon_button.dart';
+import '/core/app_theme.dart';
+import '/core/app_util.dart';
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -51,39 +51,39 @@ class _ChatWidgetState extends State<ChatWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: AppTheme.of(context).secondaryBackground,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+          backgroundColor: AppTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
           title: Text(
             'My Chats',
-            style: FlutterFlowTheme.of(context).headlineSmall.override(
+            style: AppTheme.of(context).headlineSmall.override(
                   font: GoogleFonts.outfit(
                     fontWeight:
-                        FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                        AppTheme.of(context).headlineSmall.fontWeight,
                     fontStyle:
-                        FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                        AppTheme.of(context).headlineSmall.fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: AppTheme.of(context).primary,
                   letterSpacing: 0.0,
                   fontWeight:
-                      FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                      AppTheme.of(context).headlineSmall.fontWeight,
                   fontStyle:
-                      FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                      AppTheme.of(context).headlineSmall.fontStyle,
                 ),
           ),
           actions: [
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 16.0, 8.0),
-              child: FlutterFlowIconButton(
-                borderColor: FlutterFlowTheme.of(context).primary,
+              child: AppIconButton(
+                borderColor: AppTheme.of(context).primary,
                 borderRadius: 12.0,
                 borderWidth: 1.0,
                 buttonSize: 40.0,
-                fillColor: FlutterFlowTheme.of(context).primary,
+                fillColor: AppTheme.of(context).primary,
                 icon: Icon(
                   Icons.add_comment,
-                  color: FlutterFlowTheme.of(context).primaryBtnText,
+                  color: AppTheme.of(context).primaryBtnText,
                   size: 24.0,
                 ),
                 onPressed: () async {
@@ -114,20 +114,20 @@ class _ChatWidgetState extends State<ChatWidget> {
                 padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 0.0, 0.0),
                 child: Text(
                   'Below are your chats and group chats',
-                  style: FlutterFlowTheme.of(context).labelMedium.override(
+                  style: AppTheme.of(context).labelMedium.override(
                         font: GoogleFonts.outfit(
-                          fontWeight: FlutterFlowTheme.of(context)
+                          fontWeight: AppTheme.of(context)
                               .labelMedium
                               .fontWeight,
-                          fontStyle: FlutterFlowTheme.of(context)
+                          fontStyle: AppTheme.of(context)
                               .labelMedium
                               .fontStyle,
                         ),
                         letterSpacing: 0.0,
                         fontWeight:
-                            FlutterFlowTheme.of(context).labelMedium.fontWeight,
+                            AppTheme.of(context).labelMedium.fontWeight,
                         fontStyle:
-                            FlutterFlowTheme.of(context).labelMedium.fontStyle,
+                            AppTheme.of(context).labelMedium.fontStyle,
                       ),
                 ),
               ),
@@ -163,7 +163,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                           child: EmptyStateSimpleWidget(
                             icon: Icon(
                               Icons.mark_chat_unread_outlined,
-                              color: FlutterFlowTheme.of(context).primary,
+                              color: AppTheme.of(context).primary,
                               size: 90.0,
                             ),
                             title: 'No Chats',
@@ -212,12 +212,12 @@ class _ChatWidgetState extends State<ChatWidget> {
                               child: Container(
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
+                                  color: AppTheme.of(context)
                                       .secondaryBackground,
                                   boxShadow: [
                                     BoxShadow(
                                       blurRadius: 0.0,
-                                      color: FlutterFlowTheme.of(context)
+                                      color: AppTheme.of(context)
                                           .alternate,
                                       offset: Offset(
                                         0.0,
@@ -278,7 +278,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                     height: 44.0,
                                                     decoration: BoxDecoration(
                                                       color:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .accent1,
                                                       borderRadius:
@@ -299,7 +299,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                       shape: BoxShape.rectangle,
                                                       border: Border.all(
                                                         color:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .primary,
                                                         width: 2.0,
@@ -363,25 +363,25 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                   textAlign:
                                                                       TextAlign
                                                                           .start,
-                                                                  style: FlutterFlowTheme.of(
+                                                                  style: AppTheme.of(
                                                                           context)
                                                                       .bodyLarge
                                                                       .override(
                                                                         font: GoogleFonts
                                                                             .outfit(
-                                                                          fontWeight: FlutterFlowTheme.of(context)
+                                                                          fontWeight: AppTheme.of(context)
                                                                               .bodyLarge
                                                                               .fontWeight,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                          fontStyle: AppTheme.of(context)
                                                                               .bodyLarge
                                                                               .fontStyle,
                                                                         ),
                                                                         letterSpacing:
                                                                             0.0,
-                                                                        fontWeight: FlutterFlowTheme.of(context)
+                                                                        fontWeight: AppTheme.of(context)
                                                                             .bodyLarge
                                                                             .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                        fontStyle: AppTheme.of(context)
                                                                             .bodyLarge
                                                                             .fontStyle,
                                                                       ),
@@ -406,7 +406,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                   height: 12.0,
                                                                   decoration:
                                                                       BoxDecoration(
-                                                                    color: FlutterFlowTheme.of(
+                                                                    color: AppTheme.of(
                                                                             context)
                                                                         .accent1,
                                                                     shape: BoxShape
@@ -414,7 +414,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                     border:
                                                                         Border
                                                                             .all(
-                                                                      color: FlutterFlowTheme.of(
+                                                                      color: AppTheme.of(
                                                                               context)
                                                                           .primary,
                                                                       width:
@@ -438,28 +438,28 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                 .lastMessage,
                                                             textAlign:
                                                                 TextAlign.start,
-                                                            style: FlutterFlowTheme
+                                                            style: AppTheme
                                                                     .of(context)
                                                                 .labelMedium
                                                                 .override(
                                                                   font: GoogleFonts
                                                                       .outfit(
-                                                                    fontWeight: FlutterFlowTheme.of(
+                                                                    fontWeight: AppTheme.of(
                                                                             context)
                                                                         .labelMedium
                                                                         .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
+                                                                    fontStyle: AppTheme.of(
                                                                             context)
                                                                         .labelMedium
                                                                         .fontStyle,
                                                                   ),
                                                                   letterSpacing:
                                                                       0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                  fontWeight: AppTheme.of(
                                                                           context)
                                                                       .labelMedium
                                                                       .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .labelMedium
                                                                       .fontStyle,
@@ -489,26 +489,26 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                 textAlign:
                                                                     TextAlign
                                                                         .start,
-                                                                style: FlutterFlowTheme.of(
+                                                                style: AppTheme.of(
                                                                         context)
                                                                     .labelSmall
                                                                     .override(
                                                                       font: GoogleFonts
                                                                           .outfit(
-                                                                        fontWeight: FlutterFlowTheme.of(context)
+                                                                        fontWeight: AppTheme.of(context)
                                                                             .labelSmall
                                                                             .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                        fontStyle: AppTheme.of(context)
                                                                             .labelSmall
                                                                             .fontStyle,
                                                                       ),
                                                                       letterSpacing:
                                                                           0.0,
-                                                                      fontWeight: FlutterFlowTheme.of(
+                                                                      fontWeight: AppTheme.of(
                                                                               context)
                                                                           .labelSmall
                                                                           .fontWeight,
-                                                                      fontStyle: FlutterFlowTheme.of(
+                                                                      fontStyle: AppTheme.of(
                                                                               context)
                                                                           .labelSmall
                                                                           .fontStyle,
@@ -518,7 +518,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                             Icon(
                                                               Icons
                                                                   .chevron_right_rounded,
-                                                              color: FlutterFlowTheme
+                                                              color: AppTheme
                                                                       .of(context)
                                                                   .secondaryText,
                                                               size: 24.0,
@@ -586,7 +586,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                     height: 44.0,
                                                     decoration: BoxDecoration(
                                                       color:
-                                                          FlutterFlowTheme.of(
+                                                          AppTheme.of(
                                                                   context)
                                                               .accent1,
                                                       borderRadius:
@@ -607,7 +607,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                       shape: BoxShape.rectangle,
                                                       border: Border.all(
                                                         color:
-                                                            FlutterFlowTheme.of(
+                                                            AppTheme.of(
                                                                     context)
                                                                 .primary,
                                                         width: 2.0,
@@ -671,25 +671,25 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                   textAlign:
                                                                       TextAlign
                                                                           .start,
-                                                                  style: FlutterFlowTheme.of(
+                                                                  style: AppTheme.of(
                                                                           context)
                                                                       .bodyLarge
                                                                       .override(
                                                                         font: GoogleFonts
                                                                             .outfit(
-                                                                          fontWeight: FlutterFlowTheme.of(context)
+                                                                          fontWeight: AppTheme.of(context)
                                                                               .bodyLarge
                                                                               .fontWeight,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                          fontStyle: AppTheme.of(context)
                                                                               .bodyLarge
                                                                               .fontStyle,
                                                                         ),
                                                                         letterSpacing:
                                                                             0.0,
-                                                                        fontWeight: FlutterFlowTheme.of(context)
+                                                                        fontWeight: AppTheme.of(context)
                                                                             .bodyLarge
                                                                             .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                        fontStyle: AppTheme.of(context)
                                                                             .bodyLarge
                                                                             .fontStyle,
                                                                       ),
@@ -714,7 +714,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                   height: 12.0,
                                                                   decoration:
                                                                       BoxDecoration(
-                                                                    color: FlutterFlowTheme.of(
+                                                                    color: AppTheme.of(
                                                                             context)
                                                                         .accent1,
                                                                     shape: BoxShape
@@ -722,7 +722,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                     border:
                                                                         Border
                                                                             .all(
-                                                                      color: FlutterFlowTheme.of(
+                                                                      color: AppTheme.of(
                                                                               context)
                                                                           .primary,
                                                                       width:
@@ -746,28 +746,28 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                 .lastMessage,
                                                             textAlign:
                                                                 TextAlign.start,
-                                                            style: FlutterFlowTheme
+                                                            style: AppTheme
                                                                     .of(context)
                                                                 .labelMedium
                                                                 .override(
                                                                   font: GoogleFonts
                                                                       .outfit(
-                                                                    fontWeight: FlutterFlowTheme.of(
+                                                                    fontWeight: AppTheme.of(
                                                                             context)
                                                                         .labelMedium
                                                                         .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
+                                                                    fontStyle: AppTheme.of(
                                                                             context)
                                                                         .labelMedium
                                                                         .fontStyle,
                                                                   ),
                                                                   letterSpacing:
                                                                       0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                  fontWeight: AppTheme.of(
                                                                           context)
                                                                       .labelMedium
                                                                       .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .labelMedium
                                                                       .fontStyle,
@@ -797,26 +797,26 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                 textAlign:
                                                                     TextAlign
                                                                         .start,
-                                                                style: FlutterFlowTheme.of(
+                                                                style: AppTheme.of(
                                                                         context)
                                                                     .labelSmall
                                                                     .override(
                                                                       font: GoogleFonts
                                                                           .outfit(
-                                                                        fontWeight: FlutterFlowTheme.of(context)
+                                                                        fontWeight: AppTheme.of(context)
                                                                             .labelSmall
                                                                             .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                        fontStyle: AppTheme.of(context)
                                                                             .labelSmall
                                                                             .fontStyle,
                                                                       ),
                                                                       letterSpacing:
                                                                           0.0,
-                                                                      fontWeight: FlutterFlowTheme.of(
+                                                                      fontWeight: AppTheme.of(
                                                                               context)
                                                                           .labelSmall
                                                                           .fontWeight,
-                                                                      fontStyle: FlutterFlowTheme.of(
+                                                                      fontStyle: AppTheme.of(
                                                                               context)
                                                                           .labelSmall
                                                                           .fontStyle,
@@ -826,7 +826,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                             Icon(
                                                               Icons
                                                                   .chevron_right_rounded,
-                                                              color: FlutterFlowTheme
+                                                              color: AppTheme
                                                                       .of(context)
                                                                   .secondaryText,
                                                               size: 24.0,
@@ -937,7 +937,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                 height: 32.0,
                                                                 decoration:
                                                                     BoxDecoration(
-                                                                  color: FlutterFlowTheme.of(
+                                                                  color: AppTheme.of(
                                                                           context)
                                                                       .accent1,
                                                                   borderRadius:
@@ -948,7 +948,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                       .rectangle,
                                                                   border: Border
                                                                       .all(
-                                                                    color: FlutterFlowTheme.of(
+                                                                    color: AppTheme.of(
                                                                             context)
                                                                         .primary,
                                                                     width: 2.0,
@@ -1006,7 +1006,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                           decoration:
                                                                               BoxDecoration(
                                                                             color:
-                                                                                FlutterFlowTheme.of(context).secondaryBackground,
+                                                                                AppTheme.of(context).secondaryBackground,
                                                                             borderRadius:
                                                                                 BorderRadius.circular(8.0),
                                                                           ),
@@ -1023,14 +1023,14 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                             ),
                                                                             textAlign:
                                                                                 TextAlign.center,
-                                                                            style: FlutterFlowTheme.of(context).bodyLarge.override(
+                                                                            style: AppTheme.of(context).bodyLarge.override(
                                                                                   font: GoogleFonts.outfit(
                                                                                     fontWeight: FontWeight.bold,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                                                                    fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                                                                                   ),
                                                                                   letterSpacing: 0.0,
                                                                                   fontWeight: FontWeight.bold,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                                                                  fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                                                                                 ),
                                                                           ),
                                                                         ),
@@ -1051,7 +1051,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                             height: 32.0,
                                                             decoration:
                                                                 BoxDecoration(
-                                                              color: FlutterFlowTheme
+                                                              color: AppTheme
                                                                       .of(context)
                                                                   .accent3,
                                                               borderRadius:
@@ -1062,7 +1062,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                   .rectangle,
                                                               border:
                                                                   Border.all(
-                                                                color: FlutterFlowTheme.of(
+                                                                color: AppTheme.of(
                                                                         context)
                                                                     .primary,
                                                                 width: 2.0,
@@ -1129,7 +1129,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                           100.0,
                                                                       decoration:
                                                                           BoxDecoration(
-                                                                        color: FlutterFlowTheme.of(context)
+                                                                        color: AppTheme.of(context)
                                                                             .secondaryBackground,
                                                                         borderRadius:
                                                                             BorderRadius.circular(8.0),
@@ -1151,16 +1151,16 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                         ),
                                                                         textAlign:
                                                                             TextAlign.center,
-                                                                        style: FlutterFlowTheme.of(context)
+                                                                        style: AppTheme.of(context)
                                                                             .bodyLarge
                                                                             .override(
                                                                               font: GoogleFonts.outfit(
                                                                                 fontWeight: FontWeight.bold,
-                                                                                fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                                                                fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                                                                               ),
                                                                               letterSpacing: 0.0,
                                                                               fontWeight: FontWeight.bold,
-                                                                              fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                                                              fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                                                                             ),
                                                                       ),
                                                                     ),
@@ -1205,25 +1205,25 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                   textAlign:
                                                                       TextAlign
                                                                           .start,
-                                                                  style: FlutterFlowTheme.of(
+                                                                  style: AppTheme.of(
                                                                           context)
                                                                       .bodyLarge
                                                                       .override(
                                                                         font: GoogleFonts
                                                                             .outfit(
-                                                                          fontWeight: FlutterFlowTheme.of(context)
+                                                                          fontWeight: AppTheme.of(context)
                                                                               .bodyLarge
                                                                               .fontWeight,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                          fontStyle: AppTheme.of(context)
                                                                               .bodyLarge
                                                                               .fontStyle,
                                                                         ),
                                                                         letterSpacing:
                                                                             0.0,
-                                                                        fontWeight: FlutterFlowTheme.of(context)
+                                                                        fontWeight: AppTheme.of(context)
                                                                             .bodyLarge
                                                                             .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                        fontStyle: AppTheme.of(context)
                                                                             .bodyLarge
                                                                             .fontStyle,
                                                                       ),
@@ -1248,7 +1248,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                   height: 12.0,
                                                                   decoration:
                                                                       BoxDecoration(
-                                                                    color: FlutterFlowTheme.of(
+                                                                    color: AppTheme.of(
                                                                             context)
                                                                         .accent3,
                                                                     shape: BoxShape
@@ -1256,7 +1256,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                     border:
                                                                         Border
                                                                             .all(
-                                                                      color: FlutterFlowTheme.of(
+                                                                      color: AppTheme.of(
                                                                               context)
                                                                           .primary,
                                                                       width:
@@ -1284,28 +1284,28 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                             ),
                                                             textAlign:
                                                                 TextAlign.start,
-                                                            style: FlutterFlowTheme
+                                                            style: AppTheme
                                                                     .of(context)
                                                                 .labelMedium
                                                                 .override(
                                                                   font: GoogleFonts
                                                                       .outfit(
-                                                                    fontWeight: FlutterFlowTheme.of(
+                                                                    fontWeight: AppTheme.of(
                                                                             context)
                                                                         .labelMedium
                                                                         .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
+                                                                    fontStyle: AppTheme.of(
                                                                             context)
                                                                         .labelMedium
                                                                         .fontStyle,
                                                                   ),
                                                                   letterSpacing:
                                                                       0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                  fontWeight: AppTheme.of(
                                                                           context)
                                                                       .labelMedium
                                                                       .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                  fontStyle: AppTheme.of(
                                                                           context)
                                                                       .labelMedium
                                                                       .fontStyle,
@@ -1339,26 +1339,26 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                 textAlign:
                                                                     TextAlign
                                                                         .start,
-                                                                style: FlutterFlowTheme.of(
+                                                                style: AppTheme.of(
                                                                         context)
                                                                     .labelSmall
                                                                     .override(
                                                                       font: GoogleFonts
                                                                           .outfit(
-                                                                        fontWeight: FlutterFlowTheme.of(context)
+                                                                        fontWeight: AppTheme.of(context)
                                                                             .labelSmall
                                                                             .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                        fontStyle: AppTheme.of(context)
                                                                             .labelSmall
                                                                             .fontStyle,
                                                                       ),
                                                                       letterSpacing:
                                                                           0.0,
-                                                                      fontWeight: FlutterFlowTheme.of(
+                                                                      fontWeight: AppTheme.of(
                                                                               context)
                                                                           .labelSmall
                                                                           .fontWeight,
-                                                                      fontStyle: FlutterFlowTheme.of(
+                                                                      fontStyle: AppTheme.of(
                                                                               context)
                                                                           .labelSmall
                                                                           .fontStyle,
@@ -1368,7 +1368,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                             Icon(
                                                               Icons
                                                                   .chevron_right_rounded,
-                                                              color: FlutterFlowTheme
+                                                              color: AppTheme
                                                                       .of(context)
                                                                   .secondaryText,
                                                               size: 24.0,

@@ -1,8 +1,8 @@
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_util.dart';
 import 'notifications_list_widget.dart' show NotificationsListWidget;
 import 'package:flutter/material.dart';
 
-class NotificationsListModel extends FlutterFlowModel<NotificationsListWidget> {
+class NotificationsListModel extends AppModel<NotificationsListWidget> {
   @override
   void initState(BuildContext context) {}
 

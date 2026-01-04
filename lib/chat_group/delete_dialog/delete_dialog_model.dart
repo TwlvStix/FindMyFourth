@@ -1,8 +1,8 @@
-import '/flutter_flow/flutter_flow_util.dart';
+import '/core/app_util.dart';
 import 'delete_dialog_widget.dart' show DeleteDialogWidget;
 import 'package:flutter/material.dart';
 
-class DeleteDialogModel extends FlutterFlowModel<DeleteDialogWidget> {
+class DeleteDialogModel extends AppModel<DeleteDialogWidget> {
   ///  Local state fields for this component.
 
   bool showDelete = false;
