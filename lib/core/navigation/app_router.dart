@@ -82,242 +82,408 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       errorBuilder: (context, state) =>
           appStateNotifier.loggedIn ? NavBarPage() : SignInWidget(),
       routes: [
-        FFRoute(
+        GoRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) =>
-              appStateNotifier.loggedIn ? NavBarPage() : SignInWidget(),
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            appStateNotifier.loggedIn ? NavBarPage() : SignInWidget(),
+          ),
         ),
-        FFRoute(
-            name: GamesListWidget.routeName,
-            path: GamesListWidget.routePath,
-            builder: (context, params) => params.isEmpty
+        GoRoute(
+          name: GamesListWidget.routeName,
+          path: GamesListWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            _isEmptyStateParams(state)
                 ? NavBarPage(initialPage: 'GamesList')
                 : NavBarPage(
                     initialPage: 'GamesList',
                     page: GamesListWidget(),
-                  )),
-        FFRoute(
+                  ),
+          ),
+        ),
+        GoRoute(
           name: CreateGameWidget.routeName,
           path: CreateGameWidget.routePath,
-          builder: (context, params) => params.isEmpty
-              ? NavBarPage(initialPage: 'CreateGame')
-              : CreateGameWidget(),
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            _isEmptyStateParams(state)
+                ? NavBarPage(initialPage: 'CreateGame')
+                : CreateGameWidget(),
+          ),
         ),
-        FFRoute(
-            name: JoinGameDetailedWidget.routeName,
-            path: JoinGameDetailedWidget.routePath,
-            builder: (context, params) => NavBarPage(
-                  initialPage: '',
-                  page: JoinGameDetailedWidget(
-                    gameRef: params.getParam(
-                      'gameRef',
-                      ParamType.DocumentReference,
-                      isList: false,
-                      collectionNamePath: ['games'],
-                    ),
-                  ),
-                )),
-        FFRoute(
-            name: HomeWidget.routeName,
-            path: HomeWidget.routePath,
-            builder: (context, params) => params.isEmpty
+        GoRoute(
+          name: JoinGameDetailedWidget.routeName,
+          path: JoinGameDetailedWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            NavBarPage(
+              initialPage: '',
+              page: JoinGameDetailedWidget(
+                gameRef: _deserializeParam(
+                  state,
+                  'gameRef',
+                  ParamType.DocumentReference,
+                  collectionNamePath: ['games'],
+                ),
+              ),
+            ),
+          ),
+        ),
+        GoRoute(
+          name: HomeWidget.routeName,
+          path: HomeWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            _isEmptyStateParams(state)
                 ? NavBarPage(initialPage: 'Home')
                 : NavBarPage(
                     initialPage: 'Home',
                     page: HomeWidget(),
-                  )),
-        FFRoute(
+                  ),
+          ),
+        ),
+        GoRoute(
           name: SignUpAccountWidget.routeName,
           path: SignUpAccountWidget.routePath,
-          builder: (context, params) => SignUpAccountWidget(),
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            SignUpAccountWidget(),
+          ),
         ),
-        FFRoute(
+        GoRoute(
           name: SignInWidget.routeName,
           path: SignInWidget.routePath,
-          builder: (context, params) => SignInWidget(),
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            SignInWidget(),
+          ),
         ),
-        FFRoute(
+        GoRoute(
           name: RecoverPasswordWidget.routeName,
           path: RecoverPasswordWidget.routePath,
-          builder: (context, params) => RecoverPasswordWidget(),
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            RecoverPasswordWidget(),
+          ),
         ),
-        FFRoute(
+        GoRoute(
           name: CreateProfileWidget.routeName,
           path: CreateProfileWidget.routePath,
-          builder: (context, params) => CreateProfileWidget(),
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            CreateProfileWidget(),
+          ),
         ),
-        FFRoute(
-            name: MainProfileWidget.routeName,
-            path: MainProfileWidget.routePath,
-            builder: (context, params) => NavBarPage(
-                  initialPage: '',
-                  page: MainProfileWidget(),
-                )),
-        FFRoute(
+        GoRoute(
+          name: MainProfileWidget.routeName,
+          path: MainProfileWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            NavBarPage(
+              initialPage: '',
+              page: MainProfileWidget(),
+            ),
+          ),
+        ),
+        GoRoute(
           name: EditProfileWidget.routeName,
           path: EditProfileWidget.routePath,
-          builder: (context, params) => EditProfileWidget(),
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            EditProfileWidget(),
+          ),
         ),
-        FFRoute(
-            name: GamesJoinedWidget.routeName,
-            path: GamesJoinedWidget.routePath,
-            builder: (context, params) => params.isEmpty
+        GoRoute(
+          name: GamesJoinedWidget.routeName,
+          path: GamesJoinedWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            _isEmptyStateParams(state)
                 ? NavBarPage(initialPage: 'GamesJoined')
                 : NavBarPage(
                     initialPage: 'GamesJoined',
                     page: GamesJoinedWidget(),
-                  )),
-        FFRoute(
+                  ),
+          ),
+        ),
+        GoRoute(
           name: NotificationPageWidget.routeName,
           path: NotificationPageWidget.routePath,
-          builder: (context, params) => NotificationPageWidget(),
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            NotificationPageWidget(),
+          ),
         ),
-        FFRoute(
+        GoRoute(
           name: Chat2DetailsWidget.routeName,
           path: Chat2DetailsWidget.routePath,
-          asyncParams: {
-            'chatRef': getDoc(['chats'], ChatsRecord.fromSnapshot),
-          },
-          builder: (context, params) => Chat2DetailsWidget(
-            chatRef: params.getParam(
-              'chatRef',
-              ParamType.Document,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            FutureBuilder<ChatsRecord?>(
+              future: _resolveAsyncParam(
+                state,
+                'chatRef',
+                getDoc(['chats'], ChatsRecord.fromSnapshot),
+              ),
+              builder: (context, snapshot) => Chat2DetailsWidget(
+                chatRef: snapshot.data,
+              ),
             ),
           ),
         ),
-        FFRoute(
+        GoRoute(
           name: ChatWidget.routeName,
           path: ChatWidget.routePath,
-          builder: (context, params) =>
-              params.isEmpty ? NavBarPage(initialPage: 'Chat') : ChatWidget(),
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            _isEmptyStateParams(state)
+                ? NavBarPage(initialPage: 'Chat')
+                : ChatWidget(),
+          ),
         ),
-        FFRoute(
+        GoRoute(
           name: Chat2InviteUsersWidget.routeName,
           path: Chat2InviteUsersWidget.routePath,
-          asyncParams: {
-            'chatRef': getDoc(['chats'], ChatsRecord.fromSnapshot),
-          },
-          builder: (context, params) => Chat2InviteUsersWidget(
-            chatRef: params.getParam(
-              'chatRef',
-              ParamType.Document,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            FutureBuilder<ChatsRecord?>(
+              future: _resolveAsyncParam(
+                state,
+                'chatRef',
+                getDoc(['chats'], ChatsRecord.fromSnapshot),
+              ),
+              builder: (context, snapshot) => Chat2InviteUsersWidget(
+                chatRef: snapshot.data,
+              ),
             ),
           ),
         ),
-        FFRoute(
+        GoRoute(
           name: ImageDetailsWidget.routeName,
           path: ImageDetailsWidget.routePath,
-          asyncParams: {
-            'chatMessage':
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            FutureBuilder<ChatMessagesRecord?>(
+              future: _resolveAsyncParam(
+                state,
+                'chatMessage',
                 getDoc(['chat_messages'], ChatMessagesRecord.fromSnapshot),
-          },
-          builder: (context, params) => ImageDetailsWidget(
-            chatMessage: params.getParam(
-              'chatMessage',
-              ParamType.Document,
+              ),
+              builder: (context, snapshot) => ImageDetailsWidget(
+                chatMessage: snapshot.data,
+              ),
             ),
           ),
         ),
-        FFRoute(
+        GoRoute(
           name: SuccessPageWidget.routeName,
           path: SuccessPageWidget.routePath,
-          builder: (context, params) => SuccessPageWidget(),
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            SuccessPageWidget(),
+          ),
         ),
-        FFRoute(
+        GoRoute(
           name: ProfileUserWidget.routeName,
           path: ProfileUserWidget.routePath,
-          asyncParams: {
-            'userRef': getDoc(['users'], UsersRecord.fromSnapshot),
-          },
-          builder: (context, params) => ProfileUserWidget(
-            userRef: params.getParam(
-              'userRef',
-              ParamType.Document,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            FutureBuilder<UsersRecord?>(
+              future: _resolveAsyncParam(
+                state,
+                'userRef',
+                getDoc(['users'], UsersRecord.fromSnapshot),
+              ),
+              builder: (context, snapshot) => ProfileUserWidget(
+                userRef: snapshot.data,
+              ),
             ),
           ),
         ),
-        FFRoute(
+        GoRoute(
           name: SuccessLeaveWidget.routeName,
           path: SuccessLeaveWidget.routePath,
-          builder: (context, params) => SuccessLeaveWidget(),
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            SuccessLeaveWidget(),
+          ),
         ),
-        FFRoute(
+        GoRoute(
           name: PlayerListWidget.routeName,
           path: PlayerListWidget.routePath,
-          asyncParams: {
-            'gameRef': getDoc(['games'], GamesRecord.fromSnapshot),
-          },
-          builder: (context, params) => PlayerListWidget(
-            gameRef: params.getParam(
-              'gameRef',
-              ParamType.Document,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            FutureBuilder<GamesRecord?>(
+              future: _resolveAsyncParam(
+                state,
+                'gameRef',
+                getDoc(['games'], GamesRecord.fromSnapshot),
+              ),
+              builder: (context, snapshot) => PlayerListWidget(
+                gameRef: snapshot.data,
+              ),
             ),
           ),
         ),
-        FFRoute(
+        GoRoute(
           name: NotificationsListWidget.routeName,
           path: NotificationsListWidget.routePath,
-          builder: (context, params) => NotificationsListWidget(),
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            NotificationsListWidget(),
+          ),
         ),
-        FFRoute(
-            name: TabFriendsWidget.routeName,
-            path: TabFriendsWidget.routePath,
-            builder: (context, params) => NavBarPage(
-                  initialPage: '',
-                  page: TabFriendsWidget(),
-                )),
-        FFRoute(
-            name: NewsfeedWidget.routeName,
-            path: NewsfeedWidget.routePath,
-            builder: (context, params) => params.isEmpty
+        GoRoute(
+          name: TabFriendsWidget.routeName,
+          path: TabFriendsWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            NavBarPage(
+              initialPage: '',
+              page: TabFriendsWidget(),
+            ),
+          ),
+        ),
+        GoRoute(
+          name: NewsfeedWidget.routeName,
+          path: NewsfeedWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            _isEmptyStateParams(state)
                 ? NavBarPage(initialPage: 'Newsfeed')
                 : NavBarPage(
                     initialPage: 'Newsfeed',
                     page: NewsfeedWidget(),
-                  )),
-        FFRoute(
+                  ),
+          ),
+        ),
+        GoRoute(
           name: BlogCreateWidget.routeName,
           path: BlogCreateWidget.routePath,
-          builder: (context, params) => BlogCreateWidget(),
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            BlogCreateWidget(),
+          ),
         ),
-        FFRoute(
+        GoRoute(
           name: BlogEditWidget.routeName,
           path: BlogEditWidget.routePath,
-          builder: (context, params) => BlogEditWidget(
-            postRef: params.getParam(
-              'postRef',
-              ParamType.DocumentReference,
-              isList: false,
-              collectionNamePath: ['posts'],
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            BlogEditWidget(
+              postRef: _deserializeParam(
+                state,
+                'postRef',
+                ParamType.DocumentReference,
+                collectionNamePath: ['posts'],
+              ),
             ),
           ),
         ),
-        FFRoute(
-            name: GameJoinedDetailedWidget.routeName,
-            path: GameJoinedDetailedWidget.routePath,
-            builder: (context, params) => NavBarPage(
-                  initialPage: '',
-                  page: GameJoinedDetailedWidget(
-                    gameRef: params.getParam(
-                      'gameRef',
-                      ParamType.DocumentReference,
-                      isList: false,
-                      collectionNamePath: ['games'],
-                    ),
-                  ),
-                ))
-      ].map((r) => r.toRoute(appStateNotifier)).toList(),
+        GoRoute(
+          name: GameJoinedDetailedWidget.routeName,
+          path: GameJoinedDetailedWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            NavBarPage(
+              initialPage: '',
+              page: GameJoinedDetailedWidget(
+                gameRef: _deserializeParam(
+                  state,
+                  'gameRef',
+                  ParamType.DocumentReference,
+                  collectionNamePath: ['games'],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
       observers: [routeObserver],
     );
-
-extension NavParamExtensions on Map<String, String?> {
-  Map<String, String> get withoutNulls => Map.fromEntries(
-        entries
-            .where((e) => e.value != null)
-            .map((e) => MapEntry(e.key, e.value!)),
-      );
-}
 
 extension NavigationExtensions on BuildContext {
   void goNamedAuth(
@@ -378,153 +544,132 @@ extension GoRouterExtensions on GoRouter {
       appState.updateNotifyOnAuthChange(false);
 }
 
-extension _GoRouterStateExtensions on GoRouterState {
-  Map<String, dynamic> get extraMap =>
-      extra != null ? extra as Map<String, dynamic> : {};
-  Map<String, dynamic> get allParams => <String, dynamic>{}
-    ..addAll(pathParameters)
-    ..addAll(uri.queryParameters)
-    ..addAll(extraMap);
-  TransitionInfo get transitionInfo => extraMap.containsKey(kTransitionInfoKey)
-      ? extraMap[kTransitionInfoKey] as TransitionInfo
-      : TransitionInfo.appDefault();
+GoRouterRedirect _buildRedirect(
+  AppStateNotifier appStateNotifier, {
+  bool requireAuth = false,
+}) {
+  return (context, state) {
+    if (appStateNotifier.shouldRedirect) {
+      final redirectLocation = appStateNotifier.getRedirectLocation();
+      appStateNotifier.clearRedirectLocation();
+      return redirectLocation;
+    }
+
+    if (requireAuth && !appStateNotifier.loggedIn) {
+      appStateNotifier.setRedirectLocationIfUnset(state.uri.toString());
+      return '/signIn';
+    }
+    return null;
+  };
 }
 
-class FFParameters {
-  FFParameters(this.state, [this.asyncParams = const {}]);
+Page<dynamic> _buildPageWithTransition(
+  BuildContext context,
+  GoRouterState state,
+  AppStateNotifier appStateNotifier,
+  Widget page,
+) {
+  fixStatusBarOniOS16AndBelow(context);
+  final child = appStateNotifier.loading
+      ? Container(
+          color: AppTheme.of(context).primaryBackground,
+          child: Image.asset(
+            'assets/images/Blackfixed.png',
+            fit: BoxFit.contain,
+          ),
+        )
+      : PushNotificationsHandler(child: page);
 
-  final GoRouterState state;
-  final Map<String, Future<dynamic> Function(String)> asyncParams;
+  final transitionInfo = _transitionInfo(state);
+  return transitionInfo.hasTransition
+      ? CustomTransitionPage(
+          key: state.pageKey,
+          child: child,
+          transitionDuration: transitionInfo.duration,
+          transitionsBuilder:
+              (context, animation, secondaryAnimation, child) =>
+                  PageTransition(
+            type: transitionInfo.transitionType,
+            duration: transitionInfo.duration,
+            reverseDuration: transitionInfo.duration,
+            alignment: transitionInfo.alignment,
+            child: child,
+          ).buildTransitions(
+            context,
+            animation,
+            secondaryAnimation,
+            child,
+          ),
+        )
+      : MaterialPage(key: state.pageKey, child: child);
+}
 
-  Map<String, dynamic> futureParamValues = {};
-
-  // Parameters are empty if the params map is empty or if the only parameter
-  // present is the special extra parameter reserved for the transition info.
-  bool get isEmpty =>
-      state.allParams.isEmpty ||
-      (state.allParams.length == 1 &&
-          state.extraMap.containsKey(kTransitionInfoKey));
-  bool isAsyncParam(MapEntry<String, dynamic> param) =>
-      asyncParams.containsKey(param.key) && param.value is String;
-  bool get hasFutures => state.allParams.entries.any(isAsyncParam);
-  Future<bool> completeFutures() => Future.wait(
-        state.allParams.entries.where(isAsyncParam).map(
-          (param) async {
-            final doc = await asyncParams[param.key]!(param.value)
-                .onError((_, __) => null);
-            if (doc != null) {
-              futureParamValues[param.key] = doc;
-              return true;
-            }
-            return false;
-          },
-        ),
-      ).onError((_, __) => [false]).then((v) => v.every((e) => e));
-
-  dynamic getParam<T>(
-    String paramName,
-    ParamType type, {
-    bool isList = false,
-    List<String>? collectionNamePath,
-  }) {
-    if (futureParamValues.containsKey(paramName)) {
-      return futureParamValues[paramName];
-    }
-    if (!state.allParams.containsKey(paramName)) {
-      return null;
-    }
-    final param = state.allParams[paramName];
-    // Got parameter from `extras`, so just directly return it.
-    if (param is! String) {
-      return param;
-    }
-    // Return serialized value.
-    return deserializeParam<T>(
-      param,
-      type,
-      isList,
-      collectionNamePath: collectionNamePath,
-    );
+Map<String, dynamic> _allParams(GoRouterState state) {
+  final params = <String, dynamic>{}
+    ..addAll(state.pathParameters)
+    ..addAll(state.uri.queryParameters);
+  if (state.extra is Map<String, dynamic>) {
+    params.addAll(state.extra as Map<String, dynamic>);
   }
+  return params;
 }
 
-class FFRoute {
-  const FFRoute({
-    required this.name,
-    required this.path,
-    required this.builder,
-    this.requireAuth = false,
-    this.asyncParams = const {},
-    this.routes = const [],
-  });
+dynamic _paramValue(GoRouterState state, String name) => _allParams(state)[name];
 
-  final String name;
-  final String path;
-  final bool requireAuth;
-  final Map<String, Future<dynamic> Function(String)> asyncParams;
-  final Widget Function(BuildContext, FFParameters) builder;
-  final List<GoRoute> routes;
+T? _deserializeParam<T>(
+  GoRouterState state,
+  String name,
+  ParamType type, {
+  bool isList = false,
+  List<String>? collectionNamePath,
+}) {
+  final param = _paramValue(state, name);
+  if (param == null) {
+    return null;
+  }
+  if (param is! String) {
+    return param as T?;
+  }
+  return deserializeParam<T>(
+    param,
+    type,
+    isList,
+    collectionNamePath: collectionNamePath,
+  );
+}
 
-  GoRoute toRoute(AppStateNotifier appStateNotifier) => GoRoute(
-        name: name,
-        path: path,
-        redirect: (context, state) {
-          if (appStateNotifier.shouldRedirect) {
-            final redirectLocation = appStateNotifier.getRedirectLocation();
-            appStateNotifier.clearRedirectLocation();
-            return redirectLocation;
-          }
+Future<T?> _resolveAsyncParam<T>(
+  GoRouterState state,
+  String name,
+  Future<T> Function(String) loader,
+) {
+  final param = _paramValue(state, name);
+  if (param == null) {
+    return Future.value(null);
+  }
+  if (param is T) {
+    return Future.value(param);
+  }
+  if (param is! String) {
+    return Future.value(param as T?);
+  }
+  return loader(param).onError((_, __) => null);
+}
 
-          if (requireAuth && !appStateNotifier.loggedIn) {
-            appStateNotifier.setRedirectLocationIfUnset(state.uri.toString());
-            return '/signIn';
-          }
-          return null;
-        },
-        pageBuilder: (context, state) {
-          fixStatusBarOniOS16AndBelow(context);
-          final ffParams = FFParameters(state, asyncParams);
-          final page = ffParams.hasFutures
-              ? FutureBuilder(
-                  future: ffParams.completeFutures(),
-                  builder: (context, _) => builder(context, ffParams),
-                )
-              : builder(context, ffParams);
-          final child = appStateNotifier.loading
-              ? Container(
-                  color: AppTheme.of(context).primaryBackground,
-                  child: Image.asset(
-                    'assets/images/Blackfixed.png',
-                    fit: BoxFit.contain,
-                  ),
-                )
-              : PushNotificationsHandler(child: page);
+bool _isEmptyStateParams(GoRouterState state) {
+  final params = _allParams(state);
+  if (params.isEmpty) {
+    return true;
+  }
+  return params.length == 1 && params.containsKey(kTransitionInfoKey);
+}
 
-          final transitionInfo = state.transitionInfo;
-          return transitionInfo.hasTransition
-              ? CustomTransitionPage(
-                  key: state.pageKey,
-                  child: child,
-                  transitionDuration: transitionInfo.duration,
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) =>
-                          PageTransition(
-                    type: transitionInfo.transitionType,
-                    duration: transitionInfo.duration,
-                    reverseDuration: transitionInfo.duration,
-                    alignment: transitionInfo.alignment,
-                    child: child,
-                  ).buildTransitions(
-                    context,
-                    animation,
-                    secondaryAnimation,
-                    child,
-                  ),
-                )
-              : MaterialPage(key: state.pageKey, child: child);
-        },
-        routes: routes,
-      );
+TransitionInfo _transitionInfo(GoRouterState state) {
+  final extra = state.extra;
+  if (extra is Map<String, dynamic> && extra.containsKey(kTransitionInfoKey)) {
+    return extra[kTransitionInfoKey] as TransitionInfo;
+  }
+  return TransitionInfo.appDefault();
 }
 
 class TransitionInfo {
