@@ -52,10 +52,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
         )),
       );
       _model.filteredList = _model.snapshotGames!.toList().cast<GamesRecord>();
-      safeSetState(() {});
+      if (mounted) setState(() {});
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -89,7 +93,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
               size: 25.0,
             ),
             onPressed: () async {
-              context.safePop();
+              final router = GoRouter.of(context);
+              if (router.canPop()) {
+                router.pop();
+              } else {
+                router.go('/');
+              }
             },
           ),
           title: Text(
@@ -191,7 +200,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 ChipData('All')
                               ],
                               onChanged: (val) async {
-                                safeSetState(() =>
+                                if (mounted) setState(() =>
                                     _model.choiceChipsValue = val?.firstOrNull);
                                 _model.filteredList = functions
                                     .filterFunction(
@@ -199,7 +208,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                         _model.choiceChipsValue)!
                                     .toList()
                                     .cast<GamesRecord>();
-                                safeSetState(() {});
+                                if (mounted) setState(() {});
                               },
                               selectedChipStyle: ChipStyle(
                                 backgroundColor: Color(0xFFA2A2A2),

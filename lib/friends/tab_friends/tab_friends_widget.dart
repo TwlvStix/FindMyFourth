@@ -41,11 +41,19 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
       vsync: this,
       length: 3,
       initialIndex: 0,
-    )..addListener(() => safeSetState(() {}));
+    )..addListener(() {
+        if (mounted) {
+          setState(() {});
+        }
+      });
 
     _model.textController ??= TextEditingController();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -169,11 +177,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                             () async {},
                             () async {
                               _model.friendList = [];
-                              safeSetState(() {});
+                              if (mounted) setState(() {});
                             },
                             () async {
                               _model.friendList = [];
-                              safeSetState(() {});
+                              if (mounted) setState(() {});
                             }
                           ][i]();
                         },
@@ -286,7 +294,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                   );
                                                 },
                                                 onSelected: (String selection) {
-                                                  safeSetState(() => _model
+                                                  if (mounted) setState(() => _model
                                                           .textFieldSelectedOption =
                                                       selection);
                                                   FocusScope.of(context)
@@ -811,11 +819,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                           onPressed: () async {
                                                             _model.addToFriendList(
                                                                 currentUserReference!);
-                                                            safeSetState(() {});
+                                                            if (mounted) setState(() {});
                                                             _model.addToFriendList(
                                                                 listViewUsersRecord
                                                                     .reference);
-                                                            safeSetState(() {});
+                                                            if (mounted) setState(() {});
                                                             _model.chatsChecker =
                                                                 await queryChatsRecordOnce(
                                                               queryBuilder:
@@ -998,7 +1006,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                               }
                                                             }
 
-                                                            safeSetState(() {});
+                                                            if (mounted) setState(() {});
                                                           },
                                                         ),
                                                       ),
@@ -1118,7 +1126,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           .uid,
                                                                       '007',
                                                                     ));
-                                                                    safeSetState(
+                                                                    if (mounted) setState(
                                                                         () {});
                                                                     ScaffoldMessenger.of(
                                                                             context)
@@ -2498,7 +2506,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                     _model.addToFriendList(
                                                                         userList5UsersRecord
                                                                             .reference);
-                                                                    safeSetState(
+                                                                    if (mounted) setState(
                                                                         () {});
                                                                     _model.chatroomChecker =
                                                                         await queryChatsRecordOnce(
@@ -2679,7 +2687,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                       }
                                                                     }
 
-                                                                    safeSetState(
+                                                                    if (mounted) setState(
                                                                         () {});
                                                                   },
                                                                 ),

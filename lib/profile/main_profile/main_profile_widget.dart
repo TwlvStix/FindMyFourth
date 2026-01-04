@@ -29,7 +29,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
     super.initState();
     _model = createModel(context, () => MainProfileModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -63,7 +67,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
               size: 30.0,
             ),
             onPressed: () async {
-              context.safePop();
+              final router = GoRouter.of(context);
+              if (router.canPop()) {
+                router.pop();
+              } else {
+                router.go('/');
+              }
             },
           ),
           actions: [],
@@ -1177,9 +1186,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                           GoRouter.of(context)
                                               .clearRedirectLocation();
 
-                                          context.goNamedAuth(
-                                              SignInWidget.routeName,
-                                              context.mounted);
+                                          if (!context.mounted) {
+                                            return;
+                                          }
+                                          final router = GoRouter.of(context);
+                                          if (router.shouldRedirect(false)) {
+                                            return;
+                                          }
+                                          router.goNamed(
+                                              SignInWidget.routeName);
                                         },
                                         child: Text(
                                           'Log Out?',

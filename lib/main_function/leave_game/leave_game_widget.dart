@@ -36,7 +36,11 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
     super.initState();
     _model = createModel(context, () => LeaveGameModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override

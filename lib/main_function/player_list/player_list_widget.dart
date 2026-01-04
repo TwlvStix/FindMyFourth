@@ -38,7 +38,11 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     super.initState();
     _model = createModel(context, () => PlayerListModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -233,8 +237,12 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                   'Name',
                                                 ))
                                             .toList(),
-                                        onChanged: (val) => safeSetState(
-                                            () => _model.dropDownValue1 = val),
+                                        onChanged: (val) {
+                                          if (mounted) {
+                                            setState(() =>
+                                                _model.dropDownValue1 = val);
+                                          }
+                                        },
                                         width: 300.0,
                                         height: 50.0,
                                         searchHintTextStyle: AppTheme
@@ -356,8 +364,12 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                 'Name',
                                               ))
                                           .toList(),
-                                      onChanged: (val) => safeSetState(
-                                          () => _model.dropDownValue2 = val),
+                                      onChanged: (val) {
+                                        if (mounted) {
+                                          setState(() =>
+                                              _model.dropDownValue2 = val);
+                                        }
+                                      },
                                       width: 300.0,
                                       height: 50.0,
                                       textStyle: AppTheme.of(context)
