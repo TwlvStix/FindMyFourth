@@ -93,7 +93,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
   @override
   void dispose() {
     tabBarController?.dispose();
-    textFieldFocusNode?.dispose();
     textController?.dispose();
 
     super.dispose();
