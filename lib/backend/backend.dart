@@ -976,6 +976,7 @@ Future maybeCreateUser(User user) async {
     uid: user.uid,
     phoneNumber: user.phoneNumber,
     createdTime: getCurrentTimestamp,
+    onboardingCompleted: false,
   );
 
   await userRecord.set(userData);
