@@ -260,6 +260,10 @@ class _ChatWidgetState extends State<ChatWidget> {
 
                                             final rowUsersRecord =
                                                 snapshot.data!;
+                                            final rowUserPhotoUrl =
+                                                rowUsersRecord.photoUrl;
+                                            final rowUserPhotoUrl =
+                                                rowUsersRecord.photoUrl;
 
                                             return Row(
                                               mainAxisSize: MainAxisSize.max,
@@ -309,17 +313,32 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                         borderRadius:
                                                             BorderRadius
                                                                 .circular(8.0),
-                                                        child: Image.network(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            rowUsersRecord
-                                                                .photoUrl,
-                                                            'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/teams/GzvajSxrHvi1zwJQsfLk/assets/tjm1k7ywi5dr/@3xlogoMark_outlineOnWhite.png',
-                                                          ),
-                                                          width: 44.0,
-                                                          height: 44.0,
-                                                          fit: BoxFit.cover,
-                                                        ),
+                                                        child: rowUserPhotoUrl
+                                                                .isNotEmpty
+                                                            ? Image.network(
+                                                                rowUserPhotoUrl,
+                                                                width: 44.0,
+                                                                height: 44.0,
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                                errorBuilder: (context,
+                                                                        error,
+                                                                        stackTrace) =>
+                                                                    Image.asset(
+                                                                  'assets/images/error_image.png',
+                                                                  width: 44.0,
+                                                                  height: 44.0,
+                                                                  fit: BoxFit
+                                                                      .cover,
+                                                                ),
+                                                              )
+                                                            : Image.asset(
+                                                                'assets/images/error_image.png',
+                                                                width: 44.0,
+                                                                height: 44.0,
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                              ),
                                                       ),
                                                     ),
                                                   ),
@@ -617,17 +636,32 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                         borderRadius:
                                                             BorderRadius
                                                                 .circular(8.0),
-                                                        child: Image.network(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            rowUsersRecord
-                                                                .photoUrl,
-                                                            'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/teams/GzvajSxrHvi1zwJQsfLk/assets/tjm1k7ywi5dr/@3xlogoMark_outlineOnWhite.png',
-                                                          ),
-                                                          width: 44.0,
-                                                          height: 44.0,
-                                                          fit: BoxFit.cover,
-                                                        ),
+                                                        child: rowUserPhotoUrl
+                                                                .isNotEmpty
+                                                            ? Image.network(
+                                                                rowUserPhotoUrl,
+                                                                width: 44.0,
+                                                                height: 44.0,
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                                errorBuilder: (context,
+                                                                        error,
+                                                                        stackTrace) =>
+                                                                    Image.asset(
+                                                                  'assets/images/error_image.png',
+                                                                  width: 44.0,
+                                                                  height: 44.0,
+                                                                  fit: BoxFit
+                                                                      .cover,
+                                                                ),
+                                                              )
+                                                            : Image.asset(
+                                                                'assets/images/error_image.png',
+                                                                width: 44.0,
+                                                                height: 44.0,
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                              ),
                                                       ),
                                                     ),
                                                   ),
@@ -970,10 +1004,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                             fadeOutDuration:
                                                                                 Duration(milliseconds: 200),
                                                                             imageUrl:
-                                                                                valueOrDefault<String>(
-                                                                              containerUsersRecord.photoUrl,
-                                                                              'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/test-flow-at3mts/assets/jozbfglfd548/flutterflow_future%402x.jpg',
-                                                                            ),
+                                                                                containerUsersRecord.photoUrl,
                                                                             width:
                                                                                 44.0,
                                                                             height:
@@ -1087,11 +1118,8 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                         fadeOutDuration:
                                                                             Duration(milliseconds: 200),
                                                                         imageUrl:
-                                                                            valueOrDefault<String>(
-                                                                          rowUsersRecord
-                                                                              .photoUrl,
-                                                                          'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/test-flow-at3mts/assets/jozbfglfd548/flutterflow_future%402x.jpg',
-                                                                        ),
+                                                                            rowUsersRecord
+                                                                                .photoUrl,
                                                                         width:
                                                                             44.0,
                                                                         height:

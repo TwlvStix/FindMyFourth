@@ -1,4 +1,4 @@
-// Automatic FlutterFlow imports
+// Automatic imports
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!

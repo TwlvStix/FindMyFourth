@@ -221,7 +221,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                               mainAxisSize: MainAxisSize.max,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                FlutterFlowMediaDisplay(
+                                MediaDisplay(
                                   path: uploadedFileUrlUploadDataJub4,
                                   imageBuilder: (path) => ClipRRect(
                                     borderRadius: BorderRadius.circular(8.0),
@@ -237,7 +237,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                     ),
                                   ),
                                   videoPlayerBuilder: (path) =>
-                                      FlutterFlowVideoPlayer(
+                                      AppVideoPlayer(
                                     path: path,
                                     width: 300.0,
                                     autoPlay: false,
