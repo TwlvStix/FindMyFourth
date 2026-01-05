@@ -1,66 +1,25 @@
 // Automatic imports
 import '/backend/backend.dart';
+import '/backend/cloud_functions/cloud_functions.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 Future<List<DocumentReference>> fetchReceiptants(GamesRecord game) async {
-  CollectionReference userCollection =
-      FirebaseFirestore.instance.collection('users');
+  final response = await makeCloudCall('fetchReceiptants', {
+    'style_game': game.styleGame,
+    'game_type': game.gameType,
+    'rules_setting': game.rulesSetting,
+    'friend_game': game.friendGame,
+    'member_discount': game.memberDiscount,
+  });
 
-  List<DocumentReference> users = [];
-
-  if (game.styleGame == 'Money Game') {
-    QuerySnapshot moneyGameUsers =
-        await userCollection.where('notify_money_game', isEqualTo: true).get();
-
-    moneyGameUsers.docs.forEach((doc) {
-      users.add(doc.reference);
-    });
+  final userRefs = response['user_refs'];
+  if (userRefs is List) {
+    return userRefs
+        .whereType<String>()
+        .map((ref) => toRef(ref))
+        .toList();
   }
 
-  if (game.gameType == 'Vegas') {
-    QuerySnapshot vegasGameUsers =
-        await userCollection.where('notify_vegas_game', isEqualTo: true).get();
-
-    vegasGameUsers.docs.forEach((doc) {
-      users.add(doc.reference);
-    });
-  }
-
-  if (game.rulesSetting == 'Competitive') {
-    QuerySnapshot competitiveUsers = await userCollection
-        .where('notify_competitive_game', isEqualTo: true)
-        .get();
-    competitiveUsers.docs.forEach((doc) {
-      users.add(doc.reference);
-    });
-  }
-
-  if (game.rulesSetting == 'For Fun') {
-    QuerySnapshot forFunUsers =
-        await userCollection.where('notify_for_fun', isEqualTo: true).get();
-    forFunUsers.docs.forEach((doc) {
-      users.add(doc.reference);
-    });
-  }
-
-  if (game.friendGame == 'Friends') {
-    QuerySnapshot friendUsers = await userCollection
-        .where('notify_only_from_friends', isEqualTo: true)
-        .get();
-    friendUsers.docs.forEach((doc) {
-      users.add(doc.reference);
-    });
-  }
-
-  if (game.memberDiscount == 'Yes') {
-    QuerySnapshot memberDiscountUsers = await userCollection
-        .where('notify_member_discount', isEqualTo: true)
-        .get();
-    memberDiscountUsers.docs.forEach((doc) {
-      users.add(doc.reference);
-    });
-  }
-
-  return users;
+  return [];
 }
