@@ -12,9 +12,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../main.dart';
 
 export 'keep_alive_wrapper.dart';
-export 'lat_lng.dart';
-export 'place.dart';
-export 'uploaded_file.dart';
+export '../models/lat_lng.dart';
+export '../models/place.dart';
+export '../models/uploaded_file.dart';
 export '../app_state.dart';
 export 'app_model.dart';
 export 'dart:math' show min, max;
