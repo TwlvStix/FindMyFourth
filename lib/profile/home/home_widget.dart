@@ -4,8 +4,6 @@ import '/core/app_util.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'home_model.dart';
-export 'home_model.dart';
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({super.key});
@@ -18,15 +16,11 @@ class HomeWidget extends StatefulWidget {
 }
 
 class _HomeWidgetState extends State<HomeWidget> {
-  late HomeModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => HomeModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -36,8 +30,6 @@ class _HomeWidgetState extends State<HomeWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
-
     super.dispose();
   }
 

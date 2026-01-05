@@ -8,8 +8,6 @@ import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'become_friends_model.dart';
-export 'become_friends_model.dart';
 
 class BecomeFriendsWidget extends StatefulWidget {
   const BecomeFriendsWidget({
@@ -24,19 +22,9 @@ class BecomeFriendsWidget extends StatefulWidget {
 }
 
 class _BecomeFriendsWidgetState extends State<BecomeFriendsWidget> {
-  late BecomeFriendsModel _model;
-
-  @override
-  void setState(VoidCallback callback) {
-    super.setState(callback);
-    _model.onUpdate();
-  }
-
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => BecomeFriendsModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -46,8 +34,6 @@ class _BecomeFriendsWidgetState extends State<BecomeFriendsWidget> {
 
   @override
   void dispose() {
-    _model.maybeDispose();
-
     super.dispose();
   }
 

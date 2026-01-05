@@ -4,8 +4,6 @@ import '/core/app_util.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'profile_user_model.dart';
-export 'profile_user_model.dart';
 
 class ProfileUserWidget extends StatefulWidget {
   const ProfileUserWidget({
@@ -23,15 +21,13 @@ class ProfileUserWidget extends StatefulWidget {
 }
 
 class _ProfileUserWidgetState extends State<ProfileUserWidget> {
-  late ProfileUserModel _model;
+  final formKey = GlobalKey<FormState>();
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => ProfileUserModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -41,8 +37,6 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
-
     super.dispose();
   }
 
@@ -85,7 +79,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
         body: Container(
           width: double.infinity,
           child: Form(
-            key: _model.formKey,
+            key: formKey,
             autovalidateMode: AutovalidateMode.always,
             child: Align(
               alignment: AlignmentDirectional(0.0, 0.0),

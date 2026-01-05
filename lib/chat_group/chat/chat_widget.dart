@@ -9,8 +9,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'chat_model.dart';
-export 'chat_model.dart';
 
 class ChatWidget extends StatefulWidget {
   const ChatWidget({super.key});
@@ -23,15 +21,11 @@ class ChatWidget extends StatefulWidget {
 }
 
 class _ChatWidgetState extends State<ChatWidget> {
-  late ChatModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => ChatModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -41,8 +35,6 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
-
     super.dispose();
   }
 
