@@ -4,7 +4,7 @@ import '/core/app_theme.dart';
 import '/core/app_util.dart';
 import '/core/widgets/app_button.dart';
 import 'dart:ui';
-import '/index.dart';
+import '/friends/tab_friends/tab_friends_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
