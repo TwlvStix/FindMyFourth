@@ -410,9 +410,10 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     if (router.shouldRedirect(false)) {
                                       return;
                                     }
-                                    router.pushNamed(
-                                      HomeWidget.routeName,
-                                      extra: <String, dynamic>{
+                                    await authManager.handlePostAuthNavigation(
+                                      context,
+                                      fallbackRouteName: HomeWidget.routeName,
+                                      fallbackExtra: <String, dynamic>{
                                         kTransitionInfoKey: TransitionInfo(
                                           hasTransition: true,
                                           transitionType:
@@ -420,6 +421,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           duration: Duration(milliseconds: 220),
                                         ),
                                       },
+                                      replaceRoute: false,
                                     );
                                   },
                                   text: 'Sign In',
@@ -557,9 +559,10 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     if (router.shouldRedirect(false)) {
                                       return;
                                     }
-                                    router.pushNamed(
-                                      HomeWidget.routeName,
-                                      extra: <String, dynamic>{
+                                    await authManager.handlePostAuthNavigation(
+                                      context,
+                                      fallbackRouteName: HomeWidget.routeName,
+                                      fallbackExtra: <String, dynamic>{
                                         kTransitionInfoKey: TransitionInfo(
                                           hasTransition: true,
                                           transitionType:
@@ -567,6 +570,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           duration: Duration(milliseconds: 220),
                                         ),
                                       },
+                                      replaceRoute: false,
                                     );
                                   },
                                   text: 'Continue with Google',
@@ -642,9 +646,12 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           if (router.shouldRedirect(false)) {
                                             return;
                                           }
-                                          router.pushNamed(
-                                            HomeWidget.routeName,
-                                            extra: <String, dynamic>{
+                                          await authManager
+                                              .handlePostAuthNavigation(
+                                            context,
+                                            fallbackRouteName:
+                                                HomeWidget.routeName,
+                                            fallbackExtra: <String, dynamic>{
                                               kTransitionInfoKey:
                                                   TransitionInfo(
                                                 hasTransition: true,
@@ -655,6 +662,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                     Duration(milliseconds: 220),
                                               ),
                                             },
+                                            replaceRoute: false,
                                           );
                                         },
                                         text: 'Continue with Apple',
