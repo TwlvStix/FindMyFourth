@@ -7,8 +7,6 @@ import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'join_game_model.dart';
-export 'join_game_model.dart';
 
 class JoinGameWidget extends StatefulWidget {
   const JoinGameWidget({
@@ -23,19 +21,9 @@ class JoinGameWidget extends StatefulWidget {
 }
 
 class _JoinGameWidgetState extends State<JoinGameWidget> {
-  late JoinGameModel _model;
-
-  @override
-  void setState(VoidCallback callback) {
-    super.setState(callback);
-    _model.onUpdate();
-  }
-
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => JoinGameModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -45,8 +33,6 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
 
   @override
   void dispose() {
-    _model.maybeDispose();
-
     super.dispose();
   }
 

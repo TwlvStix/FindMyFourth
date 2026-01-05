@@ -3,6 +3,7 @@ import '/backend/backend.dart';
 import '/core/media_display.dart';
 import '/core/app_theme.dart';
 import '/core/app_util.dart';
+import '/core/request_manager.dart';
 import '/core/video_player.dart';
 import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
@@ -10,8 +11,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'chat_thread_update_model.dart';
-export 'chat_thread_update_model.dart';
 
 class ChatThreadUpdateWidget extends StatefulWidget {
   const ChatThreadUpdateWidget({
@@ -26,19 +25,24 @@ class ChatThreadUpdateWidget extends StatefulWidget {
 }
 
 class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
-  late ChatThreadUpdateModel _model;
-
-  @override
-  void setState(VoidCallback callback) {
-    super.setState(callback);
-    _model.onUpdate();
-  }
+  final _chatUserManager = FutureRequestManager<UsersRecord>();
+  Future<UsersRecord> chatUser({
+    String? uniqueQueryKey,
+    bool? overrideCache,
+    required Future<UsersRecord> Function() requestFn,
+  }) =>
+      _chatUserManager.performRequest(
+        uniqueQueryKey: uniqueQueryKey,
+        overrideCache: overrideCache,
+        requestFn: requestFn,
+      );
+  void clearChatUserCache() => _chatUserManager.clear();
+  void clearChatUserCacheKey(String? uniqueKey) =>
+      _chatUserManager.clearRequest(uniqueKey);
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => ChatThreadUpdateModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -48,7 +52,7 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
 
   @override
   void dispose() {
-    _model.maybeDispose();
+    clearChatUserCache();
 
     super.dispose();
   }
@@ -70,7 +74,7 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
               child: Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(12.0, 12.0, 12.0, 0.0),
                 child: FutureBuilder<UsersRecord>(
-                  future: _model.chatUser(
+                  future: chatUser(
                     uniqueQueryKey: widget.chatMessagesRef?.reference.id,
                     requestFn: () => UsersRecord.getDocumentOnce(
                         widget.chatMessagesRef!.user!),

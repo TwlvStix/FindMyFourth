@@ -9,8 +9,6 @@ import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'game_joined_detailed_model.dart';
-export 'game_joined_detailed_model.dart';
 
 class GameJoinedDetailedWidget extends StatefulWidget {
   const GameJoinedDetailedWidget({
@@ -29,15 +27,11 @@ class GameJoinedDetailedWidget extends StatefulWidget {
 }
 
 class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
-  late GameJoinedDetailedModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => GameJoinedDetailedModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -47,8 +41,6 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
-
     super.dispose();
   }
 

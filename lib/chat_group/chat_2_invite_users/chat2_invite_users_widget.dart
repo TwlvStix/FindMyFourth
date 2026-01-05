@@ -14,8 +14,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'chat2_invite_users_model.dart';
-export 'chat2_invite_users_model.dart';
 
 class Chat2InviteUsersWidget extends StatefulWidget {
   const Chat2InviteUsersWidget({
@@ -33,25 +31,74 @@ class Chat2InviteUsersWidget extends StatefulWidget {
 }
 
 class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
-  late Chat2InviteUsersModel _model;
+  List<DocumentReference> friendsList = [];
+  void addToFriendsList(DocumentReference item) => friendsList.add(item);
+  void removeFromFriendsList(DocumentReference item) =>
+      friendsList.remove(item);
+  void removeAtIndexFromFriendsList(int index) => friendsList.removeAt(index);
+  void insertAtIndexInFriendsList(int index, DocumentReference item) =>
+      friendsList.insert(index, item);
+  void updateFriendsListAtIndex(
+          int index, Function(DocumentReference) updateFn) =>
+      friendsList[index] = updateFn(friendsList[index]);
+
+  PagingController<DocumentSnapshot?, UsersRecord>? listViewPagingController;
+  Query? listViewPagingQuery;
+  Map<UsersRecord, bool> checkboxListTileValueMap = {};
+  List<UsersRecord> get checkboxListTileCheckedItems =>
+      checkboxListTileValueMap.entries
+          .where((e) => e.value)
+          .map((e) => e.key)
+          .toList();
+
+  ChatsRecord? updatedChatThread;
+  ChatsRecord? newChatThread;
+
+  PagingController<DocumentSnapshot?, UsersRecord> setListViewController(
+    Query query, {
+    DocumentReference<Object?>? parent,
+  }) {
+    listViewPagingController ??= _createListViewController(query, parent);
+    if (listViewPagingQuery != query) {
+      listViewPagingQuery = query;
+      listViewPagingController?.refresh();
+    }
+    return listViewPagingController!;
+  }
+
+  PagingController<DocumentSnapshot?, UsersRecord> _createListViewController(
+    Query query,
+    DocumentReference<Object?>? parent,
+  ) {
+    final controller =
+        PagingController<DocumentSnapshot?, UsersRecord>(firstPageKey: null);
+    return controller
+      ..addPageRequestListener(
+        (nextPageMarker) => queryUsersRecordPage(
+          queryBuilder: (_) => listViewPagingQuery ??= query,
+          nextPageMarker: nextPageMarker,
+          controller: controller,
+          pageSize: 16,
+          isStream: false,
+        ),
+      );
+  }
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => Chat2InviteUsersModel());
-
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       if (widget.chatRef != null) {
         // addChatUsers_ToList
-        _model.friendsList =
+        friendsList =
             widget.chatRef!.users.toList().cast<DocumentReference>();
         if (mounted) setState(() {});
       } else {
         // addUser_ToList
-        _model.addToFriendsList(currentUserReference!);
+        addToFriendsList(currentUserReference!);
         if (mounted) setState(() {});
       }
     });
@@ -65,7 +112,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
+    listViewPagingController?.dispose();
 
     super.dispose();
   }
@@ -201,7 +248,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                             16.0, 12.0, 0.0, 0.0),
                         child: Text(
                           ((valueOrDefault<int>(
-                                    _model.friendsList.length,
+                                    friendsList.length,
                                     0,
                                   ) -
                                   1))
@@ -260,7 +307,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                         EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
                     child:
                         PagedListView<DocumentSnapshot<Object?>?, UsersRecord>(
-                      pagingController: _model.setListViewController(
+                      pagingController: setListViewController(
                         UsersRecord.collection.orderBy('display_name'),
                       ),
                       padding: EdgeInsets.fromLTRB(
@@ -305,8 +352,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                           body: 'No users exist to create a chat with.',
                         ),
                         itemBuilder: (context, _, listViewIndex) {
-                          final listViewUsersRecord = _model
-                              .listViewPagingController!
+                          final listViewUsersRecord = listViewPagingController!
                               .itemList![listViewIndex];
                           return Visibility(
                             visible: listViewUsersRecord.reference !=
@@ -318,14 +364,14 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                                 width: 100.0,
                                 height: 70.0,
                                 decoration: BoxDecoration(
-                                  color: _model.friendsList.contains(
+                                  color: friendsList.contains(
                                           listViewUsersRecord.reference)
                                       ? AppTheme.of(context).accent1
                                       : AppTheme.of(context)
                                           .secondaryBackground,
                                   borderRadius: BorderRadius.circular(12.0),
                                   border: Border.all(
-                                    color: _model.friendsList.contains(
+                                    color: friendsList.contains(
                                             listViewUsersRecord.reference)
                                         ? AppTheme.of(context).primary
                                         : AppTheme.of(context)
@@ -394,26 +440,26 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                                           ),
                                           child: CheckboxListTile(
                                             value:
-                                                _model.checkboxListTileValueMap[
+                                                checkboxListTileValueMap[
                                                         listViewUsersRecord] ??=
-                                                    _model.friendsList.contains(
+                                                    friendsList.contains(
                                                             listViewUsersRecord
                                                                 .reference) ==
                                                         true,
                                             onChanged: (newValue) async {
                                               if (mounted) setState(() =>
-                                                  _model.checkboxListTileValueMap[
+                                                  checkboxListTileValueMap[
                                                           listViewUsersRecord] =
                                                       newValue!);
                                               if (newValue!) {
                                                 // addUser
-                                                _model.addToFriendsList(
+                                                addToFriendsList(
                                                     listViewUsersRecord
                                                         .reference);
                                                 if (mounted) setState(() {});
                                               } else {
                                                 // removeUsser
-                                                _model.removeFromFriendsList(
+                                                removeFromFriendsList(
                                                     listViewUsersRecord
                                                         .reference);
                                                 if (mounted) setState(() {});
@@ -547,19 +593,19 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                   padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
                   child: AppButton(
                     onPressed: () async {
-                      if (_model.friendsList.length >= 2) {
+                      if (friendsList.length >= 2) {
                         if (widget.chatRef != null) {
                           // updateChat
 
                           await widget.chatRef!.reference.update({
                             ...mapToFirestore(
                               {
-                                'users': _model.friendsList,
+                                'users': friendsList,
                               },
                             ),
                           });
                           // updateChat
-                          _model.updatedChatThread = await queryChatsRecordOnce(
+                          updatedChatThread = await queryChatsRecordOnce(
                             queryBuilder: (chatsRecord) => chatsRecord.where(
                               'group_chat_id',
                               isEqualTo: widget.chatRef?.groupChatId,
@@ -573,12 +619,12 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                             Chat2DetailsWidget.routeName,
                             queryParameters: {
                               'chatRef': serializeParam(
-                                _model.updatedChatThread,
+                                updatedChatThread,
                                 ParamType.Document,
                               ),
                             }.withoutNulls,
                             extra: <String, dynamic>{
-                              'chatRef': _model.updatedChatThread,
+                              'chatRef': updatedChatThread,
                             },
                           );
                         } else {
@@ -589,7 +635,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                           await chatsRecordReference.set({
                             ...createChatsRecordData(
                               userA: currentUserReference,
-                              userB: _model.friendsList.elementAtOrNull(1),
+                              userB: friendsList.elementAtOrNull(1),
                               lastMessage: '',
                               lastMessageTime: getCurrentTimestamp,
                               lastMessageSentBy: currentUserReference,
@@ -598,15 +644,15 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                             ),
                             ...mapToFirestore(
                               {
-                                'users': _model.friendsList,
+                                'users': friendsList,
                               },
                             ),
                           });
-                          _model.newChatThread =
+                          newChatThread =
                               ChatsRecord.getDocumentFromData({
                             ...createChatsRecordData(
                               userA: currentUserReference,
-                              userB: _model.friendsList.elementAtOrNull(1),
+                              userB: friendsList.elementAtOrNull(1),
                               lastMessage: '',
                               lastMessageTime: getCurrentTimestamp,
                               lastMessageSentBy: currentUserReference,
@@ -615,7 +661,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                             ),
                             ...mapToFirestore(
                               {
-                                'users': _model.friendsList,
+                                'users': friendsList,
                               },
                             ),
                           }, chatsRecordReference);
@@ -626,12 +672,12 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                             Chat2DetailsWidget.routeName,
                             queryParameters: {
                               'chatRef': serializeParam(
-                                _model.newChatThread,
+                                newChatThread,
                                 ParamType.Document,
                               ),
                             }.withoutNulls,
                             extra: <String, dynamic>{
-                              'chatRef': _model.newChatThread,
+                              'chatRef': newChatThread,
                             },
                           );
                         }

@@ -7,8 +7,6 @@ import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'leave_game_model.dart';
-export 'leave_game_model.dart';
 
 class LeaveGameWidget extends StatefulWidget {
   const LeaveGameWidget({
@@ -23,19 +21,9 @@ class LeaveGameWidget extends StatefulWidget {
 }
 
 class _LeaveGameWidgetState extends State<LeaveGameWidget> {
-  late LeaveGameModel _model;
-
-  @override
-  void setState(VoidCallback callback) {
-    super.setState(callback);
-    _model.onUpdate();
-  }
-
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => LeaveGameModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -45,8 +33,6 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
 
   @override
   void dispose() {
-    _model.maybeDispose();
-
     super.dispose();
   }
 

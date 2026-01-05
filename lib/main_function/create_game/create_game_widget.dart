@@ -18,8 +18,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'create_game_model.dart';
-export 'create_game_model.dart';
 
 class CreateGameWidget extends StatefulWidget {
   const CreateGameWidget({super.key});
@@ -32,21 +30,51 @@ class CreateGameWidget extends StatefulWidget {
 }
 
 class _CreateGameWidgetState extends State<CreateGameWidget> {
-  late CreateGameModel _model;
+  final formKey = GlobalKey<FormState>();
+  FocusNode? gameNameFocusNode;
+  TextEditingController? gameNameTextController;
+  String? Function(BuildContext, String?)? gameNameTextControllerValidator;
+  String? _gameNameTextControllerValidator(BuildContext context, String? val) {
+    if (val == null || val.isEmpty) {
+      return 'Field is required';
+    }
+
+    return null;
+  }
+
+  DateTime? datePicked;
+  String? friendsValue;
+  FormFieldController<String>? friendsValueController;
+  String? courseValue;
+  FormFieldController<String>? courseValueController;
+  CourseRecord? selectedCourse;
+  String? memberValue;
+  FormFieldController<String>? memberValueController;
+  int? countControllerValue;
+  String? rulesSetValue;
+  FormFieldController<String>? rulesSetValueController;
+  String? styleGameValue;
+  FormFieldController<String>? styleGameValueController;
+  String? gameTypeValue;
+  FormFieldController<String>? gameTypeValueController;
+  String? scoringValue;
+  FormFieldController<String>? scoringValueController;
+  ChatsRecord? newChat;
+  GamesRecord? gameRef;
+  List<DocumentReference>? notifyUsers;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => CreateGameModel());
-
-    _model.gameNameTextController ??= TextEditingController(
+    gameNameTextController = TextEditingController(
         text: '${currentUserDisplayName}${formatNumber(
       random_data.randomInteger(0, 1000),
       formatType: FormatType.compact,
     )}');
-    _model.gameNameFocusNode ??= FocusNode();
+    gameNameFocusNode = FocusNode();
+    gameNameTextControllerValidator = _gameNameTextControllerValidator;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -57,7 +85,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
+    gameNameFocusNode?.dispose();
+    gameNameTextController?.dispose();
 
     super.dispose();
   }
@@ -185,7 +214,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                     Container(
                       width: double.infinity,
                       child: Form(
-                        key: _model.formKey,
+                        key: formKey,
                         autovalidateMode: AutovalidateMode.always,
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
@@ -236,10 +265,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     0.0, 5.0, 0.0, 0.0),
                                 child: AuthUserStreamWidget(
                                   builder: (context) => TextFormField(
-                                    controller: _model.gameNameTextController,
-                                    focusNode: _model.gameNameFocusNode,
+                                    controller: gameNameTextController,
+                                    focusNode: gameNameFocusNode,
                                     onChanged: (_) => EasyDebounce.debounce(
-                                      '_model.gameNameTextController',
+                                      'gameNameTextController',
                                       Duration(milliseconds: 2000),
                                       () {
                                         if (mounted) {
@@ -335,11 +364,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         borderRadius:
                                             BorderRadius.circular(10.0),
                                       ),
-                                      suffixIcon: _model.gameNameTextController!
+                                      suffixIcon: gameNameTextController!
                                               .text.isNotEmpty
                                           ? InkWell(
                                               onTap: () async {
-                                                _model.gameNameTextController
+                                                gameNameTextController
                                                     ?.clear();
                                                 if (mounted) setState(() {});
                                               },
@@ -379,8 +408,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             maxLength}) =>
                                         null,
                                     cursorColor: Colors.white,
-                                    validator: _model
-                                        .gameNameTextControllerValidator
+                                    validator: gameNameTextControllerValidator
                                         .asValidator(context),
                                     inputFormatters: [
                                       if (!isAndroid && !isiOS)
@@ -486,8 +514,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                               String>(
                                                             dateTimeFormat(
                                                                 "MMM",
-                                                                _model
-                                                                    .datePicked),
+                                                                datePicked),
                                                             'Jan',
                                                           ),
                                                           style: AppTheme
@@ -527,8 +554,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                               String>(
                                                             dateTimeFormat(
                                                                 "d",
-                                                                _model
-                                                                    .datePicked),
+                                                                datePicked),
                                                             '22',
                                                           ),
                                                           style: AppTheme
@@ -596,8 +622,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                               String>(
                                                             dateTimeFormat(
                                                                 "EEEE",
-                                                                _model
-                                                                    .datePicked),
+                                                                datePicked),
                                                             'Friday',
                                                           ),
                                                           style: AppTheme
@@ -635,8 +660,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                               String>(
                                                             dateTimeFormat(
                                                                 "jm",
-                                                                _model
-                                                                    .datePicked),
+                                                                datePicked),
                                                             '09:00am',
                                                           ),
                                                           style: AppTheme
@@ -835,7 +859,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                 if (_datePickedDate != null &&
                                                     _datePickedTime != null) {
                                                   if (mounted) setState(() {
-                                                    _model.datePicked =
+                                                    datePicked =
                                                         DateTime(
                                                       _datePickedDate.year,
                                                       _datePickedDate.month,
@@ -844,10 +868,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                       _datePickedTime.minute,
                                                     );
                                                   });
-                                                } else if (_model.datePicked !=
+                                                } else if (datePicked !=
                                                     null) {
                                                   if (mounted) setState(() {
-                                                    _model.datePicked =
+                                                    datePicked =
                                                         getCurrentTimestamp;
                                                   });
                                                 }
@@ -908,13 +932,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       0.0, 5.0, 0.0, 0.0),
                                   child: AppDropDown<String>(
                                     controller:
-                                        _model.friendsValueController ??=
+                                        friendsValueController ??=
                                             FormFieldController<String>(null),
                                     options: ['Friends', 'Public'],
                                     onChanged: (val) {
                                       if (mounted) {
                                         setState(
-                                            () => _model.friendsValue = val);
+                                            () => friendsValue = val);
                                       }
                                     },
                                     width: 300.0,
@@ -1032,21 +1056,20 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                           snapshot.data!;
 
                                       return AppDropDown<String>(
-                                        controller: _model
-                                                .courseValueController ??=
+                                        controller: courseValueController ??=
                                             FormFieldController<String>(null),
                                         options: courseCourseRecordList
                                             .map((e) => e.name)
                                             .toList(),
                                         onChanged: (val) async {
                                           if (mounted) setState(
-                                              () => _model.courseValue = val);
-                                          _model.selectedCourse =
+                                              () => courseValue = val);
+                                          selectedCourse =
                                               await queryCourseRecordOnce(
                                             queryBuilder: (courseRecord) =>
                                                 courseRecord.where(
                                               'name',
-                                              isEqualTo: _model.courseValue,
+                                              isEqualTo: courseValue,
                                             ),
                                             singleRecord: true,
                                           ).then((s) => s.firstOrNull);
@@ -1191,13 +1214,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 5.0, 0.0, 0.0),
                                   child: AppDropDown<String>(
-                                    controller: _model.memberValueController ??=
+                                    controller: memberValueController ??=
                                         FormFieldController<String>(null),
                                     options: ['Yes', 'No'],
                                     onChanged: (val) {
                                       if (mounted) {
                                         setState(
-                                            () => _model.memberValue = val);
+                                            () => memberValue = val);
                                       }
                                     },
                                     width: 300.0,
@@ -1403,11 +1426,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                       .fontStyle,
                                             ),
                                       ),
-                                      count: _model.countControllerValue ??= 1,
+                                      count: countControllerValue ??= 1,
                                       updateCount: (count) {
                                         if (mounted) {
-                                          setState(() => _model
-                                              .countControllerValue = count);
+                                          setState(() =>
+                                              countControllerValue = count);
                                         }
                                       },
                                       stepSize: 1,
@@ -1460,7 +1483,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       0.0, 5.0, 0.0, 0.0),
                                   child: AppDropDown<String>(
                                     controller:
-                                        _model.rulesSetValueController ??=
+                                        rulesSetValueController ??=
                                             FormFieldController<String>(null),
                                     options: [
                                       'Strict',
@@ -1470,7 +1493,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     onChanged: (val) {
                                       if (mounted) {
                                         setState(
-                                            () => _model.rulesSetValue = val);
+                                            () => rulesSetValue = val);
                                       }
                                     },
                                     width: 300.0,
@@ -1571,7 +1594,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       0.0, 5.0, 0.0, 0.0),
                                   child: AppDropDown<String>(
                                     controller:
-                                        _model.styleGameValueController ??=
+                                        styleGameValueController ??=
                                             FormFieldController<String>(null),
                                     options: [
                                       'Money Game',
@@ -1581,7 +1604,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     onChanged: (val) {
                                       if (mounted) {
                                         setState(
-                                            () => _model.styleGameValue = val);
+                                            () => styleGameValue = val);
                                       }
                                     },
                                     width: 300.0,
@@ -1674,7 +1697,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       0.0, 5.0, 0.0, 0.0),
                                   child: AppDropDown<String>(
                                     controller:
-                                        _model.gameTypeValueController ??=
+                                        gameTypeValueController ??=
                                             FormFieldController<String>(null),
                                     options: [
                                       'Match Play',
@@ -1688,7 +1711,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     onChanged: (val) {
                                       if (mounted) {
                                         setState(
-                                            () => _model.gameTypeValue = val);
+                                            () => gameTypeValue = val);
                                       }
                                     },
                                     width: 300.0,
@@ -1781,7 +1804,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       0.0, 5.0, 0.0, 0.0),
                                   child: AppDropDown<String>(
                                     controller:
-                                        _model.scoringValueController ??=
+                                        scoringValueController ??=
                                             FormFieldController<String>(null),
                                     options: [
                                       'Gross',
@@ -1793,7 +1816,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     onChanged: (val) {
                                       if (mounted) {
                                         setState(
-                                            () => _model.scoringValue = val);
+                                            () => scoringValue = val);
                                       }
                                     },
                                     width: 300.0,
@@ -1848,24 +1871,24 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     0.0, 30.0, 0.0, 0.0),
                                 child: AppButton(
                                   onPressed: () async {
-                                    if (_model.formKey.currentState == null ||
-                                        !_model.formKey.currentState!
+                                    if (formKey.currentState == null ||
+                                        !formKey.currentState!
                                             .validate()) {
                                       return;
                                     }
-                                    if (_model.courseValue == null) {
+                                    if (courseValue == null) {
                                       return;
                                     }
-                                    if (_model.friendsValue == null) {
+                                    if (friendsValue == null) {
                                       return;
                                     }
-                                    if (_model.rulesSetValue == null) {
+                                    if (rulesSetValue == null) {
                                       return;
                                     }
-                                    if (_model.styleGameValue == null) {
+                                    if (styleGameValue == null) {
                                       return;
                                     }
-                                    if (_model.gameTypeValue == null) {
+                                    if (gameTypeValue == null) {
                                       return;
                                     }
 
@@ -1878,7 +1901,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         },
                                       ),
                                     });
-                                    _model.newChat =
+                                    newChat =
                                         ChatsRecord.getDocumentFromData({
                                       ...mapToFirestore(
                                         {
@@ -1892,22 +1915,22 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     await gamesRecordReference.set({
                                       ...createGamesRecordData(
                                         nameGame:
-                                            _model.gameNameTextController.text,
-                                        date: _model.datePicked,
-                                        numPlayers: _model.countControllerValue,
-                                        styleGame: _model.styleGameValue,
-                                        gameType: _model.gameTypeValue,
-                                        coursePlay: _model.courseValue,
-                                        memberDiscount: _model.memberValue,
-                                        scoring: _model.scoringValue,
-                                        friendGame: _model.friendsValue,
+                                            gameNameTextController.text,
+                                        date: datePicked,
+                                        numPlayers: countControllerValue,
+                                        styleGame: styleGameValue,
+                                        gameType: gameTypeValue,
+                                        coursePlay: courseValue,
+                                        memberDiscount: memberValue,
+                                        scoring: scoringValue,
+                                        friendGame: friendsValue,
                                         maxPlayers: 4,
-                                        rulesSetting: _model.rulesSetValue,
+                                        rulesSetting: rulesSetValue,
                                         createdTime: getCurrentTimestamp,
-                                        chatRef: _model.newChat?.reference,
+                                        chatRef: newChat?.reference,
                                         userRef: currentUserReference,
                                         courseRef:
-                                            _model.selectedCourse?.reference,
+                                            selectedCourse?.reference,
                                         isCancelled: false,
                                       ),
                                       ...mapToFirestore(
@@ -1918,26 +1941,26 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         },
                                       ),
                                     });
-                                    _model.gameRef =
+                                    gameRef =
                                         GamesRecord.getDocumentFromData({
                                       ...createGamesRecordData(
                                         nameGame:
-                                            _model.gameNameTextController.text,
-                                        date: _model.datePicked,
-                                        numPlayers: _model.countControllerValue,
-                                        styleGame: _model.styleGameValue,
-                                        gameType: _model.gameTypeValue,
-                                        coursePlay: _model.courseValue,
-                                        memberDiscount: _model.memberValue,
-                                        scoring: _model.scoringValue,
-                                        friendGame: _model.friendsValue,
+                                            gameNameTextController.text,
+                                        date: datePicked,
+                                        numPlayers: countControllerValue,
+                                        styleGame: styleGameValue,
+                                        gameType: gameTypeValue,
+                                        coursePlay: courseValue,
+                                        memberDiscount: memberValue,
+                                        scoring: scoringValue,
+                                        friendGame: friendsValue,
                                         maxPlayers: 4,
-                                        rulesSetting: _model.rulesSetValue,
+                                        rulesSetting: rulesSetValue,
                                         createdTime: getCurrentTimestamp,
-                                        chatRef: _model.newChat?.reference,
+                                        chatRef: newChat?.reference,
                                         userRef: currentUserReference,
                                         courseRef:
-                                            _model.selectedCourse?.reference,
+                                            selectedCourse?.reference,
                                         isCancelled: false,
                                       ),
                                       ...mapToFirestore(
@@ -1950,15 +1973,15 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     }, gamesRecordReference);
                                     await Future.wait([
                                       Future(() async {
-                                        _model.notifyUsers =
+                                        notifyUsers =
                                             await actions.fetchReceiptants(
-                                          _model.gameRef!,
+                                          gameRef!,
                                         );
                                         triggerPushNotification(
                                           notificationTitle: 'New game created',
                                           notificationText:
                                               'New game is created.',
-                                          userRefs: _model.notifyUsers!
+                                          userRefs: notifyUsers!
                                               .unique((e) => e)
                                               .toList(),
                                           initialPageName: 'GamesList',
@@ -1966,7 +1989,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         );
                                       }),
                                       Future(() async {
-                                        if (_model.gameRef?.numPlayers == 3) {
+                                        if (gameRef?.numPlayers == 3) {
                                           context.pushNamed(
                                               GamesListWidget.routeName);
                                         } else {
@@ -1974,12 +1997,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             PlayerListWidget.routeName,
                                             queryParameters: {
                                               'gameRef': serializeParam(
-                                                _model.gameRef,
+                                                gameRef,
                                                 ParamType.Document,
                                               ),
                                             }.withoutNulls,
                                             extra: <String, dynamic>{
-                                              'gameRef': _model.gameRef,
+                                              'gameRef': gameRef,
                                               kTransitionInfoKey:
                                                   TransitionInfo(
                                                 hasTransition: true,

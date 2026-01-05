@@ -10,8 +10,6 @@ import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'player_list_model.dart';
-export 'player_list_model.dart';
 
 class PlayerListWidget extends StatefulWidget {
   const PlayerListWidget({
@@ -29,15 +27,40 @@ class PlayerListWidget extends StatefulWidget {
 }
 
 class _PlayerListWidgetState extends State<PlayerListWidget> {
-  late PlayerListModel _model;
+  List<DocumentReference> playersJoined = [];
+  void addToPlayersJoined(DocumentReference item) => playersJoined.add(item);
+  void removeFromPlayersJoined(DocumentReference item) =>
+      playersJoined.remove(item);
+  void removeAtIndexFromPlayersJoined(int index) =>
+      playersJoined.removeAt(index);
+  void insertAtIndexInPlayersJoined(int index, DocumentReference item) =>
+      playersJoined.insert(index, item);
+  void updatePlayersJoinedAtIndex(
+          int index, Function(DocumentReference) updateFn) =>
+      playersJoined[index] = updateFn(playersJoined[index]);
+
+  List<String> playersJoinedUID = [];
+  void addToPlayersJoinedUID(String item) => playersJoinedUID.add(item);
+  void removeFromPlayersJoinedUID(String item) =>
+      playersJoinedUID.remove(item);
+  void removeAtIndexFromPlayersJoinedUID(int index) =>
+      playersJoinedUID.removeAt(index);
+  void insertAtIndexInPlayersJoinedUID(int index, String item) =>
+      playersJoinedUID.insert(index, item);
+  void updatePlayersJoinedUIDAtIndex(int index, Function(String) updateFn) =>
+      playersJoinedUID[index] = updateFn(playersJoinedUID[index]);
+
+  final formKey = GlobalKey<FormState>();
+  String? dropDownValue1;
+  FormFieldController<String>? dropDownValueController1;
+  String? dropDownValue2;
+  FormFieldController<String>? dropDownValueController2;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => PlayerListModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -47,8 +70,6 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
-
     super.dispose();
   }
 
@@ -135,7 +156,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                         return Container(
                           width: double.infinity,
                           child: Form(
-                            key: _model.formKey,
+                            key: formKey,
                             autovalidateMode: AutovalidateMode.disabled,
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
@@ -219,9 +240,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                           0.0, 0.0, 0.0, 20.0),
                                       child: AppDropDown<String>(
                                         controller:
-                                            _model.dropDownValueController1 ??=
+                                            dropDownValueController1 ??=
                                                 FormFieldController<String>(
-                                          _model.dropDownValue1 ??= '',
+                                          dropDownValue1 ??= '',
                                         ),
                                         options: List<String>.from(
                                             gameFormUsersRecordList
@@ -240,7 +261,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         onChanged: (val) {
                                           if (mounted) {
                                             setState(() =>
-                                                _model.dropDownValue1 = val);
+                                                dropDownValue1 = val);
                                           }
                                         },
                                         width: 300.0,
@@ -346,9 +367,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                     alignment: AlignmentDirectional(-1.0, 0.0),
                                     child: AppDropDown<String>(
                                       controller:
-                                          _model.dropDownValueController2 ??=
+                                          dropDownValueController2 ??=
                                               FormFieldController<String>(
-                                        _model.dropDownValue2 ??= '',
+                                        dropDownValue2 ??= '',
                                       ),
                                       options: List<String>.from(
                                           gameFormUsersRecordList
@@ -367,7 +388,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                       onChanged: (val) {
                                         if (mounted) {
                                           setState(() =>
-                                              _model.dropDownValue2 = val);
+                                              dropDownValue2 = val);
                                         }
                                       },
                                       width: 300.0,
@@ -430,7 +451,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                               'joined_players':
                                                   FieldValue.arrayUnion([
                                                 functions.returnDocRefFromUID(
-                                                    _model.dropDownValue1)
+                                                    dropDownValue1)
                                               ]),
                                             },
                                           ),
@@ -443,7 +464,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                               'joined_players':
                                                   FieldValue.arrayUnion([
                                                 functions.returnDocRefFromUID(
-                                                    _model.dropDownValue2)
+                                                    dropDownValue2)
                                               ]),
                                             },
                                           ),
@@ -469,7 +490,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                               'joined_players':
                                                   FieldValue.arrayUnion([
                                                 functions.returnDocRefFromUID(
-                                                    _model.dropDownValue1)
+                                                    dropDownValue1)
                                               ]),
                                             },
                                           ),

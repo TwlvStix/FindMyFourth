@@ -16,8 +16,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'edit_profile_model.dart';
-export 'edit_profile_model.dart';
 
 class EditProfileWidget extends StatefulWidget {
   const EditProfileWidget({super.key});
@@ -30,49 +28,70 @@ class EditProfileWidget extends StatefulWidget {
 }
 
 class _EditProfileWidgetState extends State<EditProfileWidget> {
-  late EditProfileModel _model;
+  final formKey = GlobalKey<FormState>();
+  FocusNode? firstNameFocusNode;
+  TextEditingController? firstNameTextController;
+  String? Function(BuildContext, String?)? firstNameTextControllerValidator;
+  FocusNode? lastNameFocusNode;
+  TextEditingController? lastNameTextController;
+  String? Function(BuildContext, String?)? lastNameTextControllerValidator;
+  FocusNode? usernameFocusNode;
+  TextEditingController? usernameTextController;
+  String? Function(BuildContext, String?)? usernameTextControllerValidator;
+  FocusNode? phoneNumFocusNode;
+  TextEditingController? phoneNumTextController;
+  String? Function(BuildContext, String?)? phoneNumTextControllerValidator;
+  FocusNode? emailFocusNode;
+  TextEditingController? emailTextController;
+  String? Function(BuildContext, String?)? emailTextControllerValidator;
+  String? coursesValue;
+  FormFieldController<String>? coursesValueController;
+  int? handicapValue;
+  int? drinksValue;
+  int? musicValue;
+  int? playmoneyValue;
+  int? paceplayValue;
+  UsersRecord? displaynameQuery;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => EditProfileModel());
-
-    _model.firstNameTextController ??= TextEditingController(
+    firstNameTextController = TextEditingController(
         text: valueOrDefault<String>(
       valueOrDefault(currentUserDocument?.firstName, ''),
       'First',
     ));
-    _model.firstNameFocusNode ??= FocusNode();
+    firstNameFocusNode = FocusNode();
 
-    _model.lastNameTextController ??= TextEditingController(
+    lastNameTextController = TextEditingController(
         text: valueOrDefault<String>(
       valueOrDefault(currentUserDocument?.lastName, ''),
       'Last',
     ));
-    _model.lastNameFocusNode ??= FocusNode();
+    lastNameFocusNode = FocusNode();
 
-    _model.usernameTextController ??= TextEditingController(
+    usernameTextController = TextEditingController(
         text: valueOrDefault<String>(
       currentUserDisplayName,
       'Display',
     ));
-    _model.usernameFocusNode ??= FocusNode();
+    usernameFocusNode = FocusNode();
 
-    _model.phoneNumTextController ??= TextEditingController(
+    phoneNumTextController = TextEditingController(
         text: valueOrDefault<String>(
       currentPhoneNumber,
       'Phone #',
     ));
-    _model.phoneNumFocusNode ??= FocusNode();
+    phoneNumFocusNode = FocusNode();
 
-    _model.emailTextController ??= TextEditingController(
+    emailTextController = TextEditingController(
         text: valueOrDefault<String>(
       currentUserEmail,
       'Email',
     ));
-    _model.emailFocusNode ??= FocusNode();
+    emailFocusNode = FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -83,7 +102,20 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
+    firstNameFocusNode?.dispose();
+    firstNameTextController?.dispose();
+
+    lastNameFocusNode?.dispose();
+    lastNameTextController?.dispose();
+
+    usernameFocusNode?.dispose();
+    usernameTextController?.dispose();
+
+    phoneNumFocusNode?.dispose();
+    phoneNumTextController?.dispose();
+
+    emailFocusNode?.dispose();
+    emailTextController?.dispose();
 
     super.dispose();
   }
@@ -124,7 +156,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
         body: Container(
           width: double.infinity,
           child: Form(
-            key: _model.formKey,
+            key: formKey,
             autovalidateMode: AutovalidateMode.disabled,
             child: Align(
               alignment: AlignmentDirectional(0.0, 0.0),
@@ -255,8 +287,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                 10.0, 0.0, 8.0, 0.0),
                             child: AuthUserStreamWidget(
                               builder: (context) => TextFormField(
-                                controller: _model.firstNameTextController,
-                                focusNode: _model.firstNameFocusNode,
+                                controller: firstNameTextController,
+                                focusNode: firstNameFocusNode,
                                 autofocus: true,
                                 obscureText: false,
                                 decoration: InputDecoration(
@@ -353,8 +385,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                           .fontStyle,
                                     ),
                                 cursorColor: Colors.white,
-                                validator: _model
-                                    .firstNameTextControllerValidator
+                                validator: firstNameTextControllerValidator
                                     .asValidator(context),
                               ),
                             ),
@@ -366,8 +397,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                 8.0, 0.0, 10.0, 0.0),
                             child: AuthUserStreamWidget(
                               builder: (context) => TextFormField(
-                                controller: _model.lastNameTextController,
-                                focusNode: _model.lastNameFocusNode,
+                                controller: lastNameTextController,
+                                focusNode: lastNameFocusNode,
                                 autofocus: true,
                                 obscureText: false,
                                 decoration: InputDecoration(
@@ -464,8 +495,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                           .fontStyle,
                                     ),
                                 cursorColor: Colors.white,
-                                validator: _model
-                                    .lastNameTextControllerValidator
+                                validator: lastNameTextControllerValidator
                                     .asValidator(context),
                               ),
                             ),
@@ -487,8 +517,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                 10.0, 0.0, 8.0, 0.0),
                             child: AuthUserStreamWidget(
                               builder: (context) => TextFormField(
-                                controller: _model.usernameTextController,
-                                focusNode: _model.usernameFocusNode,
+                                controller: usernameTextController,
+                                focusNode: usernameFocusNode,
                                 autofocus: true,
                                 obscureText: false,
                                 decoration: InputDecoration(
@@ -585,8 +615,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                           .fontStyle,
                                     ),
                                 cursorColor: Colors.white,
-                                validator: _model
-                                    .usernameTextControllerValidator
+                                validator: usernameTextControllerValidator
                                     .asValidator(context),
                               ),
                             ),
@@ -598,8 +627,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                 8.0, 0.0, 10.0, 0.0),
                             child: AuthUserStreamWidget(
                               builder: (context) => TextFormField(
-                                controller: _model.phoneNumTextController,
-                                focusNode: _model.phoneNumFocusNode,
+                                controller: phoneNumTextController,
+                                focusNode: phoneNumFocusNode,
                                 autofocus: true,
                                 obscureText: false,
                                 decoration: InputDecoration(
@@ -697,8 +726,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                     ),
                                 keyboardType: TextInputType.phone,
                                 cursorColor: Colors.white,
-                                validator: _model
-                                    .phoneNumTextControllerValidator
+                                validator: phoneNumTextControllerValidator
                                     .asValidator(context),
                               ),
                             ),
@@ -719,8 +747,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 10.0, 0.0, 8.0, 0.0),
                             child: TextFormField(
-                              controller: _model.emailTextController,
-                              focusNode: _model.emailFocusNode,
+                              controller: emailTextController,
+                              focusNode: emailFocusNode,
                               autofocus: true,
                               obscureText: false,
                               decoration: InputDecoration(
@@ -813,7 +841,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                   ),
                               keyboardType: TextInputType.emailAddress,
                               cursorColor: Colors.white,
-                              validator: _model.emailTextControllerValidator
+                              validator: emailTextControllerValidator
                                   .asValidator(context),
                             ),
                           ),
@@ -944,9 +972,9 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
 
                                         return AppDropDown<String>(
                                           controller:
-                                              _model.coursesValueController ??=
+                                              coursesValueController ??=
                                                   FormFieldController<String>(
-                                            _model.coursesValue ??=
+                                            coursesValue ??=
                                                 valueOrDefault(
                                                     currentUserDocument
                                                         ?.homeCourse,
@@ -962,7 +990,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                           onChanged: (val) {
                                             if (mounted) {
                                               setState(
-                                                  () => _model.coursesValue = val);
+                                                  () => coursesValue = val);
                                             }
                                           },
                                           width: 359.0,
@@ -1207,7 +1235,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                               .fontStyle,
                                                     ),
                                               ),
-                                              count: _model.handicapValue ??=
+                                              count: handicapValue ??=
                                                   valueOrDefault<int>(
                                                 valueOrDefault(
                                                     currentUserDocument
@@ -1215,9 +1243,9 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                     0),
                                                 0,
                                               ),
-                                              updateCount: (count) =>
-                                                  if (mounted) setState(() => _model
-                                                      .handicapValue = count),
+                                              updateCount: (count) => if (mounted)
+                                                  setState(() =>
+                                                      handicapValue = count),
                                               stepSize: 1,
                                             ),
                                           ),
@@ -1359,16 +1387,16 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                               .fontStyle,
                                                     ),
                                               ),
-                                              count: _model.drinksValue ??=
+                                              count: drinksValue ??=
                                                   valueOrDefault<int>(
                                                 valueOrDefault(
                                                     currentUserDocument?.drinks,
                                                     0),
                                                 0,
                                               ),
-                                              updateCount: (count) =>
-                                                  if (mounted) setState(() => _model
-                                                      .drinksValue = count),
+                                              updateCount: (count) => if (mounted)
+                                                  setState(() =>
+                                                      drinksValue = count),
                                               stepSize: 1,
                                               minimum: 0,
                                               maximum: 10,
@@ -1512,16 +1540,16 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                               .fontStyle,
                                                     ),
                                               ),
-                                              count: _model.musicValue ??=
+                                              count: musicValue ??=
                                                   valueOrDefault<int>(
                                                 valueOrDefault(
                                                     currentUserDocument?.music,
                                                     0),
                                                 0,
                                               ),
-                                              updateCount: (count) =>
-                                                  if (mounted) setState(() => _model
-                                                      .musicValue = count),
+                                              updateCount: (count) => if (mounted)
+                                                  setState(() =>
+                                                      musicValue = count),
                                               stepSize: 1,
                                               minimum: 0,
                                               maximum: 10,
@@ -1665,16 +1693,16 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                               .fontStyle,
                                                     ),
                                               ),
-                                              count: _model.playmoneyValue ??=
+                                              count: playmoneyValue ??=
                                                   valueOrDefault<int>(
                                                 valueOrDefault(
                                                     currentUserDocument?.music,
                                                     0),
                                                 0,
                                               ),
-                                              updateCount: (count) =>
-                                                  if (mounted) setState(() => _model
-                                                      .playmoneyValue = count),
+                                              updateCount: (count) => if (mounted)
+                                                  setState(() =>
+                                                      playmoneyValue = count),
                                               stepSize: 1,
                                               minimum: 0,
                                               maximum: 10,
@@ -1818,16 +1846,16 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                               .fontStyle,
                                                     ),
                                               ),
-                                              count: _model.paceplayValue ??=
+                                              count: paceplayValue ??=
                                                   valueOrDefault<int>(
                                                 valueOrDefault(
                                                     currentUserDocument?.music,
                                                     0),
                                                 0,
                                               ),
-                                              updateCount: (count) =>
-                                                  if (mounted) setState(() => _model
-                                                      .paceplayValue = count),
+                                              updateCount: (count) => if (mounted)
+                                                  setState(() =>
+                                                      paceplayValue = count),
                                               stepSize: 1,
                                               minimum: 0,
                                               maximum: 10,
@@ -1849,27 +1877,27 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                   onPressed: () async {
                                     AppState().theusernames =
                                         functions.usernameCreator(
-                                            _model.usernameTextController.text);
+                                            usernameTextController.text);
                                     if (mounted) setState(() {});
                                     if (currentUserDisplayName ==
                                         AppState().theusernames) {
                                       await currentUserReference!
                                           .update(createUsersRecordData(
-                                        email: _model.emailTextController.text,
+                                        email: emailTextController.text,
                                         photoUrl: currentUserPhoto,
                                         phoneNumber:
-                                            _model.phoneNumTextController.text,
-                                        handicap: _model.handicapValue,
+                                            phoneNumTextController.text,
+                                        handicap: handicapValue,
                                         displayName: AppState().theusernames,
                                         firstName:
-                                            _model.firstNameTextController.text,
+                                            firstNameTextController.text,
                                         lastName:
-                                            _model.lastNameTextController.text,
-                                        drinks: _model.drinksValue,
-                                        music: _model.musicValue,
-                                        homeCourse: _model.coursesValue,
-                                        paceOfPlay: _model.paceplayValue,
-                                        playForMoney: _model.playmoneyValue,
+                                            lastNameTextController.text,
+                                        drinks: drinksValue,
+                                        music: musicValue,
+                                        homeCourse: coursesValue,
+                                        paceOfPlay: paceplayValue,
+                                        playForMoney: playmoneyValue,
                                       ));
 
                                       context.pushNamed(
@@ -1885,7 +1913,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                         },
                                       );
                                     } else {
-                                      _model.displaynameQuery =
+                                      displaynameQuery =
                                           await queryUsersRecordOnce(
                                         queryBuilder: (usersRecord) =>
                                             usersRecord.where(
@@ -1894,7 +1922,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                         ),
                                         singleRecord: true,
                                       ).then((s) => s.firstOrNull);
-                                      if (_model.displaynameQuery != null) {
+                                      if (displaynameQuery != null) {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
                                           SnackBar(
@@ -1918,20 +1946,20 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                         await currentUserReference!
                                             .update(createUsersRecordData(
                                           email:
-                                              _model.emailTextController.text,
+                                              emailTextController.text,
                                           photoUrl: currentUserPhoto,
-                                          phoneNumber: _model
-                                              .phoneNumTextController.text,
-                                          handicap: _model.handicapValue,
+                                          phoneNumber:
+                                              phoneNumTextController.text,
+                                          handicap: handicapValue,
                                           displayName:
                                               AppState().theusernames,
-                                          firstName: _model
-                                              .firstNameTextController.text,
-                                          lastName: _model
-                                              .lastNameTextController.text,
-                                          drinks: _model.drinksValue,
-                                          music: _model.musicValue,
-                                          homeCourse: _model.coursesValue,
+                                          firstName:
+                                              firstNameTextController.text,
+                                          lastName:
+                                              lastNameTextController.text,
+                                          drinks: drinksValue,
+                                          music: musicValue,
+                                          homeCourse: coursesValue,
                                         ));
 
                                         context.pushNamed(

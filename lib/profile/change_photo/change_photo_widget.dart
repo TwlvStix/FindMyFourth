@@ -7,8 +7,6 @@ import '/core/widgets/app_button.dart';
 import '/core/upload_data.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'change_photo_model.dart';
-export 'change_photo_model.dart';
 
 class ChangePhotoWidget extends StatefulWidget {
   const ChangePhotoWidget({super.key});
@@ -18,19 +16,14 @@ class ChangePhotoWidget extends StatefulWidget {
 }
 
 class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
-  late ChangePhotoModel _model;
-
-  @override
-  void setState(VoidCallback callback) {
-    super.setState(callback);
-    _model.onUpdate();
-  }
+  bool isDataUploadingUploadDataJ3j = false;
+  FFUploadedFile uploadedLocalFileUploadDataJ3j =
+      FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
+  String uploadedFileUrlUploadDataJ3j = '';
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => ChangePhotoModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -40,8 +33,6 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
 
   @override
   void dispose() {
-    _model.maybeDispose();
-
     super.dispose();
   }
 
@@ -196,8 +187,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                         ),
                                         child: Image.network(
                                           valueOrDefault<String>(
-                                            _model
-                                                .uploadedFileUrl_uploadDataJ3j,
+                                            uploadedFileUrlUploadDataJ3j,
                                             'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
                                           ),
                                           fit: BoxFit.cover,
@@ -238,8 +228,10 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                       selectedMedia.every((m) =>
                                           validateFileFormat(
                                               m.storagePath, context))) {
-                                    if (mounted) setState(() => _model
-                                        .isDataUploading_uploadDataJ3j = true);
+                                    if (mounted) {
+                                      setState(() =>
+                                          isDataUploadingUploadDataJ3j = true);
+                                    }
                                     var selectedUploadedFiles =
                                         <FFUploadedFile>[];
 
@@ -269,17 +261,16 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                           .map((u) => u!)
                                           .toList();
                                     } finally {
-                                      _model.isDataUploading_uploadDataJ3j =
-                                          false;
+                                      isDataUploadingUploadDataJ3j = false;
                                     }
                                     if (selectedUploadedFiles.length ==
                                             selectedMedia.length &&
                                         downloadUrls.length ==
                                             selectedMedia.length) {
                                       if (mounted) setState(() {
-                                        _model.uploadedLocalFile_uploadDataJ3j =
+                                        uploadedLocalFileUploadDataJ3j =
                                             selectedUploadedFiles.first;
-                                        _model.uploadedFileUrl_uploadDataJ3j =
+                                        uploadedFileUrlUploadDataJ3j =
                                             downloadUrls.first;
                                       });
                                     } else {
@@ -331,7 +322,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                   await currentUserReference!
                                       .update(createUsersRecordData(
                                     photoUrl:
-                                        _model.uploadedFileUrl_uploadDataJ3j,
+                                        uploadedFileUrlUploadDataJ3j,
                                   ));
                                   Navigator.pop(context);
                                 },

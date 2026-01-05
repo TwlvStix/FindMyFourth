@@ -7,8 +7,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'sign_in_model.dart';
-export 'sign_in_model.dart';
 
 class SignInWidget extends StatefulWidget {
   const SignInWidget({super.key});
@@ -21,20 +19,24 @@ class SignInWidget extends StatefulWidget {
 }
 
 class _SignInWidgetState extends State<SignInWidget> {
-  late SignInModel _model;
+  FocusNode? emailAddressFocusNode;
+  TextEditingController? emailAddressTextController;
+  String? Function(BuildContext, String?)? emailAddressTextControllerValidator;
+  FocusNode? passwordFocusNode;
+  TextEditingController? passwordTextController;
+  bool passwordVisibility = false;
+  String? Function(BuildContext, String?)? passwordTextControllerValidator;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => SignInModel());
+    emailAddressTextController = TextEditingController();
+    emailAddressFocusNode = FocusNode();
 
-    _model.emailAddressTextController ??= TextEditingController();
-    _model.emailAddressFocusNode ??= FocusNode();
-
-    _model.passwordTextController ??= TextEditingController();
-    _model.passwordFocusNode ??= FocusNode();
+    passwordTextController = TextEditingController();
+    passwordFocusNode = FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -45,7 +47,11 @@ class _SignInWidgetState extends State<SignInWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
+    emailAddressFocusNode?.dispose();
+    emailAddressTextController?.dispose();
+
+    passwordFocusNode?.dispose();
+    passwordTextController?.dispose();
 
     super.dispose();
   }
@@ -157,9 +163,8 @@ class _SignInWidgetState extends State<SignInWidget> {
                                 child: Container(
                                   width: double.infinity,
                                   child: TextFormField(
-                                    controller:
-                                        _model.emailAddressTextController,
-                                    focusNode: _model.emailAddressFocusNode,
+                                    controller: emailAddressTextController,
+                                    focusNode: emailAddressFocusNode,
                                     autofocus: true,
                                     autofillHints: [AutofillHints.email],
                                     obscureText: false,
@@ -252,8 +257,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                   .fontStyle,
                                         ),
                                     keyboardType: TextInputType.emailAddress,
-                                    validator: _model
-                                        .emailAddressTextControllerValidator
+                                    validator: emailAddressTextControllerValidator
                                         .asValidator(context),
                                   ),
                                 ),
@@ -264,11 +268,11 @@ class _SignInWidgetState extends State<SignInWidget> {
                                 child: Container(
                                   width: double.infinity,
                                   child: TextFormField(
-                                    controller: _model.passwordTextController,
-                                    focusNode: _model.passwordFocusNode,
+                                    controller: passwordTextController,
+                                    focusNode: passwordFocusNode,
                                     autofocus: true,
                                     autofillHints: [AutofillHints.password],
-                                    obscureText: !_model.passwordVisibility,
+                                    obscureText: !passwordVisibility,
                                     decoration: InputDecoration(
                                       labelText: 'Password',
                                       labelStyle: AppTheme.of(context)
@@ -336,15 +340,14 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       suffixIcon: InkWell(
                                         onTap: () {
                                           if (mounted) {
-                                            setState(() => _model
-                                                    .passwordVisibility =
-                                                !_model.passwordVisibility);
+                                            setState(() => passwordVisibility =
+                                                !passwordVisibility);
                                           }
                                         },
                                         focusNode:
                                             FocusNode(skipTraversal: true),
                                         child: Icon(
-                                          _model.passwordVisibility
+                                          passwordVisibility
                                               ? Icons.visibility_outlined
                                               : Icons.visibility_off_outlined,
                                           color: AppTheme.of(context)
@@ -376,8 +379,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                   .bodyLarge
                                                   .fontStyle,
                                         ),
-                                    validator: _model
-                                        .passwordTextControllerValidator
+                                    validator: passwordTextControllerValidator
                                         .asValidator(context),
                                   ),
                                 ),
@@ -392,8 +394,8 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     final user =
                                         await authManager.signInWithEmail(
                                       context,
-                                      _model.emailAddressTextController.text,
-                                      _model.passwordTextController.text,
+                                      emailAddressTextController.text,
+                                      passwordTextController.text,
                                     );
                                     if (user == null) {
                                       return;
