@@ -241,22 +241,31 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               inactiveTrackColor: AppTheme.of(context).alternate,
               inactiveThumbColor: AppTheme.of(context).secondaryText,
             ),
-            ToggleIcon(
+            IconButton(
               onPressed: () async {
                 if (mounted) {
                   setState(() => notifyMoneyGame = !notifyMoneyGame);
                 }
               },
-              value: notifyMoneyGame,
-              onIcon: Icon(
-                Icons.check_box,
-                color: AppTheme.of(context).primary,
-                size: 25.0,
-              ),
-              offIcon: Icon(
-                Icons.check_box_outline_blank,
-                color: AppTheme.of(context).secondaryText,
-                size: 25.0,
+              icon: notifyMoneyGame
+                  ? Icon(
+                      Icons.check_box,
+                      color: AppTheme.of(context).primary,
+                      size: 25.0,
+                    )
+                  : Icon(
+                      Icons.check_box_outline_blank,
+                      color: AppTheme.of(context).secondaryText,
+                      size: 25.0,
+                    ),
+              style: ButtonStyle(
+                backgroundColor:
+                    WidgetStateProperty.all(Colors.transparent),
+                shape: WidgetStateProperty.resolveWith<OutlinedBorder>(
+                  (states) => const RoundedRectangleBorder(
+                    side: BorderSide.none,
+                  ),
+                ),
               ),
             ),
             Padding(
