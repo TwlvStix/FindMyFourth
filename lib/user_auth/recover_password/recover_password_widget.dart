@@ -2,6 +2,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/core/app_theme.dart';
 import '/core/app_util.dart';
 import '/core/widgets/app_button.dart';
+import '/user_auth/sign_in/sign_in_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -22,6 +23,14 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
   bool emailSent = false;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  void _returnToSignIn() {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
+    context.goNamed(SignInWidget.routeName);
+  }
 
   @override
   void initState() {
@@ -62,7 +71,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
               Icons.arrow_back,
               color: AppTheme.of(context).primary,
             ),
-            onPressed: () => Navigator.of(context).maybePop(),
+            onPressed: _returnToSignIn,
           ),
           title: Text(
             'Recover Password',
@@ -311,7 +320,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
                 child: TextButton(
-                  onPressed: () => Navigator.of(context).maybePop(),
+                  onPressed: _returnToSignIn,
                   child: Text(
                     'Back to Sign In',
                     style: AppTheme.of(context).titleSmall.override(
