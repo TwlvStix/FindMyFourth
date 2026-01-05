@@ -19,6 +19,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
   FocusNode? enterEmailFocusNode;
   TextEditingController? enterEmailTextController;
   String? Function(BuildContext, String?)? enterEmailTextControllerValidator;
+  bool emailSent = false;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -56,6 +57,13 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
         appBar: AppBar(
           backgroundColor: AppTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back,
+              color: AppTheme.of(context).primary,
+            ),
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
           title: Text(
             'Recover Password',
             textAlign: TextAlign.center,
@@ -231,10 +239,13 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                       );
                       return;
                     }
-                    await authManager.resetPassword(
+                    final didSend = await authManager.resetPassword(
                       email: enterEmailTextController.text,
                       context: context,
                     );
+                    if (didSend && mounted) {
+                      setState(() => emailSent = true);
+                    }
                   },
                   text: 'Send Link',
                   options: AppButtonOptions(
@@ -271,6 +282,49 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                     ),
                     hoverTextColor: Color(0xFF253551),
                     hoverElevation: 3.0,
+                  ),
+                ),
+              ),
+              if (emailSent)
+                Padding(
+                  padding:
+                      EdgeInsetsDirectional.fromSTEB(24.0, 16.0, 24.0, 0.0),
+                  child: Text(
+                    'Check your email for the reset link. You can return to sign in once you receive it.',
+                    textAlign: TextAlign.center,
+                    style: AppTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.outfit(
+                            fontWeight:
+                                AppTheme.of(context).bodyMedium.fontWeight,
+                            fontStyle:
+                                AppTheme.of(context).bodyMedium.fontStyle,
+                          ),
+                          color: AppTheme.of(context).secondaryText,
+                          letterSpacing: 0.0,
+                          fontWeight:
+                              AppTheme.of(context).bodyMedium.fontWeight,
+                          fontStyle:
+                              AppTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                  ),
+                ),
+              Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  child: Text(
+                    'Back to Sign In',
+                    style: AppTheme.of(context).titleSmall.override(
+                          font: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontStyle:
+                                AppTheme.of(context).titleSmall.fontStyle,
+                          ),
+                          color: AppTheme.of(context).primary,
+                          letterSpacing: 0.0,
+                          fontWeight: FontWeight.bold,
+                          fontStyle: AppTheme.of(context).titleSmall.fontStyle,
+                        ),
                   ),
                 ),
               ),
