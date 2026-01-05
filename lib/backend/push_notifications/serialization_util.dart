@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 
 import '/backend/backend.dart';
 
-import '../../core/lat_lng.dart';
-import '../../core/place.dart';
-import '../../core/uploaded_file.dart';
+import '../../models/lat_lng.dart';
+import '../../models/place.dart';
+import '../../models/uploaded_file.dart';
 
 /// SERIALIZATION HELPERS
 
