@@ -322,7 +322,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                                                   String>(
                                                             secondUserUsersRecord
                                                                 .photoUrl,
-                                                            'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/test-flow-at3mts/assets/jozbfglfd548/flutterflow_future%402x.jpg',
+                                                            '',
                                                           ),
                                                           width: 44.0,
                                                           height: 44.0,
@@ -435,7 +435,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                                           String>(
                                                         conditionalBuilderUsersRecord
                                                             .photoUrl,
-                                                        'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/test-flow-at3mts/assets/jozbfglfd548/flutterflow_future%402x.jpg',
+                                                        '',
                                                       ),
                                                       width: 44.0,
                                                       height: 44.0,
