@@ -600,9 +600,12 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       if (router.shouldRedirect(false)) {
                                         return;
                                       }
-                                      router.goNamed(
-                                        CreateProfileWidget.routeName,
-                                        extra: <String, dynamic>{
+                                      await authManager
+                                          .handlePostAuthNavigation(
+                                        context,
+                                        fallbackRouteName:
+                                            CreateProfileWidget.routeName,
+                                        fallbackExtra: <String, dynamic>{
                                           kTransitionInfoKey: TransitionInfo(
                                             hasTransition: true,
                                             transitionType:
@@ -611,6 +614,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                 Duration(milliseconds: 220),
                                           ),
                                         },
+                                        replaceRoute: true,
                                       );
                                     },
                                     text: 'Create Account',

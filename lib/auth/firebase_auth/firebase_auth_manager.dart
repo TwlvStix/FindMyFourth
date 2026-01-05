@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../auth_manager.dart';
 
 import '/backend/backend.dart';
@@ -241,13 +242,10 @@ class FirebaseAuthManager extends AuthManager
           phoneAuthManager.triggerOnCodeSent = false;
           phoneAuthManager.phoneAuthError = null;
         });
-        // If you've implemented auto-verification, navigate to home page or
-        // onboarding page here manually. Uncomment the lines below and replace
-        // DestinationPage() with the desired widget.
-        // await Navigator.push(
-        //   context,
-        //   MaterialPageRoute(builder: (_) => DestinationPage()),
-        // );
+        await handlePostAuthNavigation(
+          context,
+          fallbackRouteName: 'Home',
+        );
       },
       verificationFailed: (e) {
         phoneAuthManager.update(() {
@@ -322,6 +320,50 @@ class FirebaseAuthManager extends AuthManager
         SnackBar(content: Text(errorMsg)),
       );
       return null;
+    }
+  }
+
+  Future<bool> _hasCompletedOnboarding() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return true;
+    }
+
+    try {
+      final userDoc = await UsersRecord.getDocumentOnce(
+        UsersRecord.collection.doc(user.uid),
+      );
+      return userDoc.onboardingCompleted;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> handlePostAuthNavigation(
+    BuildContext context, {
+    required String fallbackRouteName,
+    Object? fallbackExtra,
+    bool replaceRoute = true,
+  }) async {
+    final completedOnboarding = await _hasCompletedOnboarding();
+    if (!context.mounted) {
+      return;
+    }
+
+    if (!completedOnboarding) {
+      context.goNamed(
+        'UserOnboarding',
+        queryParameters: {
+          'next': fallbackRouteName,
+        },
+      );
+      return;
+    }
+
+    if (replaceRoute) {
+      context.goNamed(fallbackRouteName, extra: fallbackExtra);
+    } else {
+      context.pushNamed(fallbackRouteName, extra: fallbackExtra);
     }
   }
 }
