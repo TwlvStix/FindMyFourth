@@ -129,7 +129,7 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                                             Duration(milliseconds: 200),
                                         imageUrl: valueOrDefault<String>(
                                           otherUserUsersRecord.photoUrl,
-                                          'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/test-flow-at3mts/assets/jozbfglfd548/flutterflow_future%402x.jpg',
+                                          '',
                                         ),
                                         width: 44.0,
                                         height: 44.0,
@@ -342,7 +342,7 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                                                 },
                                               );
                                             },
-                                            child: FlutterFlowMediaDisplay(
+                                            child: MediaDisplay(
                                               path: widget
                                                   .chatMessagesRef!.image,
                                               imageBuilder: (path) => ClipRRect(
@@ -359,7 +359,7 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                                                 ),
                                               ),
                                               videoPlayerBuilder: (path) =>
-                                                  FlutterFlowVideoPlayer(
+                                                  AppVideoPlayer(
                                                 path: path,
                                                 width: 300.0,
                                                 autoPlay: false,
@@ -511,7 +511,7 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                                       },
                                     );
                                   },
-                                  child: FlutterFlowMediaDisplay(
+                                  child: MediaDisplay(
                                     path: widget.chatMessagesRef!.image,
                                     imageBuilder: (path) => ClipRRect(
                                       borderRadius: BorderRadius.circular(8.0),
@@ -526,7 +526,7 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                                       ),
                                     ),
                                     videoPlayerBuilder: (path) =>
-                                        FlutterFlowVideoPlayer(
+                                        AppVideoPlayer(
                                       path: path,
                                       width: 300.0,
                                       autoPlay: false,

@@ -1,6 +1,6 @@
 # FindMyFourth
 
-Flutter app exported from FlutterFlow.
+Flutter app.
 
 ## Getting started
 - Install Flutter SDK

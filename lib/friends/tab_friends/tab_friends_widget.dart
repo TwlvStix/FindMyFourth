@@ -157,7 +157,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                   children: [
                     Align(
                       alignment: Alignment(-1.0, 0),
-                      child: FlutterFlowButtonTabBar(
+                      child: AppButtonTabBar(
                         useToggleButtonStyle: false,
                         labelStyle:
                             AppTheme.of(context).titleMedium.override(
