@@ -262,8 +262,6 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                 snapshot.data!;
                                             final rowUserPhotoUrl =
                                                 rowUsersRecord.photoUrl;
-                                            final rowUserPhotoUrl =
-                                                rowUsersRecord.photoUrl;
 
                                             return Row(
                                               mainAxisSize: MainAxisSize.max,
@@ -587,6 +585,8 @@ class _ChatWidgetState extends State<ChatWidget> {
 
                                             final rowUsersRecord =
                                                 snapshot.data!;
+                                            final rowUserPhotoUrl =
+                                                rowUsersRecord.photoUrl;
 
                                             return Row(
                                               mainAxisSize: MainAxisSize.max,

@@ -644,7 +644,9 @@ Future<T?> _resolveAsyncParam<T>(
   if (param is! String) {
     return Future.value(param as T?);
   }
-  return loader(param).onError((_, __) => null);
+  return loader(param)
+      .then<T?>((value) => value)
+      .catchError((_, __) => null);
 }
 
 bool _isEmptyStateParams(GoRouterState state) {

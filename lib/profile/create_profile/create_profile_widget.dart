@@ -1242,9 +1242,12 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                 ),
                                                 count: handicapValue ??=
                                                     0,
-                                                updateCount: (count) => if (mounted)
+                                                updateCount: (count) {
+                                                  if (mounted) {
                                                     setState(() =>
-                                                        handicapValue = count),
+                                                        handicapValue = count);
+                                                  }
+                                                },
                                                 stepSize: 1,
                                               ),
                                             ),
@@ -1381,9 +1384,12 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                       ),
                                                 ),
                                                 count: drinksValue ??= 0,
-                                                updateCount: (count) => if (mounted)
+                                                updateCount: (count) {
+                                                  if (mounted) {
                                                     setState(() =>
-                                                        drinksValue = count),
+                                                        drinksValue = count);
+                                                  }
+                                                },
                                                 stepSize: 1,
                                                 minimum: 0,
                                                 maximum: 10,
@@ -1522,9 +1528,12 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                       ),
                                                 ),
                                                 count: musicValue ??= 0,
-                                                updateCount: (count) => if (mounted)
+                                                updateCount: (count) {
+                                                  if (mounted) {
                                                     setState(() =>
-                                                        musicValue = count),
+                                                        musicValue = count);
+                                                  }
+                                                },
                                                 stepSize: 1,
                                                 minimum: 0,
                                                 maximum: 10,
@@ -1664,10 +1673,13 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                 ),
                                                 count: playmoneyValue ??=
                                                     0,
-                                                updateCount: (count) =>
-                                                    if (mounted) setState(() =>
+                                                updateCount: (count) {
+                                                  if (mounted) {
+                                                    setState(() =>
                                                         playmoneyValue =
-                                                            count),
+                                                            count);
+                                                  }
+                                                },
                                                 stepSize: 1,
                                                 minimum: 0,
                                                 maximum: 10,
@@ -1807,9 +1819,12 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                 ),
                                                 count: paceplayValue ??=
                                                     0,
-                                                updateCount: (count) => if (mounted)
+                                                updateCount: (count) {
+                                                  if (mounted) {
                                                     setState(() =>
-                                                        paceplayValue = count),
+                                                        paceplayValue = count);
+                                                  }
+                                                },
                                                 stepSize: 1,
                                                 minimum: 0,
                                                 maximum: 10,
