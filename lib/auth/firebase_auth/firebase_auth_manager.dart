@@ -126,7 +126,7 @@ class FirebaseAuthManager extends AuthManager
   }
 
   @override
-  Future resetPassword({
+  Future<bool> resetPassword({
     required String email,
     required BuildContext context,
   }) async {
@@ -137,11 +137,12 @@ class FirebaseAuthManager extends AuthManager
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.message!}')),
       );
-      return null;
+      return false;
     }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Password reset email sent')),
     );
+    return true;
   }
 
   @override
