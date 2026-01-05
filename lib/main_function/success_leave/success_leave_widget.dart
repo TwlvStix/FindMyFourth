@@ -4,8 +4,6 @@ import '/core/widgets/app_button.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'success_leave_model.dart';
-export 'success_leave_model.dart';
 
 class SuccessLeaveWidget extends StatefulWidget {
   const SuccessLeaveWidget({super.key});
@@ -18,15 +16,11 @@ class SuccessLeaveWidget extends StatefulWidget {
 }
 
 class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
-  late SuccessLeaveModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => SuccessLeaveModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -36,8 +30,6 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
-
     super.dispose();
   }
 

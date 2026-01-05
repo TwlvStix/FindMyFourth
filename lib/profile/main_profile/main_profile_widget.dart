@@ -6,8 +6,6 @@ import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'main_profile_model.dart';
-export 'main_profile_model.dart';
 
 class MainProfileWidget extends StatefulWidget {
   const MainProfileWidget({super.key});
@@ -20,15 +18,11 @@ class MainProfileWidget extends StatefulWidget {
 }
 
 class _MainProfileWidgetState extends State<MainProfileWidget> {
-  late MainProfileModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => MainProfileModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -38,8 +32,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
-
     super.dispose();
   }
 

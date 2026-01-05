@@ -9,8 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'games_joined_model.dart';
-export 'games_joined_model.dart';
 
 class GamesJoinedWidget extends StatefulWidget {
   const GamesJoinedWidget({super.key});
@@ -23,15 +21,13 @@ class GamesJoinedWidget extends StatefulWidget {
 }
 
 class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
-  late GamesJoinedModel _model;
+  ChatsRecord? chat;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => GamesJoinedModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -41,8 +37,6 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
-
     super.dispose();
   }
 
@@ -615,7 +609,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                             size: 18.0,
                                           ),
                                           onPressed: () async {
-                                            _model.chat = await ChatsRecord
+                                            chat = await ChatsRecord
                                                 .getDocumentOnce(
                                                     listViewGamesRecord
                                                         .chatRef!);
@@ -624,12 +618,12 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                               Chat2DetailsWidget.routeName,
                                               queryParameters: {
                                                 'chatRef': serializeParam(
-                                                  _model.chat,
+                                                  chat,
                                                   ParamType.Document,
                                                 ),
                                               }.withoutNulls,
                                               extra: <String, dynamic>{
-                                                'chatRef': _model.chat,
+                                                'chatRef': chat,
                                               },
                                             );
 

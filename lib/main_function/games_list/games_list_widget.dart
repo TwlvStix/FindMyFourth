@@ -14,8 +14,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'games_list_model.dart';
-export 'games_list_model.dart';
 
 class GamesListWidget extends StatefulWidget {
   const GamesListWidget({super.key});
@@ -28,18 +26,22 @@ class GamesListWidget extends StatefulWidget {
 }
 
 class _GamesListWidgetState extends State<GamesListWidget> {
-  late GamesListModel _model;
+  List<GamesRecord> filteredList = [];
+  List<GamesRecord>? snapshotGames;
+  FormFieldController<List<String>>? choiceChipsValueController;
+  String? get choiceChipsValue =>
+      choiceChipsValueController?.value?.firstOrNull;
+  set choiceChipsValue(String? val) =>
+      choiceChipsValueController?.value = val != null ? [val] : [];
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => GamesListModel());
-
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _model.snapshotGames = await queryGamesRecordOnce(
+      snapshotGames = await queryGamesRecordOnce(
         queryBuilder: (gamesRecord) => gamesRecord.where(Filter.or(
           Filter(
             'isCancelled',
@@ -51,7 +53,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
           ),
         )),
       );
-      _model.filteredList = _model.snapshotGames!.toList().cast<GamesRecord>();
+      filteredList = snapshotGames!.toList().cast<GamesRecord>();
       if (mounted) setState(() {});
     });
 
@@ -64,8 +66,6 @@ class _GamesListWidgetState extends State<GamesListWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
-
     super.dispose();
   }
 
@@ -200,12 +200,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 ChipData('All')
                               ],
                               onChanged: (val) async {
-                                if (mounted) setState(() =>
-                                    _model.choiceChipsValue = val?.firstOrNull);
-                                _model.filteredList = functions
+                                if (mounted) {
+                                  setState(() =>
+                                      choiceChipsValue = val?.firstOrNull);
+                                }
+                                filteredList = functions
                                     .filterFunction(
-                                        _model.snapshotGames?.toList(),
-                                        _model.choiceChipsValue)!
+                                        snapshotGames?.toList(),
+                                        choiceChipsValue)!
                                     .toList()
                                     .cast<GamesRecord>();
                                 if (mounted) setState(() {});
@@ -273,9 +275,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               chipSpacing: 12.0,
                               rowSpacing: 12.0,
                               multiselect: false,
-                              initialized: _model.choiceChipsValue != null,
+                              initialized: choiceChipsValue != null,
                               alignment: WrapAlignment.start,
-                              controller: _model.choiceChipsValueController ??=
+                              controller: choiceChipsValueController ??=
                                   FormFieldController<List<String>>(
                                 ['All'],
                               ),
@@ -289,7 +291,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   Expanded(
                     child: Builder(
                       builder: (context) {
-                        final containerVar = _model.filteredList.toList();
+                        final containerVar = filteredList.toList();
 
                         return ListView.separated(
                           padding: EdgeInsets.fromLTRB(

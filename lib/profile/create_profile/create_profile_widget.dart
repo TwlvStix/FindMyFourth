@@ -16,8 +16,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'create_profile_model.dart';
-export 'create_profile_model.dart';
 
 class CreateProfileWidget extends StatefulWidget {
   const CreateProfileWidget({super.key});
@@ -30,30 +28,75 @@ class CreateProfileWidget extends StatefulWidget {
 }
 
 class _CreateProfileWidgetState extends State<CreateProfileWidget> {
-  late CreateProfileModel _model;
+  final formKey = GlobalKey<FormState>();
+  FocusNode? firstNameFocusNode;
+  TextEditingController? firstNameTextController;
+  String? Function(BuildContext, String?)? firstNameTextControllerValidator;
+  FocusNode? lastNameFocusNode;
+  TextEditingController? lastNameTextController;
+  String? Function(BuildContext, String?)? lastNameTextControllerValidator;
+  FocusNode? usernameFocusNode;
+  TextEditingController? usernameTextController;
+  String? Function(BuildContext, String?)? usernameTextControllerValidator;
+  String? _usernameTextControllerValidator(BuildContext context, String? val) {
+    if (val == null || val.isEmpty) {
+      return 'Field is required';
+    }
+
+    if (!RegExp(kTextValidatorUsernameRegex).hasMatch(val)) {
+      return 'Must start with a letter and can only contain letters, digits and - or _.';
+    }
+    return null;
+  }
+
+  FocusNode? phoneNumFocusNode;
+  TextEditingController? phoneNumTextController;
+  String? Function(BuildContext, String?)? phoneNumTextControllerValidator;
+  FocusNode? emailFocusNode;
+  TextEditingController? emailTextController;
+  String? Function(BuildContext, String?)? emailTextControllerValidator;
+  String? _emailTextControllerValidator(BuildContext context, String? val) {
+    if (val == null || val.isEmpty) {
+      return 'Field is required';
+    }
+
+    if (!RegExp(kTextValidatorEmailRegex).hasMatch(val)) {
+      return 'Has to be a valid email address.';
+    }
+    return null;
+  }
+
+  String? coursesValue;
+  FormFieldController<String>? coursesValueController;
+  int? handicapValue;
+  int? drinksValue;
+  int? musicValue;
+  int? playmoneyValue;
+  int? paceplayValue;
+  UsersRecord? usernamesQuery;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => CreateProfileModel());
+    firstNameTextController = TextEditingController();
+    firstNameFocusNode = FocusNode();
 
-    _model.firstNameTextController ??= TextEditingController();
-    _model.firstNameFocusNode ??= FocusNode();
+    lastNameTextController = TextEditingController();
+    lastNameFocusNode = FocusNode();
 
-    _model.lastNameTextController ??= TextEditingController();
-    _model.lastNameFocusNode ??= FocusNode();
+    usernameTextController = TextEditingController();
+    usernameFocusNode = FocusNode();
 
-    _model.usernameTextController ??= TextEditingController();
-    _model.usernameFocusNode ??= FocusNode();
+    phoneNumTextController = TextEditingController();
+    phoneNumFocusNode = FocusNode();
 
-    _model.phoneNumTextController ??= TextEditingController();
-    _model.phoneNumFocusNode ??= FocusNode();
+    emailTextController = TextEditingController(text: currentUserEmail);
+    emailFocusNode = FocusNode();
 
-    _model.emailTextController ??=
-        TextEditingController(text: currentUserEmail);
-    _model.emailFocusNode ??= FocusNode();
+    usernameTextControllerValidator = _usernameTextControllerValidator;
+    emailTextControllerValidator = _emailTextControllerValidator;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -64,7 +107,20 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
+    firstNameFocusNode?.dispose();
+    firstNameTextController?.dispose();
+
+    lastNameFocusNode?.dispose();
+    lastNameTextController?.dispose();
+
+    usernameFocusNode?.dispose();
+    usernameTextController?.dispose();
+
+    phoneNumFocusNode?.dispose();
+    phoneNumTextController?.dispose();
+
+    emailFocusNode?.dispose();
+    emailTextController?.dispose();
 
     super.dispose();
   }
@@ -119,7 +175,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
             body: Container(
               width: double.infinity,
               child: Form(
-                key: _model.formKey,
+                key: formKey,
                 autovalidateMode: AutovalidateMode.disabled,
                 child: Align(
                   alignment: AlignmentDirectional(0.0, 0.0),
@@ -252,8 +308,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     10.0, 0.0, 8.0, 0.0),
                                 child: TextFormField(
-                                  controller: _model.firstNameTextController,
-                                  focusNode: _model.firstNameFocusNode,
+                                  controller: firstNameTextController,
+                                  focusNode: firstNameFocusNode,
                                   autofocus: true,
                                   textInputAction: TextInputAction.next,
                                   obscureText: false,
@@ -348,8 +404,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                             .fontStyle,
                                       ),
                                   cursorColor: Colors.white,
-                                  validator: _model
-                                      .firstNameTextControllerValidator
+                                  validator: firstNameTextControllerValidator
                                       .asValidator(context),
                                 ),
                               ),
@@ -359,8 +414,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     8.0, 0.0, 10.0, 0.0),
                                 child: TextFormField(
-                                  controller: _model.lastNameTextController,
-                                  focusNode: _model.lastNameFocusNode,
+                                  controller: lastNameTextController,
+                                  focusNode: lastNameFocusNode,
                                   autofocus: true,
                                   textInputAction: TextInputAction.next,
                                   obscureText: false,
@@ -453,8 +508,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                             .fontStyle,
                                       ),
                                   cursorColor: Colors.white,
-                                  validator: _model
-                                      .lastNameTextControllerValidator
+                                  validator: lastNameTextControllerValidator
                                       .asValidator(context),
                                 ),
                               ),
@@ -474,8 +528,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     10.0, 0.0, 8.0, 0.0),
                                 child: TextFormField(
-                                  controller: _model.usernameTextController,
-                                  focusNode: _model.usernameFocusNode,
+                                  controller: usernameTextController,
+                                  focusNode: usernameFocusNode,
                                   autofocus: true,
                                   textInputAction: TextInputAction.next,
                                   obscureText: false,
@@ -574,8 +628,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                             .fontStyle,
                                       ),
                                   cursorColor: Colors.white,
-                                  validator: _model
-                                      .usernameTextControllerValidator
+                                  validator: usernameTextControllerValidator
                                       .asValidator(context),
                                 ),
                               ),
@@ -585,8 +638,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     8.0, 0.0, 10.0, 0.0),
                                 child: TextFormField(
-                                  controller: _model.phoneNumTextController,
-                                  focusNode: _model.phoneNumFocusNode,
+                                  controller: phoneNumTextController,
+                                  focusNode: phoneNumFocusNode,
                                   autofocus: true,
                                   textInputAction: TextInputAction.next,
                                   obscureText: false,
@@ -685,8 +738,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                             .fontStyle,
                                       ),
                                   keyboardType: TextInputType.phone,
-                                  validator: _model
-                                      .phoneNumTextControllerValidator
+                                  validator: phoneNumTextControllerValidator
                                       .asValidator(context),
                                 ),
                               ),
@@ -706,8 +758,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     10.0, 0.0, 8.0, 0.0),
                                 child: TextFormField(
-                                  controller: _model.emailTextController,
-                                  focusNode: _model.emailFocusNode,
+                                  controller: emailTextController,
+                                  focusNode: emailFocusNode,
                                   autofocus: true,
                                   obscureText: false,
                                   decoration: InputDecoration(
@@ -806,7 +858,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                       ),
                                   keyboardType: TextInputType.emailAddress,
                                   cursorColor: Colors.white,
-                                  validator: _model.emailTextControllerValidator
+                                  validator: emailTextControllerValidator
                                       .asValidator(context),
                                 ),
                               ),
@@ -929,8 +981,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                               snapshot.data!;
 
                                           return AppDropDown<String>(
-                                            controller: _model
-                                                    .coursesValueController ??=
+                                            controller: coursesValueController ??=
                                                 FormFieldController<String>(
                                                     null),
                                             options: coursesCourseRecordList
@@ -942,8 +993,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                 .toList(),
                                             onChanged: (val) {
                                               if (mounted) {
-                                                setState(() => _model
-                                                    .coursesValue = val);
+                                                setState(() => coursesValue = val);
                                               }
                                             },
                                             width: 362.0,
@@ -1190,11 +1240,11 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                                 .fontStyle,
                                                       ),
                                                 ),
-                                                count: _model.handicapValue ??=
+                                                count: handicapValue ??=
                                                     0,
-                                                updateCount: (count) =>
-                                                    if (mounted) setState(() => _model
-                                                        .handicapValue = count),
+                                                updateCount: (count) => if (mounted)
+                                                    setState(() =>
+                                                        handicapValue = count),
                                                 stepSize: 1,
                                               ),
                                             ),
@@ -1330,10 +1380,10 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                                 .fontStyle,
                                                       ),
                                                 ),
-                                                count: _model.drinksValue ??= 0,
-                                                updateCount: (count) =>
-                                                    if (mounted) setState(() => _model
-                                                        .drinksValue = count),
+                                                count: drinksValue ??= 0,
+                                                updateCount: (count) => if (mounted)
+                                                    setState(() =>
+                                                        drinksValue = count),
                                                 stepSize: 1,
                                                 minimum: 0,
                                                 maximum: 10,
@@ -1471,10 +1521,10 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                                 .fontStyle,
                                                       ),
                                                 ),
-                                                count: _model.musicValue ??= 0,
-                                                updateCount: (count) =>
-                                                    if (mounted) setState(() => _model
-                                                        .musicValue = count),
+                                                count: musicValue ??= 0,
+                                                updateCount: (count) => if (mounted)
+                                                    setState(() =>
+                                                        musicValue = count),
                                                 stepSize: 1,
                                                 minimum: 0,
                                                 maximum: 10,
@@ -1612,11 +1662,11 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                                 .fontStyle,
                                                       ),
                                                 ),
-                                                count: _model.playmoneyValue ??=
+                                                count: playmoneyValue ??=
                                                     0,
                                                 updateCount: (count) =>
                                                     if (mounted) setState(() =>
-                                                        _model.playmoneyValue =
+                                                        playmoneyValue =
                                                             count),
                                                 stepSize: 1,
                                                 minimum: 0,
@@ -1755,11 +1805,11 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                                 .fontStyle,
                                                       ),
                                                 ),
-                                                count: _model.paceplayValue ??=
+                                                count: paceplayValue ??=
                                                     0,
-                                                updateCount: (count) =>
-                                                    if (mounted) setState(() => _model
-                                                        .paceplayValue = count),
+                                                updateCount: (count) => if (mounted)
+                                                    setState(() =>
+                                                        paceplayValue = count),
                                                 stepSize: 1,
                                                 minimum: 0,
                                                 maximum: 10,
@@ -1783,8 +1833,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                       highlightColor: Colors.transparent,
                                       onLongPress: () async {
                                         AppState().theusernames =
-                                            functions.usernameCreator(_model
-                                                .usernameTextController.text);
+                                            functions.usernameCreator(
+                                                usernameTextController.text);
                                         if (mounted) setState(() {});
                                         if (functions.usernameChecker(
                                                 AppState().theusernames,
@@ -1796,16 +1846,16 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                               .update(createUsersRecordData(
                                             email: currentUserEmail,
                                             photoUrl: currentUserPhoto,
-                                            phoneNumber: _model
-                                                .phoneNumTextController.text,
-                                            handicap: _model.handicapValue,
-                                            homeCourse: _model.coursesValue,
-                                            music: _model.musicValue,
-                                            drinks: _model.drinksValue,
-                                            firstName: _model
-                                                .firstNameTextController.text,
-                                            lastName: _model
-                                                .lastNameTextController.text,
+                                            phoneNumber:
+                                                phoneNumTextController.text,
+                                            handicap: handicapValue,
+                                            homeCourse: coursesValue,
+                                            music: musicValue,
+                                            drinks: drinksValue,
+                                            firstName:
+                                                firstNameTextController.text,
+                                            lastName:
+                                                lastNameTextController.text,
                                             displayName:
                                                 AppState().theusernames,
                                           ));
@@ -1908,10 +1958,10 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                       child: AppButton(
                                         onPressed: () async {
                                           AppState().theusernames =
-                                              functions.usernameCreator(_model
-                                                  .usernameTextController.text);
+                                              functions.usernameCreator(
+                                                  usernameTextController.text);
                                           if (mounted) setState(() {});
-                                          _model.usernamesQuery =
+                                          usernamesQuery =
                                               await queryUsersRecordOnce(
                                             queryBuilder: (usersRecord) =>
                                                 usersRecord.where(
@@ -1921,7 +1971,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                             ),
                                             singleRecord: true,
                                           ).then((s) => s.firstOrNull);
-                                          if (_model.usernamesQuery != null) {
+                                          if (usernamesQuery != null) {
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
                                               SnackBar(
@@ -1946,21 +1996,21 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                 .update(createUsersRecordData(
                                               email: currentUserEmail,
                                               photoUrl: currentUserPhoto,
-                                              phoneNumber: _model
-                                                  .phoneNumTextController.text,
-                                              handicap: _model.handicapValue,
-                                              homeCourse: _model.coursesValue,
-                                              music: _model.musicValue,
-                                              drinks: _model.drinksValue,
-                                              firstName: _model
-                                                  .firstNameTextController.text,
-                                              lastName: _model
-                                                  .lastNameTextController.text,
+                                              phoneNumber:
+                                                  phoneNumTextController.text,
+                                              handicap: handicapValue,
+                                              homeCourse: coursesValue,
+                                              music: musicValue,
+                                              drinks: drinksValue,
+                                              firstName:
+                                                  firstNameTextController.text,
+                                              lastName:
+                                                  lastNameTextController.text,
                                               displayName:
                                                   AppState().theusernames,
-                                              paceOfPlay: _model.paceplayValue,
+                                              paceOfPlay: paceplayValue,
                                               playForMoney:
-                                                  _model.playmoneyValue,
+                                                  playmoneyValue,
                                             ));
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(

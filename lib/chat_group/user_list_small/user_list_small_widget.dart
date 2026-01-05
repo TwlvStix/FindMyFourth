@@ -5,8 +5,6 @@ import '/core/app_util.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'user_list_small_model.dart';
-export 'user_list_small_model.dart';
 
 class UserListSmallWidget extends StatefulWidget {
   const UserListSmallWidget({
@@ -23,19 +21,11 @@ class UserListSmallWidget extends StatefulWidget {
 }
 
 class _UserListSmallWidgetState extends State<UserListSmallWidget> {
-  late UserListSmallModel _model;
-
-  @override
-  void setState(VoidCallback callback) {
-    super.setState(callback);
-    _model.onUpdate();
-  }
+  bool iuserHovered = false;
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => UserListSmallModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -45,8 +35,6 @@ class _UserListSmallWidgetState extends State<UserListSmallWidget> {
 
   @override
   void dispose() {
-    _model.maybeDispose();
-
     super.dispose();
   }
 
@@ -59,7 +47,7 @@ class _UserListSmallWidgetState extends State<UserListSmallWidget> {
         duration: Duration(milliseconds: 150),
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
-          color: _model.iuserHovered
+          color: iuserHovered
               ? AppTheme.of(context).primaryBackground
               : AppTheme.of(context).secondaryBackground,
           borderRadius: BorderRadius.circular(12.0),
@@ -220,10 +208,10 @@ class _UserListSmallWidgetState extends State<UserListSmallWidget> {
         ),
       ),
       onEnter: ((event) async {
-        if (mounted) setState(() => _model.iuserHovered = true);
+        if (mounted) setState(() => iuserHovered = true);
       }),
       onExit: ((event) async {
-        if (mounted) setState(() => _model.iuserHovered = false);
+        if (mounted) setState(() => iuserHovered = false);
       }),
     );
   }

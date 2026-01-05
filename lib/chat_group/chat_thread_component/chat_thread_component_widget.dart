@@ -14,8 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'chat_thread_component_model.dart';
-export 'chat_thread_component_model.dart';
 
 class ChatThreadComponentWidget extends StatefulWidget {
   const ChatThreadComponentWidget({
@@ -31,21 +29,45 @@ class ChatThreadComponentWidget extends StatefulWidget {
 }
 
 class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
-  late ChatThreadComponentModel _model;
+  List<DocumentReference> lastSeenBy = [];
+  void addToLastSeenBy(DocumentReference item) => lastSeenBy.add(item);
+  void removeFromLastSeenBy(DocumentReference item) =>
+      lastSeenBy.remove(item);
+  void removeAtIndexFromLastSeenBy(int index) => lastSeenBy.removeAt(index);
+  void insertAtIndexInLastSeenBy(int index, DocumentReference item) =>
+      lastSeenBy.insert(index, item);
+  void updateLastSeenByAtIndex(
+          int index, Function(DocumentReference) updateFn) =>
+      lastSeenBy[index] = updateFn(lastSeenBy[index]);
 
-  @override
-  void setState(VoidCallback callback) {
-    super.setState(callback);
-    _model.onUpdate();
-  }
+  List<String> imagesUploaded = [];
+  void addToImagesUploaded(String item) => imagesUploaded.add(item);
+  void removeFromImagesUploaded(String item) => imagesUploaded.remove(item);
+  void removeAtIndexFromImagesUploaded(int index) =>
+      imagesUploaded.removeAt(index);
+  void insertAtIndexInImagesUploaded(int index, String item) =>
+      imagesUploaded.insert(index, item);
+  void updateImagesUploadedAtIndex(int index, Function(String) updateFn) =>
+      imagesUploaded[index] = updateFn(imagesUploaded[index]);
+
+  final formKey = GlobalKey<FormState>();
+  List<ChatMessagesRecord>? listViewPreviousSnapshot;
+  bool isDataUploadingUploadDataJub4 = false;
+  FFUploadedFile uploadedLocalFileUploadDataJub4 =
+      FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
+  String uploadedFileUrlUploadDataJub4 = '';
+
+  FocusNode? textFieldFocusNode;
+  TextEditingController? textController;
+  String? Function(BuildContext, String?)? textControllerValidator;
+  ChatMessagesRecord? newChatMessage;
+  ChatMessagesRecord? newChat;
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => ChatThreadComponentModel());
-
-    _model.textController ??= TextEditingController();
-    _model.textFieldFocusNode ??= FocusNode();
+    textController = TextEditingController();
+    textFieldFocusNode = FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -56,7 +78,8 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
 
   @override
   void dispose() {
-    _model.maybeDispose();
+    textFieldFocusNode?.dispose();
+    textController?.dispose();
 
     super.dispose();
   }
@@ -86,10 +109,10 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
               )..listen((snapshot) {
                   List<ChatMessagesRecord> listViewChatMessagesRecordList =
                       snapshot;
-                  if (_model.listViewPreviousSnapshot != null &&
+                  if (listViewPreviousSnapshot != null &&
                       !const ListEquality(ChatMessagesRecordDocumentEquality())
                           .equals(listViewChatMessagesRecordList,
-                              _model.listViewPreviousSnapshot)) {
+                              listViewPreviousSnapshot)) {
                     () async {
                       if (!widget.chatRef!.lastMessageSeenBy
                           .contains(currentUserReference)) {
@@ -106,7 +129,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                       if (mounted) setState(() {});
                     }();
                   }
-                  _model.listViewPreviousSnapshot = snapshot;
+                  listViewPreviousSnapshot = snapshot;
                 }),
               builder: (context, snapshot) {
                 // Customize what your widget looks like when it's loading.
@@ -184,7 +207,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: [
-                if (_model.uploadedFileUrl_uploadDataJub4 != '')
+                if (uploadedFileUrlUploadDataJub4 != '')
                   Row(
                     mainAxisSize: MainAxisSize.max,
                     children: [
@@ -199,7 +222,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 FlutterFlowMediaDisplay(
-                                  path: _model.uploadedFileUrl_uploadDataJub4,
+                                  path: uploadedFileUrlUploadDataJub4,
                                   imageBuilder: (path) => ClipRRect(
                                     borderRadius: BorderRadius.circular(8.0),
                                     child: CachedNetworkImage(
@@ -241,13 +264,13 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                     ),
                                     onPressed: () async {
                                       if (mounted) setState(() {
-                                        _model.isDataUploading_uploadDataJub4 =
+                                        isDataUploadingUploadDataJub4 =
                                             false;
-                                        _model.uploadedLocalFile_uploadDataJub4 =
+                                        uploadedLocalFileUploadDataJub4 =
                                             FFUploadedFile(
                                                 bytes: Uint8List.fromList([]),
                                                 originalFilename: '');
-                                        _model.uploadedFileUrl_uploadDataJub4 =
+                                        uploadedFileUrlUploadDataJub4 =
                                             '';
                                       });
                                     },
@@ -264,7 +287,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                     ],
                   ),
                 Form(
-                  key: _model.formKey,
+                  key: formKey,
                   autovalidateMode: AutovalidateMode.disabled,
                   child: Padding(
                     padding: EdgeInsets.all(12.0),
@@ -301,7 +324,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                 selectedMedia.every((m) => validateFileFormat(
                                     m.storagePath, context))) {
                               if (mounted) setState(() =>
-                                  _model.isDataUploading_uploadDataJub4 = true);
+                                  isDataUploadingUploadDataJub4 = true);
                               var selectedUploadedFiles = <FFUploadedFile>[];
 
                               var downloadUrls = <String>[];
@@ -334,15 +357,15 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                               } finally {
                                 ScaffoldMessenger.of(context)
                                     .hideCurrentSnackBar();
-                                _model.isDataUploading_uploadDataJub4 = false;
+                                isDataUploadingUploadDataJub4 = false;
                               }
                               if (selectedUploadedFiles.length ==
                                       selectedMedia.length &&
                                   downloadUrls.length == selectedMedia.length) {
                                 if (mounted) setState(() {
-                                  _model.uploadedLocalFile_uploadDataJub4 =
+                                  uploadedLocalFileUploadDataJub4 =
                                       selectedUploadedFiles.first;
-                                  _model.uploadedFileUrl_uploadDataJub4 =
+                                  uploadedFileUrlUploadDataJub4 =
                                       downloadUrls.first;
                                 });
                                 showUploadMessage(context, 'Success!');
@@ -354,9 +377,9 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                               }
                             }
 
-                            if (_model.uploadedFileUrl_uploadDataJub4 != '') {
-                              _model.addToImagesUploaded(
-                                  _model.uploadedFileUrl_uploadDataJub4);
+                            if (uploadedFileUrlUploadDataJub4 != '') {
+                              addToImagesUploaded(
+                                  uploadedFileUrlUploadDataJub4);
                               if (mounted) setState(() {});
                             }
                           },
@@ -370,11 +393,11 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                 child: Container(
                                   width: double.infinity,
                                   child: TextFormField(
-                                    controller: _model.textController,
-                                    focusNode: _model.textFieldFocusNode,
+                                    controller: textController,
+                                    focusNode: textFieldFocusNode,
                                     onFieldSubmitted: (_) async {
-                                      if (_model.formKey.currentState == null ||
-                                          !_model.formKey.currentState!
+                                      if (formKey.currentState == null ||
+                                          !formKey.currentState!
                                               .validate()) {
                                         return;
                                       }
@@ -386,31 +409,30 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                           .set(createChatMessagesRecordData(
                                         user: currentUserReference,
                                         chat: widget.chatRef?.reference,
-                                        text: _model.textController.text,
+                                        text: textController.text,
                                         timestamp: getCurrentTimestamp,
-                                        image: _model
-                                            .uploadedFileUrl_uploadDataJub4,
+                                        image: uploadedFileUrlUploadDataJub4,
                                       ));
-                                      _model.newChatMessage = ChatMessagesRecord
+                                      newChatMessage = ChatMessagesRecord
                                           .getDocumentFromData(
                                               createChatMessagesRecordData(
                                                 user: currentUserReference,
                                                 chat:
                                                     widget.chatRef?.reference,
                                                 text:
-                                                    _model.textController.text,
+                                                    textController.text,
                                                 timestamp: getCurrentTimestamp,
-                                                image: _model
-                                                    .uploadedFileUrl_uploadDataJub4,
+                                                image:
+                                                    uploadedFileUrlUploadDataJub4,
                                               ),
                                               chatMessagesRecordReference);
                                       // clearUsers
-                                      _model.lastSeenBy = [];
+                                      lastSeenBy = [];
                                       // In order to add a single user reference to a list of user references we are adding our current user reference to a page state.
                                       //
                                       // We will then set the value of the user reference list from this page state.
                                       // addMyUserToList
-                                      _model.addToLastSeenBy(
+                                      addToLastSeenBy(
                                           currentUserReference!);
                                       // updateChatDocument
 
@@ -420,32 +442,32 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                           lastMessageSentBy:
                                               currentUserReference,
                                           lastMessage:
-                                              _model.textController.text,
+                                              textController.text,
                                         ),
                                         ...mapToFirestore(
                                           {
                                             'last_message_seen_by':
-                                                _model.lastSeenBy,
+                                                lastSeenBy,
                                           },
                                         ),
                                       });
                                       // clearUsers
-                                      _model.lastSeenBy = [];
+                                      lastSeenBy = [];
                                       if (mounted) setState(() {
-                                        _model.textController?.clear();
+                                        textController?.clear();
                                       });
                                       if (mounted) setState(() {
-                                        _model.isDataUploading_uploadDataJub4 =
+                                        isDataUploadingUploadDataJub4 =
                                             false;
-                                        _model.uploadedLocalFile_uploadDataJub4 =
+                                        uploadedLocalFileUploadDataJub4 =
                                             FFUploadedFile(
                                                 bytes: Uint8List.fromList([]),
                                                 originalFilename: '');
-                                        _model.uploadedFileUrl_uploadDataJub4 =
+                                        uploadedFileUrlUploadDataJub4 =
                                             '';
                                       });
 
-                                      _model.imagesUploaded = [];
+                                      imagesUploaded = [];
                                       if (mounted) setState(() {});
 
                                       if (mounted) setState(() {});
@@ -596,7 +618,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                     minLines: 1,
                                     cursorColor:
                                         AppTheme.of(context).primary,
-                                    validator: _model.textControllerValidator
+                                    validator: textControllerValidator
                                         .asValidator(context),
                                     inputFormatters: [
                                       if (!isAndroid && !isiOS)
@@ -637,9 +659,9 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                       final firestoreBatch =
                                           FirebaseFirestore.instance.batch();
                                       try {
-                                        if (_model.formKey.currentState ==
+                                        if (formKey.currentState ==
                                                 null ||
-                                            !_model.formKey.currentState!
+                                            !formKey.currentState!
                                                 .validate()) {
                                           return;
                                         }
@@ -652,32 +674,31 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                             createChatMessagesRecordData(
                                               user: currentUserReference,
                                               chat: widget.chatRef?.reference,
-                                              text: _model.textController.text,
+                                              text: textController.text,
                                               timestamp: getCurrentTimestamp,
-                                              image: _model
-                                                  .uploadedFileUrl_uploadDataJub4,
+                                              image:
+                                                  uploadedFileUrlUploadDataJub4,
                                             ));
-                                        _model.newChat = ChatMessagesRecord
+                                        newChat = ChatMessagesRecord
                                             .getDocumentFromData(
                                                 createChatMessagesRecordData(
                                                   user: currentUserReference,
                                                   chat: widget
                                                       .chatRef?.reference,
-                                                  text: _model
-                                                      .textController.text,
+                                                  text: textController.text,
                                                   timestamp:
                                                       getCurrentTimestamp,
-                                                  image: _model
-                                                      .uploadedFileUrl_uploadDataJub4,
+                                                  image:
+                                                      uploadedFileUrlUploadDataJub4,
                                                 ),
                                                 chatMessagesRecordReference);
                                         // clearUsers
-                                        _model.lastSeenBy = [];
+                                        lastSeenBy = [];
                                         // In order to add a single user reference to a list of user references we are adding our current user reference to a page state.
                                         //
                                         // We will then set the value of the user reference list from this page state.
                                         // addMyUserToList
-                                        _model.addToLastSeenBy(
+                                        addToLastSeenBy(
                                             currentUserReference!);
                                         // updateChatDocument
 
@@ -689,32 +710,32 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                             lastMessageSentBy:
                                                 currentUserReference,
                                             lastMessage:
-                                                _model.textController.text,
+                                                textController.text,
                                           ),
                                           ...mapToFirestore(
                                             {
                                               'last_message_seen_by':
-                                                  _model.lastSeenBy,
+                                                  lastSeenBy,
                                             },
                                           ),
                                         });
                                         // clearUsers
-                                        _model.lastSeenBy = [];
+                                        lastSeenBy = [];
                                         if (mounted) setState(() {
-                                          _model.textController?.clear();
+                                          textController?.clear();
                                         });
                                         if (mounted) setState(() {
-                                          _model.isDataUploading_uploadDataJub4 =
+                                          isDataUploadingUploadDataJub4 =
                                               false;
-                                          _model.uploadedLocalFile_uploadDataJub4 =
+                                          uploadedLocalFileUploadDataJub4 =
                                               FFUploadedFile(
                                                   bytes: Uint8List.fromList([]),
                                                   originalFilename: '');
-                                          _model.uploadedFileUrl_uploadDataJub4 =
+                                          uploadedFileUrlUploadDataJub4 =
                                               '';
                                         });
 
-                                        _model.imagesUploaded = [];
+                                        imagesUploaded = [];
                                         if (mounted) setState(() {});
                                       } finally {
                                         await firestoreBatch.commit();

@@ -4,8 +4,6 @@ import '/core/app_util.dart';
 import '/core/widgets/app_button.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'recover_password_model.dart';
-export 'recover_password_model.dart';
 
 class RecoverPasswordWidget extends StatefulWidget {
   const RecoverPasswordWidget({super.key});
@@ -18,17 +16,17 @@ class RecoverPasswordWidget extends StatefulWidget {
 }
 
 class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
-  late RecoverPasswordModel _model;
+  FocusNode? enterEmailFocusNode;
+  TextEditingController? enterEmailTextController;
+  String? Function(BuildContext, String?)? enterEmailTextControllerValidator;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => RecoverPasswordModel());
-
-    _model.enterEmailTextController ??= TextEditingController();
-    _model.enterEmailFocusNode ??= FocusNode();
+    enterEmailTextController = TextEditingController();
+    enterEmailFocusNode = FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -39,7 +37,8 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
+    enterEmailFocusNode?.dispose();
+    enterEmailTextController?.dispose();
 
     super.dispose();
   }
@@ -159,8 +158,8 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 20.0, 0.0, 20.0, 0.0),
                             child: TextFormField(
-                              controller: _model.enterEmailTextController,
-                              focusNode: _model.enterEmailFocusNode,
+                              controller: enterEmailTextController,
+                              focusNode: enterEmailFocusNode,
                               autofocus: true,
                               obscureText: false,
                               decoration: InputDecoration(
@@ -208,8 +207,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                                   ),
                               textAlign: TextAlign.start,
                               keyboardType: TextInputType.emailAddress,
-                              validator: _model
-                                  .enterEmailTextControllerValidator
+                              validator: enterEmailTextControllerValidator
                                   .asValidator(context),
                             ),
                           ),
@@ -223,7 +221,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                 padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
                 child: AppButton(
                   onPressed: () async {
-                    if (_model.enterEmailTextController.text.isEmpty) {
+                    if (enterEmailTextController.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
@@ -234,7 +232,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                       return;
                     }
                     await authManager.resetPassword(
-                      email: _model.enterEmailTextController.text,
+                      email: enterEmailTextController.text,
                       context: context,
                     );
                   },
