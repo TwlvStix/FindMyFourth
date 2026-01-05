@@ -243,9 +243,9 @@ dynamic deserializeParam<T>(
   }
 }
 
-Future<dynamic> Function(String) getDoc(
+Future<T> Function(String) getDoc<T>(
   List<String> collectionNamePath,
-  RecordBuilder recordBuilder,
+  RecordBuilder<T> recordBuilder,
 ) {
   return (String ids) => _deserializeDocumentReference(ids, collectionNamePath)
       .get()
