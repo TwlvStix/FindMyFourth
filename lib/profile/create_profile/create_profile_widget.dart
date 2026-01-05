@@ -9,7 +9,7 @@ import '/core/widgets/app_button.dart';
 import '/core/form_field_controller.dart';
 import '/profile/change_photo/change_photo_widget.dart';
 import '/core/custom_functions.dart' as functions;
-import '/index.dart';
+import '/profile/home/home_widget.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';

@@ -6,7 +6,7 @@ import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
 import '/core/app_util.dart';
 import 'dart:async';
-import '/index.dart';
+import '/chat_group/chat/chat_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';

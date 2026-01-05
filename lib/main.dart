@@ -14,7 +14,12 @@ import '/core/app_theme.dart';
 import '/core/app_util.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'index.dart';
+import '/chat_group/chat/chat_widget.dart';
+import '/main_function/create_game/create_game_widget.dart';
+import '/main_function/games_joined/games_joined_widget.dart';
+import '/main_function/games_list/games_list_widget.dart';
+import '/newsfeed/newsfeed/newsfeed_widget.dart';
+import '/profile/home/home_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
