@@ -17,8 +17,8 @@ enum VideoType {
 
 Set<VideoPlayerController> _videoPlayers = Set();
 
-class FlutterFlowVideoPlayer extends StatefulWidget {
-  const FlutterFlowVideoPlayer({
+class AppVideoPlayer extends StatefulWidget {
+  const AppVideoPlayer({
     super.key,
     required this.path,
     this.videoType = VideoType.network,
@@ -48,10 +48,10 @@ class FlutterFlowVideoPlayer extends StatefulWidget {
   final bool pauseOnNavigate;
 
   @override
-  State<StatefulWidget> createState() => _FlutterFlowVideoPlayerState();
+  State<StatefulWidget> createState() => _AppVideoPlayerState();
 }
 
-class _FlutterFlowVideoPlayerState extends State<FlutterFlowVideoPlayer>
+class _AppVideoPlayerState extends State<AppVideoPlayer>
     with RouteAware {
   VideoPlayerController? _videoPlayerController;
   ChewieController? _chewieController;
@@ -75,7 +75,7 @@ class _FlutterFlowVideoPlayerState extends State<FlutterFlowVideoPlayer>
   }
 
   @override
-  void didUpdateWidget(FlutterFlowVideoPlayer oldWidget) {
+  void didUpdateWidget(AppVideoPlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.path != widget.path) {
       _disposeCurrentPlayer();

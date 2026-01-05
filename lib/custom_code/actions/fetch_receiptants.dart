@@ -1,4 +1,4 @@
-// Automatic FlutterFlow imports
+// Automatic imports
 import '/backend/backend.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
