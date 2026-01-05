@@ -6,7 +6,7 @@ import '/core/app_theme.dart';
 import '/core/app_util.dart';
 import '/core/widgets/app_button.dart';
 import '/core/random_data_util.dart' as random_data;
-import '/index.dart';
+import '/chat_group/chat_2_details/chat2_details_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';

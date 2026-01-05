@@ -6,7 +6,7 @@ import '/core/app_util.dart';
 import '/core/widgets/app_button.dart';
 import '/main_function/join_game/join_game_widget.dart';
 import '/custom_code/widgets/index.dart' as custom_widgets;
-import '/index.dart';
+import '/profile/profile_user/profile_user_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
