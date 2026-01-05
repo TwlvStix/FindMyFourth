@@ -101,6 +101,64 @@ exports.sendUserPushNotificationsTrigger = functions
     }
   });
 
+exports.fetchReceiptants = functions
+  .region("us-west2")
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Authentication required.",
+      );
+    }
+
+    const userCollection = firestore.collection("users");
+    const users = new Set();
+
+    if (data.style_game === "Money Game") {
+      const moneyGameUsers = await userCollection
+        .where("notify_money_game", "==", true)
+        .get();
+      moneyGameUsers.docs.forEach((doc) => users.add(doc.ref.path));
+    }
+
+    if (data.game_type === "Vegas") {
+      const vegasGameUsers = await userCollection
+        .where("notify_vegas_game", "==", true)
+        .get();
+      vegasGameUsers.docs.forEach((doc) => users.add(doc.ref.path));
+    }
+
+    if (data.rules_setting === "Competitive") {
+      const competitiveUsers = await userCollection
+        .where("notify_competitive_game", "==", true)
+        .get();
+      competitiveUsers.docs.forEach((doc) => users.add(doc.ref.path));
+    }
+
+    if (data.rules_setting === "For Fun") {
+      const forFunUsers = await userCollection
+        .where("notify_for_fun", "==", true)
+        .get();
+      forFunUsers.docs.forEach((doc) => users.add(doc.ref.path));
+    }
+
+    if (data.friend_game === "Friends") {
+      const friendUsers = await userCollection
+        .where("notify_only_from_friends", "==", true)
+        .get();
+      friendUsers.docs.forEach((doc) => users.add(doc.ref.path));
+    }
+
+    if (data.member_discount === "Yes") {
+      const memberDiscountUsers = await userCollection
+        .where("notify_member_discount", "==", true)
+        .get();
+      memberDiscountUsers.docs.forEach((doc) => users.add(doc.ref.path));
+    }
+
+    return { user_refs: Array.from(users) };
+  });
+
 async function sendPushNotifications(snapshot) {
   const notificationData = snapshot.data();
   const title = notificationData.notification_title || "";
