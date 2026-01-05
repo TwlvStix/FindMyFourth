@@ -1243,9 +1243,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                     0),
                                                 0,
                                               ),
-                                              updateCount: (count) => if (mounted)
+                                              updateCount: (count) {
+                                                if (mounted) {
                                                   setState(() =>
-                                                      handicapValue = count),
+                                                      handicapValue = count);
+                                                }
+                                              },
                                               stepSize: 1,
                                             ),
                                           ),
@@ -1394,9 +1397,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                     0),
                                                 0,
                                               ),
-                                              updateCount: (count) => if (mounted)
+                                              updateCount: (count) {
+                                                if (mounted) {
                                                   setState(() =>
-                                                      drinksValue = count),
+                                                      drinksValue = count);
+                                                }
+                                              },
                                               stepSize: 1,
                                               minimum: 0,
                                               maximum: 10,
@@ -1547,9 +1553,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                     0),
                                                 0,
                                               ),
-                                              updateCount: (count) => if (mounted)
+                                              updateCount: (count) {
+                                                if (mounted) {
                                                   setState(() =>
-                                                      musicValue = count),
+                                                      musicValue = count);
+                                                }
+                                              },
                                               stepSize: 1,
                                               minimum: 0,
                                               maximum: 10,
@@ -1700,9 +1709,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                     0),
                                                 0,
                                               ),
-                                              updateCount: (count) => if (mounted)
+                                              updateCount: (count) {
+                                                if (mounted) {
                                                   setState(() =>
-                                                      playmoneyValue = count),
+                                                      playmoneyValue = count);
+                                                }
+                                              },
                                               stepSize: 1,
                                               minimum: 0,
                                               maximum: 10,
@@ -1853,9 +1865,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                                     0),
                                                 0,
                                               ),
-                                              updateCount: (count) => if (mounted)
+                                              updateCount: (count) {
+                                                if (mounted) {
                                                   setState(() =>
-                                                      paceplayValue = count),
+                                                      paceplayValue = count);
+                                                }
+                                              },
                                               stepSize: 1,
                                               minimum: 0,
                                               maximum: 10,
