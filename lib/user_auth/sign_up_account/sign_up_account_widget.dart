@@ -8,8 +8,6 @@ import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'sign_up_account_model.dart';
-export 'sign_up_account_model.dart';
 
 class SignUpAccountWidget extends StatefulWidget {
   const SignUpAccountWidget({super.key});
@@ -22,23 +20,32 @@ class SignUpAccountWidget extends StatefulWidget {
 }
 
 class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
-  late SignUpAccountModel _model;
+  FocusNode? emailAddressFocusNode;
+  TextEditingController? emailAddressTextController;
+  String? Function(BuildContext, String?)? emailAddressTextControllerValidator;
+  FocusNode? passwordFocusNode;
+  TextEditingController? passwordTextController;
+  bool passwordVisibility = false;
+  String? Function(BuildContext, String?)? passwordTextControllerValidator;
+  FocusNode? passwordConfirmFocusNode;
+  TextEditingController? passwordConfirmTextController;
+  bool passwordConfirmVisibility = false;
+  String? Function(BuildContext, String?)?
+      passwordConfirmTextControllerValidator;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => SignUpAccountModel());
+    emailAddressTextController = TextEditingController();
+    emailAddressFocusNode = FocusNode();
 
-    _model.emailAddressTextController ??= TextEditingController();
-    _model.emailAddressFocusNode ??= FocusNode();
+    passwordTextController = TextEditingController();
+    passwordFocusNode = FocusNode();
 
-    _model.passwordTextController ??= TextEditingController();
-    _model.passwordFocusNode ??= FocusNode();
-
-    _model.passwordConfirmTextController ??= TextEditingController();
-    _model.passwordConfirmFocusNode ??= FocusNode();
+    passwordConfirmTextController = TextEditingController();
+    passwordConfirmFocusNode = FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -49,7 +56,14 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
+    emailAddressFocusNode?.dispose();
+    emailAddressTextController?.dispose();
+
+    passwordFocusNode?.dispose();
+    passwordTextController?.dispose();
+
+    passwordConfirmFocusNode?.dispose();
+    passwordConfirmTextController?.dispose();
 
     super.dispose();
   }
@@ -166,11 +180,10 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                   child: Container(
                                     width: double.infinity,
                                     child: TextFormField(
-                                      controller:
-                                          _model.emailAddressTextController,
-                                      focusNode: _model.emailAddressFocusNode,
+                                      controller: emailAddressTextController,
+                                      focusNode: emailAddressFocusNode,
                                       onChanged: (_) => EasyDebounce.debounce(
-                                        '_model.emailAddressTextController',
+                                        'emailAddressTextController',
                                         Duration(milliseconds: 2000),
                                         () {
                                           if (mounted) {
@@ -247,14 +260,12 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         filled: true,
                                         fillColor: AppTheme.of(context)
                                             .primaryBackground,
-                                        suffixIcon: _model
-                                                .emailAddressTextController!
+                                        suffixIcon: emailAddressTextController!
                                                 .text
                                                 .isNotEmpty
                                             ? InkWell(
                                                 onTap: () async {
-                                                  _model
-                                                      .emailAddressTextController
+                                                  emailAddressTextController
                                                       ?.clear();
                                                   if (mounted) setState(() {});
                                                 },
@@ -292,8 +303,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       keyboardType: TextInputType.emailAddress,
                                       cursorColor: AppTheme.of(context)
                                           .primaryText,
-                                      validator: _model
-                                          .emailAddressTextControllerValidator
+                                      validator: emailAddressTextControllerValidator
                                           .asValidator(context),
                                     ),
                                   ),
@@ -304,12 +314,12 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                   child: Container(
                                     width: double.infinity,
                                     child: TextFormField(
-                                      controller: _model.passwordTextController,
-                                      focusNode: _model.passwordFocusNode,
+                                      controller: passwordTextController,
+                                      focusNode: passwordFocusNode,
                                       autofocus: true,
                                       autofillHints: [AutofillHints.password],
                                       textInputAction: TextInputAction.next,
-                                      obscureText: !_model.passwordVisibility,
+                                      obscureText: !passwordVisibility,
                                       decoration: InputDecoration(
                                         labelText: 'Password',
                                         labelStyle: AppTheme.of(context)
@@ -377,15 +387,15 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         suffixIcon: InkWell(
                                           onTap: () {
                                             if (mounted) {
-                                              setState(() => _model
-                                                      .passwordVisibility =
-                                                  !_model.passwordVisibility);
+                                              setState(() =>
+                                                  passwordVisibility =
+                                                      !passwordVisibility);
                                             }
                                           },
                                           focusNode:
                                               FocusNode(skipTraversal: true),
                                           child: Icon(
-                                            _model.passwordVisibility
+                                            passwordVisibility
                                                 ? Icons.visibility_outlined
                                                 : Icons.visibility_off_outlined,
                                             color: AppTheme.of(context)
@@ -419,8 +429,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                           ),
                                       cursorColor: AppTheme.of(context)
                                           .primaryText,
-                                      validator: _model
-                                          .passwordTextControllerValidator
+                                      validator: passwordTextControllerValidator
                                           .asValidator(context),
                                     ),
                                   ),
@@ -431,15 +440,12 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                   child: Container(
                                     width: double.infinity,
                                     child: TextFormField(
-                                      controller:
-                                          _model.passwordConfirmTextController,
-                                      focusNode:
-                                          _model.passwordConfirmFocusNode,
+                                      controller: passwordConfirmTextController,
+                                      focusNode: passwordConfirmFocusNode,
                                       autofocus: true,
                                       autofillHints: [AutofillHints.password],
                                       textInputAction: TextInputAction.next,
-                                      obscureText:
-                                          !_model.passwordConfirmVisibility,
+                                      obscureText: !passwordConfirmVisibility,
                                       decoration: InputDecoration(
                                         labelText: 'Confirm Password',
                                         labelStyle: AppTheme.of(context)
@@ -507,16 +513,15 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         suffixIcon: InkWell(
                                           onTap: () {
                                             if (mounted) {
-                                              setState(() => _model
-                                                      .passwordConfirmVisibility =
-                                                  !_model
-                                                      .passwordConfirmVisibility);
+                                              setState(() =>
+                                                  passwordConfirmVisibility =
+                                                      !passwordConfirmVisibility);
                                             }
                                           },
                                           focusNode:
                                               FocusNode(skipTraversal: true),
                                           child: Icon(
-                                            _model.passwordConfirmVisibility
+                                            passwordConfirmVisibility
                                                 ? Icons.visibility_outlined
                                                 : Icons.visibility_off_outlined,
                                             color: AppTheme.of(context)
@@ -551,8 +556,8 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       minLines: 1,
                                       cursorColor: AppTheme.of(context)
                                           .primaryText,
-                                      validator: _model
-                                          .passwordConfirmTextControllerValidator
+                                      validator:
+                                          passwordConfirmTextControllerValidator
                                           .asValidator(context),
                                     ),
                                   ),
@@ -563,9 +568,8 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                   child: AppButton(
                                     onPressed: () async {
                                       GoRouter.of(context).prepareAuthEvent();
-                                      if (_model.passwordTextController.text !=
-                                          _model.passwordConfirmTextController
-                                              .text) {
+                                      if (passwordTextController.text !=
+                                          passwordConfirmTextController.text) {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
                                           SnackBar(
@@ -580,8 +584,8 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       final user = await authManager
                                           .createAccountWithEmail(
                                         context,
-                                        _model.emailAddressTextController.text,
-                                        _model.passwordTextController.text,
+                                        emailAddressTextController.text,
+                                        passwordTextController.text,
                                       );
                                       if (user == null) {
                                         return;

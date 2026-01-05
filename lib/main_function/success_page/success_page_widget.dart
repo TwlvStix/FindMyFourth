@@ -4,8 +4,6 @@ import '/core/widgets/app_button.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'success_page_model.dart';
-export 'success_page_model.dart';
 
 class SuccessPageWidget extends StatefulWidget {
   const SuccessPageWidget({super.key});
@@ -18,15 +16,11 @@ class SuccessPageWidget extends StatefulWidget {
 }
 
 class _SuccessPageWidgetState extends State<SuccessPageWidget> {
-  late SuccessPageModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => SuccessPageModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -36,8 +30,6 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
-
     super.dispose();
   }
 

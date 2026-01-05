@@ -8,8 +8,6 @@ import '/core/upload_data.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'blog_create_model.dart';
-export 'blog_create_model.dart';
 
 class BlogCreateWidget extends StatefulWidget {
   const BlogCreateWidget({super.key});
@@ -22,20 +20,27 @@ class BlogCreateWidget extends StatefulWidget {
 }
 
 class _BlogCreateWidgetState extends State<BlogCreateWidget> {
-  late BlogCreateModel _model;
+  FocusNode? inputTitleFocusNode;
+  TextEditingController? inputTitleTextController;
+  String? Function(BuildContext, String?)? inputTitleTextControllerValidator;
+  FocusNode? inputContentFocusNode;
+  TextEditingController? inputContentTextController;
+  String? Function(BuildContext, String?)? inputContentTextControllerValidator;
+  bool isDataUploadingCreatePicNewsfeed = false;
+  FFUploadedFile uploadedLocalFileCreatePicNewsfeed =
+      FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
+  String uploadedFileUrlCreatePicNewsfeed = '';
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => BlogCreateModel());
+    inputTitleTextController = TextEditingController();
+    inputTitleFocusNode = FocusNode();
 
-    _model.inputTitleTextController ??= TextEditingController();
-    _model.inputTitleFocusNode ??= FocusNode();
-
-    _model.inputContentTextController ??= TextEditingController();
-    _model.inputContentFocusNode ??= FocusNode();
+    inputContentTextController = TextEditingController();
+    inputContentFocusNode = FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -46,7 +51,11 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
+    inputTitleFocusNode?.dispose();
+    inputTitleTextController?.dispose();
+
+    inputContentFocusNode?.dispose();
+    inputContentTextController?.dispose();
 
     super.dispose();
   }
@@ -107,8 +116,8 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                 child: Padding(
                   padding: EdgeInsets.all(10.0),
                   child: TextFormField(
-                    controller: _model.inputTitleTextController,
-                    focusNode: _model.inputTitleFocusNode,
+                    controller: inputTitleTextController,
+                    focusNode: inputTitleFocusNode,
                     autofocus: true,
                     obscureText: false,
                     decoration: InputDecoration(
@@ -188,7 +197,7 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                           fontStyle:
                               AppTheme.of(context).bodyMedium.fontStyle,
                         ),
-                    validator: _model.inputTitleTextControllerValidator
+                    validator: inputTitleTextControllerValidator
                         .asValidator(context),
                   ),
                 ),
@@ -215,8 +224,8 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                           children: [
                             Expanded(
                               child: TextFormField(
-                                controller: _model.inputContentTextController,
-                                focusNode: _model.inputContentFocusNode,
+                                controller: inputContentTextController,
+                                focusNode: inputContentFocusNode,
                                 obscureText: false,
                                 decoration: InputDecoration(
                                   hintText: 'Enter post details here...',
@@ -295,8 +304,7 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                                     ),
                                 textAlign: TextAlign.start,
                                 maxLines: 4,
-                                validator: _model
-                                    .inputContentTextControllerValidator
+                                validator: inputContentTextControllerValidator
                                     .asValidator(context),
                               ),
                             ),
@@ -317,7 +325,7 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                 borderRadius: BorderRadius.circular(8.0),
                 child: Image.network(
                   valueOrDefault<String>(
-                    _model.uploadedFileUrl_createPicNewsfeed,
+                    uploadedFileUrlCreatePicNewsfeed,
                     'https://wiki.tripwireinteractive.com/TWIimages/4/47/Placeholder.png',
                   ),
                   width: 200.0,
@@ -340,7 +348,7 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                       selectedMedia.every(
                           (m) => validateFileFormat(m.storagePath, context))) {
                     if (mounted) setState(
-                        () => _model.isDataUploading_createPicNewsfeed = true);
+                        () => isDataUploadingCreatePicNewsfeed = true);
                     var selectedUploadedFiles = <FFUploadedFile>[];
 
                     var downloadUrls = <String>[];
@@ -365,15 +373,14 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                           .map((u) => u!)
                           .toList();
                     } finally {
-                      _model.isDataUploading_createPicNewsfeed = false;
+                      isDataUploadingCreatePicNewsfeed = false;
                     }
                     if (selectedUploadedFiles.length == selectedMedia.length &&
                         downloadUrls.length == selectedMedia.length) {
                       if (mounted) setState(() {
-                        _model.uploadedLocalFile_createPicNewsfeed =
+                        uploadedLocalFileCreatePicNewsfeed =
                             selectedUploadedFiles.first;
-                        _model.uploadedFileUrl_createPicNewsfeed =
-                            downloadUrls.first;
+                        uploadedFileUrlCreatePicNewsfeed = downloadUrls.first;
                       });
                     } else {
                       if (mounted) setState(() {});
@@ -419,10 +426,10 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
             child: AppButton(
               onPressed: () async {
                 await PostsRecord.collection.doc().set(createPostsRecordData(
-                      content: _model.inputContentTextController.text,
-                      title: _model.inputTitleTextController.text,
+                      content: inputContentTextController.text,
+                      title: inputTitleTextController.text,
                       author: currentUserReference,
-                      mainImage: _model.uploadedFileUrl_createPicNewsfeed,
+                      mainImage: uploadedFileUrlCreatePicNewsfeed,
                     ));
 
                 context.pushNamed(

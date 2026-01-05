@@ -12,8 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'chat2_details_model.dart';
-export 'chat2_details_model.dart';
 
 class Chat2DetailsWidget extends StatefulWidget {
   const Chat2DetailsWidget({
@@ -31,15 +29,11 @@ class Chat2DetailsWidget extends StatefulWidget {
 }
 
 class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
-  late Chat2DetailsModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => Chat2DetailsModel());
-
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       if (mounted) setState(() {});
@@ -66,8 +60,6 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
-
     super.dispose();
   }
 

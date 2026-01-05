@@ -12,8 +12,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:text_search/text_search.dart';
-import 'newsfeed_model.dart';
-export 'newsfeed_model.dart';
 
 class NewsfeedWidget extends StatefulWidget {
   const NewsfeedWidget({super.key});
@@ -27,7 +25,10 @@ class NewsfeedWidget extends StatefulWidget {
 
 class _NewsfeedWidgetState extends State<NewsfeedWidget>
     with TickerProviderStateMixin {
-  late NewsfeedModel _model;
+  FocusNode? inputSearchFocusNode;
+  TextEditingController? inputSearchTextController;
+  String? Function(BuildContext, String?)? inputSearchTextControllerValidator;
+  List<PostsRecord> simpleSearchResults = [];
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -36,10 +37,8 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => NewsfeedModel());
-
-    _model.inputSearchTextController ??= TextEditingController();
-    _model.inputSearchFocusNode ??= FocusNode();
+    inputSearchTextController = TextEditingController();
+    inputSearchFocusNode = FocusNode();
 
     animationsMap.addAll({
       'containerOnPageLoadAnimation': AnimationInfo(
@@ -116,7 +115,8 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
 
   @override
   void dispose() {
-    _model.dispose();
+    inputSearchFocusNode?.dispose();
+    inputSearchTextController?.dispose();
 
     super.dispose();
   }
@@ -270,8 +270,8 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 10.0, 5.0, 0.0),
                               child: TextFormField(
-                                controller: _model.inputSearchTextController,
-                                focusNode: _model.inputSearchFocusNode,
+                                controller: inputSearchTextController,
+                                focusNode: inputSearchFocusNode,
                                 autofocus: true,
                                 obscureText: false,
                                 decoration: InputDecoration(
@@ -358,8 +358,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                           .bodyMedium
                                           .fontStyle,
                                     ),
-                                validator: _model
-                                    .inputSearchTextControllerValidator
+                                validator: inputSearchTextControllerValidator
                                     .asValidator(context),
                               ),
                             ),
@@ -370,7 +369,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                             child: AppButton(
                               onPressed: () async {
                                 if (mounted) setState(() {
-                                  _model.simpleSearchResults = TextSearch(
+                                  simpleSearchResults = TextSearch(
                                     newsfeedPostsRecordList
                                         .map(
                                           (record) => TextSearchItem.fromTerms(
@@ -380,12 +379,12 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                         .toList(),
                                   )
                                       .search(
-                                          _model.inputSearchTextController.text)
+                                          inputSearchTextController.text)
                                       .map((r) => r.object)
                                       .toList();
                                   ;
                                 });
-                                if (_model.simpleSearchResults.length == 0) {
+                                if (simpleSearchResults.length == 0) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
@@ -488,7 +487,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                         builder: (context) {
                           final posts = functions
                               .getResultList(newsfeedPostsRecordList.toList(),
-                                  _model.simpleSearchResults.toList())
+                                  simpleSearchResults.toList())
                               .toList();
 
                           return ListView.builder(

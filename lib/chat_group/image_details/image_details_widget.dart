@@ -9,8 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'image_details_model.dart';
-export 'image_details_model.dart';
 
 class ImageDetailsWidget extends StatefulWidget {
   const ImageDetailsWidget({
@@ -29,8 +27,6 @@ class ImageDetailsWidget extends StatefulWidget {
 
 class _ImageDetailsWidgetState extends State<ImageDetailsWidget>
     with TickerProviderStateMixin {
-  late ImageDetailsModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final animationsMap = <String, AnimationInfo>{};
@@ -38,8 +34,6 @@ class _ImageDetailsWidgetState extends State<ImageDetailsWidget>
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => ImageDetailsModel());
-
     animationsMap.addAll({
       'imageOnPageLoadAnimation': AnimationInfo(
         trigger: AnimationTrigger.onPageLoad,
@@ -106,8 +100,6 @@ class _ImageDetailsWidgetState extends State<ImageDetailsWidget>
 
   @override
   void dispose() {
-    _model.dispose();
-
     super.dispose();
   }
 

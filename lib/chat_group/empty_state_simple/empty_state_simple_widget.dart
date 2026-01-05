@@ -2,8 +2,6 @@ import '/core/app_theme.dart';
 import '/core/app_util.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'empty_state_simple_model.dart';
-export 'empty_state_simple_model.dart';
 
 class EmptyStateSimpleWidget extends StatefulWidget {
   const EmptyStateSimpleWidget({
@@ -23,19 +21,9 @@ class EmptyStateSimpleWidget extends StatefulWidget {
 }
 
 class _EmptyStateSimpleWidgetState extends State<EmptyStateSimpleWidget> {
-  late EmptyStateSimpleModel _model;
-
-  @override
-  void setState(VoidCallback callback) {
-    super.setState(callback);
-    _model.onUpdate();
-  }
-
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => EmptyStateSimpleModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -45,8 +33,6 @@ class _EmptyStateSimpleWidgetState extends State<EmptyStateSimpleWidget> {
 
   @override
   void dispose() {
-    _model.maybeDispose();
-
     super.dispose();
   }
 

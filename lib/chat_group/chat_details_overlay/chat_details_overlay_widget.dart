@@ -10,8 +10,6 @@ import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'chat_details_overlay_model.dart';
-export 'chat_details_overlay_model.dart';
 
 class ChatDetailsOverlayWidget extends StatefulWidget {
   const ChatDetailsOverlayWidget({
@@ -27,19 +25,9 @@ class ChatDetailsOverlayWidget extends StatefulWidget {
 }
 
 class _ChatDetailsOverlayWidgetState extends State<ChatDetailsOverlayWidget> {
-  late ChatDetailsOverlayModel _model;
-
-  @override
-  void setState(VoidCallback callback) {
-    super.setState(callback);
-    _model.onUpdate();
-  }
-
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => ChatDetailsOverlayModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -49,8 +37,6 @@ class _ChatDetailsOverlayWidgetState extends State<ChatDetailsOverlayWidget> {
 
   @override
   void dispose() {
-    _model.maybeDispose();
-
     super.dispose();
   }
 

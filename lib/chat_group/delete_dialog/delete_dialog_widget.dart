@@ -7,8 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'delete_dialog_model.dart';
-export 'delete_dialog_model.dart';
 
 class DeleteDialogWidget extends StatefulWidget {
   const DeleteDialogWidget({
@@ -28,24 +26,19 @@ class DeleteDialogWidget extends StatefulWidget {
 
 class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
     with TickerProviderStateMixin {
-  late DeleteDialogModel _model;
+  bool showDelete = false;
+  bool mouseRegionHovered1 = false;
+  bool mouseRegionHovered2 = false;
+  bool mouseRegionHovered3 = false;
 
   final animationsMap = <String, AnimationInfo>{};
 
   @override
-  void setState(VoidCallback callback) {
-    super.setState(callback);
-    _model.onUpdate();
-  }
-
-  @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => DeleteDialogModel());
-
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _model.showDelete = false;
+      showDelete = false;
       if (mounted) setState(() {});
     });
 
@@ -81,8 +74,6 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
 
   @override
   void dispose() {
-    _model.maybeDispose();
-
     super.dispose();
   }
 
@@ -148,7 +139,7 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                       curve: Curves.easeInOut,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: _model.mouseRegionHovered1
+                        color: mouseRegionHovered1
                             ? AppTheme.of(context).primaryBackground
                             : AppTheme.of(context).secondaryBackground,
                       ),
@@ -203,10 +194,14 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                     ),
                   ),
                   onEnter: ((event) async {
-                    if (mounted) setState(() => _model.mouseRegionHovered1 = true);
+                    if (mounted) {
+                      setState(() => mouseRegionHovered1 = true);
+                    }
                   }),
                   onExit: ((event) async {
-                    if (mounted) setState(() => _model.mouseRegionHovered1 = false);
+                    if (mounted) {
+                      setState(() => mouseRegionHovered1 = false);
+                    }
                   }),
                 ),
                 if (widget.chatList?.userA == currentUserReference)
@@ -223,7 +218,7 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                     hoverColor: Colors.transparent,
                     highlightColor: Colors.transparent,
                     onTap: () async {
-                      _model.showDelete = true;
+                      showDelete = true;
                       if (mounted) setState(() {});
                     },
                     child: AnimatedContainer(
@@ -231,7 +226,7 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                       curve: Curves.easeInOut,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: _model.mouseRegionHovered2
+                        color: mouseRegionHovered2
                             ? AppTheme.of(context).primaryBackground
                             : AppTheme.of(context).secondaryBackground,
                       ),
@@ -288,18 +283,22 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                     ),
                   ),
                   onEnter: ((event) async {
-                    if (mounted) setState(() => _model.mouseRegionHovered2 = true);
+                    if (mounted) {
+                      setState(() => mouseRegionHovered2 = true);
+                    }
                   }),
                   onExit: ((event) async {
-                    if (mounted) setState(() => _model.mouseRegionHovered2 = false);
+                    if (mounted) {
+                      setState(() => mouseRegionHovered2 = false);
+                    }
                   }),
                 ),
-                if (_model.showDelete == true)
+                if (showDelete == true)
                   Divider(
                     thickness: 1.0,
                     color: AppTheme.of(context).alternate,
                   ),
-                if (_model.showDelete == true)
+                if (showDelete == true)
                   MouseRegion(
                     opaque: false,
                     cursor: SystemMouseCursors.click ?? MouseCursor.defer,
@@ -308,7 +307,7 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                       curve: Curves.easeInOut,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: _model.mouseRegionHovered3
+                        color: mouseRegionHovered3
                             ? AppTheme.of(context).primaryBackground
                             : AppTheme.of(context).secondaryBackground,
                       ),
@@ -426,10 +425,14 @@ class _DeleteDialogWidgetState extends State<DeleteDialogWidget>
                       ),
                     ),
                     onEnter: ((event) async {
-                      if (mounted) setState(() => _model.mouseRegionHovered3 = true);
+                      if (mounted) {
+                        setState(() => mouseRegionHovered3 = true);
+                      }
                     }),
                     onExit: ((event) async {
-                      if (mounted) setState(() => _model.mouseRegionHovered3 = false);
+                      if (mounted) {
+                        setState(() => mouseRegionHovered3 = false);
+                      }
                     }),
                   ).animateOnPageLoad(
                       animationsMap['mouseRegionOnPageLoadAnimation']!),

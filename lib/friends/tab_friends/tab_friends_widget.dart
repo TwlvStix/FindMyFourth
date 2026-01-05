@@ -13,8 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'tab_friends_model.dart';
-export 'tab_friends_model.dart';
 
 class TabFriendsWidget extends StatefulWidget {
   const TabFriendsWidget({super.key});
@@ -28,16 +26,51 @@ class TabFriendsWidget extends StatefulWidget {
 
 class _TabFriendsWidgetState extends State<TabFriendsWidget>
     with TickerProviderStateMixin {
-  late TabFriendsModel _model;
+  List<String> reqUserList = [];
+  void addToReqUserList(String item) => reqUserList.add(item);
+  void removeFromReqUserList(String item) => reqUserList.remove(item);
+  void removeAtIndexFromReqUserList(int index) => reqUserList.removeAt(index);
+  void insertAtIndexInReqUserList(int index, String item) =>
+      reqUserList.insert(index, item);
+  void updateReqUserListAtIndex(int index, Function(String) updateFn) =>
+      reqUserList[index] = updateFn(reqUserList[index]);
+
+  List<DocumentReference> friendList = [];
+  void addToFriendList(DocumentReference item) => friendList.add(item);
+  void removeFromFriendList(DocumentReference item) => friendList.remove(item);
+  void removeAtIndexFromFriendList(int index) => friendList.removeAt(index);
+  void insertAtIndexInFriendList(int index, DocumentReference item) =>
+      friendList.insert(index, item);
+  void updateFriendListAtIndex(
+          int index, Function(DocumentReference) updateFn) =>
+      friendList[index] = updateFn(friendList[index]);
+
+  TabController? tabBarController;
+  int get tabBarCurrentIndex => tabBarController != null
+      ? tabBarController!.index
+      : 0;
+  int get tabBarPreviousIndex => tabBarController != null
+      ? tabBarController!.previousIndex
+      : 0;
+
+  final textFieldKey = GlobalKey();
+  FocusNode? textFieldFocusNode;
+  TextEditingController? textController;
+  String? textFieldSelectedOption;
+  String? Function(BuildContext, String?)? textControllerValidator;
+  ChatsRecord? chatsChecker;
+  ChatsRecord? chatsChecker2;
+  ChatsRecord? chatroomReference;
+  ChatsRecord? chatroomChecker;
+  ChatsRecord? chatroomChecker2;
+  ChatsRecord? chatroomReference2;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => TabFriendsModel());
-
-    _model.tabBarController = TabController(
+    tabBarController = TabController(
       vsync: this,
       length: 3,
       initialIndex: 0,
@@ -47,7 +80,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
         }
       });
 
-    _model.textController ??= TextEditingController();
+    textController = TextEditingController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -58,7 +91,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
 
   @override
   void dispose() {
-    _model.dispose();
+    tabBarController?.dispose();
+    textFieldFocusNode?.dispose();
+    textController?.dispose();
 
     super.dispose();
   }
@@ -171,16 +206,16 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                             text: 'Friends',
                           ),
                         ],
-                        controller: _model.tabBarController,
+                        controller: tabBarController,
                         onTap: (i) async {
                           [
                             () async {},
                             () async {
-                              _model.friendList = [];
+                              friendList = [];
                               if (mounted) setState(() {});
                             },
                             () async {
-                              _model.friendList = [];
+                              friendList = [];
                               if (mounted) setState(() {});
                             }
                           ][i]();
@@ -189,7 +224,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                     ),
                     Expanded(
                       child: TabBarView(
-                        controller: _model.tabBarController,
+                        controller: tabBarController,
                         children: [
                           KeepAliveWidgetWrapper(
                             builder: (context) => Container(
@@ -244,10 +279,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                 optionsViewBuilder: (context,
                                                     onSelected, options) {
                                                   return AutocompleteOptionsList(
-                                                    textFieldKey:
-                                                        _model.textFieldKey,
+                                                    textFieldKey: textFieldKey,
                                                     textController:
-                                                        _model.textController!,
+                                                        textController!,
                                                     options: options.toList(),
                                                     onSelected: onSelected,
                                                     textStyle:
@@ -294,9 +328,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                   );
                                                 },
                                                 onSelected: (String selection) {
-                                                  if (mounted) setState(() => _model
-                                                          .textFieldSelectedOption =
-                                                      selection);
+                                                  if (mounted) {
+                                                    setState(() =>
+                                                        textFieldSelectedOption =
+                                                            selection);
+                                                  }
                                                   FocusScope.of(context)
                                                       .unfocus();
                                                 },
@@ -306,13 +342,13 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                   focusNode,
                                                   onEditingComplete,
                                                 ) {
-                                                  _model.textFieldFocusNode =
+                                                  textFieldFocusNode =
                                                       focusNode;
 
-                                                  _model.textController =
+                                                  textController =
                                                       textEditingController;
                                                   return TextFormField(
-                                                    key: _model.textFieldKey,
+                                                    key: textFieldKey,
                                                     controller:
                                                         textEditingController,
                                                     focusNode: focusNode,
@@ -471,8 +507,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   .bodyMedium
                                                                   .fontStyle,
                                                         ),
-                                                    validator: _model
-                                                        .textControllerValidator
+                                                    validator: textControllerValidator
                                                         .asValidator(context),
                                                   );
                                                 },
@@ -817,14 +852,14 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                             size: 18.0,
                                                           ),
                                                           onPressed: () async {
-                                                            _model.addToFriendList(
+                                                            addToFriendList(
                                                                 currentUserReference!);
                                                             if (mounted) setState(() {});
-                                                            _model.addToFriendList(
+                                                            addToFriendList(
                                                                 listViewUsersRecord
                                                                     .reference);
                                                             if (mounted) setState(() {});
-                                                            _model.chatsChecker =
+                                                            chatsChecker =
                                                                 await queryChatsRecordOnce(
                                                               queryBuilder:
                                                                   (chatsRecord) =>
@@ -843,8 +878,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   true,
                                                             ).then((s) => s
                                                                     .firstOrNull);
-                                                            if (_model
-                                                                    .chatsChecker !=
+                                                            if (chatsChecker !=
                                                                 null) {
                                                               if (Navigator.of(
                                                                       context)
@@ -858,20 +892,19 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                     {
                                                                   'chatRef':
                                                                       serializeParam(
-                                                                    _model
-                                                                        .chatsChecker,
+                                                                    chatsChecker,
                                                                     ParamType
                                                                         .Document,
                                                                   ),
                                                                 }.withoutNulls,
                                                                 extra: <String,
                                                                     dynamic>{
-                                                                  'chatRef': _model
-                                                                      .chatsChecker,
+                                                                  'chatRef':
+                                                                      chatsChecker,
                                                                 },
                                                               );
                                                             } else {
-                                                              _model.chatsChecker2 =
+                                                              chatsChecker2 =
                                                                   await queryChatsRecordOnce(
                                                                 queryBuilder:
                                                                     (chatsRecord) =>
@@ -888,8 +921,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                     true,
                                                               ).then((s) => s
                                                                       .firstOrNull);
-                                                              if (_model
-                                                                      .chatsChecker2 !=
+                                                              if (chatsChecker2 !=
                                                                   null) {
                                                                 if (Navigator.of(
                                                                         context)
@@ -904,8 +936,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                       {
                                                                     'chatRef':
                                                                         serializeParam(
-                                                                      _model
-                                                                          .chatsChecker2,
+                                                                      chatsChecker2,
                                                                       ParamType
                                                                           .Document,
                                                                     ),
@@ -913,8 +944,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   extra: <String,
                                                                       dynamic>{
                                                                     'chatRef':
-                                                                        _model
-                                                                            .chatsChecker2,
+                                                                        chatsChecker2,
                                                                   },
                                                                 );
                                                               } else {
@@ -945,12 +975,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   ...mapToFirestore(
                                                                     {
                                                                       'users':
-                                                                          _model
-                                                                              .friendList,
+                                                                          friendList,
                                                                     },
                                                                   ),
                                                                 });
-                                                                _model.chatroomReference =
+                                                                chatroomReference =
                                                                     ChatsRecord
                                                                         .getDocumentFromData({
                                                                   ...createChatsRecordData(
@@ -972,8 +1001,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   ...mapToFirestore(
                                                                     {
                                                                       'users':
-                                                                          _model
-                                                                              .friendList,
+                                                                          friendList,
                                                                     },
                                                                   ),
                                                                 }, chatsRecordReference);
@@ -990,8 +1018,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                       {
                                                                     'chatRef':
                                                                         serializeParam(
-                                                                      _model
-                                                                          .chatroomReference,
+                                                                      chatroomReference,
                                                                       ParamType
                                                                           .Document,
                                                                     ),
@@ -999,8 +1026,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   extra: <String,
                                                                       dynamic>{
                                                                     'chatRef':
-                                                                        _model
-                                                                            .chatroomReference,
+                                                                        chatroomReference,
                                                                   },
                                                                 );
                                                               }
@@ -1119,7 +1145,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                         },
                                                                       ),
                                                                     });
-                                                                    _model.addToReqUserList(
+                                                                    addToReqUserList(
                                                                         valueOrDefault<
                                                                             String>(
                                                                       listViewUsersRecord
@@ -2503,12 +2529,12 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   ),
                                                                   onPressed:
                                                                       () async {
-                                                                    _model.addToFriendList(
+                                                                    addToFriendList(
                                                                         userList5UsersRecord
                                                                             .reference);
                                                                     if (mounted) setState(
                                                                         () {});
-                                                                    _model.chatroomChecker =
+                                                                    chatroomChecker =
                                                                         await queryChatsRecordOnce(
                                                                       queryBuilder: (chatsRecord) => chatsRecord
                                                                           .where(
@@ -2525,8 +2551,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           true,
                                                                     ).then((s) =>
                                                                             s.firstOrNull);
-                                                                    if (_model
-                                                                            .chatroomChecker !=
+                                                                    if (chatroomChecker !=
                                                                         null) {
                                                                       if (Navigator.of(
                                                                               context)
@@ -2542,18 +2567,18 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                             {
                                                                           'chatRef':
                                                                               serializeParam(
-                                                                            _model.chatroomChecker,
+                                                                            chatroomChecker,
                                                                             ParamType.Document,
                                                                           ),
                                                                         }.withoutNulls,
                                                                         extra: <String,
                                                                             dynamic>{
                                                                           'chatRef':
-                                                                              _model.chatroomChecker,
+                                                                              chatroomChecker,
                                                                         },
                                                                       );
                                                                     } else {
-                                                                      _model.chatroomChecker2 =
+                                                                      chatroomChecker2 =
                                                                           await queryChatsRecordOnce(
                                                                         queryBuilder: (chatsRecord) => chatsRecord
                                                                             .where(
@@ -2568,8 +2593,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                             true,
                                                                       ).then((s) =>
                                                                               s.firstOrNull);
-                                                                      if (_model
-                                                                              .chatroomChecker2 !=
+                                                                      if (chatroomChecker2 !=
                                                                           null) {
                                                                         if (Navigator.of(context)
                                                                             .canPop()) {
@@ -2584,14 +2608,14 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                               {
                                                                             'chatRef':
                                                                                 serializeParam(
-                                                                              _model.chatroomChecker2,
+                                                                              chatroomChecker2,
                                                                               ParamType.Document,
                                                                             ),
                                                                           }.withoutNulls,
                                                                           extra: <String,
                                                                               dynamic>{
                                                                             'chatRef':
-                                                                                _model.chatroomChecker2,
+                                                                                chatroomChecker2,
                                                                           },
                                                                         );
                                                                       } else {
@@ -2618,11 +2642,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           ),
                                                                           ...mapToFirestore(
                                                                             {
-                                                                              'users': _model.friendList,
+                                                                              'users': friendList,
                                                                             },
                                                                           ),
                                                                         });
-                                                                        _model.chatroomReference2 =
+                                                                        chatroomReference2 =
                                                                             ChatsRecord.getDocumentFromData({
                                                                           ...createChatsRecordData(
                                                                             userA:
@@ -2640,7 +2664,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           ),
                                                                           ...mapToFirestore(
                                                                             {
-                                                                              'users': _model.friendList,
+                                                                              'users': friendList,
                                                                             },
                                                                           ),
                                                                         }, chatsRecordReference);
@@ -2657,14 +2681,14 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                               {
                                                                             'chatRef':
                                                                                 serializeParam(
-                                                                              _model.chatroomReference2,
+                                                                              chatroomReference2,
                                                                               ParamType.Document,
                                                                             ),
                                                                           }.withoutNulls,
                                                                           extra: <String,
                                                                               dynamic>{
                                                                             'chatRef':
-                                                                                _model.chatroomReference2,
+                                                                                chatroomReference2,
                                                                           },
                                                                         );
 

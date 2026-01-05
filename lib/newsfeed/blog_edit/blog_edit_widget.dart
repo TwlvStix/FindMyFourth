@@ -8,8 +8,6 @@ import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'blog_edit_model.dart';
-export 'blog_edit_model.dart';
 
 class BlogEditWidget extends StatefulWidget {
   const BlogEditWidget({
@@ -27,19 +25,26 @@ class BlogEditWidget extends StatefulWidget {
 }
 
 class _BlogEditWidgetState extends State<BlogEditWidget> {
-  late BlogEditModel _model;
+  FocusNode? inputTitleFocusNode;
+  TextEditingController? inputTitleTextController;
+  String? Function(BuildContext, String?)? inputTitleTextControllerValidator;
+  FocusNode? inputContentFocusNode;
+  TextEditingController? inputContentTextController;
+  String? Function(BuildContext, String?)? inputContentTextControllerValidator;
+  bool isDataUploadingEditPicNewsfeed = false;
+  FFUploadedFile uploadedLocalFileEditPicNewsfeed =
+      FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
+  String uploadedFileUrlEditPicNewsfeed = '';
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => BlogEditModel());
+    inputTitleTextController = TextEditingController();
+    inputTitleFocusNode = FocusNode();
 
-    _model.inputTitleTextController ??= TextEditingController();
-    _model.inputTitleFocusNode ??= FocusNode();
-
-    _model.inputContentFocusNode ??= FocusNode();
+    inputContentFocusNode = FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -50,7 +55,11 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
+    inputTitleFocusNode?.dispose();
+    inputTitleTextController?.dispose();
+
+    inputContentFocusNode?.dispose();
+    inputContentTextController?.dispose();
 
     super.dispose();
   }
@@ -135,8 +144,8 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                     child: Padding(
                       padding: EdgeInsets.all(10.0),
                       child: TextFormField(
-                        controller: _model.inputTitleTextController,
-                        focusNode: _model.inputTitleFocusNode,
+                        controller: inputTitleTextController,
+                        focusNode: inputTitleFocusNode,
                         autofocus: true,
                         obscureText: false,
                         decoration: InputDecoration(
@@ -217,7 +226,7 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                                   .bodyMedium
                                   .fontStyle,
                             ),
-                        validator: _model.inputTitleTextControllerValidator
+                        validator: inputTitleTextControllerValidator
                             .asValidator(context),
                       ),
                     ),
@@ -246,11 +255,11 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                                 Expanded(
                                   child: TextFormField(
                                     controller:
-                                        _model.inputContentTextController ??=
+                                        inputContentTextController ??=
                                             TextEditingController(
                                       text: blogEditPostsRecord.content,
                                     ),
-                                    focusNode: _model.inputContentFocusNode,
+                                    focusNode: inputContentFocusNode,
                                     obscureText: false,
                                     decoration: InputDecoration(
                                       hintText: 'Enter post details here...',
@@ -339,8 +348,7 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                                         ),
                                     textAlign: TextAlign.start,
                                     maxLines: 4,
-                                    validator: _model
-                                        .inputContentTextControllerValidator
+                                    validator: inputContentTextControllerValidator
                                         .asValidator(context),
                                   ),
                                 ),
@@ -374,7 +382,7 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                           borderRadius: BorderRadius.circular(8.0),
                           child: Image.network(
                             valueOrDefault<String>(
-                              _model.uploadedFileUrl_editPicNewsfeed,
+                              uploadedFileUrlEditPicNewsfeed,
                               'https://wiki.tripwireinteractive.com/TWIimages/4/47/Placeholder.png',
                             ),
                             width: 200.0,
@@ -399,7 +407,7 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                           selectedMedia.every((m) =>
                               validateFileFormat(m.storagePath, context))) {
                         if (mounted) setState(() =>
-                            _model.isDataUploading_editPicNewsfeed = true);
+                            isDataUploadingEditPicNewsfeed = true);
                         var selectedUploadedFiles = <FFUploadedFile>[];
 
                         var downloadUrls = <String>[];
@@ -425,15 +433,15 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                               .map((u) => u!)
                               .toList();
                         } finally {
-                          _model.isDataUploading_editPicNewsfeed = false;
+                          isDataUploadingEditPicNewsfeed = false;
                         }
                         if (selectedUploadedFiles.length ==
                                 selectedMedia.length &&
                             downloadUrls.length == selectedMedia.length) {
                           if (mounted) setState(() {
-                            _model.uploadedLocalFile_editPicNewsfeed =
+                            uploadedLocalFileEditPicNewsfeed =
                                 selectedUploadedFiles.first;
-                            _model.uploadedFileUrl_editPicNewsfeed =
+                            uploadedFileUrlEditPicNewsfeed =
                                 downloadUrls.first;
                           });
                         } else {
@@ -485,10 +493,10 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                   onPressed: () async {
                     await blogEditPostsRecord.reference
                         .update(createPostsRecordData(
-                      title: _model.inputTitleTextController.text,
-                      content: (_model.inputContentFocusNode?.hasFocus ?? false)
-                          .toString(),
-                      mainImage: _model.uploadedFileUrl_editPicNewsfeed,
+                      title: inputTitleTextController.text,
+                      content:
+                          (inputContentFocusNode?.hasFocus ?? false).toString(),
+                      mainImage: uploadedFileUrlEditPicNewsfeed,
                     ));
 
                     context.pushNamed(

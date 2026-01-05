@@ -2,8 +2,6 @@ import '/core/app_theme.dart';
 import '/core/app_util.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'notifications_list_model.dart';
-export 'notifications_list_model.dart';
 
 class NotificationsListWidget extends StatefulWidget {
   const NotificationsListWidget({super.key});
@@ -17,15 +15,11 @@ class NotificationsListWidget extends StatefulWidget {
 }
 
 class _NotificationsListWidgetState extends State<NotificationsListWidget> {
-  late NotificationsListModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => NotificationsListModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -35,8 +29,6 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
 
   @override
   void dispose() {
-    _model.dispose();
-
     super.dispose();
   }
 
