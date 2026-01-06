@@ -27,6 +27,8 @@ class PlayerListWidget extends StatefulWidget {
 }
 
 class _PlayerListWidgetState extends State<PlayerListWidget> {
+  static const String guestOptionValue = 'guest';
+
   List<DocumentReference> playersJoined = [];
   void addToPlayersJoined(DocumentReference item) => playersJoined.add(item);
   void removeFromPlayersJoined(DocumentReference item) =>
@@ -152,6 +154,25 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                             .data!
                             .where((u) => u.uid != currentUserUid)
                             .toList();
+                        final playerOptions = gameFormUsersRecordList
+                            .map(
+                              (e) => valueOrDefault<String>(
+                                e.uid,
+                                '',
+                              ),
+                            )
+                            .where((uid) => uid.isNotEmpty)
+                            .toList();
+                        final playerLabels = gameFormUsersRecordList
+                            .map(
+                              (e) => valueOrDefault<String>(
+                                e.displayName,
+                                'Name',
+                              ),
+                            )
+                            .toList();
+                        playerOptions.add(guestOptionValue);
+                        playerLabels.add('Guest');
 
                         return Container(
                           width: double.infinity,
@@ -232,7 +253,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                     ),
                                   ),
                                 ),
-                                if (widget.gameRef!.numPlayers <= 2)
+                                if (widget.gameRef!.numPlayers >= 1)
                                   Align(
                                     alignment: AlignmentDirectional(-1.0, 0.0),
                                     child: Padding(
@@ -244,20 +265,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                 FormFieldController<String>(
                                           dropDownValue1 ??= '',
                                         ),
-                                        options: List<String>.from(
-                                            gameFormUsersRecordList
-                                                .map((e) =>
-                                                    valueOrDefault<String>(
-                                                      e.uid,
-                                                      'Name',
-                                                    ))
-                                                .toList()),
-                                        optionLabels: gameFormUsersRecordList
-                                            .map((e) => valueOrDefault<String>(
-                                                  e.displayName,
-                                                  'Name',
-                                                ))
-                                            .toList(),
+                                        options:
+                                            List<String>.from(playerOptions),
+                                        optionLabels: playerLabels,
                                         onChanged: (val) {
                                           if (mounted) {
                                             setState(() =>
@@ -362,7 +372,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                       ),
                                     ),
                                   ),
-                                if (widget.gameRef?.numPlayers == 1)
+                                if (widget.gameRef!.numPlayers >= 2)
                                   Align(
                                     alignment: AlignmentDirectional(-1.0, 0.0),
                                     child: AppDropDown<String>(
@@ -371,20 +381,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                               FormFieldController<String>(
                                         dropDownValue2 ??= '',
                                       ),
-                                      options: List<String>.from(
-                                          gameFormUsersRecordList
-                                              .map(
-                                                  (e) => valueOrDefault<String>(
-                                                        e.uid,
-                                                        'Name',
-                                                      ))
-                                              .toList()),
-                                      optionLabels: gameFormUsersRecordList
-                                          .map((e) => valueOrDefault<String>(
-                                                e.displayName,
-                                                'Name',
-                                              ))
-                                          .toList(),
+                                      options:
+                                          List<String>.from(playerOptions),
+                                      optionLabels: playerLabels,
                                       onChanged: (val) {
                                         if (mounted) {
                                           setState(() =>
@@ -443,72 +442,62 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                       0.0, 30.0, 0.0, 0.0),
                                   child: AppButton(
                                     onPressed: () async {
-                                      if (widget.gameRef?.numPlayers == 1) {
-                                        await widget.gameRef!.reference
-                                            .update({
-                                          ...mapToFirestore(
-                                            {
-                                              'joined_players':
-                                                  FieldValue.arrayUnion([
-                                                functions.returnDocRefFromUID(
-                                                    dropDownValue1)
-                                              ]),
-                                            },
-                                          ),
-                                        });
+                                      final selections = <String?>[
+                                        dropDownValue1,
+                                        if (widget.gameRef!.numPlayers >= 2)
+                                          dropDownValue2,
+                                      ];
+                                      final joinedPlayersToAdd =
+                                          <DocumentReference>[];
+                                      final guestPlayersToAdd = <String>[];
 
-                                        await widget.gameRef!.reference
-                                            .update({
-                                          ...mapToFirestore(
-                                            {
-                                              'joined_players':
-                                                  FieldValue.arrayUnion([
-                                                functions.returnDocRefFromUID(
-                                                    dropDownValue2)
-                                              ]),
-                                            },
-                                          ),
-                                        });
-
-                                        context.pushNamed(
-                                          GamesListWidget.routeName,
-                                          extra: <String, dynamic>{
-                                            kTransitionInfoKey: TransitionInfo(
-                                              hasTransition: true,
-                                              transitionType: PageTransitionType
-                                                  .bottomToTop,
-                                              duration:
-                                                  Duration(milliseconds: 220),
-                                            ),
-                                          },
-                                        );
-                                      } else {
-                                        await widget.gameRef!.reference
-                                            .update({
-                                          ...mapToFirestore(
-                                            {
-                                              'joined_players':
-                                                  FieldValue.arrayUnion([
-                                                functions.returnDocRefFromUID(
-                                                    dropDownValue1)
-                                              ]),
-                                            },
-                                          ),
-                                        });
-
-                                        context.pushNamed(
-                                          GamesListWidget.routeName,
-                                          extra: <String, dynamic>{
-                                            kTransitionInfoKey: TransitionInfo(
-                                              hasTransition: true,
-                                              transitionType: PageTransitionType
-                                                  .bottomToTop,
-                                              duration:
-                                                  Duration(milliseconds: 220),
-                                            ),
-                                          },
-                                        );
+                                      for (final selection in selections) {
+                                        if (selection == null ||
+                                            selection.isEmpty) {
+                                          continue;
+                                        }
+                                        if (selection == guestOptionValue) {
+                                          guestPlayersToAdd.add(
+                                            'Guest ${guestPlayersToAdd.length + 1}',
+                                          );
+                                        } else {
+                                          final playerRef =
+                                              functions.returnDocRefFromUID(
+                                                  selection);
+                                          if (playerRef != null) {
+                                            joinedPlayersToAdd.add(playerRef);
+                                          }
+                                        }
                                       }
+
+                                      if (joinedPlayersToAdd.isNotEmpty ||
+                                          guestPlayersToAdd.isNotEmpty) {
+                                        await widget.gameRef!.reference.update({
+                                          ...mapToFirestore({
+                                            if (joinedPlayersToAdd.isNotEmpty)
+                                              'joined_players':
+                                                  FieldValue.arrayUnion(
+                                                      joinedPlayersToAdd),
+                                            if (guestPlayersToAdd.isNotEmpty)
+                                              'guest_players':
+                                                  FieldValue.arrayUnion(
+                                                      guestPlayersToAdd),
+                                          }),
+                                        });
+                                      }
+
+                                      context.pushNamed(
+                                        GamesListWidget.routeName,
+                                        extra: <String, dynamic>{
+                                          kTransitionInfoKey: TransitionInfo(
+                                            hasTransition: true,
+                                            transitionType:
+                                                PageTransitionType.bottomToTop,
+                                            duration:
+                                                Duration(milliseconds: 220),
+                                          ),
+                                        },
+                                      );
                                     },
                                     text: 'Submit Players',
                                     options: AppButtonOptions(
