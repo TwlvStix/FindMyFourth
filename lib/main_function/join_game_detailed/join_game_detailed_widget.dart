@@ -116,21 +116,10 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
             stream:
                 UsersRecord.getDocument(joinGameDetailedGamesRecord.userRef!),
             builder: (context, snapshot) {
-              // Customize what your widget looks like when it's loading.
-              if (!snapshot.hasData) {
-                return Center(
-                  child: SizedBox(
-                    width: 50.0,
-                    height: 50.0,
-                    child: SpinKitWanderingCubes(
-                      color: Color(0xFF25504F),
-                      size: 50.0,
-                    ),
-                  ),
-                );
-              }
-
-              final containerUsersRecord = snapshot.data!;
+              final containerUsersRecord = snapshot.data;
+              final isCreatorFriend = containerUsersRecord?.friends
+                      .contains(currentUserReference) ??
+                  false;
 
               return Container(
                 decoration: BoxDecoration(
@@ -949,9 +938,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                         ((joinGameDetailedGamesRecord
                                                     .friendGame ==
                                                 'Friends') &&
-                                            containerUsersRecord.friends
-                                                .contains(
-                                                    currentUserReference)))) {
+                                            isCreatorFriend))) {
                                   await showModalBottomSheet(
                                     isScrollControlled: true,
                                     backgroundColor: Colors.transparent,
