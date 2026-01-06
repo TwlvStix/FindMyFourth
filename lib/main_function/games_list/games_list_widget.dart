@@ -18,6 +18,12 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+enum CancelledGameHandling {
+  removeNow,
+  removeEndOfDay,
+  keepInList,
+}
+
 class GamesListWidget extends StatefulWidget {
   const GamesListWidget({super.key});
 
@@ -32,6 +38,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   List<GamesRecord> filteredList = [];
   List<GamesRecord>? snapshotGames;
   FormFieldController<List<String>>? choiceChipsValueController;
+  final Map<DocumentReference, CancelledGameHandling>
+      _cancelledGameHandlingByGame = {};
   String? get choiceChipsValue =>
       choiceChipsValueController?.value?.firstOrNull;
   set choiceChipsValue(String? val) =>
@@ -70,6 +78,76 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  bool _shouldHideCancelledGame(GamesRecord game) {
+    if (!game.isCancelled) {
+      return false;
+    }
+    final handling = _cancelledGameHandlingByGame[game.reference];
+    if (handling == CancelledGameHandling.removeNow) {
+      return true;
+    }
+    if (handling == CancelledGameHandling.removeEndOfDay) {
+      final gameDate = game.date;
+      if (gameDate == null) {
+        return false;
+      }
+      final endOfDay = DateTime(
+        gameDate.year,
+        gameDate.month,
+        gameDate.day,
+        23,
+        59,
+        59,
+      );
+      return getCurrentTimestamp.isAfter(endOfDay);
+    }
+    return false;
+  }
+
+  Future<void> _showCancelledGameOptions(GamesRecord game) async {
+    final selection = await showDialog<CancelledGameHandling>(
+      context: context,
+      builder: (alertDialogContext) {
+        return AlertDialog(
+          title: Text('Game cancelled'),
+          content: Text('How would you like to handle this game?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(
+                alertDialogContext,
+                CancelledGameHandling.removeNow,
+              ),
+              child: Text('Remove now'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(
+                alertDialogContext,
+                CancelledGameHandling.removeEndOfDay,
+              ),
+              child: Text('Remove after today'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(
+                alertDialogContext,
+                CancelledGameHandling.keepInList,
+              ),
+              child: Text('Keep in list'),
+            ),
+          ],
+        );
+      },
+    );
+    if (selection == null) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _cancelledGameHandlingByGame[game.reference] = selection;
+    });
   }
 
   @override
@@ -294,7 +372,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   Expanded(
                     child: Builder(
                       builder: (context) {
-                        final containerVar = filteredList.toList();
+                        final containerVar = filteredList
+                            .where((game) => !_shouldHideCancelledGame(game))
+                            .toList();
 
                         return ListView.separated(
                           padding: EdgeInsets.fromLTRB(
@@ -460,26 +540,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                   if (containerVarItem
                                                           .isCancelled ==
                                                       true) {
-                                                    await showDialog(
-                                                      context: context,
-                                                      builder:
-                                                          (alertDialogContext) {
-                                                        return AlertDialog(
-                                                          title: Text(
-                                                              'Game cancelled'),
-                                                          content: Text(
-                                                              'This game is cancelled'),
-                                                          actions: [
-                                                            TextButton(
-                                                              onPressed: () =>
-                                                                  Navigator.pop(
-                                                                      alertDialogContext),
-                                                              child: Text('Ok'),
-                                                            ),
-                                                          ],
-                                                        );
-                                                      },
-                                                    );
+                                                    await _showCancelledGameOptions(
+                                                        containerVarItem);
                                                   } else {
                                                     if ((containerVarItem
                                                                 .userRef ==
