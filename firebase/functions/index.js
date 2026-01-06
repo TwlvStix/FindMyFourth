@@ -44,18 +44,28 @@ exports.addFcmToken = functions
       );
     }
     try {
-      const existingTokens = await firestore
-        .collectionGroup(kFcmTokensCollection)
-        .where("fcm_token", "==", fcmToken)
-        .get();
+      let existingTokens = null;
+      try {
+        existingTokens = await firestore
+          .collectionGroup(kFcmTokensCollection)
+          .where("fcm_token", "==", fcmToken)
+          .get();
+      } catch (error) {
+        console.warn(
+          "addFcmToken token lookup failed, continuing without cleanup",
+          error,
+        );
+      }
       let userAlreadyHasToken = false;
-      for (const doc of existingTokens.docs) {
-        const user = doc.ref.parent.parent;
-        if (user.path !== userDocPath) {
-          // Should never have the same FCM token associated with multiple users.
-          await doc.ref.delete();
-        } else {
-          userAlreadyHasToken = true;
+      if (existingTokens) {
+        for (const doc of existingTokens.docs) {
+          const user = doc.ref.parent.parent;
+          if (user.path !== userDocPath) {
+            // Should never have the same FCM token associated with multiple users.
+            await doc.ref.delete();
+          } else {
+            userAlreadyHasToken = true;
+          }
         }
       }
       if (userAlreadyHasToken) {
@@ -72,6 +82,9 @@ exports.addFcmToken = functions
       throw new functions.https.HttpsError(
         "internal",
         "Failed to add FCM token.",
+        {
+          message: error?.message ?? String(error),
+        },
       );
     }
   });
