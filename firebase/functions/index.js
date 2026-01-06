@@ -16,47 +16,64 @@ exports.addFcmToken = functions
   .region("us-west2")
   .https.onCall(async (data, context) => {
     if (!context.auth) {
-      return "Failed: Unauthenticated calls are not allowed.";
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Unauthenticated calls are not allowed.",
+      );
     }
-    const userDocPath = data.userDocPath;
-    const fcmToken = data.fcmToken;
-    const deviceType = data.deviceType;
+    const userDocPath = data?.userDocPath;
+    const fcmToken = data?.fcmToken;
+    const deviceType = data?.deviceType;
     if (
-      typeof userDocPath === "undefined" ||
-      typeof fcmToken === "undefined" ||
-      typeof deviceType === "undefined" ||
+      typeof userDocPath !== "string" ||
+      typeof fcmToken !== "string" ||
+      typeof deviceType !== "string" ||
       userDocPath.split("/").length <= 1 ||
       fcmToken.length === 0 ||
       deviceType.length === 0
     ) {
-      return "Invalid arguments encoutered when adding FCM token.";
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "Invalid arguments encountered when adding FCM token.",
+      );
     }
-    if (context.auth.uid != userDocPath.split("/")[1]) {
-      return "Failed: Authenticated user doesn't match user provided.";
+    if (context.auth.uid !== userDocPath.split("/")[1]) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "Authenticated user doesn't match user provided.",
+      );
     }
-    const existingTokens = await firestore
-      .collectionGroup(kFcmTokensCollection)
-      .where("fcm_token", "==", fcmToken)
-      .get();
-    var userAlreadyHasToken = false;
-    for (var doc of existingTokens.docs) {
-      const user = doc.ref.parent.parent;
-      if (user.path != userDocPath) {
-        // Should never have the same FCM token associated with multiple users.
-        await doc.ref.delete();
-      } else {
-        userAlreadyHasToken = true;
+    try {
+      const existingTokens = await firestore
+        .collectionGroup(kFcmTokensCollection)
+        .where("fcm_token", "==", fcmToken)
+        .get();
+      let userAlreadyHasToken = false;
+      for (const doc of existingTokens.docs) {
+        const user = doc.ref.parent.parent;
+        if (user.path !== userDocPath) {
+          // Should never have the same FCM token associated with multiple users.
+          await doc.ref.delete();
+        } else {
+          userAlreadyHasToken = true;
+        }
       }
+      if (userAlreadyHasToken) {
+        return "FCM token already exists for this user. Ignoring...";
+      }
+      await getUserFcmTokensCollection(userDocPath).doc().set({
+        fcm_token: fcmToken,
+        device_type: deviceType,
+        created_at: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      return "Successfully added FCM token!";
+    } catch (error) {
+      console.error("addFcmToken failed", error);
+      throw new functions.https.HttpsError(
+        "internal",
+        "Failed to add FCM token.",
+      );
     }
-    if (userAlreadyHasToken) {
-      return "FCM token already exists for this user. Ignoring...";
-    }
-    await getUserFcmTokensCollection(userDocPath).doc().set({
-      fcm_token: fcmToken,
-      device_type: deviceType,
-      created_at: admin.firestore.FieldValue.serverTimestamp(),
-    });
-    return "Successfully added FCM token!";
   });
 
 exports.sendPushNotificationsTrigger = functions
