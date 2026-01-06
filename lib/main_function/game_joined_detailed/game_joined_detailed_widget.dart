@@ -180,14 +180,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                       .headlineMedium
                                       .override(
                                         font: GoogleFonts.outfit(
-                                          fontWeight:
-                                              AppTheme.of(context)
-                                                  .headlineMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .headlineMedium
-                                                  .fontStyle,
+                                          fontWeight: AppTheme.of(context)
+                                              .headlineMedium
+                                              .fontWeight,
+                                          fontStyle: AppTheme.of(context)
+                                              .headlineMedium
+                                              .fontStyle,
                                         ),
                                         color: AppTheme.of(context)
                                             .primaryBtnText,
@@ -198,15 +196,62 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         fontStyle: AppTheme.of(context)
                                             .headlineMedium
                                             .fontStyle,
+                                        fontSize: isNarrow ? 24.0 : null,
+                                      );
+                              final courseStyle =
+                                  AppTheme.of(context).headlineSmall.override(
+                                        font: GoogleFonts.outfit(
+                                          fontWeight: AppTheme.of(context)
+                                              .headlineSmall
+                                              .fontWeight,
+                                          fontStyle: AppTheme.of(context)
+                                              .headlineSmall
+                                              .fontStyle,
+                                        ),
+                                        color: Colors.white,
+                                        fontSize: isNarrow ? 14.0 : 16.0,
+                                        letterSpacing: 0.0,
+                                        fontWeight: AppTheme.of(context)
+                                            .headlineSmall
+                                            .fontWeight,
+                                        fontStyle: AppTheme.of(context)
+                                            .headlineSmall
+                                            .fontStyle,
+                                      );
+
+                              if (isNarrow) {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      gameJoinedDetailedGamesRecord.nameGame,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: titleStyle,
+                                    ),
+                                    const SizedBox(height: 4.0),
+                                    Align(
+                                      alignment:
+                                          AlignmentDirectional(1.0, 0.0),
+                                      child: Text(
+                                        gameJoinedDetailedGamesRecord
+                                            .coursePlay,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: courseStyle,
                                       ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Align(
-                                  alignment: AlignmentDirectional(1.0, 0.0),
-                                  child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 20.0, 0.0),
+                                    ),
+                                  ],
+                                );
+                              }
+
+                              return Row(
+                                mainAxisSize: MainAxisSize.max,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
                                     child: Text(
                                       gameJoinedDetailedGamesRecord.coursePlay,
                                       maxLines: 1,
@@ -238,9 +283,26 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                           ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            ],
+                                  Expanded(
+                                    child: Align(
+                                      alignment: AlignmentDirectional(1.0, 0.0),
+                                      child: Padding(
+                                        padding:
+                                            EdgeInsetsDirectional.fromSTEB(
+                                                0.0, 0.0, 20.0, 0.0),
+                                        child: Text(
+                                          gameJoinedDetailedGamesRecord
+                                              .coursePlay,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: courseStyle,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                         ),
                       ],
