@@ -531,7 +531,12 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                 size: 24.0,
                                               ),
                                               onPressed: () {
-                                                print('IconButton pressed ...');
+                                                textController?.clear();
+                                                FocusScope.of(context)
+                                                    .unfocus();
+                                                if (mounted) {
+                                                  setState(() {});
+                                                }
                                               },
                                             ),
                                           ),
@@ -587,12 +592,30 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                             ),
                                           );
                                         }
+                                        final searchTerm = textController?.text
+                                                .trim()
+                                                .toLowerCase() ??
+                                            '';
                                         List<UsersRecord>
                                             listViewUsersRecordList = snapshot
                                                 .data!
                                                 .where((u) =>
                                                     u.uid != currentUserUid)
-                                                .toList();
+                                                .where((user) {
+                                          if (searchTerm.isEmpty) {
+                                            return true;
+                                          }
+                                          final displayName =
+                                              user.displayName.toLowerCase();
+                                          final firstName =
+                                              user.firstName.toLowerCase();
+                                          final lastName =
+                                              user.lastName.toLowerCase();
+                                          return displayName
+                                                  .contains(searchTerm) ||
+                                              firstName.contains(searchTerm) ||
+                                              lastName.contains(searchTerm);
+                                        }).toList();
 
                                         return ListView.separated(
                                           padding: EdgeInsets.fromLTRB(
@@ -1038,84 +1061,117 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                       ),
                                                       Stack(
                                                         children: [
-                                                          if (listViewUsersRecord
-                                                                  .friendRequests
-                                                                  .contains(
-                                                                      currentUserReference) ||
-                                                              (currentUserDocument
-                                                                          ?.friendRequests
-                                                                          .toList() ??
-                                                                      [])
-                                                                  .contains(
-                                                                      listViewUsersRecord
-                                                                          .reference))
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          5.0,
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0),
-                                                              child:
-                                                                  AuthUserStreamWidget(
-                                                                builder:
-                                                                    (context) =>
-                                                                        AppIconButton(
-                                                                  borderColor:
-                                                                      AppTheme.of(
-                                                                              context)
-                                                                          .primary,
-                                                                  borderRadius:
-                                                                      20.0,
-                                                                  borderWidth:
-                                                                      1.0,
-                                                                  buttonSize:
-                                                                      40.0,
-                                                                  fillColor: Color(
-                                                                      0xFF253551),
-                                                                  icon: Icon(
-                                                                    Icons
-                                                                        .pending,
-                                                                    color: Colors
-                                                                        .white,
-                                                                    size: 22.0,
+                                                          AuthUserStreamWidget(
+                                                            builder: (context) {
+                                                              final isFriend =
+                                                                  (currentUserDocument
+                                                                              ?.friends
+                                                                              .toList() ??
+                                                                          [])
+                                                                      .contains(
+                                                                listViewUsersRecord
+                                                                    .reference,
+                                                              );
+                                                              final hasPending =
+                                                                  listViewUsersRecord
+                                                                      .friendRequests
+                                                                      .contains(
+                                                                          currentUserReference) ||
+                                                                      (currentUserDocument
+                                                                              ?.friendRequests
+                                                                              .toList() ??
+                                                                          [])
+                                                                          .contains(
+                                                                listViewUsersRecord
+                                                                    .reference,
+                                                              );
+                                                              if (isFriend) {
+                                                                return Padding(
+                                                                  padding:
+                                                                      EdgeInsetsDirectional
+                                                                          .fromSTEB(
+                                                                              5.0,
+                                                                              0.0,
+                                                                              5.0,
+                                                                              0.0),
+                                                                  child:
+                                                                      AppIconButton(
+                                                                    borderColor:
+                                                                        AppTheme.of(context)
+                                                                            .primary,
+                                                                    borderRadius:
+                                                                        20.0,
+                                                                    borderWidth:
+                                                                        1.0,
+                                                                    buttonSize:
+                                                                        40.0,
+                                                                    fillColor:
+                                                                        Color(
+                                                                            0xFF253551),
+                                                                    icon: Icon(
+                                                                      Icons.people,
+                                                                      color: Colors
+                                                                          .white,
+                                                                      size: 22.0,
+                                                                    ),
+                                                                    onPressed:
+                                                                        () {
+                                                                      print(
+                                                                          'friends pressed ...');
+                                                                    },
                                                                   ),
-                                                                  onPressed:
-                                                                      () {
-                                                                    print(
-                                                                        'pending pressed ...');
-                                                                  },
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          if (!listViewUsersRecord
-                                                                  .friendRequests
-                                                                  .contains(
-                                                                      currentUserReference) &&
-                                                              !(currentUserDocument
-                                                                          ?.friendRequests
-                                                                          .toList() ??
-                                                                      [])
-                                                                  .contains(
-                                                                      listViewUsersRecord
-                                                                          .reference))
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          5.0,
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0),
-                                                              child:
-                                                                  AuthUserStreamWidget(
-                                                                builder:
-                                                                    (context) =>
-                                                                        AppIconButton(
+                                                                );
+                                                              }
+                                                              if (hasPending) {
+                                                                return Padding(
+                                                                  padding:
+                                                                      EdgeInsetsDirectional
+                                                                          .fromSTEB(
+                                                                              5.0,
+                                                                              0.0,
+                                                                              5.0,
+                                                                              0.0),
+                                                                  child:
+                                                                      AppIconButton(
+                                                                    borderColor:
+                                                                        AppTheme.of(context)
+                                                                            .primary,
+                                                                    borderRadius:
+                                                                        20.0,
+                                                                    borderWidth:
+                                                                        1.0,
+                                                                    buttonSize:
+                                                                        40.0,
+                                                                    fillColor:
+                                                                        Color(
+                                                                            0xFF253551),
+                                                                    icon: Icon(
+                                                                      Icons
+                                                                          .pending,
+                                                                      color: Colors
+                                                                          .white,
+                                                                      size: 22.0,
+                                                                    ),
+                                                                    onPressed:
+                                                                        () {
+                                                                      print(
+                                                                          'pending pressed ...');
+                                                                    },
+                                                                  ),
+                                                                );
+                                                              }
+                                                              return Padding(
+                                                                padding:
+                                                                    EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            5.0,
+                                                                            0.0,
+                                                                            5.0,
+                                                                            0.0),
+                                                                child:
+                                                                    AppIconButton(
                                                                   borderColor:
-                                                                      AppTheme.of(
-                                                                              context)
+                                                                      AppTheme.of(context)
                                                                           .primary,
                                                                   borderRadius:
                                                                       20.0,
@@ -1123,8 +1179,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                       1.0,
                                                                   buttonSize:
                                                                       40.0,
-                                                                  fillColor: Color(
-                                                                      0xFF253551),
+                                                                  fillColor:
+                                                                      Color(
+                                                                          0xFF253551),
                                                                   icon: Icon(
                                                                     Icons.add,
                                                                     color: Colors
@@ -1152,8 +1209,10 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           .uid,
                                                                       '007',
                                                                     ));
-                                                                    if (mounted) setState(
-                                                                        () {});
+                                                                    if (mounted) {
+                                                                      setState(
+                                                                          () {});
+                                                                    }
                                                                     ScaffoldMessenger.of(
                                                                             context)
                                                                         .clearSnackBars();
@@ -1185,55 +1244,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                     );
                                                                   },
                                                                 ),
-                                                              ),
-                                                            ),
-                                                          if ((currentUserDocument
-                                                                      ?.friends
-                                                                      .toList() ??
-                                                                  [])
-                                                              .contains(
-                                                                  listViewUsersRecord
-                                                                      .reference))
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          5.0,
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0),
-                                                              child:
-                                                                  AuthUserStreamWidget(
-                                                                builder:
-                                                                    (context) =>
-                                                                        AppIconButton(
-                                                                  borderColor:
-                                                                      AppTheme.of(
-                                                                              context)
-                                                                          .primary,
-                                                                  borderRadius:
-                                                                      20.0,
-                                                                  borderWidth:
-                                                                      1.0,
-                                                                  buttonSize:
-                                                                      40.0,
-                                                                  fillColor: Color(
-                                                                      0xFF253551),
-                                                                  icon: Icon(
-                                                                    Icons
-                                                                        .people,
-                                                                    color: Colors
-                                                                        .white,
-                                                                    size: 22.0,
-                                                                  ),
-                                                                  onPressed:
-                                                                      () {
-                                                                    print(
-                                                                        'friends pressed ...');
-                                                                  },
-                                                                ),
-                                                              ),
-                                                            ),
+                                                              );
+                                                            },
+                                                          ),
                                                         ],
                                                       ),
                                                     ],
