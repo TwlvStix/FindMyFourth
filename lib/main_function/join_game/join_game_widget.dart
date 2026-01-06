@@ -142,24 +142,61 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                             16.0, 16.0, 16.0, 44.0),
                         child: AppButton(
                           onPressed: () async {
-                            await widget.gameRef!.reference.update({
-                              ...mapToFirestore(
-                                {
-                                  'joined_players': FieldValue.arrayUnion(
-                                      [currentUserReference]),
-                                },
-                              ),
-                            });
+                            if (widget.gameRef == null) {
+                              showSnackbar(
+                                context,
+                                'Game details are unavailable. Please try again.',
+                              );
+                              return;
+                            }
+                            if (currentUserReference == null) {
+                              showSnackbar(
+                                context,
+                                'Please sign in to join this game.',
+                              );
+                              return;
+                            }
+                            try {
+                              await widget.gameRef!.reference.update({
+                                ...mapToFirestore(
+                                  {
+                                    'joined_players': FieldValue.arrayUnion(
+                                        [currentUserReference]),
+                                  },
+                                ),
+                              });
 
-                            await widget.gameRef!.chatRef!.update({
-                              ...mapToFirestore(
-                                {
-                                  'users': FieldValue.arrayUnion(
-                                      [currentUserReference]),
-                                },
-                              ),
-                            });
+                              await widget.gameRef!.chatRef!.update({
+                                ...mapToFirestore(
+                                  {
+                                    'users': FieldValue.arrayUnion(
+                                        [currentUserReference]),
+                                  },
+                                ),
+                              });
+                            } on FirebaseException catch (error) {
+                              if (!mounted) {
+                                return;
+                              }
+                              final message = error.code == 'permission-denied'
+                                  ? 'You do not have permission to join this game.'
+                                  : 'Unable to join the game right now. Please try again.';
+                              showSnackbar(context, message);
+                              return;
+                            } catch (_) {
+                              if (!mounted) {
+                                return;
+                              }
+                              showSnackbar(
+                                context,
+                                'Unable to join the game right now. Please try again.',
+                              );
+                              return;
+                            }
 
+                            if (!mounted) {
+                              return;
+                            }
                             context.pushNamed(
                               SuccessPageWidget.routeName,
                               extra: <String, dynamic>{
