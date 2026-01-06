@@ -972,107 +972,47 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             child: Text('Ok'),
                                           ),
                                         ],
-                                      );
+                                        );
                                     },
                                   );
                                 }
-
-                                return AppButton(
-                                    onPressed: () async {
-                                      if ((joinGameDetailedGamesRecord
-                                                  .maxPlayers >
-                                              joinGameDetailedGamesRecord
-                                                  .joinedPlayers.length) &&
-                                          ((joinGameDetailedGamesRecord
-                                                      .friendGame ==
-                                                  'Public') ||
-                                              ((joinGameDetailedGamesRecord
-                                                          .friendGame ==
-                                                      'Friends') &&
-                                                  isCreatorFriend))) {
-                                        await showModalBottomSheet(
-                                          isScrollControlled: true,
-                                          backgroundColor: Colors.transparent,
-                                          enableDrag: false,
-                                          context: context,
-                                          builder: (context) {
-                                            return Padding(
-                                              padding:
-                                                  MediaQuery.viewInsetsOf(
-                                                      context),
-                                              child: JoinGameWidget(
-                                                gameRef:
-                                                    joinGameDetailedGamesRecord,
-                                              ),
-                                            );
-                                          },
-                                        ).then((value) {
-                                          if (mounted) {
-                                            setState(() {});
-                                          }
-                                        });
-                                      } else {
-                                        await showDialog(
-                                          context: context,
-                                          builder: (alertDialogContext) {
-                                            return AlertDialog(
-                                              title: Text('Sorry!'),
-                                              content: Text(
-                                                  'You are not friends with the game creator or the group  is full.'),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(
-                                                          alertDialogContext),
-                                                  child: Text('Ok'),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        );
-                                        return;
-                                      }
-                                    },
-                                    text: 'Reserve Spot',
-                                    options: AppButtonOptions(
-                                      width: 300.0,
-                                      height: 60.0,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 0.0, 0.0),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0.0, 0.0, 0.0, 0.0),
-                                      color: Color(0xFF253551),
-                                      textStyle: AppTheme.of(context)
-                                          .headlineSmall
-                                          .override(
-                                            font: GoogleFonts.outfit(
-                                              fontWeight: AppTheme.of(context)
-                                                  .headlineSmall
-                                                  .fontWeight,
-                                              fontStyle: AppTheme.of(context)
-                                                  .headlineSmall
-                                                  .fontStyle,
-                                            ),
-                                            color: Colors.white,
-                                            letterSpacing: 0.0,
-                                            fontWeight: AppTheme.of(context)
-                                                .headlineSmall
-                                                .fontWeight,
-                                            fontStyle: AppTheme.of(context)
-                                                .headlineSmall
-                                                .fontStyle,
-                                          ),
-                                      elevation: 3.0,
-                                      borderSide: BorderSide(
-                                        color: Colors.transparent,
-                                        width: 1.0,
-                                      ),
-                                      borderRadius:
-                                          BorderRadius.circular(40.0),
-                                    ),
-                                  );
                               },
+                              text: 'Reserve Spot',
+                              options: AppButtonOptions(
+                                width: 300.0,
+                                height: 60.0,
+                                padding: EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 0.0, 0.0, 0.0),
+                                iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 0.0, 0.0, 0.0),
+                                color: Color(0xFF253551),
+                                textStyle: AppTheme.of(context)
+                                    .headlineSmall
+                                    .override(
+                                      font: GoogleFonts.outfit(
+                                        fontWeight: AppTheme.of(context)
+                                            .headlineSmall
+                                            .fontWeight,
+                                        fontStyle: AppTheme.of(context)
+                                            .headlineSmall
+                                            .fontStyle,
+                                      ),
+                                      color: Colors.white,
+                                      letterSpacing: 0.0,
+                                      fontWeight: AppTheme.of(context)
+                                          .headlineSmall
+                                          .fontWeight,
+                                      fontStyle: AppTheme.of(context)
+                                          .headlineSmall
+                                          .fontStyle,
+                                    ),
+                                elevation: 3.0,
+                                borderSide: BorderSide(
+                                  color: Colors.transparent,
+                                  width: 1.0,
+                                ),
+                                borderRadius: BorderRadius.circular(40.0),
+                              ),
                             ),
                           ),
                         ),
