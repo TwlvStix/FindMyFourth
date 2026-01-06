@@ -4,7 +4,7 @@ import '/core/app_theme.dart';
 import '/core/app_util.dart';
 import '/core/widgets/app_button.dart';
 import 'dart:ui';
-import '/main_function/success_page/success_page_widget.dart';
+import '/main_function/games_joined/games_joined_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -197,8 +197,9 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                             if (!mounted) {
                               return;
                             }
-                            context.pushNamed(
-                              SuccessPageWidget.routeName,
+                            Navigator.of(context).pop();
+                            context.goNamed(
+                              GamesJoinedWidget.routeName,
                               extra: <String, dynamic>{
                                 kTransitionInfoKey: TransitionInfo(
                                   hasTransition: true,
