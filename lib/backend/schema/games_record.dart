@@ -81,6 +81,11 @@ class GamesRecord extends FirestoreRecord {
   List<DocumentReference> get joinedPlayers => _joinedPlayers ?? const [];
   bool hasJoinedPlayers() => _joinedPlayers != null;
 
+  // "guest_players" field.
+  List<String>? _guestPlayers;
+  List<String> get guestPlayers => _guestPlayers ?? const [];
+  bool hasGuestPlayers() => _guestPlayers != null;
+
   // "rules_setting" field.
   String? _rulesSetting;
   String get rulesSetting => _rulesSetting ?? '';
@@ -120,6 +125,7 @@ class GamesRecord extends FirestoreRecord {
     _courseRef = snapshotData['courseRef'] as DocumentReference?;
     _friendGame = snapshotData['friend_game'] as String?;
     _joinedPlayers = getDataList(snapshotData['joined_players']);
+    _guestPlayers = getDataList(snapshotData['guest_players']);
     _rulesSetting = snapshotData['rules_setting'] as String?;
     _userRef = snapshotData['userRef'] as DocumentReference?;
     _uid = snapshotData['uid'] as String?;
@@ -173,6 +179,7 @@ Map<String, dynamic> createGamesRecordData({
   int? maxPlayers,
   DocumentReference? courseRef,
   String? friendGame,
+  List<String>? guestPlayers,
   String? rulesSetting,
   DocumentReference? userRef,
   String? uid,
@@ -193,6 +200,7 @@ Map<String, dynamic> createGamesRecordData({
       'max_players': maxPlayers,
       'courseRef': courseRef,
       'friend_game': friendGame,
+      'guest_players': guestPlayers,
       'rules_setting': rulesSetting,
       'userRef': userRef,
       'uid': uid,

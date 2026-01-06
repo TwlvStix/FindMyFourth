@@ -309,6 +309,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                           itemBuilder: (context, containerVarIndex) {
                             final containerVarItem =
                                 containerVar[containerVarIndex];
+                            final playersNeeded = containerVarItem.maxPlayers -
+                                (containerVarItem.joinedPlayers.length +
+                                    containerVarItem.guestPlayers.length);
                             return Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 15.0),
@@ -879,11 +882,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                               ),
                                                     ),
                                                     Text(
-                                                      (containerVarItem
-                                                                  .maxPlayers -
-                                                              containerVarItem
-                                                                  .joinedPlayers
-                                                                  .length)
+                                                      (playersNeeded < 0
+                                                              ? 0
+                                                              : playersNeeded)
                                                           .toString(),
                                                       style: AppTheme
                                                               .of(context)
