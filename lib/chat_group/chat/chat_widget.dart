@@ -3,7 +3,7 @@ import '/backend/backend.dart';
 import '/chat_group/empty_state_simple/empty_state_simple_widget.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 import '/chat_group/chat_2_details/chat2_details_widget.dart';
 import '/chat_group/chat_2_invite_users/chat2_invite_users_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';

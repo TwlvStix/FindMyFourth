@@ -6,9 +6,9 @@ import '/chat_group/empty_state_simple/empty_state_simple_widget.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/media_display.dart';
 import '/core/app_theme.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 import '/core/video_player.dart';
-import '/core/upload_data.dart';
+import '/utils/upload_data.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,8 +53,8 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
   final formKey = GlobalKey<FormState>();
   List<ChatMessagesRecord>? listViewPreviousSnapshot;
   bool isDataUploadingUploadDataJub4 = false;
-  FFUploadedFile uploadedLocalFileUploadDataJub4 =
-      FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
+  UploadedFile uploadedLocalFileUploadDataJub4 =
+      UploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
   String uploadedFileUrlUploadDataJub4 = '';
 
   FocusNode? textFieldFocusNode;
@@ -267,7 +267,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                         isDataUploadingUploadDataJub4 =
                                             false;
                                         uploadedLocalFileUploadDataJub4 =
-                                            FFUploadedFile(
+                                            UploadedFile(
                                                 bytes: Uint8List.fromList([]),
                                                 originalFilename: '');
                                         uploadedFileUrlUploadDataJub4 =
@@ -325,7 +325,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                     m.storagePath, context))) {
                               if (mounted) setState(() =>
                                   isDataUploadingUploadDataJub4 = true);
-                              var selectedUploadedFiles = <FFUploadedFile>[];
+                              var selectedUploadedFiles = <UploadedFile>[];
 
                               var downloadUrls = <String>[];
                               try {
@@ -335,7 +335,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                   showLoading: true,
                                 );
                                 selectedUploadedFiles = selectedMedia
-                                    .map((m) => FFUploadedFile(
+                                    .map((m) => UploadedFile(
                                           name: m.storagePath.split('/').last,
                                           bytes: m.bytes,
                                           height: m.dimensions?.height,
@@ -460,7 +460,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                         isDataUploadingUploadDataJub4 =
                                             false;
                                         uploadedLocalFileUploadDataJub4 =
-                                            FFUploadedFile(
+                                            UploadedFile(
                                                 bytes: Uint8List.fromList([]),
                                                 originalFilename: '');
                                         uploadedFileUrlUploadDataJub4 =
@@ -728,7 +728,7 @@ class _ChatThreadComponentWidgetState extends State<ChatThreadComponentWidget> {
                                           isDataUploadingUploadDataJub4 =
                                               false;
                                           uploadedLocalFileUploadDataJub4 =
-                                              FFUploadedFile(
+                                              UploadedFile(
                                                   bytes: Uint8List.fromList([]),
                                                   originalFilename: '');
                                           uploadedFileUrlUploadDataJub4 =

@@ -1,9 +1,9 @@
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/core/app_theme.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
-import '/core/upload_data.dart';
+import '/utils/upload_data.dart';
 import '/newsfeed/newsfeed/newsfeed_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -32,8 +32,8 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
   TextEditingController? inputContentTextController;
   String? Function(BuildContext, String?)? inputContentTextControllerValidator;
   bool isDataUploadingEditPicNewsfeed = false;
-  FFUploadedFile uploadedLocalFileEditPicNewsfeed =
-      FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
+  UploadedFile uploadedLocalFileEditPicNewsfeed =
+      UploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
   String uploadedFileUrlEditPicNewsfeed = '';
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -408,12 +408,12 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                               validateFileFormat(m.storagePath, context))) {
                         if (mounted) setState(() =>
                             isDataUploadingEditPicNewsfeed = true);
-                        var selectedUploadedFiles = <FFUploadedFile>[];
+                        var selectedUploadedFiles = <UploadedFile>[];
 
                         var downloadUrls = <String>[];
                         try {
                           selectedUploadedFiles = selectedMedia
-                              .map((m) => FFUploadedFile(
+                              .map((m) => UploadedFile(
                                     name: m.storagePath.split('/').last,
                                     bytes: m.bytes,
                                     height: m.dimensions?.height,

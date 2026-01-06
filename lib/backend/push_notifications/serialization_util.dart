@@ -16,7 +16,7 @@ String dateTimeRangeToString(DateTimeRange dateTimeRange) {
   return '$startStr|$endStr';
 }
 
-String placeToString(FFPlace place) => jsonEncode({
+String placeToString(Place place) => jsonEncode({
       'latLng': place.latLng.serialize(),
       'name': place.name,
       'address': place.address,
@@ -26,7 +26,7 @@ String placeToString(FFPlace place) => jsonEncode({
       'zipCode': place.zipCode,
     });
 
-String uploadedFileToString(FFUploadedFile uploadedFile) =>
+String uploadedFileToString(UploadedFile uploadedFile) =>
     uploadedFile.serialize();
 
 /// Converts the input value into a value that can be JSON encoded.
@@ -40,10 +40,10 @@ dynamic serializeParameter(dynamic value) {
       return (value as LatLng).serialize();
     case Color:
       return (value as Color).toCssString();
-    case FFPlace:
-      return placeToString(value as FFPlace);
-    case FFUploadedFile:
-      return uploadedFileToString(value as FFUploadedFile);
+    case Place:
+      return placeToString(value as Place);
+    case UploadedFile:
+      return uploadedFileToString(value as UploadedFile);
   }
 
   if (value is DocumentReference) {
@@ -92,7 +92,7 @@ LatLng? latLngFromString(String? latLngStr) {
   );
 }
 
-FFPlace placeFromString(String placeStr) {
+Place placeFromString(String placeStr) {
   final serializedData = jsonDecode(placeStr) as Map<String, dynamic>;
   final data = {
     'latLng': serializedData.containsKey('latLng')
@@ -105,7 +105,7 @@ FFPlace placeFromString(String placeStr) {
     'country': serializedData['country'] ?? '',
     'zipCode': serializedData['zipCode'] ?? '',
   };
-  return FFPlace(
+  return Place(
     latLng: data['latLng'] as LatLng,
     name: data['name'] as String,
     address: data['address'] as String,
@@ -116,8 +116,8 @@ FFPlace placeFromString(String placeStr) {
   );
 }
 
-FFUploadedFile uploadedFileFromString(String uploadedFileStr) =>
-    FFUploadedFile.deserialize(uploadedFileStr);
+UploadedFile uploadedFileFromString(String uploadedFileStr) =>
+    UploadedFile.deserialize(uploadedFileStr);
 
 T? getParameter<T>(Map<String, dynamic> data, String paramName) {
   try {
@@ -138,9 +138,9 @@ T? getParameter<T>(Map<String, dynamic> data, String paramName) {
         return latLngFromString(param) as T;
       case Color:
         return fromCssColor(param) as T;
-      case FFPlace:
+      case Place:
         return placeFromString(param) as T;
-      case FFUploadedFile:
+      case UploadedFile:
         return uploadedFileFromString(param) as T;
     }
     if (param is String) {

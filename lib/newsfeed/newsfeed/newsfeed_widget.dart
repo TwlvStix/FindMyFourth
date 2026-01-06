@@ -3,7 +3,7 @@ import '/backend/backend.dart';
 import '/core/animations.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
 import '/core/custom_functions.dart' as functions;
 import '/friends/tab_friends/tab_friends_widget.dart';

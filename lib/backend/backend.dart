@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../auth/firebase_auth/auth_util.dart';
 
-import '../core/app_util.dart';
+import '../services/firestore_repository.dart';
+import '../utils/app_util.dart';
 import 'schema/util/firestore_util.dart';
 
 import 'schema/users_record.dart';
@@ -35,6 +36,8 @@ export 'schema/posts_record.dart';
 export 'schema/roles_record.dart';
 export 'schema/add_players_record.dart';
 export 'schema/verification_dash_record.dart';
+
+const FirestoreRepository firestoreRepository = FirestoreRepository();
 
 /// Functions to query UsersRecords (as a Stream and as a Future).
 Future<int> queryUsersRecordCount({
@@ -72,7 +75,7 @@ Future<List<UsersRecord>> queryUsersRecordOnce({
       limit: limit,
       singleRecord: singleRecord,
     );
-Future<FFFirestorePage<UsersRecord>> queryUsersRecordPage({
+Future<FirestorePage<UsersRecord>> queryUsersRecordPage({
   Query Function(Query)? queryBuilder,
   DocumentSnapshot? nextPageMarker,
   required int pageSize,
@@ -80,7 +83,7 @@ Future<FFFirestorePage<UsersRecord>> queryUsersRecordPage({
   required PagingController<DocumentSnapshot?, UsersRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    queryCollectionPage(
+    firestoreRepository.queryCollectionPage(
       UsersRecord.collection,
       UsersRecord.fromSnapshot,
       queryBuilder: queryBuilder,
@@ -150,7 +153,7 @@ Future<List<CourseRecord>> queryCourseRecordOnce({
       limit: limit,
       singleRecord: singleRecord,
     );
-Future<FFFirestorePage<CourseRecord>> queryCourseRecordPage({
+Future<FirestorePage<CourseRecord>> queryCourseRecordPage({
   Query Function(Query)? queryBuilder,
   DocumentSnapshot? nextPageMarker,
   required int pageSize,
@@ -158,7 +161,7 @@ Future<FFFirestorePage<CourseRecord>> queryCourseRecordPage({
   required PagingController<DocumentSnapshot?, CourseRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    queryCollectionPage(
+    firestoreRepository.queryCollectionPage(
       CourseRecord.collection,
       CourseRecord.fromSnapshot,
       queryBuilder: queryBuilder,
@@ -228,7 +231,7 @@ Future<List<ChatMessagesRecord>> queryChatMessagesRecordOnce({
       limit: limit,
       singleRecord: singleRecord,
     );
-Future<FFFirestorePage<ChatMessagesRecord>> queryChatMessagesRecordPage({
+Future<FirestorePage<ChatMessagesRecord>> queryChatMessagesRecordPage({
   Query Function(Query)? queryBuilder,
   DocumentSnapshot? nextPageMarker,
   required int pageSize,
@@ -236,7 +239,7 @@ Future<FFFirestorePage<ChatMessagesRecord>> queryChatMessagesRecordPage({
   required PagingController<DocumentSnapshot?, ChatMessagesRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    queryCollectionPage(
+    firestoreRepository.queryCollectionPage(
       ChatMessagesRecord.collection,
       ChatMessagesRecord.fromSnapshot,
       queryBuilder: queryBuilder,
@@ -306,7 +309,7 @@ Future<List<ChatsRecord>> queryChatsRecordOnce({
       limit: limit,
       singleRecord: singleRecord,
     );
-Future<FFFirestorePage<ChatsRecord>> queryChatsRecordPage({
+Future<FirestorePage<ChatsRecord>> queryChatsRecordPage({
   Query Function(Query)? queryBuilder,
   DocumentSnapshot? nextPageMarker,
   required int pageSize,
@@ -314,7 +317,7 @@ Future<FFFirestorePage<ChatsRecord>> queryChatsRecordPage({
   required PagingController<DocumentSnapshot?, ChatsRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    queryCollectionPage(
+    firestoreRepository.queryCollectionPage(
       ChatsRecord.collection,
       ChatsRecord.fromSnapshot,
       queryBuilder: queryBuilder,
@@ -384,7 +387,7 @@ Future<List<GamesRecord>> queryGamesRecordOnce({
       limit: limit,
       singleRecord: singleRecord,
     );
-Future<FFFirestorePage<GamesRecord>> queryGamesRecordPage({
+Future<FirestorePage<GamesRecord>> queryGamesRecordPage({
   Query Function(Query)? queryBuilder,
   DocumentSnapshot? nextPageMarker,
   required int pageSize,
@@ -392,7 +395,7 @@ Future<FFFirestorePage<GamesRecord>> queryGamesRecordPage({
   required PagingController<DocumentSnapshot?, GamesRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    queryCollectionPage(
+    firestoreRepository.queryCollectionPage(
       GamesRecord.collection,
       GamesRecord.fromSnapshot,
       queryBuilder: queryBuilder,
@@ -462,7 +465,7 @@ Future<List<FriendRequestRecord>> queryFriendRequestRecordOnce({
       limit: limit,
       singleRecord: singleRecord,
     );
-Future<FFFirestorePage<FriendRequestRecord>> queryFriendRequestRecordPage({
+Future<FirestorePage<FriendRequestRecord>> queryFriendRequestRecordPage({
   Query Function(Query)? queryBuilder,
   DocumentSnapshot? nextPageMarker,
   required int pageSize,
@@ -470,7 +473,7 @@ Future<FFFirestorePage<FriendRequestRecord>> queryFriendRequestRecordPage({
   required PagingController<DocumentSnapshot?, FriendRequestRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    queryCollectionPage(
+    firestoreRepository.queryCollectionPage(
       FriendRequestRecord.collection,
       FriendRequestRecord.fromSnapshot,
       queryBuilder: queryBuilder,
@@ -540,7 +543,7 @@ Future<List<PostsRecord>> queryPostsRecordOnce({
       limit: limit,
       singleRecord: singleRecord,
     );
-Future<FFFirestorePage<PostsRecord>> queryPostsRecordPage({
+Future<FirestorePage<PostsRecord>> queryPostsRecordPage({
   Query Function(Query)? queryBuilder,
   DocumentSnapshot? nextPageMarker,
   required int pageSize,
@@ -548,7 +551,7 @@ Future<FFFirestorePage<PostsRecord>> queryPostsRecordPage({
   required PagingController<DocumentSnapshot?, PostsRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    queryCollectionPage(
+    firestoreRepository.queryCollectionPage(
       PostsRecord.collection,
       PostsRecord.fromSnapshot,
       queryBuilder: queryBuilder,
@@ -618,7 +621,7 @@ Future<List<RolesRecord>> queryRolesRecordOnce({
       limit: limit,
       singleRecord: singleRecord,
     );
-Future<FFFirestorePage<RolesRecord>> queryRolesRecordPage({
+Future<FirestorePage<RolesRecord>> queryRolesRecordPage({
   Query Function(Query)? queryBuilder,
   DocumentSnapshot? nextPageMarker,
   required int pageSize,
@@ -626,7 +629,7 @@ Future<FFFirestorePage<RolesRecord>> queryRolesRecordPage({
   required PagingController<DocumentSnapshot?, RolesRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    queryCollectionPage(
+    firestoreRepository.queryCollectionPage(
       RolesRecord.collection,
       RolesRecord.fromSnapshot,
       queryBuilder: queryBuilder,
@@ -699,7 +702,7 @@ Future<List<AddPlayersRecord>> queryAddPlayersRecordOnce({
       limit: limit,
       singleRecord: singleRecord,
     );
-Future<FFFirestorePage<AddPlayersRecord>> queryAddPlayersRecordPage({
+Future<FirestorePage<AddPlayersRecord>> queryAddPlayersRecordPage({
   DocumentReference? parent,
   Query Function(Query)? queryBuilder,
   DocumentSnapshot? nextPageMarker,
@@ -708,7 +711,7 @@ Future<FFFirestorePage<AddPlayersRecord>> queryAddPlayersRecordPage({
   required PagingController<DocumentSnapshot?, AddPlayersRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    queryCollectionPage(
+    firestoreRepository.queryCollectionPage(
       AddPlayersRecord.collection(parent),
       AddPlayersRecord.fromSnapshot,
       queryBuilder: queryBuilder,
@@ -778,7 +781,7 @@ Future<List<VerificationDashRecord>> queryVerificationDashRecordOnce({
       limit: limit,
       singleRecord: singleRecord,
     );
-Future<FFFirestorePage<VerificationDashRecord>>
+Future<FirestorePage<VerificationDashRecord>>
     queryVerificationDashRecordPage({
   Query Function(Query)? queryBuilder,
   DocumentSnapshot? nextPageMarker,
@@ -788,7 +791,7 @@ Future<FFFirestorePage<VerificationDashRecord>>
       controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-        queryCollectionPage(
+        firestoreRepository.queryCollectionPage(
           VerificationDashRecord.collection,
           VerificationDashRecord.fromSnapshot,
           queryBuilder: queryBuilder,
@@ -910,51 +913,6 @@ extension QueryExtension on Query {
       (list?.isEmpty ?? true)
           ? where(field, arrayContainsAny: null)
           : where(field, arrayContainsAny: list);
-}
-
-class FFFirestorePage<T> {
-  final List<T> data;
-  final Stream<List<T>>? dataStream;
-  final QueryDocumentSnapshot? nextPageMarker;
-
-  FFFirestorePage(this.data, this.dataStream, this.nextPageMarker);
-}
-
-Future<FFFirestorePage<T>> queryCollectionPage<T>(
-  Query collection,
-  RecordBuilder<T> recordBuilder, {
-  Query Function(Query)? queryBuilder,
-  DocumentSnapshot? nextPageMarker,
-  required int pageSize,
-  required bool isStream,
-}) async {
-  final builder = queryBuilder ?? (q) => q;
-  var query = builder(collection).limit(pageSize);
-  if (nextPageMarker != null) {
-    query = query.startAfterDocument(nextPageMarker);
-  }
-  Stream<QuerySnapshot>? docSnapshotStream;
-  QuerySnapshot docSnapshot;
-  if (isStream) {
-    docSnapshotStream = query.snapshots();
-    docSnapshot = await docSnapshotStream.first;
-  } else {
-    docSnapshot = await query.get();
-  }
-  final getDocs = (QuerySnapshot s) => s.docs
-      .map(
-        (d) => safeGet(
-          () => recordBuilder(d),
-          (e) => print('Error serializing doc ${d.reference.path}:\n$e'),
-        ),
-      )
-      .where((d) => d != null)
-      .map((d) => d!)
-      .toList();
-  final data = getDocs(docSnapshot);
-  final dataStream = docSnapshotStream?.map(getDocs);
-  final nextPageToken = docSnapshot.docs.isEmpty ? null : docSnapshot.docs.last;
-  return FFFirestorePage(data, dataStream, nextPageToken);
 }
 
 // Creates a Firestore document representing the logged in user if it doesn't yet exist
