@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'core/request_manager.dart';
 import '/backend/backend.dart';
@@ -23,6 +25,17 @@ class AppState extends ChangeNotifier {
           prefs.getString('errorImagePlaceholderUrl') ??
               _erorImagePlaceholderUrl;
     });
+    _safeInit(() {
+      final stored = prefs.getString('cancelledGameHandlingByPath');
+      if (stored != null && stored.isNotEmpty) {
+        final decoded = jsonDecode(stored);
+        if (decoded is Map<String, dynamic>) {
+          _cancelledGameHandlingByPath = decoded.map(
+            (key, value) => MapEntry(key, value.toString()),
+          );
+        }
+      }
+    });
   }
 
   void update(VoidCallback callback) {
@@ -44,6 +57,17 @@ class AppState extends ChangeNotifier {
   set erorImagePlaceholderUrl(String value) {
     _erorImagePlaceholderUrl = value;
     prefs.setString('errorImagePlaceholderUrl', value);
+  }
+
+  Map<String, String> _cancelledGameHandlingByPath = {};
+  String? getCancelledGameHandling(String gamePath) =>
+      _cancelledGameHandlingByPath[gamePath];
+  void setCancelledGameHandling(String gamePath, String handling) {
+    _cancelledGameHandlingByPath[gamePath] = handling;
+    prefs.setString(
+      'cancelledGameHandlingByPath',
+      jsonEncode(_cancelledGameHandlingByPath),
+    );
   }
 
   final _getCoursesManager = StreamRequestManager<List<CourseRecord>>();
