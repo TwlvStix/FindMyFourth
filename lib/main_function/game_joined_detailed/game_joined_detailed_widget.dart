@@ -166,11 +166,19 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                         ),
                         Padding(
                           padding: EdgeInsets.all(12.0),
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final isNarrow = constraints.maxWidth < 360.0;
-                              final titleStyle =
-                                  AppTheme.of(context).headlineMedium.override(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  gameJoinedDetailedGamesRecord.nameGame,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTheme.of(context)
+                                      .headlineMedium
+                                      .override(
                                         font: GoogleFonts.outfit(
                                           fontWeight: AppTheme.of(context)
                                               .headlineMedium
@@ -245,10 +253,34 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      gameJoinedDetailedGamesRecord.nameGame,
-                                      maxLines: 2,
+                                      gameJoinedDetailedGamesRecord.coursePlay,
+                                      maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: titleStyle,
+                                      style: AppTheme.of(context)
+                                          .headlineSmall
+                                          .override(
+                                            font: GoogleFonts.outfit(
+                                              fontWeight:
+                                                  AppTheme.of(context)
+                                                      .headlineSmall
+                                                      .fontWeight,
+                                              fontStyle:
+                                                  AppTheme.of(context)
+                                                      .headlineSmall
+                                                      .fontStyle,
+                                            ),
+                                            color: Colors.white,
+                                            fontSize: 16.0,
+                                            letterSpacing: 0.0,
+                                            fontWeight:
+                                                AppTheme.of(context)
+                                                    .headlineSmall
+                                                    .fontWeight,
+                                            fontStyle:
+                                                AppTheme.of(context)
+                                                    .headlineSmall
+                                                    .fontStyle,
+                                          ),
                                     ),
                                   ),
                                   Expanded(
