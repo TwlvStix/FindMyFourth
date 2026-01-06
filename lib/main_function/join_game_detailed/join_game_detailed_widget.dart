@@ -761,6 +761,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                               final groupPlayers = joinGameDetailedGamesRecord
                                   .joinedPlayers
                                   .toList();
+                              final gameOwner =
+                                  joinGameDetailedGamesRecord.userRef;
+                              if (gameOwner != null &&
+                                  !groupPlayers.contains(gameOwner)) {
+                                groupPlayers.insert(0, gameOwner);
+                              }
 
                               return ListView.builder(
                                 padding: EdgeInsets.zero,
