@@ -1927,7 +1927,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         memberDiscount: memberValue,
                                         scoring: scoringValue,
                                         friendGame: friendsValue,
-                                        maxPlayers: 4,
+                                        maxPlayers:
+                                            (countControllerValue ?? 1) + 1,
                                         rulesSetting: rulesSetValue,
                                         createdTime: getCurrentTimestamp,
                                         chatRef: newChat?.reference,
@@ -1957,7 +1958,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         memberDiscount: memberValue,
                                         scoring: scoringValue,
                                         friendGame: friendsValue,
-                                        maxPlayers: 4,
+                                        maxPlayers:
+                                            (countControllerValue ?? 1) + 1,
                                         rulesSetting: rulesSetValue,
                                         createdTime: getCurrentTimestamp,
                                         chatRef: newChat?.reference,

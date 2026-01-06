@@ -761,6 +761,10 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                               final groupPlayers = joinGameDetailedGamesRecord
                                   .joinedPlayers
                                   .toList();
+                              final guestPlayers = joinGameDetailedGamesRecord
+                                  .guestPlayers
+                                  .where((name) => name.trim().isNotEmpty)
+                                  .toList();
                               final gameOwner =
                                   joinGameDetailedGamesRecord.userRef;
                               if (gameOwner != null &&
@@ -768,127 +772,133 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 groupPlayers.insert(0, gameOwner);
                               }
 
-                              return ListView.builder(
-                                padding: EdgeInsets.zero,
-                                primary: false,
+                              return SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
-                                itemCount: groupPlayers.length,
-                                itemBuilder: (context, groupPlayersIndex) {
-                                  final groupPlayersItem =
-                                      groupPlayers[groupPlayersIndex];
-                                  return Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        12.0, 12.0, 0.0, 12.0),
-                                    child: StreamBuilder<UsersRecord>(
-                                      stream: UsersRecord.getDocument(
-                                          groupPlayersItem),
-                                      builder: (context, snapshot) {
-                                        // Customize what your widget looks like when it's loading.
-                                        if (!snapshot.hasData) {
-                                          return Center(
-                                            child: SizedBox(
-                                              width: 50.0,
-                                              height: 50.0,
-                                              child: SpinKitWanderingCubes(
-                                                color: Color(0xFF25504F),
-                                                size: 50.0,
-                                              ),
-                                            ),
-                                          );
-                                        }
-
-                                        final friend1UsersRecord =
-                                            snapshot.data!;
-
-                                        return Column(
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: [
-                                            Container(
-                                              width: 64.0,
-                                              height: 64.0,
-                                              decoration: BoxDecoration(
-                                                color:
-                                                    AppTheme.of(context)
-                                                        .info,
-                                                shape: BoxShape.circle,
-                                                border: Border.all(
-                                                  color: Color(0xFFA9A9A9),
-                                                  width: 2.0,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    ...List.generate(groupPlayers.length,
+                                        (groupPlayersIndex) {
+                                      final groupPlayersItem =
+                                          groupPlayers[groupPlayersIndex];
+                                      return Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            12.0, 12.0, 0.0, 12.0),
+                                        child: StreamBuilder<UsersRecord>(
+                                          stream: UsersRecord.getDocument(
+                                              groupPlayersItem),
+                                          builder: (context, snapshot) {
+                                            // Customize what your widget looks like when it's loading.
+                                            if (!snapshot.hasData) {
+                                              return Center(
+                                                child: SizedBox(
+                                                  width: 50.0,
+                                                  height: 50.0,
+                                                  child: SpinKitWanderingCubes(
+                                                    color: Color(0xFF25504F),
+                                                    size: 50.0,
+                                                  ),
                                                 ),
-                                              ),
-                                              child: Padding(
-                                                padding: EdgeInsets.all(4.0),
-                                                child: InkWell(
-                                                  splashColor:
-                                                      Colors.transparent,
-                                                  focusColor:
-                                                      Colors.transparent,
-                                                  hoverColor:
-                                                      Colors.transparent,
-                                                  highlightColor:
-                                                      Colors.transparent,
-                                                  onTap: () async {
-                                                    context.pushNamed(
-                                                      ProfileUserWidget
-                                                          .routeName,
-                                                      queryParameters: {
-                                                        'userRef':
-                                                            serializeParam(
-                                                          friend1UsersRecord,
-                                                          ParamType.Document,
-                                                        ),
-                                                      }.withoutNulls,
-                                                      extra: <String, dynamic>{
-                                                        'userRef':
-                                                            friend1UsersRecord,
-                                                        kTransitionInfoKey:
-                                                            TransitionInfo(
-                                                          hasTransition: true,
-                                                          transitionType:
-                                                              PageTransitionType
-                                                                  .bottomToTop,
-                                                          duration: Duration(
-                                                              milliseconds:
-                                                                  220),
-                                                        ),
-                                                      },
-                                                    );
-                                                  },
-                                                  child: Container(
-                                                    width: 70.0,
-                                                    height: 70.0,
-                                                    clipBehavior:
-                                                        Clip.antiAlias,
-                                                    decoration: BoxDecoration(
-                                                      shape: BoxShape.circle,
+                                              );
+                                            }
+
+                                            final friend1UsersRecord =
+                                                snapshot.data!;
+
+                                            return Column(
+                                              mainAxisSize: MainAxisSize.max,
+                                              children: [
+                                                Container(
+                                                  width: 64.0,
+                                                  height: 64.0,
+                                                  decoration: BoxDecoration(
+                                                    color:
+                                                        AppTheme.of(context)
+                                                            .info,
+                                                    shape: BoxShape.circle,
+                                                    border: Border.all(
+                                                      color: Color(0xFFA9A9A9),
+                                                      width: 2.0,
                                                     ),
-                                                    child: Image.network(
-                                                      valueOrDefault<String>(
-                                                        friend1UsersRecord
-                                                            .photoUrl,
-                                                        'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                                                      ),
-                                                      fit: BoxFit.cover,
-                                                      errorBuilder: (context,
-                                                              error,
-                                                              stackTrace) =>
-                                                          Image.asset(
-                                                        'assets/images/error_image.png',
-                                                        fit: BoxFit.cover,
+                                                  ),
+                                                  child: Padding(
+                                                    padding: EdgeInsets.all(4.0),
+                                                    child: InkWell(
+                                                      splashColor:
+                                                          Colors.transparent,
+                                                      focusColor:
+                                                          Colors.transparent,
+                                                      hoverColor:
+                                                          Colors.transparent,
+                                                      highlightColor:
+                                                          Colors.transparent,
+                                                      onTap: () async {
+                                                        context.pushNamed(
+                                                          ProfileUserWidget
+                                                              .routeName,
+                                                          queryParameters: {
+                                                            'userRef':
+                                                                serializeParam(
+                                                              friend1UsersRecord,
+                                                              ParamType.Document,
+                                                            ),
+                                                          }.withoutNulls,
+                                                          extra: <String,
+                                                              dynamic>{
+                                                            'userRef':
+                                                                friend1UsersRecord,
+                                                            kTransitionInfoKey:
+                                                                TransitionInfo(
+                                                              hasTransition:
+                                                                  true,
+                                                              transitionType:
+                                                                  PageTransitionType
+                                                                      .bottomToTop,
+                                                              duration: Duration(
+                                                                  milliseconds:
+                                                                      220),
+                                                            ),
+                                                          },
+                                                        );
+                                                      },
+                                                      child: Container(
+                                                        width: 70.0,
+                                                        height: 70.0,
+                                                        clipBehavior:
+                                                            Clip.antiAlias,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          shape:
+                                                              BoxShape.circle,
+                                                        ),
+                                                        child: Image.network(
+                                                          valueOrDefault<String>(
+                                                            friend1UsersRecord
+                                                                .photoUrl,
+                                                            'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+                                                          ),
+                                                          fit: BoxFit.cover,
+                                                          errorBuilder:
+                                                              (context, error,
+                                                                      stackTrace) =>
+                                                                  Image.asset(
+                                                            'assets/images/error_image.png',
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(0.0, 8.0, 0.0, 0.0),
-                                              child: Text(
-                                                friend1UsersRecord.displayName,
-                                                textAlign: TextAlign.center,
-                                                style:
-                                                    AppTheme.of(context)
+                                                Padding(
+                                                  padding: EdgeInsetsDirectional
+                                                      .fromSTEB(
+                                                          0.0, 8.0, 0.0, 0.0),
+                                                  child: Text(
+                                                    friend1UsersRecord
+                                                        .displayName,
+                                                    textAlign: TextAlign.center,
+                                                    style: AppTheme.of(context)
                                                         .bodySmall
                                                         .override(
                                                           font: GoogleFonts
@@ -913,14 +923,101 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                                   .bodySmall
                                                                   .fontStyle,
                                                         ),
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        ),
+                                      );
+                                    }),
+                                    ...guestPlayers.map(
+                                      (guestName) => Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            12.0, 12.0, 0.0, 12.0),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: [
+                                            Container(
+                                              width: 64.0,
+                                              height: 64.0,
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    AppTheme.of(context).info,
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: Color(0xFFA9A9A9),
+                                                  width: 2.0,
+                                                ),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  'G',
+                                                  style: AppTheme.of(context)
+                                                      .titleMedium
+                                                      .override(
+                                                        font:
+                                                            GoogleFonts.outfit(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                      context)
+                                                                  .titleMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                        color: Colors.white,
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        fontStyle:
+                                                            AppTheme.of(
+                                                                    context)
+                                                                .titleMedium
+                                                                .fontStyle,
+                                                      ),
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsetsDirectional
+                                                  .fromSTEB(
+                                                      0.0, 8.0, 0.0, 0.0),
+                                              child: Text(
+                                                guestName,
+                                                textAlign: TextAlign.center,
+                                                style: AppTheme.of(context)
+                                                    .bodySmall
+                                                    .override(
+                                                      font: GoogleFonts
+                                                          .lexendDeca(
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        fontStyle:
+                                                            AppTheme.of(
+                                                                    context)
+                                                                .bodySmall
+                                                                .fontStyle,
+                                                      ),
+                                                      color: Colors.white,
+                                                      fontSize: 14.0,
+                                                      letterSpacing: 0.0,
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                      fontStyle:
+                                                          AppTheme.of(
+                                                                  context)
+                                                              .bodySmall
+                                                              .fontStyle,
+                                                    ),
                                               ),
                                             ),
                                           ],
-                                        );
-                                      },
+                                        ),
+                                      ),
                                     ),
-                                  );
-                                },
+                                  ],
+                                ),
                               );
                             },
                           ),
@@ -936,8 +1033,10 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                             child: AppButton(
                               onPressed: () async {
                                 if ((joinGameDetailedGamesRecord.maxPlayers >
-                                        joinGameDetailedGamesRecord
-                                            .joinedPlayers.length) &&
+                                        (joinGameDetailedGamesRecord
+                                                .joinedPlayers.length +
+                                            joinGameDetailedGamesRecord
+                                                .guestPlayers.length)) &&
                                     ((joinGameDetailedGamesRecord.friendGame ==
                                             'Public') ||
                                         ((joinGameDetailedGamesRecord
