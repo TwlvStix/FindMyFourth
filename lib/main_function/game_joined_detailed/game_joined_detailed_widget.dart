@@ -166,38 +166,31 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                         ),
                         Padding(
                           padding: EdgeInsets.all(12.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  gameJoinedDetailedGamesRecord.nameGame,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTheme.of(context)
-                                      .headlineMedium
-                                      .override(
-                                        font: GoogleFonts.outfit(
-                                          fontWeight: AppTheme.of(context)
-                                              .headlineMedium
-                                              .fontWeight,
-                                          fontStyle: AppTheme.of(context)
-                                              .headlineMedium
-                                              .fontStyle,
-                                        ),
-                                        color: AppTheme.of(context)
-                                            .primaryBtnText,
-                                        letterSpacing: 0.0,
-                                        fontWeight: AppTheme.of(context)
-                                            .headlineMedium
-                                            .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .headlineMedium
-                                            .fontStyle,
-                                        fontSize: isNarrow ? 24.0 : null,
-                                      );
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final isNarrow = constraints.maxWidth < 360.0;
+                              final titleStyle = AppTheme.of(context)
+                                  .headlineMedium
+                                  .override(
+                                    font: GoogleFonts.outfit(
+                                      fontWeight: AppTheme.of(context)
+                                          .headlineMedium
+                                          .fontWeight,
+                                      fontStyle: AppTheme.of(context)
+                                          .headlineMedium
+                                          .fontStyle,
+                                    ),
+                                    color:
+                                        AppTheme.of(context).primaryBtnText,
+                                    letterSpacing: 0.0,
+                                    fontWeight: AppTheme.of(context)
+                                        .headlineMedium
+                                        .fontWeight,
+                                    fontStyle: AppTheme.of(context)
+                                        .headlineMedium
+                                        .fontStyle,
+                                    fontSize: isNarrow ? 24.0 : null,
+                                  );
                               final courseStyle =
                                   AppTheme.of(context).headlineSmall.override(
                                         font: GoogleFonts.outfit(
@@ -231,16 +224,11 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                       style: titleStyle,
                                     ),
                                     const SizedBox(height: 4.0),
-                                    Align(
-                                      alignment:
-                                          AlignmentDirectional(1.0, 0.0),
-                                      child: Text(
-                                        gameJoinedDetailedGamesRecord
-                                            .coursePlay,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: courseStyle,
-                                      ),
+                                    Text(
+                                      gameJoinedDetailedGamesRecord.coursePlay,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: courseStyle,
                                     ),
                                   ],
                                 );
@@ -253,34 +241,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      gameJoinedDetailedGamesRecord.coursePlay,
-                                      maxLines: 1,
+                                      gameJoinedDetailedGamesRecord.nameGame,
+                                      maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: AppTheme.of(context)
-                                          .headlineSmall
-                                          .override(
-                                            font: GoogleFonts.outfit(
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .headlineSmall
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .headlineSmall
-                                                      .fontStyle,
-                                            ),
-                                            color: Colors.white,
-                                            fontSize: 16.0,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .headlineSmall
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .headlineSmall
-                                                    .fontStyle,
-                                          ),
+                                      style: titleStyle,
                                     ),
                                   ),
                                   Expanded(
