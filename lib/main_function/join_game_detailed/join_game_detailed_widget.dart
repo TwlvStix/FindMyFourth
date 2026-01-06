@@ -1019,7 +1019,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                     ],
                   ),
                 ),
-              ),
+              );
+            },
+          ),
         );
       },
     );
