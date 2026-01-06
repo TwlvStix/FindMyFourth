@@ -4,7 +4,7 @@ import '/chat_group/chat_details_overlay/chat_details_overlay_widget.dart';
 import '/chat_group/chat_thread_component/chat_thread_component_widget.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 import 'dart:async';
 import '/chat_group/chat/chat_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';

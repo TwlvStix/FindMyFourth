@@ -4,7 +4,7 @@ import '/core/autocomplete_options_list.dart';
 import '/core/button_tabbar.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
 import '/core/random_data_util.dart' as random_data;
 import '/chat_group/chat_2_details/chat2_details_widget.dart';

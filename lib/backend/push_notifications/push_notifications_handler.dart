@@ -3,7 +3,7 @@ import 'dart:async';
 import 'serialization_util.dart';
 import '/backend/backend.dart';
 import '/core/app_theme.dart';
-import '../../core/app_util.dart';
+import '../../utils/app_util.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';

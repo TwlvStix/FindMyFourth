@@ -1,5 +1,5 @@
 import '/core/app_theme.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
 import '/profile/home/home_widget.dart';
 import 'package:flutter/material.dart';
