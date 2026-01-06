@@ -1,6 +1,11 @@
+import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/app_theme.dart';
+import '/core/random_data_util.dart' as random_data;
+import '/core/widgets/app_icon_button.dart';
+import '/chat_group/chat_2_details/chat2_details_widget.dart';
 import '/utils/app_util.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,6 +29,101 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
   final formKey = GlobalKey<FormState>();
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  Future<void> _openChatWithUser(UsersRecord user) async {
+    final currentUser = currentUserReference;
+    final userRef = user.reference;
+    if (currentUser == null || userRef == null) {
+      return;
+    }
+    final users = [currentUser, userRef];
+    final existingChat = await queryChatsRecordOnce(
+      queryBuilder: (chatsRecord) => chatsRecord
+          .where('user_a', isEqualTo: currentUser)
+          .where('user_b', isEqualTo: userRef),
+      singleRecord: true,
+    ).then((s) => s.firstOrNull);
+    if (existingChat != null) {
+      context.pushNamed(
+        Chat2DetailsWidget.routeName,
+        queryParameters: {
+          'chatRef': serializeParam(
+            existingChat,
+            ParamType.Document,
+          ),
+        }.withoutNulls,
+        extra: <String, dynamic>{
+          'chatRef': existingChat,
+        },
+      );
+      return;
+    }
+    final existingChatReverse = await queryChatsRecordOnce(
+      queryBuilder: (chatsRecord) => chatsRecord
+          .where('user_a', isEqualTo: userRef)
+          .where('user_b', isEqualTo: currentUser),
+      singleRecord: true,
+    ).then((s) => s.firstOrNull);
+    if (existingChatReverse != null) {
+      context.pushNamed(
+        Chat2DetailsWidget.routeName,
+        queryParameters: {
+          'chatRef': serializeParam(
+            existingChatReverse,
+            ParamType.Document,
+          ),
+        }.withoutNulls,
+        extra: <String, dynamic>{
+          'chatRef': existingChatReverse,
+        },
+      );
+      return;
+    }
+
+    final chatsRecordReference = ChatsRecord.collection.doc();
+    await chatsRecordReference.set({
+      ...createChatsRecordData(
+        userA: currentUser,
+        userB: userRef,
+        lastMessage: '',
+        lastMessageTime: getCurrentTimestamp,
+        lastMessageSentBy: currentUser,
+        groupChatId: random_data.randomInteger(1000000, 9999999),
+      ),
+      ...mapToFirestore(
+        {
+          'users': users,
+        },
+      ),
+    });
+    final chatroomReference = ChatsRecord.getDocumentFromData({
+      ...createChatsRecordData(
+        userA: currentUser,
+        userB: userRef,
+        lastMessage: '',
+        lastMessageTime: getCurrentTimestamp,
+        lastMessageSentBy: currentUser,
+        groupChatId: random_data.randomInteger(1000000, 9999999),
+      ),
+      ...mapToFirestore(
+        {
+          'users': users,
+        },
+      ),
+    }, chatsRecordReference);
+    context.pushNamed(
+      Chat2DetailsWidget.routeName,
+      queryParameters: {
+        'chatRef': serializeParam(
+          chatroomReference,
+          ParamType.Document,
+        ),
+      }.withoutNulls,
+      extra: <String, dynamic>{
+        'chatRef': chatroomReference,
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -308,6 +408,29 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                               ),
                         ),
                       ],
+                    ),
+                  ),
+                  Padding(
+                    padding:
+                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 24.0),
+                    child: AppIconButton(
+                      borderColor: AppTheme.of(context).primary,
+                      borderRadius: 24.0,
+                      borderWidth: 1.0,
+                      buttonSize: 48.0,
+                      fillColor: Color(0xFF253551),
+                      icon: FaIcon(
+                        FontAwesomeIcons.facebookMessenger,
+                        color: Colors.white,
+                        size: 20.0,
+                      ),
+                      onPressed: () async {
+                        final userRef = widget.userRef;
+                        if (userRef == null) {
+                          return;
+                        }
+                        await _openChatWithUser(userRef);
+                      },
                     ),
                   ),
                   Expanded(

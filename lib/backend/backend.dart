@@ -879,16 +879,22 @@ Future<List<T>> queryCollectionOnce<T>(
   if (limit > 0 || singleRecord) {
     query = query.limit(singleRecord ? 1 : limit);
   }
-  return query.get().then((s) => s.docs
-      .map(
-        (d) => safeGet(
-          () => recordBuilder(d),
-          (e) => print('Error serializing doc ${d.reference.path}:\n$e'),
-        ),
-      )
-      .where((d) => d != null)
-      .map((d) => d!)
-      .toList());
+  return query
+      .get()
+      .then((s) => s.docs
+          .map(
+            (d) => safeGet(
+              () => recordBuilder(d),
+              (e) => print('Error serializing doc ${d.reference.path}:\n$e'),
+            ),
+          )
+          .where((d) => d != null)
+          .map((d) => d!)
+          .toList())
+      .catchError((err) {
+    print('Error querying $collection: $err');
+    return <T>[];
+  });
 }
 
 Filter filterIn(String field, List? list) => (list?.isEmpty ?? true)
