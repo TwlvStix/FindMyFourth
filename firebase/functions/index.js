@@ -3,8 +3,8 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 
 const kFcmTokensCollection = "fcm_tokens";
-const kPushNotificationsCollection = "ff_push_notifications";
-const kUserPushNotificationsCollection = "ff_user_push_notifications";
+const kPushNotificationsCollection = "push_notifications";
+const kUserPushNotificationsCollection = "user_push_notifications";
 const firestore = admin.firestore();
 
 const kPushNotificationRuntimeOpts = {
