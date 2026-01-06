@@ -3,7 +3,7 @@ import '/chat_group/delete_dialog/delete_dialog_widget.dart';
 import '/chat_group/user_list_small/user_list_small_widget.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
 import 'dart:ui';
 import '/chat_group/chat/chat_widget.dart';

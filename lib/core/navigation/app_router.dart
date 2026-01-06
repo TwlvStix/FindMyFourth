@@ -10,7 +10,8 @@ import '/backend/push_notifications/push_notifications_handler.dart'
     show PushNotificationsHandler;
 import '/main.dart';
 import '/core/app_theme.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
+import '/utils/serialization_util.dart';
 
 import '/chat_group/chat/chat_widget.dart';
 import '/chat_group/chat_2_details/chat2_details_widget.dart';
@@ -41,7 +42,7 @@ import '/user_auth/sign_up_account/sign_up_account_widget.dart';
 import '/user_onboarding/user_onboarding_widget.dart';
 
 export 'package:go_router/go_router.dart';
-export 'serialization_util.dart';
+export '/utils/serialization_util.dart';
 
 const kTransitionInfoKey = '__transition_info__';
 

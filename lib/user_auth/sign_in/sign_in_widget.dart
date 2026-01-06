@@ -1,6 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/app_theme.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
 import '/profile/home/home_widget.dart';
 import '/user_auth/recover_password/recover_password_widget.dart';

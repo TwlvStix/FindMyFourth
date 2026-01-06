@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 
 import '/backend/backend.dart';
 
-import '../../models/lat_lng.dart';
-import '../../models/place.dart';
-import '../../models/uploaded_file.dart';
+import '../models/lat_lng.dart';
+import '../models/place.dart';
+import '../models/uploaded_file.dart';
 
 /// SERIALIZATION HELPERS
 
@@ -16,7 +16,7 @@ String dateTimeRangeToString(DateTimeRange dateTimeRange) {
   return '$startStr|$endStr';
 }
 
-String placeToString(FFPlace place) => jsonEncode({
+String placeToString(Place place) => jsonEncode({
       'latLng': place.latLng.serialize(),
       'name': place.name,
       'address': place.address,
@@ -26,7 +26,7 @@ String placeToString(FFPlace place) => jsonEncode({
       'zipCode': place.zipCode,
     });
 
-String uploadedFileToString(FFUploadedFile uploadedFile) =>
+String uploadedFileToString(UploadedFile uploadedFile) =>
     uploadedFile.serialize();
 
 const _kDocIdDelimeter = '|';
@@ -77,10 +77,10 @@ String? serializeParam(
         data = (param as LatLng).serialize();
       case ParamType.Color:
         data = (param as Color).toCssString();
-      case ParamType.FFPlace:
-        data = placeToString(param as FFPlace);
-      case ParamType.FFUploadedFile:
-        data = uploadedFileToString(param as FFUploadedFile);
+      case ParamType.Place:
+        data = placeToString(param as Place);
+      case ParamType.UploadedFile:
+        data = uploadedFileToString(param as UploadedFile);
       case ParamType.JSON:
         data = json.encode(param);
       case ParamType.DocumentReference:
@@ -125,7 +125,7 @@ LatLng? latLngFromString(String? latLngStr) {
   );
 }
 
-FFPlace placeFromString(String placeStr) {
+Place placeFromString(String placeStr) {
   final serializedData = jsonDecode(placeStr) as Map<String, dynamic>;
   final data = {
     'latLng': serializedData.containsKey('latLng')
@@ -138,7 +138,7 @@ FFPlace placeFromString(String placeStr) {
     'country': serializedData['country'] ?? '',
     'zipCode': serializedData['zipCode'] ?? '',
   };
-  return FFPlace(
+  return Place(
     latLng: data['latLng'] as LatLng,
     name: data['name'] as String,
     address: data['address'] as String,
@@ -149,8 +149,8 @@ FFPlace placeFromString(String placeStr) {
   );
 }
 
-FFUploadedFile uploadedFileFromString(String uploadedFileStr) =>
-    FFUploadedFile.deserialize(uploadedFileStr);
+UploadedFile uploadedFileFromString(String uploadedFileStr) =>
+    UploadedFile.deserialize(uploadedFileStr);
 
 DocumentReference _deserializeDocumentReference(
   String refStr,
@@ -173,8 +173,8 @@ enum ParamType {
   DateTimeRange,
   LatLng,
   Color,
-  FFPlace,
-  FFUploadedFile,
+  Place,
+  UploadedFile,
   JSON,
 
   Document,
@@ -225,9 +225,9 @@ dynamic deserializeParam<T>(
         return latLngFromString(param);
       case ParamType.Color:
         return fromCssColor(param);
-      case ParamType.FFPlace:
+      case ParamType.Place:
         return placeFromString(param);
-      case ParamType.FFUploadedFile:
+      case ParamType.UploadedFile:
         return uploadedFileFromString(param);
       case ParamType.JSON:
         return json.decode(param);

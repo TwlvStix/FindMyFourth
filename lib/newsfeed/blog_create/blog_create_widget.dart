@@ -2,9 +2,9 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/core/app_theme.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
-import '/core/upload_data.dart';
+import '/utils/upload_data.dart';
 import '/newsfeed/newsfeed/newsfeed_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,8 +27,8 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
   TextEditingController? inputContentTextController;
   String? Function(BuildContext, String?)? inputContentTextControllerValidator;
   bool isDataUploadingCreatePicNewsfeed = false;
-  FFUploadedFile uploadedLocalFileCreatePicNewsfeed =
-      FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
+  UploadedFile uploadedLocalFileCreatePicNewsfeed =
+      UploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
   String uploadedFileUrlCreatePicNewsfeed = '';
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -349,12 +349,12 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                           (m) => validateFileFormat(m.storagePath, context))) {
                     if (mounted) setState(
                         () => isDataUploadingCreatePicNewsfeed = true);
-                    var selectedUploadedFiles = <FFUploadedFile>[];
+                    var selectedUploadedFiles = <UploadedFile>[];
 
                     var downloadUrls = <String>[];
                     try {
                       selectedUploadedFiles = selectedMedia
-                          .map((m) => FFUploadedFile(
+                          .map((m) => UploadedFile(
                                 name: m.storagePath.split('/').last,
                                 bytes: m.bytes,
                                 height: m.dimensions?.height,
