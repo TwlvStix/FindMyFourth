@@ -6,6 +6,7 @@ import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/form_field_controller.dart';
 import '/core/custom_functions.dart' as functions;
+import '/app_state.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
@@ -40,6 +41,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   FormFieldController<List<String>>? choiceChipsValueController;
   final Map<DocumentReference, CancelledGameHandling>
       _cancelledGameHandlingByGame = {};
+  static const Map<CancelledGameHandling, String>
+      _cancelledHandlingStorageMap = {
+    CancelledGameHandling.removeNow: 'removeNow',
+    CancelledGameHandling.removeEndOfDay: 'removeEndOfDay',
+    CancelledGameHandling.keepInList: 'keepInList',
+  };
   String? get choiceChipsValue =>
       choiceChipsValueController?.value?.firstOrNull;
   set choiceChipsValue(String? val) =>
@@ -80,11 +87,34 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     super.dispose();
   }
 
+  CancelledGameHandling? _parseCancelledHandling(String? value) {
+    if (value == null) {
+      return null;
+    }
+    return _cancelledHandlingStorageMap.entries
+        .firstWhereOrNull((entry) => entry.value == value)
+        ?.key;
+  }
+
+  CancelledGameHandling? _getCancelledHandling(GamesRecord game) {
+    final cached = _cancelledGameHandlingByGame[game.reference];
+    if (cached != null) {
+      return cached;
+    }
+    final storedValue =
+        AppState().getCancelledGameHandling(game.reference.path);
+    final parsed = _parseCancelledHandling(storedValue);
+    if (parsed != null) {
+      _cancelledGameHandlingByGame[game.reference] = parsed;
+    }
+    return parsed;
+  }
+
   bool _shouldHideCancelledGame(GamesRecord game) {
     if (!game.isCancelled) {
       return false;
     }
-    final handling = _cancelledGameHandlingByGame[game.reference];
+    final handling = _getCancelledHandling(game);
     if (handling == CancelledGameHandling.removeNow) {
       return true;
     }
@@ -148,6 +178,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     setState(() {
       _cancelledGameHandlingByGame[game.reference] = selection;
     });
+    AppState().setCancelledGameHandling(
+      game.reference.path,
+      _cancelledHandlingStorageMap[selection]!,
+    );
   }
 
   @override
@@ -540,8 +574,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                   if (containerVarItem
                                                           .isCancelled ==
                                                       true) {
-                                                    await _showCancelledGameOptions(
-                                                        containerVarItem);
+                                                    if (_getCancelledHandling(
+                                                            containerVarItem) ==
+                                                        null) {
+                                                      await _showCancelledGameOptions(
+                                                          containerVarItem);
+                                                    }
                                                   } else {
                                                     if ((containerVarItem
                                                                 .userRef ==
