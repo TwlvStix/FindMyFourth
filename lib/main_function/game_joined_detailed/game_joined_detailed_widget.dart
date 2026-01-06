@@ -1078,6 +1078,24 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                   .update(createGamesRecordData(
                                 isCancelled: true,
                               ));
+                              if (gameJoinedDetailedGamesRecord.chatRef !=
+                                      null &&
+                                  currentUserReference != null) {
+                                final gameName =
+                                    gameJoinedDetailedGamesRecord.nameGame;
+                                final cancelMessage = (gameName != null &&
+                                        gameName.trim().isNotEmpty)
+                                    ? 'Game "$gameName" has been cancelled.'
+                                    : 'This game has been cancelled.';
+                                await ChatMessagesRecord.collection.add(
+                                  createChatMessagesRecordData(
+                                    user: currentUserReference,
+                                    chat: gameJoinedDetailedGamesRecord.chatRef,
+                                    text: cancelMessage,
+                                    timestamp: getCurrentTimestamp,
+                                  ),
+                                );
+                              }
                               await showDialog(
                                 context: context,
                                 builder: (alertDialogContext) {

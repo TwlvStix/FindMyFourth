@@ -72,6 +72,34 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     super.dispose();
   }
 
+  bool _shouldHideCancelledGame(GamesRecord game) {
+    if (!game.isCancelled) {
+      return false;
+    }
+    final gameDate = game.date;
+    if (gameDate == null) {
+      return false;
+    }
+    final endOfDay = DateTime(
+      gameDate.year,
+      gameDate.month,
+      gameDate.day,
+      23,
+      59,
+      59,
+    );
+    return getCurrentTimestamp.isAfter(endOfDay);
+  }
+
+  String _cancelledGameNoticeText(GamesRecord game) {
+    final gameDate = game.date;
+    if (gameDate == null) {
+      return 'This game is cancelled.';
+    }
+    final endOfDayText = dateTimeFormat("MMMM d", gameDate);
+    return 'This game is cancelled. It will be removed after $endOfDayText.';
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -294,7 +322,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   Expanded(
                     child: Builder(
                       builder: (context) {
-                        final containerVar = filteredList.toList();
+                        final containerVar = filteredList
+                            .where((game) => !_shouldHideCancelledGame(game))
+                            .toList();
 
                         return ListView.separated(
                           padding: EdgeInsets.fromLTRB(
@@ -468,7 +498,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                           title: Text(
                                                               'Game cancelled'),
                                                           content: Text(
-                                                              'This game is cancelled'),
+                                                            _cancelledGameNoticeText(
+                                                                containerVarItem),
+                                                          ),
                                                           actions: [
                                                             TextButton(
                                                               onPressed: () =>
