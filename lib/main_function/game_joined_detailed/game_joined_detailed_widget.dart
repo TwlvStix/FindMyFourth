@@ -152,10 +152,13 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
 
                               return ClipRRect(
                                 borderRadius: BorderRadius.circular(12.0),
-                                child: Image.network(
-                                  coursePicCourseRecord.picture,
-                                  width: double.infinity,
-                                  fit: BoxFit.fill,
+                                child: AspectRatio(
+                                  aspectRatio: 16 / 9,
+                                  child: Image.network(
+                                    coursePicCourseRecord.picture,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               );
                             },
@@ -171,6 +174,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                               Expanded(
                                 child: Text(
                                   gameJoinedDetailedGamesRecord.nameGame,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                   style: AppTheme.of(context)
                                       .headlineMedium
                                       .override(
@@ -204,6 +209,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         0.0, 0.0, 20.0, 0.0),
                                     child: Text(
                                       gameJoinedDetailedGamesRecord.coursePlay,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       style: AppTheme.of(context)
                                           .headlineSmall
                                           .override(
@@ -805,6 +812,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                           child: Text(
                                             friend1UsersRecord.displayName,
                                             textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                             style: AppTheme.of(context)
                                                 .bodySmall
                                                 .override(
@@ -846,7 +855,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                       alignment: AlignmentDirectional(0.0, 0.0),
                       child: Padding(
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
+                            EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 8.0),
                         child: AppButton(
                           onPressed: () async {
                             await widget.gameRef!.update({
@@ -878,7 +887,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                           },
                           text: 'Leave game',
                           options: AppButtonOptions(
-                            width: 300.0,
+                            width: double.infinity,
                             height: 60.0,
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
@@ -921,7 +930,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                       alignment: AlignmentDirectional(0.0, 0.0),
                       child: Padding(
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
+                            EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 8.0),
                         child: AppButton(
                           onPressed: () async {
                             var confirmDialogResponse = await showDialog<bool>(
@@ -977,7 +986,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                           },
                           text: 'Cancel game',
                           options: AppButtonOptions(
-                            width: 300.0,
+                            width: double.infinity,
                             height: 60.0,
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
