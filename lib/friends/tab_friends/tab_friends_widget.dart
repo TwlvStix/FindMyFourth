@@ -1593,6 +1593,18 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                       },
                                                                     ),
                                                                   });
+                                                                  await userList5UsersRecord
+                                                                      .reference
+                                                                      .update({
+                                                                    ...mapToFirestore(
+                                                                      {
+                                                                        'friends':
+                                                                            FieldValue.arrayUnion([
+                                                                          currentUserReference
+                                                                        ]),
+                                                                      },
+                                                                    ),
+                                                                  });
                                                                   await listViewFriendRequestRecord
                                                                       .reference
                                                                       .delete();
