@@ -352,6 +352,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                     controller:
                                                         textEditingController,
                                                     focusNode: focusNode,
+                                                    onChanged: (_) {
+                                                      if (mounted) {
+                                                        setState(() {});
+                                                      }
+                                                    },
                                                     onEditingComplete:
                                                         onEditingComplete,
                                                     autofocus: true,
