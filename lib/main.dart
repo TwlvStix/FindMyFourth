@@ -11,7 +11,7 @@ import 'auth/firebase_auth/auth_util.dart';
 import 'backend/push_notifications/push_notifications_util.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/core/app_theme.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import '/chat_group/chat/chat_widget.dart';

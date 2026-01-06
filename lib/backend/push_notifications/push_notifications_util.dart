@@ -13,7 +13,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 export 'push_notifications_handler.dart';
 export 'serialization_util.dart';
 
-const kUserPushNotificationsCollectionName = 'ff_user_push_notifications';
+const kUserPushNotificationsCollectionName = 'user_push_notifications';
 
 class UserTokenInfo {
   const UserTokenInfo(this.userPath, this.fcmToken);

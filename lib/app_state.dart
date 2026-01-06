@@ -20,7 +20,7 @@ class AppState extends ChangeNotifier {
     prefs = await SharedPreferences.getInstance();
     _safeInit(() {
       _erorImagePlaceholderUrl =
-          prefs.getString('ff_erorImagePlaceholderUrl') ??
+          prefs.getString('errorImagePlaceholderUrl') ??
               _erorImagePlaceholderUrl;
     });
   }
@@ -43,7 +43,7 @@ class AppState extends ChangeNotifier {
   String get erorImagePlaceholderUrl => _erorImagePlaceholderUrl;
   set erorImagePlaceholderUrl(String value) {
     _erorImagePlaceholderUrl = value;
-    prefs.setString('ff_erorImagePlaceholderUrl', value);
+    prefs.setString('errorImagePlaceholderUrl', value);
   }
 
   final _getCoursesManager = StreamRequestManager<List<CourseRecord>>();

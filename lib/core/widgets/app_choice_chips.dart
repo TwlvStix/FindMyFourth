@@ -3,7 +3,7 @@ import '../form_field_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 
 class ChipData {
   const ChipData(this.label, [this.iconData]);

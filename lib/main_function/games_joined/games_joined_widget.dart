@@ -2,7 +2,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
 import '/chat_group/chat_2_details/chat2_details_widget.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';

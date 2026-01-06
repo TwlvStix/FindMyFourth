@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '/backend/schema/util/schema_util.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 
 typedef RecordBuilder<T> = T Function(DocumentSnapshot snapshot);
 
@@ -9,13 +9,6 @@ abstract class FirestoreRecord {
   FirestoreRecord(this.reference, this.snapshotData);
   Map<String, dynamic> snapshotData;
   DocumentReference reference;
-}
-
-abstract class FFFirebaseStruct extends BaseStruct {
-  FFFirebaseStruct(this.firestoreUtilData);
-
-  /// Utility class for Firestore updates
-  FirestoreUtilData firestoreUtilData = FirestoreUtilData();
 }
 
 class FirestoreUtilData {

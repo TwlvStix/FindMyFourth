@@ -6,7 +6,7 @@ import '/backend/schema/util/firestore_util.dart';
 import '/backend/schema/util/schema_util.dart';
 
 import 'index.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 
 class VerificationDashRecord extends FirestoreRecord {
   VerificationDashRecord._(

@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:video_player/video_player.dart';
 
-import '/core/app_util.dart' show routeObserver;
+import '/utils/app_util.dart' show routeObserver;
 
 const kDefaultAspectRatio = 16 / 9;
 

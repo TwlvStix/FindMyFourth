@@ -1,7 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
-import '/core/app_util.dart';
+import '/utils/app_util.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/notifications/notification_page/notification_page_widget.dart';
 import '/profile/edit_profile/edit_profile_widget.dart';
