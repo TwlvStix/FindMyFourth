@@ -112,27 +112,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
             centerTitle: false,
             elevation: 0.0,
           ),
-          body: StreamBuilder<UsersRecord>(
-            stream:
-                UsersRecord.getDocument(joinGameDetailedGamesRecord.userRef!),
-            builder: (context, snapshot) {
-              // Customize what your widget looks like when it's loading.
-              if (!snapshot.hasData) {
-                return Center(
-                  child: SizedBox(
-                    width: 50.0,
-                    height: 50.0,
-                    child: SpinKitWanderingCubes(
-                      color: Color(0xFF25504F),
-                      size: 50.0,
-                    ),
-                  ),
-                );
-              }
-
-              final containerUsersRecord = snapshot.data!;
-
-              return Container(
+          body: Container(
                 decoration: BoxDecoration(
                   color: AppTheme.of(context).tertiary,
                 ),
@@ -939,104 +919,133 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                           child: Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 8.0),
-                            child: AppButton(
-                              onPressed: () async {
-                                if ((joinGameDetailedGamesRecord.maxPlayers >
-                                        joinGameDetailedGamesRecord
-                                            .joinedPlayers.length) &&
-                                    ((joinGameDetailedGamesRecord.friendGame ==
-                                            'Public') ||
-                                        ((joinGameDetailedGamesRecord
-                                                    .friendGame ==
-                                                'Friends') &&
-                                            containerUsersRecord.friends
-                                                .contains(
-                                                    currentUserReference)))) {
-                                  await showModalBottomSheet(
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    enableDrag: false,
-                                    context: context,
-                                    builder: (context) {
-                                      return Padding(
-                                        padding:
-                                            MediaQuery.viewInsetsOf(context),
-                                        child: JoinGameWidget(
-                                          gameRef: joinGameDetailedGamesRecord,
-                                        ),
-                                      );
-                                    },
-                                  ).then((value) {
-                                    if (mounted) {
-                                      setState(() {});
-                                    }
-                                  });
-                                } else {
-                                  await showDialog(
-                                    context: context,
-                                    builder: (alertDialogContext) {
-                                      return AlertDialog(
-                                        title: Text('Sorry!'),
-                                        content: Text(
-                                            'You are not friends with the game creator or the group  is full.'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () => Navigator.pop(
-                                                alertDialogContext),
-                                            child: Text('Ok'),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                  return;
-                                }
-                              },
-                              text: 'Reserve Spot',
-                              options: AppButtonOptions(
-                                width: 300.0,
-                                height: 60.0,
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
-                                iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
-                                color: Color(0xFF253551),
-                                textStyle: AppTheme.of(context)
-                                    .headlineSmall
-                                    .override(
-                                      font: GoogleFonts.outfit(
-                                        fontWeight: AppTheme.of(context)
-                                            .headlineSmall
-                                            .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .headlineSmall
-                                            .fontStyle,
-                                      ),
-                                      color: Colors.white,
-                                      letterSpacing: 0.0,
-                                      fontWeight: AppTheme.of(context)
-                                          .headlineSmall
-                                          .fontWeight,
-                                      fontStyle: AppTheme.of(context)
-                                          .headlineSmall
-                                          .fontStyle,
+                            child: Builder(
+                              builder: (context) {
+                                final isFriendGame =
+                                    joinGameDetailedGamesRecord.friendGame ==
+                                        'Friends';
+                                final isCreatorFriend =
+                                    currentUserDocument?.friends.contains(
+                                            joinGameDetailedGamesRecord
+                                                .userRef) ??
+                                        false;
+                                final waitingOnFriendCheck =
+                                    isFriendGame && currentUserDocument == null;
+
+                                if (waitingOnFriendCheck) {
+                                  return SizedBox(
+                                    width: 50.0,
+                                    height: 50.0,
+                                    child: SpinKitWanderingCubes(
+                                      color: Color(0xFF25504F),
+                                      size: 50.0,
                                     ),
-                                elevation: 3.0,
-                                borderSide: BorderSide(
-                                  color: Colors.transparent,
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(40.0),
-                              ),
+                                  );
+                                }
+
+                                return AppButton(
+                                    onPressed: () async {
+                                      if ((joinGameDetailedGamesRecord
+                                                  .maxPlayers >
+                                              joinGameDetailedGamesRecord
+                                                  .joinedPlayers.length) &&
+                                          ((joinGameDetailedGamesRecord
+                                                      .friendGame ==
+                                                  'Public') ||
+                                              ((joinGameDetailedGamesRecord
+                                                          .friendGame ==
+                                                      'Friends') &&
+                                                  isCreatorFriend))) {
+                                        await showModalBottomSheet(
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          enableDrag: false,
+                                          context: context,
+                                          builder: (context) {
+                                            return Padding(
+                                              padding:
+                                                  MediaQuery.viewInsetsOf(
+                                                      context),
+                                              child: JoinGameWidget(
+                                                gameRef:
+                                                    joinGameDetailedGamesRecord,
+                                              ),
+                                            );
+                                          },
+                                        ).then((value) {
+                                          if (mounted) {
+                                            setState(() {});
+                                          }
+                                        });
+                                      } else {
+                                        await showDialog(
+                                          context: context,
+                                          builder: (alertDialogContext) {
+                                            return AlertDialog(
+                                              title: Text('Sorry!'),
+                                              content: Text(
+                                                  'You are not friends with the game creator or the group  is full.'),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                          alertDialogContext),
+                                                  child: Text('Ok'),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                        return;
+                                      }
+                                    },
+                                    text: 'Reserve Spot',
+                                    options: AppButtonOptions(
+                                      width: 300.0,
+                                      height: 60.0,
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          0.0, 0.0, 0.0, 0.0),
+                                      iconPadding:
+                                          EdgeInsetsDirectional.fromSTEB(
+                                              0.0, 0.0, 0.0, 0.0),
+                                      color: Color(0xFF253551),
+                                      textStyle: AppTheme.of(context)
+                                          .headlineSmall
+                                          .override(
+                                            font: GoogleFonts.outfit(
+                                              fontWeight: AppTheme.of(context)
+                                                  .headlineSmall
+                                                  .fontWeight,
+                                              fontStyle: AppTheme.of(context)
+                                                  .headlineSmall
+                                                  .fontStyle,
+                                            ),
+                                            color: Colors.white,
+                                            letterSpacing: 0.0,
+                                            fontWeight: AppTheme.of(context)
+                                                .headlineSmall
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .headlineSmall
+                                                .fontStyle,
+                                          ),
+                                      elevation: 3.0,
+                                      borderSide: BorderSide(
+                                        color: Colors.transparent,
+                                        width: 1.0,
+                                      ),
+                                      borderRadius:
+                                          BorderRadius.circular(40.0),
+                                    ),
+                                  );
+                              },
                             ),
                           ),
                         ),
                     ],
                   ),
                 ),
-              );
-            },
-          ),
+              ),
         );
       },
     );
