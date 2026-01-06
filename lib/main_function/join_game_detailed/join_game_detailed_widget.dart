@@ -112,14 +112,13 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
             centerTitle: false,
             elevation: 0.0,
           ),
-          body: StreamBuilder<UsersRecord>(
-            stream:
-                UsersRecord.getDocument(joinGameDetailedGamesRecord.userRef!),
-            builder: (context, snapshot) {
-              final containerUsersRecord = snapshot.data;
-              final isCreatorFriend = containerUsersRecord?.friends
-                      .contains(currentUserReference) ??
-                  false;
+          body: AuthUserStreamWidget(
+            builder: (context) {
+              final isCreatorFriend =
+                  currentUserDocument?.friends.contains(
+                        joinGameDetailedGamesRecord.userRef,
+                      ) ??
+                      false;
 
               return Container(
                 decoration: BoxDecoration(
