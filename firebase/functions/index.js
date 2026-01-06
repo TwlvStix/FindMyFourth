@@ -60,6 +60,14 @@ exports.addFcmToken = functions
       if (existingTokens) {
         for (const doc of existingTokens.docs) {
           const user = doc.ref.parent.parent;
+          if (!user) {
+            console.warn(
+              "addFcmToken token doc missing parent user, deleting stale token",
+              doc.ref.path,
+            );
+            await doc.ref.delete();
+            continue;
+          }
           if (user.path !== userDocPath) {
             // Should never have the same FCM token associated with multiple users.
             await doc.ref.delete();
