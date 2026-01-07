@@ -12,14 +12,48 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Custom painter for elegant fairway contour pattern
-class FairwayContourPainter extends CustomPainter {
+/// Custom clipper for elegant curved bottom edge
+class CurvedHeaderClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+
+    // Start at top-left
+    path.lineTo(0, 0);
+
+    // Line across the top
+    path.lineTo(size.width, 0);
+
+    // Line down the right side
+    path.lineTo(size.width, size.height - 20);
+
+    // Create elegant concave curve along bottom
+    // Curve dips down slightly in center for modern feel
+    path.quadraticBezierTo(
+      size.width * 0.5, // Control point X (center)
+      size.height + 15,  // Control point Y (dips down)
+      0,                 // End point X (left edge)
+      size.height - 20,  // End point Y (back up)
+    );
+
+    // Close the path
+    path.close();
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+/// Refined topographic contour painter - atmospheric and subtle
+class SubtleTopographicPainter extends CustomPainter {
   final Color color;
   final double opacity;
 
-  FairwayContourPainter({
+  SubtleTopographicPainter({
     required this.color,
-    this.opacity = 0.15,
+    this.opacity = 0.12,
   });
 
   @override
@@ -27,117 +61,158 @@ class FairwayContourPainter extends CustomPainter {
     final paint = Paint()
       ..color = color.withValues(alpha: opacity)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+      ..strokeWidth = 0.8; // Very thin lines for subtlety
 
-    // Create organic contour lines suggesting golf course topography
-    // These flow diagonally across the header for visual interest
+    // Create organic, flowing contour lines
+    // These mimic real golf course elevation maps
 
-    // Top-right flowing contours
-    _drawContourSet(
+    // Upper elevation band
+    _drawContourLine(
       canvas,
       paint,
       size,
-      startX: size.width * 0.6,
-      startY: -20,
-      curves: [
-        [size.width * 0.7, 30, size.width * 0.85, 50],
-        [size.width * 0.75, 40, size.width * 0.9, 60],
-        [size.width * 0.8, 50, size.width * 0.95, 70],
+      startX: -50,
+      startY: size.height * 0.2,
+      controlPoints: [
+        [size.width * 0.25, size.height * 0.18],
+        [size.width * 0.5, size.height * 0.22],
+        [size.width * 0.75, size.height * 0.19],
+        [size.width + 50, size.height * 0.21],
       ],
     );
 
-    // Mid-section flowing contours
-    _drawContourSet(
+    _drawContourLine(
       canvas,
       paint,
       size,
-      startX: size.width * 0.3,
-      startY: size.height * 0.3,
-      curves: [
-        [size.width * 0.45, size.height * 0.4, size.width * 0.65, size.height * 0.45],
-        [size.width * 0.5, size.height * 0.5, size.width * 0.7, size.height * 0.55],
-        [size.width * 0.55, size.height * 0.6, size.width * 0.75, size.height * 0.65],
+      startX: -50,
+      startY: size.height * 0.25,
+      controlPoints: [
+        [size.width * 0.25, size.height * 0.23],
+        [size.width * 0.5, size.height * 0.27],
+        [size.width * 0.75, size.height * 0.24],
+        [size.width + 50, size.height * 0.26],
       ],
     );
 
-    // Bottom-left accent contours
-    _drawContourSet(
+    // Middle elevation band
+    _drawContourLine(
       canvas,
       paint,
       size,
-      startX: -30,
-      startY: size.height * 0.7,
-      curves: [
-        [size.width * 0.15, size.height * 0.75, size.width * 0.3, size.height * 0.8],
-        [size.width * 0.2, size.height * 0.85, size.width * 0.35, size.height * 0.9],
-        [size.width * 0.25, size.height * 0.95, size.width * 0.4, size.height + 10],
+      startX: -50,
+      startY: size.height * 0.5,
+      controlPoints: [
+        [size.width * 0.3, size.height * 0.48],
+        [size.width * 0.6, size.height * 0.53],
+        [size.width * 0.85, size.height * 0.49],
+        [size.width + 50, size.height * 0.52],
       ],
     );
 
-    // Subtle golf ball dimple pattern in corner (very faint)
-    final dimplePaint = Paint()
-      ..color = color.withValues(alpha: opacity * 0.3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+    _drawContourLine(
+      canvas,
+      paint,
+      size,
+      startX: -50,
+      startY: size.height * 0.56,
+      controlPoints: [
+        [size.width * 0.3, size.height * 0.54],
+        [size.width * 0.6, size.height * 0.59],
+        [size.width * 0.85, size.height * 0.55],
+        [size.width + 50, size.height * 0.58],
+      ],
+    );
 
-    _drawDimplePattern(canvas, dimplePaint, size);
+    // Lower elevation band
+    _drawContourLine(
+      canvas,
+      paint,
+      size,
+      startX: -50,
+      startY: size.height * 0.75,
+      controlPoints: [
+        [size.width * 0.2, size.height * 0.73],
+        [size.width * 0.5, size.height * 0.78],
+        [size.width * 0.8, size.height * 0.74],
+        [size.width + 50, size.height * 0.77],
+      ],
+    );
+
+    _drawContourLine(
+      canvas,
+      paint,
+      size,
+      startX: -50,
+      startY: size.height * 0.82,
+      controlPoints: [
+        [size.width * 0.2, size.height * 0.80],
+        [size.width * 0.5, size.height * 0.85],
+        [size.width * 0.8, size.height * 0.81],
+        [size.width + 50, size.height * 0.84],
+      ],
+    );
+
+    // Add occasional shorter accent contours
+    _drawContourLine(
+      canvas,
+      paint,
+      size,
+      startX: size.width * 0.1,
+      startY: size.height * 0.35,
+      controlPoints: [
+        [size.width * 0.3, size.height * 0.33],
+        [size.width * 0.5, size.height * 0.36],
+      ],
+    );
+
+    _drawContourLine(
+      canvas,
+      paint,
+      size,
+      startX: size.width * 0.5,
+      startY: size.height * 0.65,
+      controlPoints: [
+        [size.width * 0.7, size.height * 0.63],
+        [size.width * 0.9, size.height * 0.66],
+      ],
+    );
   }
 
-  void _drawContourSet(
+  void _drawContourLine(
     Canvas canvas,
     Paint paint,
     Size size, {
     required double startX,
     required double startY,
-    required List<List<double>> curves,
+    required List<List<double>> controlPoints,
   }) {
-    for (final curve in curves) {
-      final path = Path();
-      path.moveTo(startX, startY);
+    final path = Path();
+    path.moveTo(startX, startY);
 
-      // Create smooth bezier curves for organic feel
-      path.quadraticBezierTo(
-        curve[0],
-        curve[1],
-        curve[2],
-        curve[3],
-      );
-
-      canvas.drawPath(path, paint);
-    }
-  }
-
-  void _drawDimplePattern(Canvas canvas, Paint paint, Size size) {
-    // Subtle dimple circles in top-right corner
-    final dimpleRadius = 3.0;
-    final spacing = 12.0;
-
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 3; j++) {
-        final x = size.width - 80 + (i * spacing);
-        final y = 40 + (j * spacing);
-        canvas.drawCircle(Offset(x, y), dimpleRadius, paint);
+    // Create smooth flowing curves through all control points
+    for (int i = 0; i < controlPoints.length - 1; i += 2) {
+      if (i + 1 < controlPoints.length) {
+        path.quadraticBezierTo(
+          controlPoints[i][0],
+          controlPoints[i][1],
+          controlPoints[i + 1][0],
+          controlPoints[i + 1][1],
+        );
+      } else {
+        // If odd number of points, just line to the last one
+        path.lineTo(controlPoints[i][0], controlPoints[i][1]);
       }
     }
 
-    // Add a subtle flag silhouette in mid-right
-    final flagPath = Path();
-    final flagX = size.width - 60;
-    final flagY = size.height * 0.5;
-
-    flagPath.moveTo(flagX, flagY);
-    flagPath.lineTo(flagX, flagY - 30); // Pole
-    flagPath.lineTo(flagX + 15, flagY - 25); // Flag top
-    flagPath.lineTo(flagX, flagY - 20); // Flag bottom
-
-    canvas.drawPath(flagPath, paint);
+    canvas.drawPath(path, paint);
   }
 
   @override
-  bool shouldRepaint(FairwayContourPainter oldDelegate) => false;
+  bool shouldRepaint(SubtleTopographicPainter oldDelegate) => false;
 }
 
-/// Premium branded header widget
+/// Premium branded header widget - refined and sleek
 class BrandedGolfHeader extends StatelessWidget {
   final String username;
   final String courseName;
@@ -150,38 +225,30 @@ class BrandedGolfHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF1B3A2F), // Deep forest green
-            Color(0xFF2D5F4C), // Rich medium green
-            Color(0xFF1E4438), // Accent darker tone
-          ],
-          stops: [0.0, 0.6, 1.0],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 8,
-            offset: Offset(0, 4),
+    return ClipPath(
+      clipper: CurvedHeaderClipper(),
+      child: Container(
+        height: 150, // Reduced from 200px for sleeker look
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF1B3A2F), // Deep forest green
+              Color(0xFF2D5F4C), // Rich medium green
+              Color(0xFF1E4438), // Accent darker tone
+            ],
+            stops: [0.0, 0.6, 1.0],
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        ),
         child: Stack(
           children: [
-            // Abstract contour pattern overlay
+            // Subtle topographic pattern overlay
             Positioned.fill(
               child: CustomPaint(
-                painter: FairwayContourPainter(
+                painter: SubtleTopographicPainter(
                   color: Colors.white,
-                  opacity: 0.15,
+                  opacity: 0.12, // Very subtle, atmospheric
                 ),
               ),
             ),
@@ -202,9 +269,9 @@ class BrandedGolfHeader extends StatelessWidget {
               ),
             ),
 
-            // Text content
+            // Text content - positioned for new height
             Positioned(
-              bottom: 16,
+              bottom: 20, // Adjusted for new curved bottom
               left: 16,
               right: 16,
               child: Row(
@@ -213,17 +280,18 @@ class BrandedGolfHeader extends StatelessWidget {
                 children: [
                   // Username - bottom left
                   Flexible(
+                    flex: 2,
                     child: Text(
                       username,
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 26, // Slightly smaller for compact header
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                         letterSpacing: -0.5,
                         height: 1.2,
                         shadows: [
                           Shadow(
-                            color: Colors.black.withValues(alpha: 0.5),
+                            color: Colors.black.withValues(alpha: 0.6),
                             offset: Offset(0, 2),
                             blurRadius: 8,
                           ),
@@ -239,27 +307,28 @@ class BrandedGolfHeader extends StatelessWidget {
                     ),
                   ),
 
-                  SizedBox(width: 16),
+                  SizedBox(width: 12),
 
                   // Course name - bottom right
                   Flexible(
+                    flex: 3,
                     child: Text(
                       courseName,
                       textAlign: TextAlign.right,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 15, // Slightly smaller for compact header
                         fontWeight: FontWeight.w500,
                         color: Colors.white.withValues(alpha: 0.95),
-                        letterSpacing: 0.3,
+                        letterSpacing: 0.2,
                         height: 1.3,
                         shadows: [
                           Shadow(
-                            color: Colors.black.withValues(alpha: 0.5),
+                            color: Colors.black.withValues(alpha: 0.6),
                             offset: Offset(0, 2),
                             blurRadius: 6,
                           ),
                           Shadow(
-                            color: Colors.black.withValues(alpha: 0.2),
+                            color: Colors.black.withValues(alpha: 0.3),
                             offset: Offset(0, 1),
                             blurRadius: 3,
                           ),
@@ -273,13 +342,13 @@ class BrandedGolfHeader extends StatelessWidget {
               ),
             ),
 
-            // Subtle top accent line
+            // Subtle highlight along top edge
             Positioned(
               top: 0,
               left: 0,
               right: 0,
               child: Container(
-                height: 2,
+                height: 1.5,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
