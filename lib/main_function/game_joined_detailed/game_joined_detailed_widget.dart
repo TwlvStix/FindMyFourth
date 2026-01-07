@@ -4,7 +4,6 @@ import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
-import '/core/widgets/app_card.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/main_function/games_list/games_list_widget.dart';
@@ -12,6 +11,292 @@ import '/profile/profile_user/profile_user_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+/// Custom painter for elegant fairway contour pattern
+class FairwayContourPainter extends CustomPainter {
+  final Color color;
+  final double opacity;
+
+  FairwayContourPainter({
+    required this.color,
+    this.opacity = 0.15,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color.withValues(alpha: opacity)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    // Create organic contour lines suggesting golf course topography
+    // These flow diagonally across the header for visual interest
+
+    // Top-right flowing contours
+    _drawContourSet(
+      canvas,
+      paint,
+      size,
+      startX: size.width * 0.6,
+      startY: -20,
+      curves: [
+        [size.width * 0.7, 30, size.width * 0.85, 50],
+        [size.width * 0.75, 40, size.width * 0.9, 60],
+        [size.width * 0.8, 50, size.width * 0.95, 70],
+      ],
+    );
+
+    // Mid-section flowing contours
+    _drawContourSet(
+      canvas,
+      paint,
+      size,
+      startX: size.width * 0.3,
+      startY: size.height * 0.3,
+      curves: [
+        [size.width * 0.45, size.height * 0.4, size.width * 0.65, size.height * 0.45],
+        [size.width * 0.5, size.height * 0.5, size.width * 0.7, size.height * 0.55],
+        [size.width * 0.55, size.height * 0.6, size.width * 0.75, size.height * 0.65],
+      ],
+    );
+
+    // Bottom-left accent contours
+    _drawContourSet(
+      canvas,
+      paint,
+      size,
+      startX: -30,
+      startY: size.height * 0.7,
+      curves: [
+        [size.width * 0.15, size.height * 0.75, size.width * 0.3, size.height * 0.8],
+        [size.width * 0.2, size.height * 0.85, size.width * 0.35, size.height * 0.9],
+        [size.width * 0.25, size.height * 0.95, size.width * 0.4, size.height + 10],
+      ],
+    );
+
+    // Subtle golf ball dimple pattern in corner (very faint)
+    final dimplePaint = Paint()
+      ..color = color.withValues(alpha: opacity * 0.3)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    _drawDimplePattern(canvas, dimplePaint, size);
+  }
+
+  void _drawContourSet(
+    Canvas canvas,
+    Paint paint,
+    Size size, {
+    required double startX,
+    required double startY,
+    required List<List<double>> curves,
+  }) {
+    for (final curve in curves) {
+      final path = Path();
+      path.moveTo(startX, startY);
+
+      // Create smooth bezier curves for organic feel
+      path.quadraticBezierTo(
+        curve[0],
+        curve[1],
+        curve[2],
+        curve[3],
+      );
+
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  void _drawDimplePattern(Canvas canvas, Paint paint, Size size) {
+    // Subtle dimple circles in top-right corner
+    final dimpleRadius = 3.0;
+    final spacing = 12.0;
+
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        final x = size.width - 80 + (i * spacing);
+        final y = 40 + (j * spacing);
+        canvas.drawCircle(Offset(x, y), dimpleRadius, paint);
+      }
+    }
+
+    // Add a subtle flag silhouette in mid-right
+    final flagPath = Path();
+    final flagX = size.width - 60;
+    final flagY = size.height * 0.5;
+
+    flagPath.moveTo(flagX, flagY);
+    flagPath.lineTo(flagX, flagY - 30); // Pole
+    flagPath.lineTo(flagX + 15, flagY - 25); // Flag top
+    flagPath.lineTo(flagX, flagY - 20); // Flag bottom
+
+    canvas.drawPath(flagPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(FairwayContourPainter oldDelegate) => false;
+}
+
+/// Premium branded header widget
+class BrandedGolfHeader extends StatelessWidget {
+  final String username;
+  final String courseName;
+
+  const BrandedGolfHeader({
+    Key? key,
+    required this.username,
+    required this.courseName,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF1B3A2F), // Deep forest green
+            Color(0xFF2D5F4C), // Rich medium green
+            Color(0xFF1E4438), // Accent darker tone
+          ],
+          stops: [0.0, 0.6, 1.0],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          children: [
+            // Abstract contour pattern overlay
+            Positioned.fill(
+              child: CustomPaint(
+                painter: FairwayContourPainter(
+                  color: Colors.white,
+                  opacity: 0.15,
+                ),
+              ),
+            ),
+
+            // Subtle radial gradient overlay for depth
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.topRight,
+                    radius: 1.2,
+                    colors: [
+                      Colors.white.withValues(alpha: 0.05),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Text content
+            Positioned(
+              bottom: 16,
+              left: 16,
+              right: 16,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Username - bottom left
+                  Flexible(
+                    child: Text(
+                      username,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        letterSpacing: -0.5,
+                        height: 1.2,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            offset: Offset(0, 2),
+                            blurRadius: 8,
+                          ),
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            offset: Offset(0, 1),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+
+                  SizedBox(width: 16),
+
+                  // Course name - bottom right
+                  Flexible(
+                    child: Text(
+                      courseName,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white.withValues(alpha: 0.95),
+                        letterSpacing: 0.3,
+                        height: 1.3,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            offset: Offset(0, 2),
+                            blurRadius: 6,
+                          ),
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            offset: Offset(0, 1),
+                            blurRadius: 3,
+                          ),
+                        ],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Subtle top accent line
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 2,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: 0.0),
+                      Colors.white.withValues(alpha: 0.15),
+                      Colors.white.withValues(alpha: 0.0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class GameJoinedDetailedWidget extends StatefulWidget {
   const GameJoinedDetailedWidget({
@@ -114,7 +399,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
             centerTitle: false,
             elevation: 0.0,
           ),
-          body: FairwayBackgroundLight(
+          body: FairwayBackgroundDark(
             showOrganic: true,
             showTexture: true,
             child: SingleChildScrollView(
@@ -122,145 +407,27 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header with golf course image and gradient overlay
+                  // Branded header with abstract golf pattern
                   Padding(
                     padding: EdgeInsets.all(AppSpacing.md),
-                    child: StreamBuilder<CourseRecord>(
-                      stream: CourseRecord.getDocument(
-                          gameJoinedDetailedGamesRecord.courseRef!),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return Center(
-                            child: SizedBox(
-                              width: 50.0,
-                              height: 50.0,
-                              child: SpinKitWanderingCubes(
-                                color: AppTheme.of(context).secondary,
-                                size: 50.0,
-                              ),
-                            ),
-                          );
-                        }
-
-                        final coursePicCourseRecord = snapshot.data!;
-
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(16.0),
-                          child: Stack(
-                            children: [
-                              // Golf course image
-                              AspectRatio(
-                                aspectRatio: 16 / 9,
-                                child: Image.network(
-                                  coursePicCourseRecord.picture,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              // Gradient overlay for better text contrast
-                              Positioned.fill(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.transparent,
-                                        Colors.black.withValues(alpha: 0.7),
-                                      ],
-                                      stops: [0.5, 1.0],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              // Username (bottom-left) and Course name (bottom-right)
-                              Positioned(
-                                bottom: AppSpacing.md,
-                                left: AppSpacing.md,
-                                right: AppSpacing.md,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    // Username
-                                    Flexible(
-                                      child: Text(
-                                        gameJoinedDetailedGamesRecord.nameGame,
-                                        style: AppTheme.of(context)
-                                            .headlineMedium
-                                            .override(
-                                              font: GoogleFonts.outfit(
-                                                fontWeight: FontWeight.w600,
-                                                fontStyle: AppTheme.of(context)
-                                                    .headlineMedium
-                                                    .fontStyle,
-                                              ),
-                                              color: Colors.white,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w600,
-                                              fontStyle: AppTheme.of(context)
-                                                  .headlineMedium
-                                                  .fontStyle,
-                                              shadows: [
-                                                Shadow(
-                                                  color: Colors.black.withValues(alpha: 0.5),
-                                                  offset: Offset(0, 2),
-                                                  blurRadius: 4,
-                                                ),
-                                              ],
-                                            ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    SizedBox(width: AppSpacing.sm),
-                                    // Course name
-                                    Flexible(
-                                      child: Text(
-                                        gameJoinedDetailedGamesRecord.coursePlay,
-                                        textAlign: TextAlign.right,
-                                        style: AppTheme.of(context)
-                                            .bodyLarge
-                                            .override(
-                                              font: GoogleFonts.outfit(
-                                                fontWeight: FontWeight.w500,
-                                                fontStyle: AppTheme.of(context)
-                                                    .bodyLarge
-                                                    .fontStyle,
-                                              ),
-                                              color: Colors.white,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w500,
-                                              fontStyle: AppTheme.of(context)
-                                                  .bodyLarge
-                                                  .fontStyle,
-                                              shadows: [
-                                                Shadow(
-                                                  color: Colors.black.withValues(alpha: 0.5),
-                                                  offset: Offset(0, 2),
-                                                  blurRadius: 4,
-                                                ),
-                                              ],
-                                            ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                    child: BrandedGolfHeader(
+                      username: gameJoinedDetailedGamesRecord.nameGame,
+                      courseName: gameJoinedDetailedGamesRecord.coursePlay,
                     ),
                   ),
                   // Date/Time Card
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                    child: AppCard(
-                      variant: AppCardVariant.standard,
+                    child: Container(
                       padding: EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: AppColors.fairway.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.fairwayLight.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
                       child: Row(
                         children: [
                           Text(
@@ -278,7 +445,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                           .bodyLarge
                                           .fontStyle,
                                     ),
-                                    color: AppColors.slate,
+                                    color: Colors.white,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w500,
                                     fontStyle: AppTheme.of(context)
@@ -310,7 +477,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                       .headlineSmall
                                       .fontStyle,
                                 ),
-                                color: AppColors.fairwayDark,
+                                color: Colors.white,
                                 letterSpacing: 0.0,
                                 fontWeight: FontWeight.w600,
                                 fontStyle: AppTheme.of(context)
@@ -379,7 +546,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                       .headlineSmall
                                       .fontStyle,
                                 ),
-                                color: AppColors.fairwayDark,
+                                color: Colors.white,
                                 letterSpacing: 0.0,
                                 fontWeight: FontWeight.w600,
                                 fontStyle: AppTheme.of(context)
@@ -433,9 +600,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
 
                                     final friend1UsersRecord = snapshot.data!;
 
-                                    return AppCard(
-                                      variant: AppCardVariant.outlined,
-                                      padding: EdgeInsets.all(AppSpacing.sm),
+                                    return InkWell(
                                       onTap: () async {
                                         context.pushNamed(
                                           ProfileUserWidget.routeName,
@@ -457,48 +622,67 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                           },
                                         );
                                       },
-                                      child: Row(
-                                        children: [
-                                          // Avatar
-                                          Container(
-                                            width: 48.0,
-                                            height: 48.0,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.fairway,
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: AppColors.fairwayLight,
-                                                width: 2.0,
-                                              ),
-                                            ),
-                                            clipBehavior: Clip.antiAlias,
-                                            child: Image.network(
-                                              friend1UsersRecord.photoUrl != ''
-                                                  ? friend1UsersRecord.photoUrl
-                                                  : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error,
-                                                      stackTrace) =>
-                                                  Image.asset(
-                                                'assets/images/error_image.png',
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
+                                      child: Container(
+                                        padding: EdgeInsets.all(AppSpacing.sm),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.fairway.withValues(alpha: 0.3),
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: AppColors.fairwayLight.withValues(alpha: 0.3),
+                                            width: 1,
                                           ),
-                                          SizedBox(width: AppSpacing.sm),
-                                          // Name and ready status
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Text(
-                                                  friend1UsersRecord.displayName,
-                                                  style: AppTheme.of(context)
-                                                      .bodyLarge
-                                                      .override(
-                                                        font: GoogleFonts.outfit(
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            // Avatar
+                                            Container(
+                                              width: 48.0,
+                                              height: 48.0,
+                                              decoration: BoxDecoration(
+                                                color: AppColors.fairwayLight,
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: AppColors.sunsetGold,
+                                                  width: 2.0,
+                                                ),
+                                              ),
+                                              clipBehavior: Clip.antiAlias,
+                                              child: Image.network(
+                                                friend1UsersRecord.photoUrl != ''
+                                                    ? friend1UsersRecord.photoUrl
+                                                    : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error,
+                                                        stackTrace) =>
+                                                    Image.asset(
+                                                  'assets/images/error_image.png',
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(width: AppSpacing.sm),
+                                            // Name and ready status
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    friend1UsersRecord.displayName,
+                                                    style: AppTheme.of(context)
+                                                        .bodyLarge
+                                                        .override(
+                                                          font: GoogleFonts.outfit(
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            fontStyle:
+                                                                AppTheme.of(context)
+                                                                    .bodyLarge
+                                                                    .fontStyle,
+                                                          ),
+                                                          color: Colors.white,
+                                                          letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.w500,
                                                           fontStyle:
@@ -506,26 +690,26 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                                   .bodyLarge
                                                                   .fontStyle,
                                                         ),
-                                                        color: AppColors.slate,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            AppTheme.of(context)
-                                                                .bodyLarge
-                                                                .fontStyle,
-                                                      ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                                SizedBox(height: 2),
-                                                Text(
-                                                  'Ready',
-                                                  style: AppTheme.of(context)
-                                                      .bodySmall
-                                                      .override(
-                                                        font: GoogleFonts.outfit(
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                  SizedBox(height: 2),
+                                                  Text(
+                                                    'Ready',
+                                                    style: AppTheme.of(context)
+                                                        .bodySmall
+                                                        .override(
+                                                          font: GoogleFonts.outfit(
+                                                            fontWeight:
+                                                                FontWeight.normal,
+                                                            fontStyle:
+                                                                AppTheme.of(context)
+                                                                    .bodySmall
+                                                                    .fontStyle,
+                                                          ),
+                                                          color: AppColors.sunsetGold,
+                                                          letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -533,26 +717,18 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                                   .bodySmall
                                                                   .fontStyle,
                                                         ),
-                                                        color: AppColors.success,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        fontStyle:
-                                                            AppTheme.of(context)
-                                                                .bodySmall
-                                                                .fontStyle,
-                                                      ),
-                                                ),
-                                              ],
+                                                  ),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                          // Checkmark icon
-                                          Icon(
-                                            Icons.check_circle,
-                                            color: AppColors.success,
-                                            size: 24.0,
-                                          ),
-                                        ],
+                                            // Checkmark icon
+                                            Icon(
+                                              Icons.check_circle,
+                                              color: AppColors.sunsetGold,
+                                              size: 24.0,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     );
                                   },
@@ -563,9 +739,16 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             ...guestPlayers.map(
                               (guestName) => Padding(
                                 padding: EdgeInsets.only(bottom: AppSpacing.sm),
-                                child: AppCard(
-                                  variant: AppCardVariant.outlined,
+                                child: Container(
                                   padding: EdgeInsets.all(AppSpacing.sm),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.fairway.withValues(alpha: 0.3),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: AppColors.fairwayLight.withValues(alpha: 0.3),
+                                      width: 1,
+                                    ),
+                                  ),
                                   child: Row(
                                     children: [
                                       // Avatar placeholder
@@ -573,10 +756,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         width: 48.0,
                                         height: 48.0,
                                         decoration: BoxDecoration(
-                                          color: AppColors.sand,
+                                          color: AppColors.fairwayLight.withValues(alpha: 0.5),
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                            color: AppColors.cloud,
+                                            color: Colors.white.withValues(alpha: 0.3),
                                             width: 2.0,
                                           ),
                                         ),
@@ -593,7 +776,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                             .titleMedium
                                                             .fontStyle,
                                                   ),
-                                                  color: AppColors.stone,
+                                                  color: Colors.white,
                                                   letterSpacing: 0.0,
                                                   fontWeight: FontWeight.w600,
                                                   fontStyle: AppTheme.of(context)
@@ -624,7 +807,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                               .bodyLarge
                                                               .fontStyle,
                                                     ),
-                                                    color: AppColors.slate,
+                                                    color: Colors.white,
                                                     letterSpacing: 0.0,
                                                     fontWeight: FontWeight.w500,
                                                     fontStyle:
@@ -649,7 +832,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                               .bodySmall
                                                               .fontStyle,
                                                     ),
-                                                    color: AppColors.stone,
+                                                    color: Colors.white.withValues(alpha: 0.7),
                                                     letterSpacing: 0.0,
                                                     fontWeight: FontWeight.normal,
                                                     fontStyle:
@@ -870,9 +1053,16 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     required String label,
     required String value,
   }) {
-    return AppCard(
-      variant: AppCardVariant.outlined,
+    return Container(
       padding: EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.fairway.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.fairwayLight.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -893,7 +1083,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                           fontStyle:
                               AppTheme.of(context).labelSmall.fontStyle,
                         ),
-                        color: AppColors.stone,
+                        color: Colors.white.withValues(alpha: 0.7),
                         letterSpacing: 0.0,
                         fontWeight: FontWeight.w500,
                         fontStyle:
@@ -913,7 +1103,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                     fontWeight: FontWeight.w600,
                     fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
                   ),
-                  color: AppColors.fairwayDark,
+                  color: Colors.white,
                   letterSpacing: 0.0,
                   fontWeight: FontWeight.w600,
                   fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
