@@ -77,10 +77,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
         body: FairwayBackgroundSunset(
           showOrganic: true,
           child: Align(
-          alignment: AlignmentDirectional(0.0, 0.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
+            alignment: AlignmentDirectional(0.0, 0.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
               Container(
                 width: 179.0,
                 child: Stack(
@@ -1238,7 +1238,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                   ),
                 ),
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

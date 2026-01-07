@@ -92,10 +92,10 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                   height: double.infinity,
                   alignment: AlignmentDirectional(0.0, -1.0),
                   child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
                       Container(
                         width: double.infinity,
                         constraints: BoxConstraints(
@@ -1283,7 +1283,8 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                   ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );
