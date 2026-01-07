@@ -34,6 +34,21 @@ Container(color: AppColors.sunsetGold)
 Container(decoration: BoxDecoration(gradient: AppColors.fairwayGradient))
 ```
 
+### 📏 [spacing.dart](spacing.dart)
+Consistent 8-point grid system with semantic spacing patterns:
+- **Base scale**: 4px to 64px following mathematical progression
+- **Semantic names**: cardPadding, screenPadding, buttonGap, etc.
+- **Shortcuts**: EdgeInsets and SizedBox helpers for common patterns
+
+**Usage:**
+```dart
+import 'package:find_my_fourth/core/design_tokens/spacing.dart';
+
+Padding(padding: AppSpacing.card, child: Content())
+SizedBox(height: AppSpacing.md)
+Column(children: widgets.withVerticalSpacing(AppSpacing.sm))
+```
+
 ## Design System Philosophy
 
 ### "Elevated Country Club Modernism"
@@ -73,6 +88,30 @@ AppTypography.button                // Manrope 16px semibold
 
 // Score Display
 AppTypography.monoLarge             // DM Mono 48px bold
+```
+
+### Spacing Scale
+```dart
+// Base Scale
+AppSpacing.xs                       // 8px - Tight
+AppSpacing.sm                       // 12px - Compact
+AppSpacing.md                       // 16px - Default
+AppSpacing.lg                       // 20px - Comfortable
+AppSpacing.xl                       // 24px - Sections
+AppSpacing.xxl                      // 32px - Major sections
+
+// Semantic Patterns
+AppSpacing.screenPadding            // 20px - Screen edges
+AppSpacing.cardPadding              // 20px - Card internals
+AppSpacing.cardGap                  // 16px - Between cards
+AppSpacing.buttonGap                // 12px - Between buttons
+AppSpacing.formFieldGap             // 16px - Between fields
+
+// Shortcuts
+AppSpacing.card                     // EdgeInsets.all(20)
+AppSpacing.screen                   // EdgeInsets.all(20)
+AppSpacing.horizontalMd             // EdgeInsets.symmetric(h: 16)
+AppSpacing.verticalMdBox            // SizedBox(height: 16)
 ```
 
 ### Color Palette
@@ -132,7 +171,7 @@ Container(
       ),
     ),
   ),
-  padding: EdgeInsets.all(20),
+  padding: AppSpacing.card,  // 20px all sides
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -141,13 +180,13 @@ Container(
         style: AppTypography.headlineMedium
             .withColor(AppColors.fairwayDark),
       ),
-      SizedBox(height: 8),
+      AppSpacing.verticalXsBox,  // 8px spacing
       Text(
         'Saturday, Jan 6 at 9:00 AM',
         style: AppTypography.bodyMedium
             .withColor(AppColors.slate),
       ),
-      SizedBox(height: 12),
+      AppSpacing.verticalSmBox,  // 12px spacing
       Text(
         '3/4',
         style: AppTypography.monoMedium
