@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/components/date_format_widget.dart';
+import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
@@ -70,9 +71,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
 
         return Scaffold(
           key: scaffoldKey,
-          backgroundColor: AppTheme.of(context).secondaryBackground,
           appBar: AppBar(
-            backgroundColor: AppTheme.of(context).primaryBackground,
+            backgroundColor: Colors.transparent,
             automaticallyImplyLeading: false,
             leading: InkWell(
               splashColor: Colors.transparent,
@@ -112,19 +112,18 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
             centerTitle: false,
             elevation: 0.0,
           ),
-          body: AuthUserStreamWidget(
-            builder: (context) {
-              final isCreatorFriend =
-                  currentUserDocument?.friends.contains(
-                        joinGameDetailedGamesRecord.userRef,
-                      ) ??
-                      false;
+          body: FairwayBackgroundDark(
+            showOrganic: true,
+            showTexture: true,
+            child: AuthUserStreamWidget(
+              builder: (context) {
+                final isCreatorFriend =
+                    currentUserDocument?.friends.contains(
+                          joinGameDetailedGamesRecord.userRef,
+                        ) ??
+                        false;
 
-              return Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.of(context).tertiary,
-                ),
-                child: SingleChildScrollView(
+                return SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.start,

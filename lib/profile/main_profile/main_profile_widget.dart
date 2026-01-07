@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/app_icon_button.dart';
+import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
@@ -47,9 +48,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppTheme.of(context).tertiary,
         appBar: AppBar(
-          backgroundColor: AppTheme.of(context).tertiary,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: AppIconButton(
             borderColor: Colors.transparent,
@@ -74,7 +74,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
           centerTitle: false,
           elevation: 0.0,
         ),
-        body: Align(
+        body: FairwayBackgroundSunset(
+          showOrganic: true,
+          child: Align(
           alignment: AlignmentDirectional(0.0, 0.0),
           child: Column(
             mainAxisSize: MainAxisSize.max,

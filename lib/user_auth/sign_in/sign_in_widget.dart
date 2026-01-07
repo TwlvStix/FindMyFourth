@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
@@ -67,26 +68,18 @@ class _SignInWidgetState extends State<SignInWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppTheme.of(context).primary,
-        body: Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Expanded(
-              flex: 6,
-              child: Container(
-                width: 100.0,
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppTheme.of(context).secondaryBackground,
-                  image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: Image.asset(
-                      'assets/images/Tower_Ranch_Golf_Country_Club_(3)_copy.jpg',
-                    ).image,
-                  ),
-                ),
-                alignment: AlignmentDirectional(0.0, -1.0),
-                child: SingleChildScrollView(
+        body: FairwayBackgroundSunset(
+          showOrganic: true,
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Expanded(
+                flex: 6,
+                child: Container(
+                  width: 100.0,
+                  height: double.infinity,
+                  alignment: AlignmentDirectional(0.0, -1.0),
+                  child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.center,
