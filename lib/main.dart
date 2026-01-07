@@ -11,6 +11,7 @@ import 'auth/firebase_auth/auth_util.dart';
 import 'backend/push_notifications/push_notifications_util.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/core/app_theme.dart';
+import '/core/design_tokens/typography.dart';
 import '/utils/app_util.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -112,7 +113,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     const appColors = AppThemeColors.light;
-    final textTheme = GoogleFonts.outfitTextTheme().apply(
+    final textTheme = AppTypography.createTextTheme().apply(
       bodyColor: appColors.primaryText,
       displayColor: appColors.primaryText,
     );
