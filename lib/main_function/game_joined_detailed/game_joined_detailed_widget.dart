@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/components/date_format_widget.dart';
+import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
@@ -71,9 +72,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
 
         return Scaffold(
           key: scaffoldKey,
-          backgroundColor: AppTheme.of(context).secondaryBackground,
           appBar: AppBar(
-            backgroundColor: AppTheme.of(context).primaryBackground,
+            backgroundColor: Colors.transparent,
             automaticallyImplyLeading: false,
             leading: InkWell(
               splashColor: Colors.transparent,
@@ -113,10 +113,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
             centerTitle: false,
             elevation: 0.0,
           ),
-          body: Container(
-            decoration: BoxDecoration(
-              color: AppTheme.of(context).tertiary,
-            ),
+          body: FairwayBackgroundDark(
+            showOrganic: true,
+            showTexture: true,
+            child: Container(
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.max,

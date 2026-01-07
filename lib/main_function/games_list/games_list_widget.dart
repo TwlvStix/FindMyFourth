@@ -2,6 +2,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/widgets/app_choice_chips.dart';
 import '/core/widgets/app_icon_button.dart';
+import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/form_field_controller.dart';
@@ -193,9 +194,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: AppTheme.of(context).primaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: AppIconButton(
             borderColor: Colors.transparent,
@@ -281,16 +281,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
             ),
           ],
           centerTitle: false,
-          elevation: 10.0,
+          elevation: 0.0,
         ),
-        body: SafeArea(
-          top: true,
-          child: Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration(
-              color: AppTheme.of(context).secondaryBackground,
-            ),
+        body: FairwayBackgroundLight(
+          showOrganic: true,
+          child: SafeArea(
+            top: true,
             child: Padding(
               padding: EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 20.0),
               child: Column(

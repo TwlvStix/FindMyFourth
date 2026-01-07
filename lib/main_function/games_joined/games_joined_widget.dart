@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/widgets/app_icon_button.dart';
+import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
@@ -52,9 +53,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppTheme.of(context).primaryBtnText,
         appBar: AppBar(
-          backgroundColor: AppTheme.of(context).primaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: AppIconButton(
             borderColor: Colors.transparent,
@@ -146,20 +146,10 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
             ),
           ],
           centerTitle: false,
-          elevation: 10.0,
+          elevation: 0.0,
         ),
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            color: AppTheme.of(context).secondaryBackground,
-            image: DecorationImage(
-              fit: BoxFit.cover,
-              image: Image.asset(
-                'assets/images/321084118_1330991397660015_9204963794688984349_n.jpg',
-              ).image,
-            ),
-          ),
+        body: FairwayBackgroundLight(
+          showOrganic: true,
           child: Padding(
             padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
             child: SingleChildScrollView(
@@ -252,9 +242,9 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                               EdgeInsetsDirectional.fromSTEB(
                                                   12.0, 0.0, 0.0, 0.0),
                                           child: Column(
-                                            mainAxisSize: MainAxisSize.max,
+                                            mainAxisSize: MainAxisSize.min,
                                             mainAxisAlignment:
-                                                MainAxisAlignment.spaceEvenly,
+                                                MainAxisAlignment.center,
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
