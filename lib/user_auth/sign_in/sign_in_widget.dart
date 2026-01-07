@@ -67,7 +67,7 @@ class _SignInWidgetState extends State<SignInWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: Color(0xFF253551),
+        backgroundColor: AppTheme.of(context).primary,
         body: Row(
           mainAxisSize: MainAxisSize.max,
           children: [

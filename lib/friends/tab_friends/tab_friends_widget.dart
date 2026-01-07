@@ -591,7 +591,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                               width: 50.0,
                                               height: 50.0,
                                               child: SpinKitWanderingCubes(
-                                                color: Color(0xFF25504F),
+                                                color: AppTheme.of(context).secondary,
                                                 size: 50.0,
                                               ),
                                             ),
@@ -872,7 +872,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                           borderWidth: 1.0,
                                                           buttonSize: 40.0,
                                                           fillColor:
-                                                              Color(0xFF253551),
+                                                              AppTheme.of(context).primary,
                                                           icon: FaIcon(
                                                             FontAwesomeIcons
                                                                 .facebookMessenger,
@@ -1308,7 +1308,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                 width: 50.0,
                                                 height: 50.0,
                                                 child: SpinKitWanderingCubes(
-                                                  color: Color(0xFF25504F),
+                                                  color: AppTheme.of(context).secondary,
                                                   size: 50.0,
                                                 ),
                                               ),

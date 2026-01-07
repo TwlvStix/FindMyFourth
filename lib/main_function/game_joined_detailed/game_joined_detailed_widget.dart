@@ -59,7 +59,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                 width: 50.0,
                 height: 50.0,
                 child: SpinKitWanderingCubes(
-                  color: Color(0xFF25504F),
+                  color: AppTheme.of(context).secondary,
                   size: 50.0,
                 ),
               ),
@@ -141,7 +141,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                     width: 50.0,
                                     height: 50.0,
                                     child: SpinKitWanderingCubes(
-                                      color: Color(0xFF25504F),
+                                      color: AppTheme.of(context).secondary,
                                       size: 50.0,
                                     ),
                                   ),
@@ -328,7 +328,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         width: 64.0,
                                         height: 64.0,
                                         decoration: BoxDecoration(
-                                          color: Color(0xFF253551),
+                                          color: AppTheme.of(context).primary,
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: AppTheme.of(context)
@@ -388,7 +388,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         width: 64.0,
                                         height: 64.0,
                                         decoration: BoxDecoration(
-                                          color: Color(0xFF253551),
+                                          color: AppTheme.of(context).primary,
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: AppTheme.of(context)
@@ -448,7 +448,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         width: 64.0,
                                         height: 64.0,
                                         decoration: BoxDecoration(
-                                          color: Color(0xFF253551),
+                                          color: AppTheme.of(context).primary,
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: AppTheme.of(context)
@@ -508,7 +508,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         width: 64.0,
                                         height: 64.0,
                                         decoration: BoxDecoration(
-                                          color: Color(0xFF253551),
+                                          color: AppTheme.of(context).primary,
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: AppTheme.of(context)
@@ -568,7 +568,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         width: 64.0,
                                         height: 64.0,
                                         decoration: BoxDecoration(
-                                          color: Color(0xFF253551),
+                                          color: AppTheme.of(context).primary,
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: AppTheme.of(context)
@@ -628,7 +628,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         width: 64.0,
                                         height: 64.0,
                                         decoration: BoxDecoration(
-                                          color: Color(0xFF253551),
+                                          color: AppTheme.of(context).primary,
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: AppTheme.of(context)
@@ -754,7 +754,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                             width: 50.0,
                                             height: 50.0,
                                             child: SpinKitWanderingCubes(
-                                              color: Color(0xFF25504F),
+                                              color: AppTheme.of(context).secondary,
                                               size: 50.0,
                                             ),
                                           ),
@@ -775,7 +775,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                   .info,
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color: Color(0xFFA9A9A9),
+                                                color: AppTheme.of(context).tertiary,
                                                 width: 2.0,
                                               ),
                                             ),
@@ -896,7 +896,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                           color: AppTheme.of(context).info,
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                            color: Color(0xFFA9A9A9),
+                                            color: AppTheme.of(context).tertiary,
                                             width: 2.0,
                                           ),
                                         ),
@@ -1010,7 +1010,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 0.0, 0.0, 0.0, 0.0),
                             iconPadding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
-                            color: Color(0xFF253551),
+                            color: AppTheme.of(context).primary,
                             textStyle: AppTheme.of(context)
                                 .headlineSmall
                                 .override(

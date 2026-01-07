@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'design_tokens/colors.dart';
 
 @immutable
 class AppThemeColors extends ThemeExtension<AppThemeColors> {
@@ -46,25 +47,47 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color noColor;
 
   static const light = AppThemeColors(
-    primary: Color(0xFF253551),
-    secondary: Color(0xFF265240),
-    tertiary: Color(0xFFA9A9A9),
-    alternate: Color(0xFFE0E0DB),
-    primaryText: Color(0xFF14181B),
-    secondaryText: Color(0xFF57636C),
-    primaryBackground: Color(0xFFF1F4F8),
-    secondaryBackground: Color(0xFFFFFFFF),
-    accent1: Color(0x4C4B39EF),
-    accent2: Color(0x4D39D2C0),
-    accent3: Color(0xFF402550),
-    accent4: Color(0xCCFFFFFF),
-    success: Color(0xFF249689),
-    warning: Color(0xFFF9CF58),
-    error: Color(0xFFFF5963),
-    info: Color(0xFFFFFFFF),
-    primaryBtnText: Color(0xFFFFFFFF),
-    lineColor: Color(0xFFE0E3E7),
-    noColor: Color(0x00FFFFFF),
+    primary: AppColors.fairwayDark,          // Deep forest green for headers
+    secondary: AppColors.fairway,            // Rich green for secondary elements
+    tertiary: AppColors.stone,               // Mid grey for tertiary elements
+    alternate: AppColors.cloud,              // Light grey for alternates
+    primaryText: AppColors.onyx,             // Near black for primary text
+    secondaryText: AppColors.slate,          // Dark grey for secondary text
+    primaryBackground: AppColors.sand,       // Warm neutral background
+    secondaryBackground: AppColors.pure,     // Off-white for cards/surfaces
+    accent1: AppColors.sunsetGold,           // Warm gold accent
+    accent2: AppColors.sunsetPeach,          // Soft peach accent
+    accent3: AppColors.sunsetRose,           // Muted coral accent
+    accent4: AppColors.fairwayLight,         // Light green accent
+    success: AppColors.success,              // Birdie green
+    warning: AppColors.warning,              // Gold warning
+    error: AppColors.error,                  // Hazard red
+    info: AppColors.info,                    // Water blue
+    primaryBtnText: AppColors.pure,          // Off-white for button text
+    lineColor: AppColors.cloud,              // Light grey for dividers
+    noColor: Color(0x00FFFFFF),              // Transparent
+  );
+
+  static const dark = AppThemeColors(
+    primary: AppColorsDark.fairwayLight,     // Lighter green for dark mode headers
+    secondary: AppColorsDark.fairway,        // Mid green for secondary elements
+    tertiary: AppColorsDark.stone,           // Grey for tertiary elements
+    alternate: AppColorsDark.cloud,          // Darker grey for alternates
+    primaryText: AppColorsDark.onyx,         // Off-white for primary text
+    secondaryText: AppColorsDark.slate,      // Light grey for secondary text
+    primaryBackground: AppColorsDark.sand,   // Dark background
+    secondaryBackground: AppColorsDark.pure, // Darker surface for cards
+    accent1: AppColorsDark.sunsetGold,       // Muted gold accent
+    accent2: AppColorsDark.sunsetPeach,      // Muted peach accent
+    accent3: AppColorsDark.sunsetRose,       // Muted coral accent
+    accent4: AppColorsDark.fairwayLight,     // Mid green accent
+    success: AppColorsDark.success,          // Brighter success green
+    warning: AppColorsDark.warning,          // Muted warning gold
+    error: AppColorsDark.error,              // Brighter error red
+    info: AppColorsDark.info,                // Brighter info blue
+    primaryBtnText: AppColorsDark.pure,      // Dark background for button text
+    lineColor: AppColorsDark.cloud,          // Darker grey for dividers
+    noColor: Color(0x00FFFFFF),              // Transparent
   );
 
   @override

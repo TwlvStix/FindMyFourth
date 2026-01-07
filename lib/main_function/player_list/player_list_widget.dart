@@ -144,7 +144,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                               width: 50.0,
                               height: 50.0,
                               child: SpinKitWanderingCubes(
-                                color: Color(0xFF25504F),
+                                color: AppTheme.of(context).secondary,
                                 size: 50.0,
                               ),
                             ),
@@ -521,7 +521,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                       .titleSmall
                                                       .fontStyle,
                                             ),
-                                            color: Color(0xFF253551),
+                                            color: AppTheme.of(context).primary,
                                             letterSpacing: 0.0,
                                             fontWeight:
                                                 AppTheme.of(context)

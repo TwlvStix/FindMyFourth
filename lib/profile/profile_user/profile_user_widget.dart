@@ -418,7 +418,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                       borderRadius: 24.0,
                       borderWidth: 1.0,
                       buttonSize: 48.0,
-                      fillColor: Color(0xFF253551),
+                      fillColor: AppTheme.of(context).primary,
                       icon: FaIcon(
                         FontAwesomeIcons.facebookMessenger,
                         color: Colors.white,

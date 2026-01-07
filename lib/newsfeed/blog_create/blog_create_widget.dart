@@ -342,7 +342,7 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                     allowPhoto: true,
                     backgroundColor:
                         AppTheme.of(context).primaryBtnText,
-                    textColor: Color(0xFF253551),
+                    textColor: AppTheme.of(context).primary,
                   );
                   if (selectedMedia != null &&
                       selectedMedia.every(
@@ -395,7 +395,7 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   iconPadding:
                       EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                  color: Color(0xFFA9A9A9),
+                  color: AppTheme.of(context).tertiary,
                   textStyle: AppTheme.of(context).labelMedium.override(
                         font: GoogleFonts.outfit(
                           fontWeight: AppTheme.of(context)
@@ -414,7 +414,7 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                       ),
                   elevation: 2.0,
                   borderSide: BorderSide(
-                    color: Color(0xFF253551),
+                    color: AppTheme.of(context).primary,
                     width: 1.0,
                   ),
                 ),

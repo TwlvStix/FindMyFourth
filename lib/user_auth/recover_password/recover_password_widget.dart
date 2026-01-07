@@ -156,7 +156,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                         width: 100.0,
                         height: 75.0,
                         decoration: BoxDecoration(
-                          color: Color(0xFF253551),
+                          color: AppTheme.of(context).primary,
                           boxShadow: [
                             BoxShadow(
                               blurRadius: 6.0,
@@ -286,10 +286,10 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                     borderRadius: BorderRadius.circular(8.0),
                     hoverColor: Colors.white,
                     hoverBorderSide: BorderSide(
-                      color: Color(0xFF253551),
+                      color: AppTheme.of(context).primary,
                       width: 1.0,
                     ),
-                    hoverTextColor: Color(0xFF253551),
+                    hoverTextColor: AppTheme.of(context).primary,
                     hoverElevation: 3.0,
                   ),
                 ),

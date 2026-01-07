@@ -222,7 +222,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                     backgroundColor:
                                         AppTheme.of(context)
                                             .primaryBtnText,
-                                    textColor: Color(0xFF253551),
+                                    textColor: AppTheme.of(context).primary,
                                   );
                                   if (selectedMedia != null &&
                                       selectedMedia.every((m) =>
@@ -287,7 +287,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                       0.0, 0.0, 0.0, 0.0),
                                   iconPadding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, 0.0),
-                                  color: Color(0xFFA9A9A9),
+                                  color: AppTheme.of(context).tertiary,
                                   textStyle: AppTheme.of(context)
                                       .labelMedium
                                       .override(
@@ -312,7 +312,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                       ),
                                   elevation: 2.0,
                                   borderSide: BorderSide(
-                                    color: Color(0xFF253551),
+                                    color: AppTheme.of(context).primary,
                                     width: 1.0,
                                   ),
                                 ),

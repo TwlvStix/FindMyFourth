@@ -190,7 +190,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                               width: 50.0,
                               height: 50.0,
                               child: SpinKitWanderingCubes(
-                                color: Color(0xFF25504F),
+                                color: AppTheme.of(context).secondary,
                                 size: 50.0,
                               ),
                             ),
@@ -560,7 +560,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                             iconPadding:
                                                 EdgeInsetsDirectional.fromSTEB(
                                                     0.0, 0.0, 0.0, 0.0),
-                                            color: Color(0xFF253551),
+                                            color: AppTheme.of(context).primary,
                                             textStyle:
                                                 AppTheme.of(context)
                                                     .bodyMedium
@@ -605,7 +605,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                           borderRadius: 20.0,
                                           borderWidth: 1.0,
                                           buttonSize: 45.0,
-                                          fillColor: Color(0xFF253551),
+                                          fillColor: AppTheme.of(context).primary,
                                           icon: FaIcon(
                                             FontAwesomeIcons.facebookMessenger,
                                             color: Colors.white,

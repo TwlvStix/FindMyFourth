@@ -103,7 +103,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: Color(0xFF253551),
+        backgroundColor: AppTheme.of(context).primary,
         appBar: AppBar(
           backgroundColor: AppTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
@@ -343,7 +343,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: Color(0xFF253551),
+                                          color: AppTheme.of(context).primary,
                                           width: 1.0,
                                         ),
                                         borderRadius:
@@ -474,7 +474,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         MediaQuery.sizeOf(context).width * 1.0,
                                     height: 100.0,
                                     decoration: BoxDecoration(
-                                      color: Color(0xFFA9A9A9),
+                                      color: AppTheme.of(context).tertiary,
                                       borderRadius: BorderRadius.circular(10.0),
                                     ),
                                     child: Padding(
@@ -979,7 +979,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     fillColor: AppTheme.of(context)
                                         .secondaryBackground,
                                     elevation: 2.0,
-                                    borderColor: Color(0xFF253551),
+                                    borderColor: AppTheme.of(context).primary,
                                     borderWidth: 1.0,
                                     borderRadius: 8.0,
                                     margin: EdgeInsetsDirectional.fromSTEB(
@@ -1048,7 +1048,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             width: 50.0,
                                             height: 50.0,
                                             child: SpinKitWanderingCubes(
-                                              color: Color(0xFF25504F),
+                                              color: AppTheme.of(context).secondary,
                                               size: 50.0,
                                             ),
                                           ),
@@ -1163,7 +1163,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         fillColor: AppTheme.of(context)
                                             .secondaryBackground,
                                         elevation: 2.0,
-                                        borderColor: Color(0xFF253551),
+                                        borderColor: AppTheme.of(context).primary,
                                         borderWidth: 1.0,
                                         borderRadius: 10.0,
                                         margin: EdgeInsetsDirectional.fromSTEB(
@@ -1313,7 +1313,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     fillColor: AppTheme.of(context)
                                         .secondaryBackground,
                                     elevation: 2.0,
-                                    borderColor: Color(0xFF253551),
+                                    borderColor: AppTheme.of(context).primary,
                                     borderWidth: 1.0,
                                     borderRadius: 10.0,
                                     margin: EdgeInsetsDirectional.fromSTEB(
@@ -1379,7 +1379,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       borderRadius: BorderRadius.circular(8.0),
                                       shape: BoxShape.rectangle,
                                       border: Border.all(
-                                        color: Color(0xFF253551),
+                                        color: AppTheme.of(context).primary,
                                         width: 1.0,
                                       ),
                                     ),
@@ -1534,7 +1534,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     fillColor: AppTheme.of(context)
                                         .secondaryBackground,
                                     elevation: 2.0,
-                                    borderColor: Color(0xFF253551),
+                                    borderColor: AppTheme.of(context).primary,
                                     borderWidth: 1.0,
                                     borderRadius: 8.0,
                                     margin: EdgeInsetsDirectional.fromSTEB(
@@ -1645,7 +1645,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     fillColor: AppTheme.of(context)
                                         .secondaryBackground,
                                     elevation: 2.0,
-                                    borderColor: Color(0xFF253551),
+                                    borderColor: AppTheme.of(context).primary,
                                     borderWidth: 1.0,
                                     borderRadius: 8.0,
                                     margin: EdgeInsetsDirectional.fromSTEB(
@@ -1752,7 +1752,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     fillColor: AppTheme.of(context)
                                         .secondaryBackground,
                                     elevation: 2.0,
-                                    borderColor: Color(0xFF253551),
+                                    borderColor: AppTheme.of(context).primary,
                                     borderWidth: 1.0,
                                     borderRadius: 10.0,
                                     margin: EdgeInsetsDirectional.fromSTEB(
@@ -1857,7 +1857,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     fillColor: AppTheme.of(context)
                                         .secondaryBackground,
                                     elevation: 2.0,
-                                    borderColor: Color(0xFF253551),
+                                    borderColor: AppTheme.of(context).primary,
                                     borderWidth: 1.0,
                                     borderRadius: 10.0,
                                     margin: EdgeInsetsDirectional.fromSTEB(
@@ -2091,7 +2091,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                     .titleSmall
                                                     .fontStyle,
                                           ),
-                                          color: Color(0xFF253551),
+                                          color: AppTheme.of(context).primary,
                                           letterSpacing: 0.0,
                                           fontWeight:
                                               AppTheme.of(context)
