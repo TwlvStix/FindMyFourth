@@ -45,6 +45,52 @@ FairwayBackgroundSunset(
 
 ---
 
+### 🎴 AppCard (NEW)
+Production-grade card component with variants and micro-interactions.
+
+**File**: `app_card.dart`
+
+**Features**:
+- 4 variants (standard, elevated, outlined, gradientAccent)
+- Specialized cards (GameCard, StatCard, SectionCard)
+- Interactive tap states with scale animation
+- Design token integration (spacing, colors, typography)
+- Flexible content areas
+
+**Quick Start**:
+```dart
+import 'package:find_my_fourth/core/widgets/app_card.dart';
+
+// Standard card
+AppCard(
+  child: Column(
+    children: [
+      Text('Title', style: AppTypography.headlineMedium),
+      Text('Content', style: AppTypography.bodyMedium),
+    ],
+  ),
+)
+
+// Game card (specialized)
+GameCard(
+  title: 'Pebble Beach Round',
+  subtitle: 'Saturday, Jan 6 at 9:00 AM',
+  metadata: '3/4 players',
+  onTap: () => navigateToGame(),
+)
+
+// Stat card (specialized)
+StatCard(
+  label: 'Games Played',
+  value: '24',
+  icon: Icons.golf_course,
+)
+```
+
+**Documentation**: See [CARD_SYSTEM.md](../../../CARD_SYSTEM.md)
+
+---
+
 ### ✨ AppButtonEnhanced (NEW)
 Enhanced button component with variants, micro-interactions, and polish.
 
@@ -356,6 +402,10 @@ Column(
 
 ## Component Checklist
 
+- [x] FairwayBackground - Production ready ✅
+- [x] FairwayBackgroundExamples - Demo/reference ✅
+- [x] AppCard - Production ready ✅
+- [x] AppCardExamples - Demo/reference ✅
 - [x] AppButtonEnhanced - Production ready ✅
 - [x] AppButtonExamples - Demo/reference ✅
 - [x] AppIconButton - Legacy, works
@@ -363,19 +413,24 @@ Column(
 - [x] AppChoiceChips - Legacy, works
 - [x] AppCountController - Legacy, works
 - [ ] AppTextField - To be enhanced
-- [ ] AppCard - To be created
 - [ ] AppDialog - To be enhanced
+- [ ] AppLoadingIndicator - To be created
+- [ ] AppEmptyState - To be created
+- [ ] AppErrorState - To be created
 
 ---
 
 ## Resources
 
+- **Background Documentation**: [BACKGROUND_SYSTEM.md](../../../BACKGROUND_SYSTEM.md)
+- **Card Documentation**: [CARD_SYSTEM.md](../../../CARD_SYSTEM.md)
 - **Button Documentation**: [BUTTON_SYSTEM.md](../../../BUTTON_SYSTEM.md)
+- **Spacing Guide**: [SPACING_SYSTEM.md](../../../SPACING_SYSTEM.md)
 - **Typography Guide**: [TYPOGRAPHY_SYSTEM.md](../../../TYPOGRAPHY_SYSTEM.md)
 - **Color System**: [COLOR_SYSTEM_MIGRATION.md](../../../COLOR_SYSTEM_MIGRATION.md)
 - **Design Tokens**: [design_tokens/README.md](../design_tokens/README.md)
 
 ---
 
-**Last Updated**: 2026-01-06
+**Last Updated**: 2026-01-07
 **Design System**: Elevated Country Club Modernism
