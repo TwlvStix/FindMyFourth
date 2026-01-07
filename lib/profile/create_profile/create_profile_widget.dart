@@ -143,7 +143,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                 width: 50.0,
                 height: 50.0,
                 child: SpinKitWanderingCubes(
-                  color: Color(0xFF25504F),
+                  color: AppTheme.of(context).secondary,
                   size: 50.0,
                 ),
               ),
@@ -970,7 +970,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                 width: 50.0,
                                                 height: 50.0,
                                                 child: SpinKitWanderingCubes(
-                                                  color: Color(0xFF25504F),
+                                                  color: AppTheme.of(context).secondary,
                                                   size: 50.0,
                                                 ),
                                               ),
@@ -2138,10 +2138,10 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                               BorderRadius.circular(8.0),
                                           hoverColor: Colors.white,
                                           hoverBorderSide: BorderSide(
-                                            color: Color(0xFF253551),
+                                            color: AppTheme.of(context).primary,
                                             width: 1.0,
                                           ),
-                                          hoverTextColor: Color(0xFF253551),
+                                          hoverTextColor: AppTheme.of(context).primary,
                                           hoverElevation: 6.0,
                                         ),
                                       ),

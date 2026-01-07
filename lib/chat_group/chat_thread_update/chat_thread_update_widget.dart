@@ -87,7 +87,7 @@ class _ChatThreadUpdateWidgetState extends State<ChatThreadUpdateWidget> {
                           width: 50.0,
                           height: 50.0,
                           child: SpinKitWanderingCubes(
-                            color: Color(0xFF25504F),
+                            color: AppTheme.of(context).secondary,
                             size: 50.0,
                           ),
                         ),

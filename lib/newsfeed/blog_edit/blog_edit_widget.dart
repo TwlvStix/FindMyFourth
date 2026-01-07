@@ -78,7 +78,7 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                 width: 50.0,
                 height: 50.0,
                 child: SpinKitWanderingCubes(
-                  color: Color(0xFF25504F),
+                  color: AppTheme.of(context).secondary,
                   size: 50.0,
                 ),
               ),
@@ -401,7 +401,7 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                         allowPhoto: true,
                         backgroundColor:
                             AppTheme.of(context).primaryBtnText,
-                        textColor: Color(0xFF253551),
+                        textColor: AppTheme.of(context).primary,
                       );
                       if (selectedMedia != null &&
                           selectedMedia.every((m) =>
@@ -458,7 +458,7 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                           EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                       iconPadding:
                           EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                      color: Color(0xFFA9A9A9),
+                      color: AppTheme.of(context).tertiary,
                       textStyle:
                           AppTheme.of(context).labelMedium.override(
                                 font: GoogleFonts.outfit(
@@ -480,7 +480,7 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                               ),
                       elevation: 2.0,
                       borderSide: BorderSide(
-                        color: Color(0xFF253551),
+                        color: AppTheme.of(context).primary,
                         width: 1.0,
                       ),
                     ),
