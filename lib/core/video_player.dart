@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:video_player/video_player.dart';
 
+import '/core/app_theme.dart';
 import '/utils/app_util.dart' show routeObserver;
 
 const kDefaultAspectRatio = 16 / 9;
@@ -208,7 +209,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer>
                           width: 50.0,
                           height: 50.0,
                           child: SpinKitWanderingCubes(
-                            color: Color(0xFF25504F),
+                            color: AppTheme.of(context).secondary,
                             size: 50.0,
                           ),
                         ),
