@@ -244,7 +244,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             mainAxisAlignment:
-                                                MainAxisAlignment.center,
+                                                MainAxisAlignment.start,
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
@@ -253,6 +253,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                                   listViewGamesRecord.nameGame,
                                                   'Game Name',
                                                 ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
                                                 style: AppTheme.of(
                                                         context)
                                                     .bodyMedium
