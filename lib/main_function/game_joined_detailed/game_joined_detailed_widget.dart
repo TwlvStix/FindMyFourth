@@ -1,11 +1,12 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/components/date_format_widget.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
-import '/custom_code/widgets/index.dart' as custom_widgets;
+import '/core/widgets/app_card.dart';
+import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/spacing.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/profile/profile_user/profile_user_widget.dart';
 import 'package:flutter/material.dart';
@@ -113,7 +114,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
             centerTitle: false,
             elevation: 0.0,
           ),
-          body: FairwayBackgroundDark(
+          body: FairwayBackgroundLight(
             showOrganic: true,
             showTexture: true,
             child: SingleChildScrollView(
@@ -121,604 +122,278 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Align(
-                    alignment: AlignmentDirectional(0.0, 0.0),
-                    child: Stack(
-                      alignment: AlignmentDirectional(0.0, 1.0),
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(),
-                          child: StreamBuilder<CourseRecord>(
-                            stream: CourseRecord.getDocument(
-                                gameJoinedDetailedGamesRecord.courseRef!),
-                            builder: (context, snapshot) {
-                              // Customize what your widget looks like when it's loading.
-                              if (!snapshot.hasData) {
-                                return Center(
-                                  child: SizedBox(
-                                    width: 50.0,
-                                    height: 50.0,
-                                    child: SpinKitWanderingCubes(
-                                      color: AppTheme.of(context).secondary,
-                                      size: 50.0,
+                  // Header with golf course image and gradient overlay
+                  Padding(
+                    padding: EdgeInsets.all(AppSpacing.md),
+                    child: StreamBuilder<CourseRecord>(
+                      stream: CourseRecord.getDocument(
+                          gameJoinedDetailedGamesRecord.courseRef!),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Center(
+                            child: SizedBox(
+                              width: 50.0,
+                              height: 50.0,
+                              child: SpinKitWanderingCubes(
+                                color: AppTheme.of(context).secondary,
+                                size: 50.0,
+                              ),
+                            ),
+                          );
+                        }
+
+                        final coursePicCourseRecord = snapshot.data!;
+
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(16.0),
+                          child: Stack(
+                            children: [
+                              // Golf course image
+                              AspectRatio(
+                                aspectRatio: 16 / 9,
+                                child: Image.network(
+                                  coursePicCourseRecord.picture,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              // Gradient overlay for better text contrast
+                              Positioned.fill(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Colors.transparent,
+                                        Colors.black.withValues(alpha: 0.7),
+                                      ],
+                                      stops: [0.5, 1.0],
                                     ),
-                                  ),
-                                );
-                              }
-
-                              final coursePicCourseRecord = snapshot.data!;
-
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(12.0),
-                                child: AspectRatio(
-                                  aspectRatio: 16 / 9,
-                                  child: Image.network(
-                                    coursePicCourseRecord.picture,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(12.0),
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final isNarrow = constraints.maxWidth < 360.0;
-                              final titleStyle = AppTheme.of(context)
-                                  .headlineMedium
-                                  .override(
-                                    font: GoogleFonts.outfit(
-                                      fontWeight: AppTheme.of(context)
-                                          .headlineMedium
-                                          .fontWeight,
-                                      fontStyle: AppTheme.of(context)
-                                          .headlineMedium
-                                          .fontStyle,
-                                    ),
-                                    color:
-                                        AppTheme.of(context).primaryBtnText,
-                                    letterSpacing: 0.0,
-                                    fontWeight: AppTheme.of(context)
-                                        .headlineMedium
-                                        .fontWeight,
-                                    fontStyle: AppTheme.of(context)
-                                        .headlineMedium
-                                        .fontStyle,
-                                    fontSize: isNarrow ? 24.0 : null,
-                                  );
-                              final courseStyle =
-                                  AppTheme.of(context).headlineSmall.override(
-                                        font: GoogleFonts.outfit(
-                                          fontWeight: AppTheme.of(context)
-                                              .headlineSmall
-                                              .fontWeight,
-                                          fontStyle: AppTheme.of(context)
-                                              .headlineSmall
-                                              .fontStyle,
-                                        ),
-                                        color: Colors.white,
-                                        fontSize: isNarrow ? 14.0 : 16.0,
-                                        letterSpacing: 0.0,
-                                        fontWeight: AppTheme.of(context)
-                                            .headlineSmall
-                                            .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .headlineSmall
-                                            .fontStyle,
-                                      );
-
-                              if (isNarrow) {
-                                return Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                              ),
+                              // Username (bottom-left) and Course name (bottom-right)
+                              Positioned(
+                                bottom: AppSpacing.md,
+                                left: AppSpacing.md,
+                                right: AppSpacing.md,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text(
-                                      gameJoinedDetailedGamesRecord.nameGame,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: titleStyle,
-                                    ),
-                                    const SizedBox(height: 4.0),
-                                    Text(
-                                      gameJoinedDetailedGamesRecord.coursePlay,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: courseStyle,
-                                    ),
-                                  ],
-                                );
-                              }
-
-                              return Row(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      gameJoinedDetailedGamesRecord.nameGame,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: titleStyle,
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Align(
-                                      alignment: AlignmentDirectional(1.0, 0.0),
-                                      child: Padding(
-                                        padding:
-                                            EdgeInsetsDirectional.fromSTEB(
-                                                0.0, 0.0, 20.0, 0.0),
-                                        child: Text(
-                                          gameJoinedDetailedGamesRecord
-                                              .coursePlay,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: courseStyle,
-                                        ),
+                                    // Username
+                                    Flexible(
+                                      child: Text(
+                                        gameJoinedDetailedGamesRecord.nameGame,
+                                        style: AppTheme.of(context)
+                                            .headlineMedium
+                                            .override(
+                                              font: GoogleFonts.outfit(
+                                                fontWeight: FontWeight.w600,
+                                                fontStyle: AppTheme.of(context)
+                                                    .headlineMedium
+                                                    .fontStyle,
+                                              ),
+                                              color: Colors.white,
+                                              letterSpacing: 0.0,
+                                              fontWeight: FontWeight.w600,
+                                              fontStyle: AppTheme.of(context)
+                                                  .headlineMedium
+                                                  .fontStyle,
+                                              shadows: [
+                                                Shadow(
+                                                  color: Colors.black.withValues(alpha: 0.5),
+                                                  offset: Offset(0, 2),
+                                                  blurRadius: 4,
+                                                ),
+                                              ],
+                                            ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                  ),
-                                ],
-                              );
-                            },
+                                    SizedBox(width: AppSpacing.sm),
+                                    // Course name
+                                    Flexible(
+                                      child: Text(
+                                        gameJoinedDetailedGamesRecord.coursePlay,
+                                        textAlign: TextAlign.right,
+                                        style: AppTheme.of(context)
+                                            .bodyLarge
+                                            .override(
+                                              font: GoogleFonts.outfit(
+                                                fontWeight: FontWeight.w500,
+                                                fontStyle: AppTheme.of(context)
+                                                    .bodyLarge
+                                                    .fontStyle,
+                                              ),
+                                              color: Colors.white,
+                                              letterSpacing: 0.0,
+                                              fontWeight: FontWeight.w500,
+                                              fontStyle: AppTheme.of(context)
+                                                  .bodyLarge
+                                                  .fontStyle,
+                                              shadows: [
+                                                Shadow(
+                                                  color: Colors.black.withValues(alpha: 0.5),
+                                                  offset: Offset(0, 2),
+                                                  blurRadius: 4,
+                                                ),
+                                              ],
+                                            ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
                   ),
+                  // Date/Time Card
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    child: AppCard(
+                      variant: AppCardVariant.standard,
+                      padding: EdgeInsets.all(AppSpacing.md),
+                      child: Row(
+                        children: [
+                          Text(
+                            '📅',
+                            style: TextStyle(fontSize: 24.0),
+                          ),
+                          SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text(
+                              _formatDateTime(gameJoinedDetailedGamesRecord.date),
+                              style: AppTheme.of(context).bodyLarge.override(
+                                    font: GoogleFonts.outfit(
+                                      fontWeight: FontWeight.w500,
+                                      fontStyle: AppTheme.of(context)
+                                          .bodyLarge
+                                          .fontStyle,
+                                    ),
+                                    color: AppColors.slate,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w500,
+                                    fontStyle: AppTheme.of(context)
+                                        .bodyLarge
+                                        .fontStyle,
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: AppSpacing.md),
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        DateFormatWidget(
-                          date: gameJoinedDetailedGamesRecord.date,
-                        ),
-                        Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 10.0, 0.0, 0.0),
-                          child: Text(
-                            'Game Details:',
-                            style: AppTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  font: GoogleFonts.outfit(
-                                    fontWeight: AppTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: AppTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                                  color: Colors.white,
-                                  letterSpacing: 0.0,
-                                  fontWeight: AppTheme.of(context)
-                                      .bodyMedium
-                                      .fontWeight,
+                        // Game Details Section Header
+                        Text(
+                          'Game Details',
+                          style: AppTheme.of(context).headlineSmall.override(
+                                font: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: AppTheme.of(context)
-                                      .bodyMedium
+                                      .headlineSmall
                                       .fontStyle,
                                 ),
-                          ),
+                                color: AppColors.fairwayDark,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.w600,
+                                fontStyle: AppTheme.of(context)
+                                    .headlineSmall
+                                    .fontStyle,
+                              ),
                         ),
-                        Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 8.0, 0.0, 0.0),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      12.0, 12.0, 0.0, 12.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Container(
-                                        width: 64.0,
-                                        height: 64.0,
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.of(context).primary,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: AppTheme.of(context)
-                                                .primaryBtnText,
-                                            width: 2.0,
-                                          ),
-                                        ),
-                                        child: Container(
-                                          width: 64.0,
-                                          height: 64.0,
-                                          child: custom_widgets.DynamicTextSize(
-                                            width: 64.0,
-                                            height: 64.0,
-                                            text: gameJoinedDetailedGamesRecord
-                                                .styleGame,
-                                          ),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 8.0, 0.0, 0.0),
-                                        child: Text(
-                                          'Betting\n',
-                                          textAlign: TextAlign.center,
-                                          style: AppTheme.of(context)
-                                              .bodySmall
-                                              .override(
-                                                font: GoogleFonts.lexendDeca(
-                                                  fontWeight: FontWeight.normal,
-                                                  fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodySmall
-                                                          .fontStyle,
-                                                ),
-                                                color: Colors.white,
-                                                fontSize: 14.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.normal,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodySmall
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      12.0, 12.0, 0.0, 12.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Container(
-                                        width: 64.0,
-                                        height: 64.0,
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.of(context).primary,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: AppTheme.of(context)
-                                                .primaryBtnText,
-                                            width: 2.0,
-                                          ),
-                                        ),
-                                        child: Container(
-                                          width: 64.0,
-                                          height: 64.0,
-                                          child: custom_widgets.DynamicTextSize(
-                                            width: 64.0,
-                                            height: 64.0,
-                                            text: gameJoinedDetailedGamesRecord
-                                                .rulesSetting,
-                                          ),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 8.0, 0.0, 0.0),
-                                        child: Text(
-                                          'Rule\nStyle',
-                                          textAlign: TextAlign.center,
-                                          style: AppTheme.of(context)
-                                              .bodySmall
-                                              .override(
-                                                font: GoogleFonts.lexendDeca(
-                                                  fontWeight: FontWeight.normal,
-                                                  fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodySmall
-                                                          .fontStyle,
-                                                ),
-                                                color: Colors.white,
-                                                fontSize: 14.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.normal,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodySmall
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      12.0, 12.0, 0.0, 12.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Container(
-                                        width: 64.0,
-                                        height: 64.0,
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.of(context).primary,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: AppTheme.of(context)
-                                                .primaryBtnText,
-                                            width: 2.0,
-                                          ),
-                                        ),
-                                        child: Container(
-                                          width: 64.0,
-                                          height: 64.0,
-                                          child: custom_widgets.DynamicTextSize(
-                                            width: 64.0,
-                                            height: 64.0,
-                                            text: gameJoinedDetailedGamesRecord
-                                                .gameType,
-                                          ),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 8.0, 0.0, 0.0),
-                                        child: Text(
-                                          'Game\nType',
-                                          textAlign: TextAlign.center,
-                                          style: AppTheme.of(context)
-                                              .bodySmall
-                                              .override(
-                                                font: GoogleFonts.lexendDeca(
-                                                  fontWeight: FontWeight.normal,
-                                                  fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodySmall
-                                                          .fontStyle,
-                                                ),
-                                                color: Colors.white,
-                                                fontSize: 14.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.normal,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodySmall
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      12.0, 12.0, 0.0, 12.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Container(
-                                        width: 64.0,
-                                        height: 64.0,
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.of(context).primary,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: AppTheme.of(context)
-                                                .primaryBtnText,
-                                            width: 2.0,
-                                          ),
-                                        ),
-                                        child: Container(
-                                          width: 64.0,
-                                          height: 64.0,
-                                          child: custom_widgets.DynamicTextSize(
-                                            width: 64.0,
-                                            height: 64.0,
-                                            text: gameJoinedDetailedGamesRecord
-                                                .scoring,
-                                          ),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 8.0, 0.0, 0.0),
-                                        child: Text(
-                                          'Scoring\n',
-                                          textAlign: TextAlign.center,
-                                          style: AppTheme.of(context)
-                                              .bodySmall
-                                              .override(
-                                                font: GoogleFonts.lexendDeca(
-                                                  fontWeight: FontWeight.normal,
-                                                  fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodySmall
-                                                          .fontStyle,
-                                                ),
-                                                color: Colors.white,
-                                                fontSize: 14.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.normal,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodySmall
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      12.0, 12.0, 0.0, 12.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Container(
-                                        width: 64.0,
-                                        height: 64.0,
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.of(context).primary,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: AppTheme.of(context)
-                                                .primaryBtnText,
-                                            width: 2.0,
-                                          ),
-                                        ),
-                                        child: Container(
-                                          width: 64.0,
-                                          height: 64.0,
-                                          child: custom_widgets.DynamicTextSize(
-                                            width: 64.0,
-                                            height: 64.0,
-                                            text: gameJoinedDetailedGamesRecord
-                                                .memberDiscount,
-                                          ),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 8.0, 0.0, 0.0),
-                                        child: Text(
-                                          'Member\nDiscount',
-                                          textAlign: TextAlign.center,
-                                          style: AppTheme.of(context)
-                                              .bodySmall
-                                              .override(
-                                                font: GoogleFonts.lexendDeca(
-                                                  fontWeight: FontWeight.normal,
-                                                  fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodySmall
-                                                          .fontStyle,
-                                                ),
-                                                color: Colors.white,
-                                                fontSize: 14.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.normal,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodySmall
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      12.0, 12.0, 0.0, 12.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Container(
-                                        width: 64.0,
-                                        height: 64.0,
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.of(context).primary,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: AppTheme.of(context)
-                                                .primaryBtnText,
-                                            width: 2.0,
-                                          ),
-                                        ),
-                                        child: Container(
-                                          width: 64.0,
-                                          height: 64.0,
-                                          child: custom_widgets.DynamicTextSize(
-                                            width: 64.0,
-                                            height: 64.0,
-                                            text: gameJoinedDetailedGamesRecord
-                                                .friendGame,
-                                          ),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 8.0, 0.0, 0.0),
-                                        child: Text(
-                                          'Friends\nOnly?',
-                                          textAlign: TextAlign.center,
-                                          style: AppTheme.of(context)
-                                              .bodySmall
-                                              .override(
-                                                font: GoogleFonts.lexendDeca(
-                                                  fontWeight: FontWeight.normal,
-                                                  fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodySmall
-                                                          .fontStyle,
-                                                ),
-                                                color: Colors.white,
-                                                fontSize: 14.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.normal,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodySmall
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ]
-                                  .divide(SizedBox(width: 10.0))
-                                  .addToStart(SizedBox(width: 10.0))
-                                  .addToEnd(SizedBox(width: 10.0)),
+                        SizedBox(height: AppSpacing.sm),
+
+                        // 2x3 Grid of Info Cards
+                        GridView.count(
+                          crossAxisCount: 2,
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          crossAxisSpacing: AppSpacing.sm,
+                          mainAxisSpacing: AppSpacing.sm,
+                          childAspectRatio: 2.5,
+                          children: [
+                            _buildInfoCard(
+                              context,
+                              icon: '💰',
+                              label: 'Betting',
+                              value: gameJoinedDetailedGamesRecord.styleGame,
                             ),
-                          ),
+                            _buildInfoCard(
+                              context,
+                              icon: '📋',
+                              label: 'Rule Style',
+                              value: gameJoinedDetailedGamesRecord.rulesSetting,
+                            ),
+                            _buildInfoCard(
+                              context,
+                              icon: '⛳',
+                              label: 'Game Type',
+                              value: gameJoinedDetailedGamesRecord.gameType,
+                            ),
+                            _buildInfoCard(
+                              context,
+                              icon: '📊',
+                              label: 'Scoring',
+                              value: gameJoinedDetailedGamesRecord.scoring,
+                            ),
+                            _buildInfoCard(
+                              context,
+                              icon: '💬',
+                              label: 'Member Discount',
+                              value: gameJoinedDetailedGamesRecord.memberDiscount,
+                            ),
+                            _buildInfoCard(
+                              context,
+                              icon: '👥',
+                              label: 'Friends Only',
+                              value: gameJoinedDetailedGamesRecord.friendGame,
+                            ),
+                          ],
                         ),
-                        Divider(
-                          height: 32.0,
-                          thickness: 1.0,
-                          color: AppTheme.of(context).alternate,
-                        ),
-                        Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 8.0, 0.0, 0.0),
-                          child: Text(
-                            'Players in this Group:',
-                            style: AppTheme.of(context)
-                                .labelMedium
-                                .override(
-                                  font: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.w800,
-                                    fontStyle: AppTheme.of(context)
-                                        .labelMedium
-                                        .fontStyle,
-                                  ),
-                                  color: Colors.white,
-                                  fontSize: 18.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.w800,
+                        SizedBox(height: AppSpacing.lg),
+
+                        // Players Section Header
+                        Text(
+                          'Players (${_getPlayerCount(gameJoinedDetailedGamesRecord)}/4)',
+                          style: AppTheme.of(context).headlineSmall.override(
+                                font: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: AppTheme.of(context)
-                                      .labelMedium
+                                      .headlineSmall
                                       .fontStyle,
                                 ),
-                          ),
+                                color: AppColors.fairwayDark,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.w600,
+                                fontStyle: AppTheme.of(context)
+                                    .headlineSmall
+                                    .fontStyle,
+                              ),
                         ),
+                        SizedBox(height: AppSpacing.sm),
                       ],
                     ),
                   ),
+                  // Players horizontal cards
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 8.0, 0.0, 8.0),
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                     child: Builder(
                       builder: (context) {
                         final groupPlayers = gameJoinedDetailedGamesRecord
@@ -729,173 +404,179 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             .where((name) => name.trim().isNotEmpty)
                             .toList();
 
-                        return SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              ...List.generate(groupPlayers.length,
-                                  (groupPlayersIndex) {
-                                final groupPlayersItem =
-                                    groupPlayers[groupPlayersIndex];
-                                return Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      12.0, 12.0, 0.0, 12.0),
-                                  child: StreamBuilder<UsersRecord>(
-                                    stream: UsersRecord.getDocument(
-                                        groupPlayersItem),
-                                    builder: (context, snapshot) {
-                                      // Customize what your widget looks like when it's loading.
-                                      if (!snapshot.hasData) {
-                                        return Center(
-                                          child: SizedBox(
-                                            width: 50.0,
-                                            height: 50.0,
-                                            child: SpinKitWanderingCubes(
-                                              color: AppTheme.of(context).secondary,
-                                              size: 50.0,
-                                            ),
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Registered players
+                            ...List.generate(groupPlayers.length,
+                                (groupPlayersIndex) {
+                              final groupPlayersItem =
+                                  groupPlayers[groupPlayersIndex];
+                              return Padding(
+                                padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                                child: StreamBuilder<UsersRecord>(
+                                  stream: UsersRecord.getDocument(
+                                      groupPlayersItem),
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasData) {
+                                      return Center(
+                                        child: SizedBox(
+                                          width: 40.0,
+                                          height: 40.0,
+                                          child: SpinKitWanderingCubes(
+                                            color: AppTheme.of(context).secondary,
+                                            size: 40.0,
                                           ),
+                                        ),
+                                      );
+                                    }
+
+                                    final friend1UsersRecord = snapshot.data!;
+
+                                    return AppCard(
+                                      variant: AppCardVariant.outlined,
+                                      padding: EdgeInsets.all(AppSpacing.sm),
+                                      onTap: () async {
+                                        context.pushNamed(
+                                          ProfileUserWidget.routeName,
+                                          queryParameters: {
+                                            'userRef': serializeParam(
+                                              friend1UsersRecord,
+                                              ParamType.Document,
+                                            ),
+                                          }.withoutNulls,
+                                          extra: <String, dynamic>{
+                                            'userRef': friend1UsersRecord,
+                                            kTransitionInfoKey: TransitionInfo(
+                                              hasTransition: true,
+                                              transitionType:
+                                                  PageTransitionType.bottomToTop,
+                                              duration:
+                                                  Duration(milliseconds: 220),
+                                            ),
+                                          },
                                         );
-                                      }
-
-                                      final friend1UsersRecord =
-                                          snapshot.data!;
-
-                                      return Column(
-                                        mainAxisSize: MainAxisSize.max,
+                                      },
+                                      child: Row(
                                         children: [
+                                          // Avatar
                                           Container(
-                                            width: 64.0,
-                                            height: 64.0,
+                                            width: 48.0,
+                                            height: 48.0,
                                             decoration: BoxDecoration(
-                                              color: AppTheme.of(context)
-                                                  .info,
+                                              color: AppColors.fairway,
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color: AppTheme.of(context).tertiary,
+                                                color: AppColors.fairwayLight,
                                                 width: 2.0,
                                               ),
                                             ),
-                                            child: Padding(
-                                              padding: EdgeInsets.all(4.0),
-                                              child: InkWell(
-                                                splashColor:
-                                                    Colors.transparent,
-                                                focusColor:
-                                                    Colors.transparent,
-                                                hoverColor:
-                                                    Colors.transparent,
-                                                highlightColor:
-                                                    Colors.transparent,
-                                                onTap: () async {
-                                                  context.pushNamed(
-                                                    ProfileUserWidget.routeName,
-                                                    queryParameters: {
-                                                      'userRef':
-                                                          serializeParam(
-                                                        friend1UsersRecord,
-                                                        ParamType.Document,
-                                                      ),
-                                                    }.withoutNulls,
-                                                    extra: <String, dynamic>{
-                                                      'userRef':
-                                                          friend1UsersRecord,
-                                                      kTransitionInfoKey:
-                                                          TransitionInfo(
-                                                        hasTransition: true,
-                                                        transitionType:
-                                                            PageTransitionType
-                                                                .bottomToTop,
-                                                        duration: Duration(
-                                                            milliseconds: 220),
-                                                      ),
-                                                    },
-                                                  );
-                                                },
-                                                child: Container(
-                                                  width: 70.0,
-                                                  height: 70.0,
-                                                  clipBehavior:
-                                                      Clip.antiAlias,
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  child: Image.network(
-                                                    friend1UsersRecord
-                                                                    .photoUrl !=
-                                                                ''
-                                                        ? friend1UsersRecord
-                                                            .photoUrl
-                                                        : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                                                    fit: BoxFit.cover,
-                                                    errorBuilder: (context,
-                                                            error,
-                                                            stackTrace) =>
-                                                        Image.asset(
-                                                      'assets/images/error_image.png',
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                ),
+                                            clipBehavior: Clip.antiAlias,
+                                            child: Image.network(
+                                              friend1UsersRecord.photoUrl != ''
+                                                  ? friend1UsersRecord.photoUrl
+                                                  : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error,
+                                                      stackTrace) =>
+                                                  Image.asset(
+                                                'assets/images/error_image.png',
+                                                fit: BoxFit.cover,
                                               ),
                                             ),
                                           ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 8.0, 0.0, 0.0),
-                                            child: Text(
-                                              friend1UsersRecord.displayName,
-                                              textAlign: TextAlign.center,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: AppTheme.of(context)
-                                                  .bodySmall
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.lexendDeca(
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      fontStyle:
-                                                          AppTheme.of(context)
-                                                              .bodySmall
-                                                              .fontStyle,
-                                                    ),
-                                                    color: Colors.white,
-                                                    fontSize: 14.0,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight:
-                                                        FontWeight.normal,
-                                                    fontStyle:
-                                                        AppTheme.of(context)
-                                                            .bodySmall
-                                                            .fontStyle,
-                                                  ),
+                                          SizedBox(width: AppSpacing.sm),
+                                          // Name and ready status
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  friend1UsersRecord.displayName,
+                                                  style: AppTheme.of(context)
+                                                      .bodyLarge
+                                                      .override(
+                                                        font: GoogleFonts.outfit(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontStyle:
+                                                              AppTheme.of(context)
+                                                                  .bodyLarge
+                                                                  .fontStyle,
+                                                        ),
+                                                        color: AppColors.slate,
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontStyle:
+                                                            AppTheme.of(context)
+                                                                .bodyLarge
+                                                                .fontStyle,
+                                                      ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                                SizedBox(height: 2),
+                                                Text(
+                                                  'Ready',
+                                                  style: AppTheme.of(context)
+                                                      .bodySmall
+                                                      .override(
+                                                        font: GoogleFonts.outfit(
+                                                          fontWeight:
+                                                              FontWeight.normal,
+                                                          fontStyle:
+                                                              AppTheme.of(context)
+                                                                  .bodySmall
+                                                                  .fontStyle,
+                                                        ),
+                                                        color: AppColors.success,
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        fontStyle:
+                                                            AppTheme.of(context)
+                                                                .bodySmall
+                                                                .fontStyle,
+                                                      ),
+                                                ),
+                                              ],
                                             ),
                                           ),
+                                          // Checkmark icon
+                                          Icon(
+                                            Icons.check_circle,
+                                            color: AppColors.success,
+                                            size: 24.0,
+                                          ),
                                         ],
-                                      );
-                                    },
-                                  ),
-                                );
-                              }),
-                              ...guestPlayers.map(
-                                (guestName) => Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      12.0, 12.0, 0.0, 12.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              );
+                            }),
+                            // Guest players
+                            ...guestPlayers.map(
+                              (guestName) => Padding(
+                                padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                                child: AppCard(
+                                  variant: AppCardVariant.outlined,
+                                  padding: EdgeInsets.all(AppSpacing.sm),
+                                  child: Row(
                                     children: [
+                                      // Avatar placeholder
                                       Container(
-                                        width: 64.0,
-                                        height: 64.0,
+                                        width: 48.0,
+                                        height: 48.0,
                                         decoration: BoxDecoration(
-                                          color: AppTheme.of(context).info,
+                                          color: AppColors.sand,
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                            color: AppTheme.of(context).tertiary,
+                                            color: AppColors.cloud,
                                             width: 2.0,
                                           ),
                                         ),
@@ -906,88 +587,217 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                 .titleMedium
                                                 .override(
                                                   font: GoogleFonts.outfit(
-                                                    fontWeight:
-                                                        FontWeight.w600,
-                                                    fontStyle: AppTheme.of(
-                                                            context)
-                                                        .titleMedium
-                                                        .fontStyle,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontStyle:
+                                                        AppTheme.of(context)
+                                                            .titleMedium
+                                                            .fontStyle,
                                                   ),
-                                                  color: Colors.white,
+                                                  color: AppColors.stone,
                                                   letterSpacing: 0.0,
                                                   fontWeight: FontWeight.w600,
-                                                  fontStyle: AppTheme.of(
-                                                          context)
+                                                  fontStyle: AppTheme.of(context)
                                                       .titleMedium
                                                       .fontStyle,
                                                 ),
                                           ),
                                         ),
                                       ),
-                                      Padding(
-                                        padding:
-                                            EdgeInsetsDirectional.fromSTEB(
-                                                0.0, 8.0, 0.0, 0.0),
-                                        child: Text(
-                                          guestName,
-                                          textAlign: TextAlign.center,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: AppTheme.of(context)
-                                              .bodySmall
-                                              .override(
-                                                font:
-                                                    GoogleFonts.lexendDeca(
-                                                  fontWeight:
-                                                      FontWeight.normal,
-                                                  fontStyle:
-                                                      AppTheme.of(context)
-                                                          .bodySmall
-                                                          .fontStyle,
-                                                ),
-                                                color: Colors.white,
-                                                fontSize: 14.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.normal,
-                                                fontStyle: AppTheme.of(context)
-                                                    .bodySmall
-                                                    .fontStyle,
-                                              ),
+                                      SizedBox(width: AppSpacing.sm),
+                                      // Name and guest label
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              guestName,
+                                              style: AppTheme.of(context)
+                                                  .bodyLarge
+                                                  .override(
+                                                    font: GoogleFonts.outfit(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontStyle:
+                                                          AppTheme.of(context)
+                                                              .bodyLarge
+                                                              .fontStyle,
+                                                    ),
+                                                    color: AppColors.slate,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: FontWeight.w500,
+                                                    fontStyle:
+                                                        AppTheme.of(context)
+                                                            .bodyLarge
+                                                            .fontStyle,
+                                                  ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            SizedBox(height: 2),
+                                            Text(
+                                              'Guest',
+                                              style: AppTheme.of(context)
+                                                  .bodySmall
+                                                  .override(
+                                                    font: GoogleFonts.outfit(
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                      fontStyle:
+                                                          AppTheme.of(context)
+                                                              .bodySmall
+                                                              .fontStyle,
+                                                    ),
+                                                    color: AppColors.stone,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: FontWeight.normal,
+                                                    fontStyle:
+                                                        AppTheme.of(context)
+                                                            .bodySmall
+                                                            .fontStyle,
+                                                  ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         );
                       },
                     ),
                   ),
+                  SizedBox(height: AppSpacing.md),
+                  // Leave game button (for non-owner)
                   if (gameJoinedDetailedGamesRecord.userRef !=
                       currentUserReference)
-                    Align(
-                      alignment: AlignmentDirectional(0.0, 0.0),
-                      child: Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 8.0),
-                        child: AppButton(
-                          onPressed: () async {
-                            await widget.gameRef!.update({
-                              ...mapToFirestore(
-                                {
-                                  'joined_players': FieldValue.arrayRemove(
-                                      [currentUserReference]),
-                                },
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                      child: AppButton(
+                        onPressed: () async {
+                          await widget.gameRef!.update({
+                            ...mapToFirestore(
+                              {
+                                'joined_players': FieldValue.arrayRemove(
+                                    [currentUserReference]),
+                              },
+                            ),
+                          });
+                          await showDialog(
+                            context: context,
+                            builder: (alertDialogContext) {
+                              return AlertDialog(
+                                title: Text('Success'),
+                                content: Text('Leave the game successfully'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(alertDialogContext),
+                                    child: Text('Ok'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+
+                          context.pushNamed(GamesListWidget.routeName);
+                        },
+                        text: 'Leave game',
+                        options: AppButtonOptions(
+                          width: double.infinity,
+                          height: 56.0,
+                          padding: EdgeInsets.zero,
+                          iconPadding: EdgeInsets.zero,
+                          color: Colors.transparent,
+                          textStyle: AppTheme.of(context)
+                              .bodyLarge
+                              .override(
+                                font: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.w600,
+                                  fontStyle: AppTheme.of(context)
+                                      .bodyLarge
+                                      .fontStyle,
+                                ),
+                                color: AppColors.error,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.w600,
+                                fontStyle: AppTheme.of(context)
+                                    .bodyLarge
+                                    .fontStyle,
                               ),
-                            });
+                          elevation: 0.0,
+                          borderSide: BorderSide(
+                            color: AppColors.error.withValues(alpha: 0.5),
+                            width: 2.0,
+                          ),
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                      ),
+                    ),
+                  // Cancel game button (for owner)
+                  if (gameJoinedDetailedGamesRecord.userRef ==
+                      currentUserReference)
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                      child: AppButton(
+                        onPressed: () async {
+                          var confirmDialogResponse = await showDialog<bool>(
+                                context: context,
+                                builder: (alertDialogContext) {
+                                  return AlertDialog(
+                                    title: Text('Are  you sure?'),
+                                    content: Text(
+                                        'Do you really cancel the game?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(
+                                            alertDialogContext, false),
+                                        child: Text('No'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(
+                                            alertDialogContext, true),
+                                        child: Text('Yes'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ) ??
+                              false;
+                          if (confirmDialogResponse) {
+                            await widget.gameRef!
+                                .update(createGamesRecordData(
+                              isCancelled: true,
+                            ));
+                            if (gameJoinedDetailedGamesRecord.chatRef !=
+                                    null &&
+                                currentUserReference != null) {
+                              final gameName =
+                                  gameJoinedDetailedGamesRecord.nameGame;
+                              final cancelMessage = (gameName != null &&
+                                      gameName.trim().isNotEmpty)
+                                  ? 'Game "$gameName" has been cancelled.'
+                                  : 'This game has been cancelled.';
+                              await ChatMessagesRecord.collection.add(
+                                createChatMessagesRecordData(
+                                  user: currentUserReference,
+                                  chat: gameJoinedDetailedGamesRecord.chatRef,
+                                  text: cancelMessage,
+                                  timestamp: getCurrentTimestamp,
+                                ),
+                              );
+                            }
                             await showDialog(
                               context: context,
                               builder: (alertDialogContext) {
                                 return AlertDialog(
                                   title: Text('Success'),
-                                  content: Text('Leave the game successfully'),
+                                  content:
+                                      Text('Game cancelled successfully'),
                                   actions: [
                                     TextButton(
                                       onPressed: () =>
@@ -1000,163 +810,43 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             );
 
                             context.pushNamed(GamesListWidget.routeName);
-                          },
-                          text: 'Leave game',
-                          options: AppButtonOptions(
-                            width: double.infinity,
-                            height: 60.0,
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 0.0, 0.0),
-                            iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 0.0, 0.0),
-                            color: AppTheme.of(context).primary,
-                            textStyle: AppTheme.of(context)
-                                .headlineSmall
-                                .override(
-                                  font: GoogleFonts.outfit(
-                                    fontWeight: AppTheme.of(context)
-                                        .headlineSmall
-                                        .fontWeight,
-                                    fontStyle: AppTheme.of(context)
-                                        .headlineSmall
-                                        .fontStyle,
-                                  ),
-                                  color: Colors.white,
-                                  letterSpacing: 0.0,
-                                  fontWeight: AppTheme.of(context)
-                                      .headlineSmall
-                                      .fontWeight,
+                          } else {
+                            Navigator.pop(context);
+                          }
+                        },
+                        text: 'Cancel game',
+                        options: AppButtonOptions(
+                          width: double.infinity,
+                          height: 56.0,
+                          padding: EdgeInsets.zero,
+                          iconPadding: EdgeInsets.zero,
+                          color: Colors.transparent,
+                          textStyle: AppTheme.of(context)
+                              .bodyLarge
+                              .override(
+                                font: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: AppTheme.of(context)
-                                      .headlineSmall
+                                      .bodyLarge
                                       .fontStyle,
                                 ),
-                            elevation: 3.0,
-                            borderSide: BorderSide(
-                              color: Colors.transparent,
-                              width: 1.0,
-                            ),
-                            borderRadius: BorderRadius.circular(40.0),
+                                color: AppColors.error,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.w600,
+                                fontStyle: AppTheme.of(context)
+                                    .bodyLarge
+                                    .fontStyle,
+                              ),
+                          elevation: 0.0,
+                          borderSide: BorderSide(
+                            color: AppColors.error.withValues(alpha: 0.5),
+                            width: 2.0,
                           ),
+                          borderRadius: BorderRadius.circular(12.0),
                         ),
                       ),
                     ),
-                  if (gameJoinedDetailedGamesRecord.userRef ==
-                      currentUserReference)
-                    Align(
-                      alignment: AlignmentDirectional(0.0, 0.0),
-                      child: Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 8.0),
-                        child: AppButton(
-                          onPressed: () async {
-                            var confirmDialogResponse = await showDialog<bool>(
-                                  context: context,
-                                  builder: (alertDialogContext) {
-                                    return AlertDialog(
-                                      title: Text('Are  you sure?'),
-                                      content: Text(
-                                          'Do you really cancel the game?'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(
-                                              alertDialogContext, false),
-                                          child: Text('No'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(
-                                              alertDialogContext, true),
-                                          child: Text('Yes'),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                ) ??
-                                false;
-                            if (confirmDialogResponse) {
-                              await widget.gameRef!
-                                  .update(createGamesRecordData(
-                                isCancelled: true,
-                              ));
-                              if (gameJoinedDetailedGamesRecord.chatRef !=
-                                      null &&
-                                  currentUserReference != null) {
-                                final gameName =
-                                    gameJoinedDetailedGamesRecord.nameGame;
-                                final cancelMessage = (gameName != null &&
-                                        gameName.trim().isNotEmpty)
-                                    ? 'Game "$gameName" has been cancelled.'
-                                    : 'This game has been cancelled.';
-                                await ChatMessagesRecord.collection.add(
-                                  createChatMessagesRecordData(
-                                    user: currentUserReference,
-                                    chat: gameJoinedDetailedGamesRecord.chatRef,
-                                    text: cancelMessage,
-                                    timestamp: getCurrentTimestamp,
-                                  ),
-                                );
-                              }
-                              await showDialog(
-                                context: context,
-                                builder: (alertDialogContext) {
-                                  return AlertDialog(
-                                    title: Text('Success'),
-                                    content:
-                                        Text('Game cancelled successfully'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(alertDialogContext),
-                                        child: Text('Ok'),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-
-                              context.pushNamed(GamesListWidget.routeName);
-                            } else {
-                              Navigator.pop(context);
-                            }
-                          },
-                          text: 'Cancel game',
-                          options: AppButtonOptions(
-                            width: double.infinity,
-                            height: 60.0,
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 0.0, 0.0),
-                            iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 0.0, 0.0),
-                            color: AppTheme.of(context).error,
-                            textStyle: AppTheme.of(context)
-                                .headlineSmall
-                                .override(
-                                  font: GoogleFonts.outfit(
-                                    fontWeight: AppTheme.of(context)
-                                        .headlineSmall
-                                        .fontWeight,
-                                    fontStyle: AppTheme.of(context)
-                                        .headlineSmall
-                                        .fontStyle,
-                                  ),
-                                  color: Colors.white,
-                                  letterSpacing: 0.0,
-                                  fontWeight: AppTheme.of(context)
-                                      .headlineSmall
-                                      .fontWeight,
-                                  fontStyle: AppTheme.of(context)
-                                      .headlineSmall
-                                      .fontStyle,
-                                ),
-                            elevation: 3.0,
-                            borderSide: BorderSide(
-                              color: Colors.transparent,
-                              width: 1.0,
-                            ),
-                            borderRadius: BorderRadius.circular(40.0),
-                          ),
-                        ),
-                      ),
-                    ),
+                  SizedBox(height: AppSpacing.md),
                 ],
               ),
             ),
@@ -1164,5 +854,84 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
         );
       },
     );
+  }
+
+  // Helper method to format date/time
+  String _formatDateTime(DateTime? date) {
+    if (date == null) return 'Date not set';
+    final formatter = DateFormat('EEEE, MMMM d • HH:mm');
+    return formatter.format(date);
+  }
+
+  // Helper method to build info card
+  Widget _buildInfoCard(
+    BuildContext context, {
+    required String icon,
+    required String label,
+    required String value,
+  }) {
+    return AppCard(
+      variant: AppCardVariant.outlined,
+      padding: EdgeInsets.all(AppSpacing.sm),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                icon,
+                style: TextStyle(fontSize: 16.0),
+              ),
+              SizedBox(width: AppSpacing.xxs),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTheme.of(context).labelSmall.override(
+                        font: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w500,
+                          fontStyle:
+                              AppTheme.of(context).labelSmall.fontStyle,
+                        ),
+                        color: AppColors.stone,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w500,
+                        fontStyle:
+                            AppTheme.of(context).labelSmall.fontStyle,
+                      ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: AppSpacing.xxs),
+          Text(
+            value,
+            style: AppTheme.of(context).bodyMedium.override(
+                  font: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w600,
+                    fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
+                  ),
+                  color: AppColors.fairwayDark,
+                  letterSpacing: 0.0,
+                  fontWeight: FontWeight.w600,
+                  fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
+                ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to get player count
+  int _getPlayerCount(GamesRecord gameRecord) {
+    final joinedCount = gameRecord.joinedPlayers.length;
+    final guestCount = gameRecord.guestPlayers
+        .where((name) => name.trim().isNotEmpty)
+        .length;
+    return joinedCount + guestCount;
   }
 }
