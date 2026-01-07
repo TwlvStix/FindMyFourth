@@ -4,6 +4,47 @@ Enhanced, production-grade UI components for the "Find My Fourth" golf app.
 
 ## Components
 
+### 🎨 FairwayBackground (NEW)
+Atmospheric background component with organic overlays and depth.
+
+**File**: `fairway_background.dart`
+
+**Features**:
+- 4 variants (light, dark, sunset, minimal)
+- Organic curved overlays (rolling fairway effect)
+- Optional subtle texture/grain
+- Gradient mesh effects for depth
+- Performance optimized (RepaintBoundary)
+- Easy drop-in replacement for solid backgrounds
+
+**Quick Start**:
+```dart
+import 'package:find_my_fourth/core/widgets/fairway_background.dart';
+
+// Light background (most screens)
+FairwayBackgroundLight(
+  showOrganic: true,
+  child: YourScreen(),
+)
+
+// Dark background (immersive)
+FairwayBackgroundDark(
+  showOrganic: true,
+  showTexture: true,
+  child: GameDetail(),
+)
+
+// Sunset background (hero moments)
+FairwayBackgroundSunset(
+  showOrganic: true,
+  child: WelcomeScreen(),
+)
+```
+
+**Documentation**: See [BACKGROUND_SYSTEM.md](../../../BACKGROUND_SYSTEM.md)
+
+---
+
 ### ✨ AppButtonEnhanced (NEW)
 Enhanced button component with variants, micro-interactions, and polish.
 
