@@ -116,7 +116,6 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
           body: FairwayBackgroundDark(
             showOrganic: true,
             showTexture: true,
-            child: Container(
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.max,
