@@ -5,7 +5,7 @@ import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
-import '/profile/home/home_widget.dart';
+import '/main_function/games_list/games_list_widget.dart';
 import '/user_auth/recover_password/recover_password_widget.dart';
 import '/user_auth/sign_up_account/sign_up_account_widget.dart';
 import 'package:auto_size_text/auto_size_text.dart';
@@ -407,7 +407,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     }
                                     await authManager.handlePostAuthNavigation(
                                       context,
-                                      fallbackRouteName: HomeWidget.routeName,
+                                      fallbackRouteName: GamesListWidget.routeName,
                                       fallbackExtra: <String, dynamic>{
                                         kTransitionInfoKey: TransitionInfo(
                                           hasTransition: true,
@@ -416,7 +416,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           duration: Duration(milliseconds: 220),
                                         ),
                                       },
-                                      replaceRoute: false,
+                                      replaceRoute: true,
                                     );
                                   },
                                   text: 'Sign In',
@@ -520,7 +520,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     }
                                     await authManager.handlePostAuthNavigation(
                                       context,
-                                      fallbackRouteName: HomeWidget.routeName,
+                                      fallbackRouteName: GamesListWidget.routeName,
                                       fallbackExtra: <String, dynamic>{
                                         kTransitionInfoKey: TransitionInfo(
                                           hasTransition: true,
@@ -529,7 +529,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           duration: Duration(milliseconds: 220),
                                         ),
                                       },
-                                      replaceRoute: false,
+                                      replaceRoute: true,
                                     );
                                   },
                                   text: 'Continue with Google',
@@ -565,7 +565,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                               .handlePostAuthNavigation(
                                             context,
                                             fallbackRouteName:
-                                                HomeWidget.routeName,
+                                                GamesListWidget.routeName,
                                             fallbackExtra: <String, dynamic>{
                                               kTransitionInfoKey:
                                                   TransitionInfo(
@@ -577,7 +577,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                     Duration(milliseconds: 220),
                                               ),
                                             },
-                                            replaceRoute: false,
+                                            replaceRoute: true,
                                           );
                                         },
                                         text: 'Continue with Apple',

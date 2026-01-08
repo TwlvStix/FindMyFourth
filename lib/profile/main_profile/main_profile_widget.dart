@@ -52,25 +52,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
-          leading: AppIconButton(
-            borderColor: Colors.transparent,
-            borderRadius: 30.0,
-            borderWidth: 1.0,
-            buttonSize: 60.0,
-            icon: Icon(
-              Icons.arrow_back_rounded,
-              color: AppTheme.of(context).info,
-              size: 30.0,
-            ),
-            onPressed: () async {
-              final router = GoRouter.of(context);
-              if (router.canPop()) {
-                router.pop();
-              } else {
-                router.go('/');
-              }
-            },
-          ),
           actions: [],
           centerTitle: false,
           elevation: 0.0,

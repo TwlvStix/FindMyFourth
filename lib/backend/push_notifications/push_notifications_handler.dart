@@ -128,25 +128,7 @@ final parametersBuilderMap =
   'EditProfile': ParameterData.none(),
   'GamesJoined': ParameterData.none(),
   'NotificationPage': ParameterData.none(),
-  'chat_2_Details': (data) async => ParameterData(
-        allParams: {
-          'chatRef': await getDocumentParameter<ChatsRecord>(
-              data, 'chatRef', ChatsRecord.fromSnapshot),
-        },
-      ),
   'Chat': ParameterData.none(),
-  'chat_2_InviteUsers': (data) async => ParameterData(
-        allParams: {
-          'chatRef': await getDocumentParameter<ChatsRecord>(
-              data, 'chatRef', ChatsRecord.fromSnapshot),
-        },
-      ),
-  'image_Details': (data) async => ParameterData(
-        allParams: {
-          'chatMessage': await getDocumentParameter<ChatMessagesRecord>(
-              data, 'chatMessage', ChatMessagesRecord.fromSnapshot),
-        },
-      ),
   'success_page': ParameterData.none(),
   'ProfileUser': (data) async => ParameterData(
         allParams: {

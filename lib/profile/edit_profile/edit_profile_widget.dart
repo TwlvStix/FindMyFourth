@@ -11,7 +11,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/form_field_controller.dart';
 import '/profile/change_photo/change_photo_widget.dart';
 import '/core/custom_functions.dart' as functions;
-import '/profile/home/home_widget.dart';
+import '/profile/main_profile/main_profile_widget.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -1903,7 +1903,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                       ));
 
                                       context.pushNamed(
-                                        HomeWidget.routeName,
+                                        MainProfileWidget.routeName,
                                         extra: <String, dynamic>{
                                           kTransitionInfoKey: TransitionInfo(
                                             hasTransition: true,
@@ -1965,7 +1965,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                                         ));
 
                                         context.pushNamed(
-                                          HomeWidget.routeName,
+                                          MainProfileWidget.routeName,
                                           extra: <String, dynamic>{
                                             kTransitionInfoKey: TransitionInfo(
                                               hasTransition: true,

@@ -13,12 +13,14 @@ import '/core/app_theme.dart';
 import '/core/design_tokens/typography.dart';
 import '/utils/app_util.dart';
 import '/providers/user_provider.dart';
+import '/providers/chat_provider.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import '/main_function/community/community_widget.dart';
 import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
-import '/profile/home/home_widget.dart';
+import '/main_function/golfers/golfers_widget.dart';
+import '/profile/main_profile/main_profile_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,6 +37,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider<AppState>(create: (_) => appState),
         ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
+        ChangeNotifierProvider<ChatProvider>(create: (_) => ChatProvider()),
       ],
       child: MyApp(),
     ),
@@ -202,8 +205,9 @@ class _NavBarPageState extends State<NavBarPage> {
     final tabs = {
       'GamesList': GamesListWidget(),
       'GamesJoined': GamesJoinedWidget(),
+      'Golfers': GolfersWidget(),
       'Community': CommunityWidget(),
-      'Profile': HomeWidget(),
+      'Profile': MainProfileWidget(),
     };
     final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
 
@@ -266,7 +270,12 @@ class _NavBarPageState extends State<NavBarPage> {
             iconSize: 24.0,
           ),
           GButton(
-            icon: Icons.people_outline,
+            icon: Icons.people,
+            text: 'Golfers',
+            iconSize: 24.0,
+          ),
+          GButton(
+            icon: Icons.forum_outlined,
             text: 'Community',
             iconSize: 24.0,
           ),

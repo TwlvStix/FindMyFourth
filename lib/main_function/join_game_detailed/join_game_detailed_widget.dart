@@ -1,4 +1,3 @@
-import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/components/date_format_widget.dart';
 import '/core/widgets/fairway_background.dart';
@@ -9,7 +8,10 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/design_tokens/spacing.dart';
 import '/main_function/join_game/join_game_widget.dart';
 import '/custom_code/widgets/index.dart' as custom_widgets;
-import '/profile/profile_user/profile_user_widget.dart';
+import '/models/game.dart';
+import '/profile/profile_user/profile_user_firebase_widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -49,8 +51,23 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<GamesRecord>(
-      stream: GamesRecord.getDocument(widget.gameRef!),
+    if (widget.gameRef == null) {
+      return Scaffold(
+        backgroundColor: AppTheme.of(context).secondaryBackground,
+        body: Center(
+          child: Text(
+            'Game details are unavailable.',
+            style: AppTheme.of(context).bodyMedium,
+          ),
+        ),
+      );
+    }
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final currentUserRef = currentUser == null
+        ? null
+        : FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
+    return StreamBuilder<DocumentSnapshot>(
+      stream: widget.gameRef!.snapshots(),
       builder: (context, snapshot) {
         // Customize what your widget looks like when it's loading.
         if (!snapshot.hasData) {
@@ -69,7 +86,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
           );
         }
 
-        final joinGameDetailedGamesRecord = snapshot.data!;
+        final joinGameDetailedGamesRecord = Game.fromDoc(snapshot.data!);
 
         return Scaffold(
           key: scaffoldKey,
@@ -100,14 +117,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
               style: AppTheme.of(context).headlineSmall.override(
                     font: GoogleFonts.outfit(
                       fontWeight: FontWeight.w500,
-                      fontStyle:
-                          AppTheme.of(context).headlineSmall.fontStyle,
+                      fontStyle: AppTheme.of(context).headlineSmall.fontStyle,
                     ),
                     color: AppTheme.of(context).primary,
                     letterSpacing: 0.0,
                     fontWeight: FontWeight.w500,
-                    fontStyle:
-                        AppTheme.of(context).headlineSmall.fontStyle,
+                    fontStyle: AppTheme.of(context).headlineSmall.fontStyle,
                   ),
             ),
             actions: [],
@@ -117,13 +132,17 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
           body: FairwayBackgroundDark(
             showOrganic: true,
             showTexture: true,
-            child: AuthUserStreamWidget(
-              builder: (context) {
-                final isCreatorFriend =
-                    currentUserDocument?.friends.contains(
-                          joinGameDetailedGamesRecord.userRef,
-                        ) ??
-                        false;
+            child: StreamBuilder<UsersRecord>(
+              stream: currentUserRef == null
+                  ? null
+                  : UsersRecord.getDocument(currentUserRef),
+              builder: (context, userSnapshot) {
+                final currentUserRecord =
+                    userSnapshot.hasData ? userSnapshot.data : null;
+                final isCreatorFriend = currentUserRecord?.friends.contains(
+                      joinGameDetailedGamesRecord.userRef,
+                    ) ??
+                    false;
 
                 return SingleChildScrollView(
                   child: Column(
@@ -153,9 +172,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                   0.0, 10.0, 0.0, 0.0),
                               child: Text(
                                 'Game Details:',
-                                style: AppTheme.of(context)
-                                    .bodyMedium
-                                    .override(
+                                style: AppTheme.of(context).bodyMedium.override(
                                       font: GoogleFonts.outfit(
                                         fontWeight: AppTheme.of(context)
                                             .bodyMedium
@@ -194,12 +211,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             width: 64.0,
                                             height: 64.0,
                                             decoration: BoxDecoration(
-                                              color: AppTheme.of(context).primary,
+                                              color:
+                                                  AppTheme.of(context).primary,
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color:
-                                                    AppTheme.of(context)
-                                                        .primaryBtnText,
+                                                color: AppTheme.of(context)
+                                                    .primaryBtnText,
                                                 width: 2.0,
                                               ),
                                             ),
@@ -223,8 +240,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             child: Text(
                                               'Betting\n',
                                               textAlign: TextAlign.center,
-                                              style: AppTheme.of(
-                                                      context)
+                                              style: AppTheme.of(context)
                                                   .bodySmall
                                                   .override(
                                                     font:
@@ -232,8 +248,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .bodySmall
                                                               .fontStyle,
                                                     ),
@@ -243,8 +258,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
-                                                        AppTheme.of(
-                                                                context)
+                                                        AppTheme.of(context)
                                                             .bodySmall
                                                             .fontStyle,
                                                   ),
@@ -263,12 +277,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             width: 64.0,
                                             height: 64.0,
                                             decoration: BoxDecoration(
-                                              color: AppTheme.of(context).primary,
+                                              color:
+                                                  AppTheme.of(context).primary,
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color:
-                                                    AppTheme.of(context)
-                                                        .primaryBtnText,
+                                                color: AppTheme.of(context)
+                                                    .primaryBtnText,
                                                 width: 2.0,
                                               ),
                                             ),
@@ -292,8 +306,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             child: Text(
                                               'Rule\nStyle',
                                               textAlign: TextAlign.center,
-                                              style: AppTheme.of(
-                                                      context)
+                                              style: AppTheme.of(context)
                                                   .bodySmall
                                                   .override(
                                                     font:
@@ -301,8 +314,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .bodySmall
                                                               .fontStyle,
                                                     ),
@@ -312,8 +324,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
-                                                        AppTheme.of(
-                                                                context)
+                                                        AppTheme.of(context)
                                                             .bodySmall
                                                             .fontStyle,
                                                   ),
@@ -332,12 +343,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             width: 64.0,
                                             height: 64.0,
                                             decoration: BoxDecoration(
-                                              color: AppTheme.of(context).primary,
+                                              color:
+                                                  AppTheme.of(context).primary,
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color:
-                                                    AppTheme.of(context)
-                                                        .primaryBtnText,
+                                                color: AppTheme.of(context)
+                                                    .primaryBtnText,
                                                 width: 2.0,
                                               ),
                                             ),
@@ -361,8 +372,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             child: Text(
                                               'Game\nType',
                                               textAlign: TextAlign.center,
-                                              style: AppTheme.of(
-                                                      context)
+                                              style: AppTheme.of(context)
                                                   .bodySmall
                                                   .override(
                                                     font:
@@ -370,8 +380,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .bodySmall
                                                               .fontStyle,
                                                     ),
@@ -381,8 +390,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
-                                                        AppTheme.of(
-                                                                context)
+                                                        AppTheme.of(context)
                                                             .bodySmall
                                                             .fontStyle,
                                                   ),
@@ -401,12 +409,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             width: 64.0,
                                             height: 64.0,
                                             decoration: BoxDecoration(
-                                              color: AppTheme.of(context).primary,
+                                              color:
+                                                  AppTheme.of(context).primary,
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color:
-                                                    AppTheme.of(context)
-                                                        .primaryBtnText,
+                                                color: AppTheme.of(context)
+                                                    .primaryBtnText,
                                                 width: 2.0,
                                               ),
                                             ),
@@ -430,8 +438,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             child: Text(
                                               'Scoring\n',
                                               textAlign: TextAlign.center,
-                                              style: AppTheme.of(
-                                                      context)
+                                              style: AppTheme.of(context)
                                                   .bodySmall
                                                   .override(
                                                     font:
@@ -439,8 +446,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .bodySmall
                                                               .fontStyle,
                                                     ),
@@ -450,8 +456,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
-                                                        AppTheme.of(
-                                                                context)
+                                                        AppTheme.of(context)
                                                             .bodySmall
                                                             .fontStyle,
                                                   ),
@@ -470,12 +475,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             width: 64.0,
                                             height: 64.0,
                                             decoration: BoxDecoration(
-                                              color: AppTheme.of(context).primary,
+                                              color:
+                                                  AppTheme.of(context).primary,
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color:
-                                                    AppTheme.of(context)
-                                                        .primaryBtnText,
+                                                color: AppTheme.of(context)
+                                                    .primaryBtnText,
                                                 width: 2.0,
                                               ),
                                             ),
@@ -499,8 +504,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             child: Text(
                                               'Member\nDiscount',
                                               textAlign: TextAlign.center,
-                                              style: AppTheme.of(
-                                                      context)
+                                              style: AppTheme.of(context)
                                                   .bodySmall
                                                   .override(
                                                     font:
@@ -508,8 +512,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .bodySmall
                                                               .fontStyle,
                                                     ),
@@ -519,8 +522,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
-                                                        AppTheme.of(
-                                                                context)
+                                                        AppTheme.of(context)
                                                             .bodySmall
                                                             .fontStyle,
                                                   ),
@@ -539,12 +541,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             width: 64.0,
                                             height: 64.0,
                                             decoration: BoxDecoration(
-                                              color: AppTheme.of(context).primary,
+                                              color:
+                                                  AppTheme.of(context).primary,
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color:
-                                                    AppTheme.of(context)
-                                                        .primaryBtnText,
+                                                color: AppTheme.of(context)
+                                                    .primaryBtnText,
                                                 width: 2.0,
                                               ),
                                             ),
@@ -568,8 +570,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             child: Text(
                                               'Friends\nOnly?',
                                               textAlign: TextAlign.center,
-                                              style: AppTheme.of(
-                                                      context)
+                                              style: AppTheme.of(context)
                                                   .bodySmall
                                                   .override(
                                                     font:
@@ -577,8 +578,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .bodySmall
                                                               .fontStyle,
                                                     ),
@@ -588,8 +588,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
-                                                        AppTheme.of(
-                                                                context)
+                                                        AppTheme.of(context)
                                                             .bodySmall
                                                             .fontStyle,
                                                   ),
@@ -615,23 +614,22 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                   0.0, 8.0, 0.0, 0.0),
                               child: Text(
                                 'Players in this Group:',
-                                style: AppTheme.of(context)
-                                    .labelMedium
-                                    .override(
-                                      font: GoogleFonts.outfit(
-                                        fontWeight: FontWeight.w800,
-                                        fontStyle: AppTheme.of(context)
-                                            .labelMedium
-                                            .fontStyle,
-                                      ),
-                                      color: Colors.white,
-                                      fontSize: 18.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w800,
-                                      fontStyle: AppTheme.of(context)
-                                          .labelMedium
-                                          .fontStyle,
-                                    ),
+                                style:
+                                    AppTheme.of(context).labelMedium.override(
+                                          font: GoogleFonts.outfit(
+                                            fontWeight: FontWeight.w800,
+                                            fontStyle: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontStyle,
+                                          ),
+                                          color: Colors.white,
+                                          fontSize: 18.0,
+                                          letterSpacing: 0.0,
+                                          fontWeight: FontWeight.w800,
+                                          fontStyle: AppTheme.of(context)
+                                              .labelMedium
+                                              .fontStyle,
+                                        ),
                               ),
                             ),
                           ],
@@ -682,7 +680,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                   width: 50.0,
                                                   height: 50.0,
                                                   child: SpinKitWanderingCubes(
-                                                    color: AppTheme.of(context).secondary,
+                                                    color: AppTheme.of(context)
+                                                        .secondary,
                                                     size: 50.0,
                                                   ),
                                                 ),
@@ -699,17 +698,19 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                   width: 64.0,
                                                   height: 64.0,
                                                   decoration: BoxDecoration(
-                                                    color:
-                                                        AppTheme.of(context)
-                                                            .info,
+                                                    color: AppTheme.of(context)
+                                                        .info,
                                                     shape: BoxShape.circle,
                                                     border: Border.all(
-                                                      color: AppTheme.of(context).tertiary,
+                                                      color:
+                                                          AppTheme.of(context)
+                                                              .tertiary,
                                                       width: 2.0,
                                                     ),
                                                   ),
                                                   child: Padding(
-                                                    padding: EdgeInsets.all(4.0),
+                                                    padding:
+                                                        EdgeInsets.all(4.0),
                                                     child: InkWell(
                                                       splashColor:
                                                           Colors.transparent,
@@ -719,33 +720,17 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                           Colors.transparent,
                                                       highlightColor:
                                                           Colors.transparent,
-                                                      onTap: () async {
-                                                        context.pushNamed(
-                                                          ProfileUserWidget
-                                                              .routeName,
-                                                          queryParameters: {
-                                                            'userRef':
-                                                                serializeParam(
-                                                              friend1UsersRecord,
-                                                              ParamType.Document,
+                                                      onTap: () {
+                                                        Navigator.of(context)
+                                                            .push(
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                ProfileUserFirebaseWidget(
+                                                              userRef:
+                                                                  friend1UsersRecord
+                                                                      .reference,
                                                             ),
-                                                          }.withoutNulls,
-                                                          extra: <String,
-                                                              dynamic>{
-                                                            'userRef':
-                                                                friend1UsersRecord,
-                                                            kTransitionInfoKey:
-                                                                TransitionInfo(
-                                                              hasTransition:
-                                                                  true,
-                                                              transitionType:
-                                                                  PageTransitionType
-                                                                      .bottomToTop,
-                                                              duration: Duration(
-                                                                  milliseconds:
-                                                                      220),
-                                                            ),
-                                                          },
+                                                          ),
                                                         );
                                                       },
                                                       child: Container(
@@ -759,16 +744,17 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                               BoxShape.circle,
                                                         ),
                                                         child: Image.network(
-                                                          valueOrDefault<String>(
+                                                          valueOrDefault<
+                                                              String>(
                                                             friend1UsersRecord
                                                                 .photoUrl,
                                                             'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
                                                           ),
                                                           fit: BoxFit.cover,
-                                                          errorBuilder:
-                                                              (context, error,
-                                                                      stackTrace) =>
-                                                                  Image.asset(
+                                                          errorBuilder: (context,
+                                                                  error,
+                                                                  stackTrace) =>
+                                                              Image.asset(
                                                             'assets/images/error_image.png',
                                                             fit: BoxFit.cover,
                                                           ),
@@ -833,7 +819,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     AppTheme.of(context).info,
                                                 shape: BoxShape.circle,
                                                 border: Border.all(
-                                                  color: AppTheme.of(context).tertiary,
+                                                  color: AppTheme.of(context)
+                                                      .tertiary,
                                                   width: 2.0,
                                                 ),
                                               ),
@@ -858,8 +845,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                         fontWeight:
                                                             FontWeight.w600,
                                                         fontStyle:
-                                                            AppTheme.of(
-                                                                    context)
+                                                            AppTheme.of(context)
                                                                 .titleMedium
                                                                 .fontStyle,
                                                       ),
@@ -868,8 +854,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             ),
                                             Padding(
                                               padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      0.0, 8.0, 0.0, 0.0),
+                                                  .fromSTEB(0.0, 8.0, 0.0, 0.0),
                                               child: Text(
                                                 guestName,
                                                 textAlign: TextAlign.center,
@@ -881,8 +866,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
-                                                            AppTheme.of(
-                                                                    context)
+                                                            AppTheme.of(context)
                                                                 .bodySmall
                                                                 .fontStyle,
                                                       ),
@@ -892,8 +876,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .bodySmall
                                                               .fontStyle,
                                                     ),
@@ -910,8 +893,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                           ),
                         ),
                       ),
-                      if (joinGameDetailedGamesRecord.userRef !=
-                          currentUserReference)
+                      if (joinGameDetailedGamesRecord.userRef != currentUserRef)
                         Align(
                           alignment: AlignmentDirectional(0.0, 0.0),
                           child: Padding(
@@ -929,7 +911,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                   .joinedPlayers.length +
                                               joinGameDetailedGamesRecord
                                                   .guestPlayers.length)) &&
-                                      ((joinGameDetailedGamesRecord.friendGame ==
+                                      ((joinGameDetailedGamesRecord
+                                                  .friendGame ==
                                               'Public') ||
                                           ((joinGameDetailedGamesRecord
                                                       .friendGame ==
@@ -945,7 +928,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                           padding:
                                               MediaQuery.viewInsetsOf(context),
                                           child: JoinGameWidget(
-                                            gameRef: joinGameDetailedGamesRecord,
+                                            gameRef:
+                                                joinGameDetailedGamesRecord,
                                           ),
                                         );
                                       },
@@ -969,7 +953,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                               child: Text('Ok'),
                                             ),
                                           ],
-                                          );
+                                        );
                                       },
                                     );
                                   }

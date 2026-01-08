@@ -1,6 +1,3 @@
-import '/auth/firebase_auth/auth_util.dart';
-import '/backend/backend.dart';
-import '/backend/push_notifications/push_notifications_util.dart';
 import '/core/widgets/app_count_controller.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/widgets/app_icon_button.dart';
@@ -11,12 +8,13 @@ import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/form_field_controller.dart';
-import '/custom_code/actions/index.dart' as actions;
 import '/core/random_data_util.dart' as random_data;
-import '/friends/tab_friends/tab_friends_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
-import '/profile/main_profile/main_profile_widget.dart';
+import '/providers/provider_extensions.dart';
+import '/models/course.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +22,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
+import '/providers/chat_provider.dart';
 
 class CreateGameWidget extends StatefulWidget {
   const CreateGameWidget({super.key});
@@ -53,7 +54,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
   FormFieldController<String>? friendsValueController;
   String? courseValue;
   FormFieldController<String>? courseValueController;
-  CourseRecord? selectedCourse;
+  Course? selectedCourse;
   String? memberValue;
   FormFieldController<String>? memberValueController;
   int? countControllerValue;
@@ -65,17 +66,17 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
   FormFieldController<String>? gameTypeValueController;
   String? scoringValue;
   FormFieldController<String>? scoringValueController;
-  ChatsRecord? newChat;
-  GamesRecord? gameRef;
-  List<DocumentReference>? notifyUsers;
+  DocumentReference? chatRef;
+  DocumentReference? gameRef;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
+    final displayName = FirebaseAuth.instance.currentUser?.displayName ?? '';
     gameNameTextController = TextEditingController(
-        text: '${currentUserDisplayName}${formatNumber(
+        text: '${displayName}${formatNumber(
       random_data.randomInteger(0, 1000),
       formatType: FormatType.compact,
     )}');
@@ -129,71 +130,15 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
             style: AppTheme.of(context).headlineLarge.override(
                   font: GoogleFonts.outfit(
                     fontWeight: FontWeight.w500,
-                    fontStyle:
-                        AppTheme.of(context).headlineLarge.fontStyle,
+                    fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
                   ),
                   color: AppTheme.of(context).primary,
                   fontSize: 24.0,
                   letterSpacing: 0.0,
                   fontWeight: FontWeight.w500,
-                  fontStyle:
-                      AppTheme.of(context).headlineLarge.fontStyle,
+                  fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
                 ),
           ),
-          actions: [
-            Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, AppSpacing.md, 0.0),
-              child: AppIconButton(
-                borderRadius: 20.0,
-                borderWidth: 1.0,
-                buttonSize: 40.0,
-                fillColor: AppTheme.of(context).primaryBackground,
-                icon: Icon(
-                  Icons.person_outline_outlined,
-                  color: AppTheme.of(context).primary,
-                  size: 30.0,
-                ),
-                onPressed: () async {
-                  context.pushNamed(
-                    MainProfileWidget.routeName,
-                    extra: <String, dynamic>{
-                      kTransitionInfoKey: TransitionInfo(
-                        hasTransition: true,
-                        transitionType: PageTransitionType.fade,
-                        duration: Duration(milliseconds: 200),
-                      ),
-                    },
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, AppSpacing.sm, 0.0),
-              child: AppIconButton(
-                borderRadius: 20.0,
-                borderWidth: 1.0,
-                buttonSize: 40.0,
-                fillColor: AppTheme.of(context).primaryBackground,
-                icon: Icon(
-                  Icons.search_sharp,
-                  color: AppTheme.of(context).primary,
-                  size: 26.0,
-                ),
-                onPressed: () async {
-                  context.pushNamed(
-                    TabFriendsWidget.routeName,
-                    extra: <String, dynamic>{
-                      kTransitionInfoKey: TransitionInfo(
-                        hasTransition: true,
-                        transitionType: PageTransitionType.fade,
-                        duration: Duration(milliseconds: 200),
-                      ),
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
           centerTitle: false,
           elevation: 10.0,
         ),
@@ -231,25 +176,21 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                           .labelMedium
                                           .override(
                                             font: GoogleFonts.outfit(
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
+                                              fontWeight: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontWeight,
+                                              fontStyle: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontStyle,
                                             ),
                                             color: Colors.white,
                                             letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontStyle,
+                                            fontWeight: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontStyle,
                                           ),
                                     ),
                                   ],
@@ -258,166 +199,147 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 5.0, 0.0, 0.0),
-                                child: AuthUserStreamWidget(
-                                  builder: (context) => TextFormField(
-                                    controller: gameNameTextController,
-                                    focusNode: gameNameFocusNode,
-                                    onChanged: (_) => EasyDebounce.debounce(
-                                      'gameNameTextController',
-                                      Duration(milliseconds: 2000),
-                                      () {
-                                        if (mounted) {
-                                          setState(() {});
-                                        }
-                                      },
-                                    ),
-                                    autofocus: true,
-                                    textCapitalization: TextCapitalization.none,
-                                    textInputAction: TextInputAction.next,
-                                    obscureText: false,
-                                    decoration: InputDecoration(
-                                      labelStyle: AppTheme.of(context)
-                                          .labelMedium
-                                          .override(
-                                            font: GoogleFonts.outfit(
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
-                                            ),
-                                            color: Colors.white,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontStyle,
-                                          ),
-                                      hintStyle: AppTheme.of(context)
-                                          .labelMedium
-                                          .override(
-                                            font: GoogleFonts.outfit(
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
-                                            ),
-                                            color: Colors.white,
-                                            fontSize: 15.0,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontStyle,
-                                          ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Colors.white,
-                                          width: 1.0,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(10.0),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: AppTheme.of(context).primary,
-                                          width: 1.0,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(10.0),
-                                      ),
-                                      errorBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: AppTheme.of(context)
-                                              .error,
-                                          width: 1.0,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(10.0),
-                                      ),
-                                      focusedErrorBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: AppTheme.of(context)
-                                              .error,
-                                          width: 1.0,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(10.0),
-                                      ),
-                                      suffixIcon: gameNameTextController!
-                                              .text.isNotEmpty
-                                          ? InkWell(
-                                              onTap: () async {
-                                                gameNameTextController
-                                                    ?.clear();
-                                                if (mounted) setState(() {});
-                                              },
-                                              child: Icon(
-                                                Icons.clear,
-                                                color: Colors.white,
-                                                size: 20.0,
-                                              ),
-                                            )
-                                          : null,
-                                    ),
-                                    style: AppTheme.of(context)
-                                        .bodyMedium
+                                child: TextFormField(
+                                  controller: gameNameTextController,
+                                  focusNode: gameNameFocusNode,
+                                  onChanged: (_) => EasyDebounce.debounce(
+                                    'gameNameTextController',
+                                    Duration(milliseconds: 2000),
+                                    () {
+                                      if (mounted) {
+                                        setState(() {});
+                                      }
+                                    },
+                                  ),
+                                  autofocus: true,
+                                  textCapitalization: TextCapitalization.none,
+                                  textInputAction: TextInputAction.next,
+                                  obscureText: false,
+                                  decoration: InputDecoration(
+                                    labelStyle: AppTheme.of(context)
+                                        .labelMedium
                                         .override(
                                           font: GoogleFonts.outfit(
-                                            fontWeight: FontWeight.w500,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
+                                            fontWeight: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontStyle,
+                                          ),
+                                          color: Colors.white,
+                                          letterSpacing: 0.0,
+                                          fontWeight: AppTheme.of(context)
+                                              .labelMedium
+                                              .fontWeight,
+                                          fontStyle: AppTheme.of(context)
+                                              .labelMedium
+                                              .fontStyle,
+                                        ),
+                                    hintStyle: AppTheme.of(context)
+                                        .labelMedium
+                                        .override(
+                                          font: GoogleFonts.outfit(
+                                            fontWeight: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontStyle,
                                           ),
                                           color: Colors.white,
                                           fontSize: 15.0,
                                           letterSpacing: 0.0,
-                                          fontWeight: FontWeight.w500,
-                                          fontStyle:
-                                              AppTheme.of(context)
+                                          fontWeight: AppTheme.of(context)
+                                              .labelMedium
+                                              .fontWeight,
+                                          fontStyle: AppTheme.of(context)
+                                              .labelMedium
+                                              .fontStyle,
+                                        ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: Colors.white,
+                                        width: 1.0,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: AppTheme.of(context).primary,
+                                        width: 1.0,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: AppTheme.of(context).error,
+                                        width: 1.0,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: AppTheme.of(context).error,
+                                        width: 1.0,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    suffixIcon: gameNameTextController!
+                                            .text.isNotEmpty
+                                        ? InkWell(
+                                            onTap: () async {
+                                              gameNameTextController?.clear();
+                                              if (mounted) {
+                                                setState(() {});
+                                              }
+                                            },
+                                            child: Icon(
+                                              Icons.clear,
+                                              color: Colors.white,
+                                              size: 20.0,
+                                            ),
+                                          )
+                                        : null,
+                                  ),
+                                  style:
+                                      AppTheme.of(context).bodyMedium.override(
+                                            font: GoogleFonts.outfit(
+                                              fontWeight: FontWeight.w500,
+                                              fontStyle: AppTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
-                                        ),
-                                    maxLength: 200,
-                                    maxLengthEnforcement:
-                                        MaxLengthEnforcement.enforced,
-                                    buildCounter: (context,
-                                            {required currentLength,
-                                            required isFocused,
-                                            maxLength}) =>
-                                        null,
-                                    cursorColor: Colors.white,
-                                    validator: gameNameTextControllerValidator
-                                        .asValidator(context),
-                                    inputFormatters: [
-                                      if (!isAndroid && !isiOS)
-                                        TextInputFormatter.withFunction(
-                                            (oldValue, newValue) {
-                                          return TextEditingValue(
-                                            selection: newValue.selection,
-                                            text: newValue.text
-                                                .toCapitalization(
-                                                    TextCapitalization.none),
-                                          );
-                                        }),
-                                    ],
-                                  ),
+                                            ),
+                                            color: Colors.white,
+                                            fontSize: 15.0,
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.w500,
+                                            fontStyle: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontStyle,
+                                          ),
+                                  maxLength: 200,
+                                  maxLengthEnforcement:
+                                      MaxLengthEnforcement.enforced,
+                                  buildCounter: (context,
+                                          {required currentLength,
+                                          required isFocused,
+                                          maxLength}) =>
+                                      null,
+                                  cursorColor: Colors.white,
+                                  validator: gameNameTextControllerValidator
+                                      .asValidator(context),
+                                  inputFormatters: [
+                                    if (!isAndroid && !isiOS)
+                                      TextInputFormatter.withFunction(
+                                          (oldValue, newValue) {
+                                        return TextEditingValue(
+                                          selection: newValue.selection,
+                                          text: newValue.text.toCapitalization(
+                                              TextCapitalization.none),
+                                        );
+                                      }),
+                                  ],
                                 ),
                               ),
                               Padding(
@@ -432,25 +354,21 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                           .labelMedium
                                           .override(
                                             font: GoogleFonts.outfit(
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
+                                              fontWeight: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontWeight,
+                                              fontStyle: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontStyle,
                                             ),
                                             color: Colors.white,
                                             letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontStyle,
+                                            fontWeight: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontStyle,
                                           ),
                                     ),
                                   ],
@@ -478,7 +396,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                           Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    AppSpacing.sm, 0.0, 0.0, 0.0),
+                                                    AppSpacing.sm,
+                                                    0.0,
+                                                    0.0,
+                                                    0.0),
                                             child: Container(
                                               width: MediaQuery.sizeOf(context)
                                                       .width *
@@ -512,8 +433,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                 datePicked),
                                                             'Jan',
                                                           ),
-                                                          style: AppTheme
-                                                                  .of(context)
+                                                          style: AppTheme.of(
+                                                                  context)
                                                               .bodyMedium
                                                               .override(
                                                                 font:
@@ -547,13 +468,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                         Text(
                                                           valueOrDefault<
                                                               String>(
-                                                            dateTimeFormat(
-                                                                "d",
+                                                            dateTimeFormat("d",
                                                                 datePicked),
                                                             '22',
                                                           ),
-                                                          style: AppTheme
-                                                                  .of(context)
+                                                          style: AppTheme.of(
+                                                                  context)
                                                               .bodyMedium
                                                               .override(
                                                                 font:
@@ -592,8 +512,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                     child: VerticalDivider(
                                                       thickness: 1.0,
                                                       color:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .accent4,
                                                     ),
                                                   ),
@@ -620,8 +539,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                 datePicked),
                                                             'Friday',
                                                           ),
-                                                          style: AppTheme
-                                                                  .of(context)
+                                                          style: AppTheme.of(
+                                                                  context)
                                                               .bodyMedium
                                                               .override(
                                                                 font:
@@ -653,13 +572,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                         Text(
                                                           valueOrDefault<
                                                               String>(
-                                                            dateTimeFormat(
-                                                                "jm",
+                                                            dateTimeFormat("jm",
                                                                 datePicked),
                                                             '09:00am',
                                                           ),
-                                                          style: AppTheme
-                                                                  .of(context)
+                                                          style: AppTheme.of(
+                                                                  context)
                                                               .bodyMedium
                                                               .override(
                                                                 font:
@@ -698,7 +616,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                           Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    AppSpacing.sm, 0.0, 0.0, 0.0),
+                                                    AppSpacing.sm,
+                                                    0.0,
+                                                    0.0,
+                                                    0.0),
                                             child: InkWell(
                                               splashColor: Colors.transparent,
                                               focusColor: Colors.transparent,
@@ -719,16 +640,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                       context,
                                                       child!,
                                                       headerBackgroundColor:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .primary,
                                                       headerForegroundColor:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .info,
                                                       headerTextStyle:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .headlineLarge
                                                               .override(
                                                                 font:
@@ -754,24 +672,19 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                     .fontStyle,
                                                               ),
                                                       pickerBackgroundColor:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .secondaryBackground,
                                                       pickerForegroundColor:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .primaryText,
                                                       selectedDateTimeBackgroundColor:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .primary,
                                                       selectedDateTimeForegroundColor:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .info,
                                                       actionButtonForegroundColor:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .primaryText,
                                                       iconSize: 24.0,
                                                     );
@@ -791,16 +704,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                         context,
                                                         child!,
                                                         headerBackgroundColor:
-                                                            AppTheme.of(
-                                                                    context)
+                                                            AppTheme.of(context)
                                                                 .primary,
                                                         headerForegroundColor:
-                                                            AppTheme.of(
-                                                                    context)
+                                                            AppTheme.of(context)
                                                                 .info,
                                                         headerTextStyle:
-                                                            AppTheme.of(
-                                                                    context)
+                                                            AppTheme.of(context)
                                                                 .headlineLarge
                                                                 .override(
                                                                   font: GoogleFonts
@@ -826,24 +736,19 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                                       .fontStyle,
                                                                 ),
                                                         pickerBackgroundColor:
-                                                            AppTheme.of(
-                                                                    context)
+                                                            AppTheme.of(context)
                                                                 .secondaryBackground,
                                                         pickerForegroundColor:
-                                                            AppTheme.of(
-                                                                    context)
+                                                            AppTheme.of(context)
                                                                 .primaryText,
                                                         selectedDateTimeBackgroundColor:
-                                                            AppTheme.of(
-                                                                    context)
+                                                            AppTheme.of(context)
                                                                 .primary,
                                                         selectedDateTimeForegroundColor:
-                                                            AppTheme.of(
-                                                                    context)
+                                                            AppTheme.of(context)
                                                                 .info,
                                                         actionButtonForegroundColor:
-                                                            AppTheme.of(
-                                                                    context)
+                                                            AppTheme.of(context)
                                                                 .primaryText,
                                                         iconSize: 24.0,
                                                       );
@@ -853,29 +758,28 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
 
                                                 if (_datePickedDate != null &&
                                                     _datePickedTime != null) {
-                                                  if (mounted) setState(() {
-                                                    datePicked =
-                                                        DateTime(
-                                                      _datePickedDate.year,
-                                                      _datePickedDate.month,
-                                                      _datePickedDate.day,
-                                                      _datePickedTime!.hour,
-                                                      _datePickedTime.minute,
-                                                    );
-                                                  });
-                                                } else if (datePicked !=
-                                                    null) {
-                                                  if (mounted) setState(() {
-                                                    datePicked =
-                                                        getCurrentTimestamp;
-                                                  });
+                                                  if (mounted)
+                                                    setState(() {
+                                                      datePicked = DateTime(
+                                                        _datePickedDate.year,
+                                                        _datePickedDate.month,
+                                                        _datePickedDate.day,
+                                                        _datePickedTime!.hour,
+                                                        _datePickedTime.minute,
+                                                      );
+                                                    });
+                                                } else if (datePicked != null) {
+                                                  if (mounted)
+                                                    setState(() {
+                                                      datePicked =
+                                                          getCurrentTimestamp;
+                                                    });
                                                 }
                                               },
                                               child: Icon(
                                                 Icons.date_range,
-                                                color:
-                                                    AppTheme.of(context)
-                                                        .primaryBtnText,
+                                                color: AppTheme.of(context)
+                                                    .primaryBtnText,
                                                 size: 36.0,
                                               ),
                                             ),
@@ -897,25 +801,21 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         .labelMedium
                                         .override(
                                           font: GoogleFonts.outfit(
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontStyle,
+                                            fontWeight: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontStyle,
                                           ),
                                           color: Colors.white,
                                           letterSpacing: 0.0,
-                                          fontWeight:
-                                              AppTheme.of(context)
-                                                  .labelMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .labelMedium
-                                                  .fontStyle,
+                                          fontWeight: AppTheme.of(context)
+                                              .labelMedium
+                                              .fontWeight,
+                                          fontStyle: AppTheme.of(context)
+                                              .labelMedium
+                                              .fontStyle,
                                         ),
                                   ),
                                 ),
@@ -926,14 +826,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 5.0, 0.0, 0.0),
                                   child: AppDropDown<String>(
-                                    controller:
-                                        friendsValueController ??=
-                                            FormFieldController<String>(null),
+                                    controller: friendsValueController ??=
+                                        FormFieldController<String>(null),
                                     options: ['Friends', 'Public'],
                                     onChanged: (val) {
                                       if (mounted) {
-                                        setState(
-                                            () => friendsValue = val);
+                                        setState(() => friendsValue = val);
                                       }
                                     },
                                     width: 300.0,
@@ -942,30 +840,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         .bodyMedium
                                         .override(
                                           font: GoogleFonts.outfit(
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
+                                            fontWeight: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
-                                          fontWeight:
-                                              AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
+                                          fontWeight: AppTheme.of(context)
+                                              .bodyMedium
+                                              .fontWeight,
+                                          fontStyle: AppTheme.of(context)
+                                              .bodyMedium
+                                              .fontStyle,
                                         ),
                                     hintText: 'Please select...',
                                     icon: Icon(
                                       Icons.keyboard_arrow_down_rounded,
-                                      color: AppTheme.of(context)
-                                          .secondaryText,
+                                      color: AppTheme.of(context).secondaryText,
                                       size: 24.0,
                                     ),
                                     fillColor: AppTheme.of(context)
@@ -998,25 +891,21 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             .labelMedium
                                             .override(
                                               font: GoogleFonts.outfit(
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .labelMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .labelMedium
-                                                        .fontStyle,
+                                                fontWeight: AppTheme.of(context)
+                                                    .labelMedium
+                                                    .fontWeight,
+                                                fontStyle: AppTheme.of(context)
+                                                    .labelMedium
+                                                    .fontStyle,
                                               ),
                                               color: Colors.white,
                                               letterSpacing: 0.0,
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
+                                              fontWeight: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontWeight,
+                                              fontStyle: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontStyle,
                                             ),
                                       ),
                                     ),
@@ -1028,10 +917,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                 child: Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 5.0, 0.0, 0.0),
-                                  child: StreamBuilder<List<CourseRecord>>(
-                                    stream: AppState().getCourses(
-                                      requestFn: () => queryCourseRecord(),
-                                    ),
+                                  child: StreamBuilder<
+                                      QuerySnapshot<Map<String, dynamic>>>(
+                                    stream: FirebaseFirestore.instance
+                                        .collection('course')
+                                        .orderBy('name')
+                                        .snapshots(),
                                     builder: (context, snapshot) {
                                       // Customize what your widget looks like when it's loading.
                                       if (!snapshot.hasData) {
@@ -1040,15 +931,17 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             width: 50.0,
                                             height: 50.0,
                                             child: SpinKitWanderingCubes(
-                                              color: AppTheme.of(context).secondary,
+                                              color: AppTheme.of(context)
+                                                  .secondary,
                                               size: 50.0,
                                             ),
                                           ),
                                         );
                                       }
-                                      List<CourseRecord>
-                                          courseCourseRecordList =
-                                          snapshot.data!;
+                                      final courseCourseRecordList = snapshot
+                                          .data!.docs
+                                          .map((doc) => Course.fromDoc(doc))
+                                          .toList();
 
                                       return AppDropDown<String>(
                                         controller: courseValueController ??=
@@ -1057,92 +950,74 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             .map((e) => e.name)
                                             .toList(),
                                         onChanged: (val) async {
-                                          if (mounted) setState(
-                                              () => courseValue = val);
+                                          if (mounted)
+                                            setState(() => courseValue = val);
                                           selectedCourse =
-                                              await queryCourseRecordOnce(
-                                            queryBuilder: (courseRecord) =>
-                                                courseRecord.where(
-                                              'name',
-                                              isEqualTo: courseValue,
-                                            ),
-                                            singleRecord: true,
-                                          ).then((s) => s.firstOrNull);
+                                              courseCourseRecordList
+                                                  .firstWhereOrNull((course) =>
+                                                      course.name == val);
 
                                           if (mounted) setState(() {});
                                         },
                                         width: 300.0,
                                         height: 50.0,
-                                        searchHintTextStyle: AppTheme
-                                                .of(context)
+                                        searchHintTextStyle: AppTheme.of(
+                                                context)
                                             .labelMedium
                                             .override(
                                               font: GoogleFonts.outfit(
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .labelMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .labelMedium
-                                                        .fontStyle,
+                                                fontWeight: AppTheme.of(context)
+                                                    .labelMedium
+                                                    .fontWeight,
+                                                fontStyle: AppTheme.of(context)
+                                                    .labelMedium
+                                                    .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
+                                              fontWeight: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontWeight,
+                                              fontStyle: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontStyle,
                                             ),
-                                        searchTextStyle: AppTheme.of(
-                                                context)
+                                        searchTextStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .override(
                                               font: GoogleFonts.outfit(
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
+                                                fontWeight: AppTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontWeight,
+                                                fontStyle: AppTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
+                                              fontWeight: AppTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontWeight,
+                                              fontStyle: AppTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
                                             ),
                                         textStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .override(
                                               font: GoogleFonts.outfit(
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
+                                                fontWeight: AppTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontWeight,
+                                                fontStyle: AppTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
                                               ),
                                               letterSpacing: 0.0,
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
+                                              fontWeight: AppTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontWeight,
+                                              fontStyle: AppTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
                                             ),
                                         hintText: 'Where are you playing?',
                                         searchHintText: 'Find your course',
@@ -1155,7 +1030,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         fillColor: AppTheme.of(context)
                                             .secondaryBackground,
                                         elevation: 2.0,
-                                        borderColor: AppTheme.of(context).primary,
+                                        borderColor:
+                                            AppTheme.of(context).primary,
                                         borderWidth: 1.0,
                                         borderRadius: 10.0,
                                         margin: EdgeInsetsDirectional.fromSTEB(
@@ -1180,25 +1056,21 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         .labelMedium
                                         .override(
                                           font: GoogleFonts.outfit(
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontStyle,
+                                            fontWeight: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontStyle,
                                           ),
                                           color: Colors.white,
                                           letterSpacing: 0.0,
-                                          fontWeight:
-                                              AppTheme.of(context)
-                                                  .labelMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .labelMedium
-                                                  .fontStyle,
+                                          fontWeight: AppTheme.of(context)
+                                              .labelMedium
+                                              .fontWeight,
+                                          fontStyle: AppTheme.of(context)
+                                              .labelMedium
+                                              .fontStyle,
                                         ),
                                   ),
                                 ),
@@ -1214,83 +1086,68 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     options: ['Yes', 'No'],
                                     onChanged: (val) {
                                       if (mounted) {
-                                        setState(
-                                            () => memberValue = val);
+                                        setState(() => memberValue = val);
                                       }
                                     },
                                     width: 300.0,
                                     height: 50.0,
-                                    searchHintTextStyle:
-                                        AppTheme.of(context)
-                                            .labelMedium
-                                            .override(
-                                              font: GoogleFonts.outfit(
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .labelMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .labelMedium
-                                                        .fontStyle,
-                                              ),
-                                              color: Colors.white,
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
-                                            ),
-                                    searchTextStyle:
-                                        AppTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              font: GoogleFonts.outfit(
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
+                                    searchHintTextStyle: AppTheme.of(context)
+                                        .labelMedium
+                                        .override(
+                                          font: GoogleFonts.outfit(
+                                            fontWeight: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontStyle,
+                                          ),
+                                          color: Colors.white,
+                                          letterSpacing: 0.0,
+                                          fontWeight: AppTheme.of(context)
+                                              .labelMedium
+                                              .fontWeight,
+                                          fontStyle: AppTheme.of(context)
+                                              .labelMedium
+                                              .fontStyle,
+                                        ),
+                                    searchTextStyle: AppTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          font: GoogleFonts.outfit(
+                                            fontWeight: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontStyle,
+                                          ),
+                                          letterSpacing: 0.0,
+                                          fontWeight: AppTheme.of(context)
+                                              .bodyMedium
+                                              .fontWeight,
+                                          fontStyle: AppTheme.of(context)
+                                              .bodyMedium
+                                              .fontStyle,
+                                        ),
                                     textStyle: AppTheme.of(context)
                                         .bodyMedium
                                         .override(
                                           font: GoogleFonts.outfit(
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
+                                            fontWeight: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
-                                          fontWeight:
-                                              AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
+                                          fontWeight: AppTheme.of(context)
+                                              .bodyMedium
+                                              .fontWeight,
+                                          fontStyle: AppTheme.of(context)
+                                              .bodyMedium
+                                              .fontStyle,
                                         ),
                                     hintText:
                                         'Is there a Member Guest Discount?',
@@ -1298,8 +1155,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     searchCursorColor: Colors.white,
                                     icon: Icon(
                                       Icons.keyboard_arrow_down_rounded,
-                                      color: AppTheme.of(context)
-                                          .secondaryText,
+                                      color: AppTheme.of(context).secondaryText,
                                       size: 24.0,
                                     ),
                                     fillColor: AppTheme.of(context)
@@ -1332,25 +1188,21 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             .labelMedium
                                             .override(
                                               font: GoogleFonts.outfit(
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .labelMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .labelMedium
-                                                        .fontStyle,
+                                                fontWeight: AppTheme.of(context)
+                                                    .labelMedium
+                                                    .fontWeight,
+                                                fontStyle: AppTheme.of(context)
+                                                    .labelMedium
+                                                    .fontStyle,
                                               ),
                                               color: Colors.white,
                                               letterSpacing: 0.0,
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
+                                              fontWeight: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontWeight,
+                                              fontStyle: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontStyle,
                                             ),
                                       ),
                                     ),
@@ -1379,19 +1231,15 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       decrementIconBuilder: (enabled) => FaIcon(
                                         FontAwesomeIcons.minus,
                                         color: enabled
-                                            ? AppTheme.of(context)
-                                                .secondaryText
-                                            : AppTheme.of(context)
-                                                .alternate,
+                                            ? AppTheme.of(context).secondaryText
+                                            : AppTheme.of(context).alternate,
                                         size: 20.0,
                                       ),
                                       incrementIconBuilder: (enabled) => FaIcon(
                                         FontAwesomeIcons.plus,
                                         color: enabled
-                                            ? AppTheme.of(context)
-                                                .primary
-                                            : AppTheme.of(context)
-                                                .alternate,
+                                            ? AppTheme.of(context).primary
+                                            : AppTheme.of(context).alternate,
                                         size: 20.0,
                                       ),
                                       countBuilder: (count) => Text(
@@ -1400,25 +1248,21 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             .titleLarge
                                             .override(
                                               font: GoogleFonts.outfit(
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .titleLarge
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .titleLarge
-                                                        .fontStyle,
+                                                fontWeight: AppTheme.of(context)
+                                                    .titleLarge
+                                                    .fontWeight,
+                                                fontStyle: AppTheme.of(context)
+                                                    .titleLarge
+                                                    .fontStyle,
                                               ),
                                               fontSize: 18.0,
                                               letterSpacing: 0.0,
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .titleLarge
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .titleLarge
-                                                      .fontStyle,
+                                              fontWeight: AppTheme.of(context)
+                                                  .titleLarge
+                                                  .fontWeight,
+                                              fontStyle: AppTheme.of(context)
+                                                  .titleLarge
+                                                  .fontStyle,
                                             ),
                                       ),
                                       count: countControllerValue ??= 1,
@@ -1447,25 +1291,21 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                           .labelMedium
                                           .override(
                                             font: GoogleFonts.outfit(
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
+                                              fontWeight: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontWeight,
+                                              fontStyle: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontStyle,
                                             ),
                                             color: Colors.white,
                                             letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontStyle,
+                                            fontWeight: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontStyle,
                                           ),
                                     ),
                                   ],
@@ -1477,9 +1317,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 5.0, 0.0, 0.0),
                                   child: AppDropDown<String>(
-                                    controller:
-                                        rulesSetValueController ??=
-                                            FormFieldController<String>(null),
+                                    controller: rulesSetValueController ??=
+                                        FormFieldController<String>(null),
                                     options: [
                                       'Strict',
                                       'Relaxed',
@@ -1487,8 +1326,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     ],
                                     onChanged: (val) {
                                       if (mounted) {
-                                        setState(
-                                            () => rulesSetValue = val);
+                                        setState(() => rulesSetValue = val);
                                       }
                                     },
                                     width: 300.0,
@@ -1497,30 +1335,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         .bodyMedium
                                         .override(
                                           font: GoogleFonts.outfit(
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
+                                            fontWeight: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
-                                          fontWeight:
-                                              AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
+                                          fontWeight: AppTheme.of(context)
+                                              .bodyMedium
+                                              .fontWeight,
+                                          fontStyle: AppTheme.of(context)
+                                              .bodyMedium
+                                              .fontStyle,
                                         ),
                                     hintText: 'Please select...',
                                     icon: Icon(
                                       Icons.keyboard_arrow_down_rounded,
-                                      color: AppTheme.of(context)
-                                          .secondaryText,
+                                      color: AppTheme.of(context).secondaryText,
                                       size: 24.0,
                                     ),
                                     fillColor: AppTheme.of(context)
@@ -1555,26 +1388,22 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                               .override(
                                                 font: GoogleFonts.outfit(
                                                   fontWeight:
-                                                      AppTheme.of(
-                                                              context)
+                                                      AppTheme.of(context)
                                                           .labelMedium
                                                           .fontWeight,
                                                   fontStyle:
-                                                      AppTheme.of(
-                                                              context)
+                                                      AppTheme.of(context)
                                                           .labelMedium
                                                           .fontStyle,
                                                 ),
                                                 color: Colors.white,
                                                 letterSpacing: 0.0,
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .labelMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .labelMedium
-                                                        .fontStyle,
+                                                fontWeight: AppTheme.of(context)
+                                                    .labelMedium
+                                                    .fontWeight,
+                                                fontStyle: AppTheme.of(context)
+                                                    .labelMedium
+                                                    .fontStyle,
                                               ),
                                         ),
                                       ),
@@ -1588,9 +1417,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 5.0, 0.0, 0.0),
                                   child: AppDropDown<String>(
-                                    controller:
-                                        styleGameValueController ??=
-                                            FormFieldController<String>(null),
+                                    controller: styleGameValueController ??=
+                                        FormFieldController<String>(null),
                                     options: [
                                       'Money Game',
                                       'All Fun',
@@ -1598,8 +1426,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     ],
                                     onChanged: (val) {
                                       if (mounted) {
-                                        setState(
-                                            () => styleGameValue = val);
+                                        setState(() => styleGameValue = val);
                                       }
                                     },
                                     width: 300.0,
@@ -1608,30 +1435,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         .bodyMedium
                                         .override(
                                           font: GoogleFonts.outfit(
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
+                                            fontWeight: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
-                                          fontWeight:
-                                              AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
+                                          fontWeight: AppTheme.of(context)
+                                              .bodyMedium
+                                              .fontWeight,
+                                          fontStyle: AppTheme.of(context)
+                                              .bodyMedium
+                                              .fontStyle,
                                         ),
                                     hintText: 'What are we playing for?',
                                     icon: Icon(
                                       Icons.keyboard_arrow_down_rounded,
-                                      color: AppTheme.of(context)
-                                          .secondaryText,
+                                      color: AppTheme.of(context).secondaryText,
                                       size: 24.0,
                                     ),
                                     fillColor: AppTheme.of(context)
@@ -1661,25 +1483,21 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                           .labelMedium
                                           .override(
                                             font: GoogleFonts.outfit(
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
+                                              fontWeight: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontWeight,
+                                              fontStyle: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontStyle,
                                             ),
                                             color: Colors.white,
                                             letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontStyle,
+                                            fontWeight: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontStyle,
                                           ),
                                     ),
                                   ],
@@ -1691,9 +1509,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 5.0, 0.0, 0.0),
                                   child: AppDropDown<String>(
-                                    controller:
-                                        gameTypeValueController ??=
-                                            FormFieldController<String>(null),
+                                    controller: gameTypeValueController ??=
+                                        FormFieldController<String>(null),
                                     options: [
                                       'Match Play',
                                       'Stroke Play',
@@ -1705,8 +1522,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     ],
                                     onChanged: (val) {
                                       if (mounted) {
-                                        setState(
-                                            () => gameTypeValue = val);
+                                        setState(() => gameTypeValue = val);
                                       }
                                     },
                                     width: 300.0,
@@ -1715,30 +1531,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         .bodyMedium
                                         .override(
                                           font: GoogleFonts.outfit(
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
+                                            fontWeight: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
-                                          fontWeight:
-                                              AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
+                                          fontWeight: AppTheme.of(context)
+                                              .bodyMedium
+                                              .fontWeight,
+                                          fontStyle: AppTheme.of(context)
+                                              .bodyMedium
+                                              .fontStyle,
                                         ),
                                     hintText: 'Pick Your Poison...',
                                     icon: Icon(
                                       Icons.keyboard_arrow_down_rounded,
-                                      color: AppTheme.of(context)
-                                          .secondaryText,
+                                      color: AppTheme.of(context).secondaryText,
                                       size: 24.0,
                                     ),
                                     fillColor: AppTheme.of(context)
@@ -1768,25 +1579,21 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                           .labelMedium
                                           .override(
                                             font: GoogleFonts.outfit(
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
+                                              fontWeight: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontWeight,
+                                              fontStyle: AppTheme.of(context)
+                                                  .labelMedium
+                                                  .fontStyle,
                                             ),
                                             color: Colors.white,
                                             letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontStyle,
+                                            fontWeight: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .labelMedium
+                                                .fontStyle,
                                           ),
                                     ),
                                   ],
@@ -1798,9 +1605,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 5.0, 0.0, 0.0),
                                   child: AppDropDown<String>(
-                                    controller:
-                                        scoringValueController ??=
-                                            FormFieldController<String>(null),
+                                    controller: scoringValueController ??=
+                                        FormFieldController<String>(null),
                                     options: [
                                       'Gross',
                                       'Net',
@@ -1810,8 +1616,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     ],
                                     onChanged: (val) {
                                       if (mounted) {
-                                        setState(
-                                            () => scoringValue = val);
+                                        setState(() => scoringValue = val);
                                       }
                                     },
                                     width: 300.0,
@@ -1820,30 +1625,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         .bodyMedium
                                         .override(
                                           font: GoogleFonts.outfit(
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
+                                            fontWeight: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontWeight,
+                                            fontStyle: AppTheme.of(context)
+                                                .bodyMedium
+                                                .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
-                                          fontWeight:
-                                              AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
+                                          fontWeight: AppTheme.of(context)
+                                              .bodyMedium
+                                              .fontWeight,
+                                          fontStyle: AppTheme.of(context)
+                                              .bodyMedium
+                                              .fontStyle,
                                         ),
                                     hintText: 'How we add up the #\'s',
                                     icon: Icon(
                                       Icons.keyboard_arrow_down_rounded,
-                                      color: AppTheme.of(context)
-                                          .secondaryText,
+                                      color: AppTheme.of(context).secondaryText,
                                       size: 24.0,
                                     ),
                                     fillColor: AppTheme.of(context)
@@ -1870,8 +1670,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                   size: AppButtonSize.large,
                                   onPressed: () async {
                                     if (formKey.currentState == null ||
-                                        !formKey.currentState!
-                                            .validate()) {
+                                        !formKey.currentState!.validate()) {
                                       return;
                                     }
                                     if (courseValue == null) {
@@ -1889,166 +1688,78 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     if (gameTypeValue == null) {
                                       return;
                                     }
+                                    if (datePicked == null) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Please select a date and time.',
+                                            style: AppTheme.of(context)
+                                                .titleMedium
+                                                .override(
+                                                  font: GoogleFonts.outfit(
+                                                    fontWeight:
+                                                        AppTheme.of(context)
+                                                            .titleMedium
+                                                            .fontWeight,
+                                                    fontStyle:
+                                                        AppTheme.of(context)
+                                                            .titleMedium
+                                                            .fontStyle,
+                                                  ),
+                                                  color: AppTheme.of(context)
+                                                      .secondaryBackground,
+                                                  letterSpacing: 0.0,
+                                                  fontWeight:
+                                                      AppTheme.of(context)
+                                                          .titleMedium
+                                                          .fontWeight,
+                                                  fontStyle:
+                                                      AppTheme.of(context)
+                                                          .titleMedium
+                                                          .fontStyle,
+                                                ),
+                                          ),
+                                          duration:
+                                              Duration(milliseconds: 4000),
+                                          backgroundColor:
+                                              AppTheme.of(context).primary,
+                                        ),
+                                      );
+                                      return;
+                                    }
 
-                                    var chatsRecordReference =
-                                        ChatsRecord.collection.doc();
-                                    await chatsRecordReference.set({
-                                      ...mapToFirestore(
-                                        {
-                                          'users': [currentUserReference],
-                                        },
-                                      ),
-                                    });
-                                    newChat =
-                                        ChatsRecord.getDocumentFromData({
-                                      ...mapToFirestore(
-                                        {
-                                          'users': [currentUserReference],
-                                        },
-                                      ),
-                                    }, chatsRecordReference);
-
-                                    var gamesRecordReference =
-                                        GamesRecord.collection.doc();
-                                    await gamesRecordReference.set({
-                                      ...createGamesRecordData(
-                                        nameGame:
-                                            gameNameTextController.text,
-                                        date: datePicked,
-                                        numPlayers: countControllerValue,
-                                        styleGame: styleGameValue,
-                                        gameType: gameTypeValue,
-                                        coursePlay: courseValue,
-                                        memberDiscount: memberValue,
-                                        scoring: scoringValue,
-                                        friendGame: friendsValue,
-                                        maxPlayers:
-                                            (countControllerValue ?? 1) + 1,
-                                        rulesSetting: rulesSetValue,
-                                        createdTime: getCurrentTimestamp,
-                                        chatRef: newChat?.reference,
-                                        userRef: currentUserReference,
-                                        courseRef:
-                                            selectedCourse?.reference,
-                                        isCancelled: false,
-                                      ),
-                                      ...mapToFirestore(
-                                        {
-                                          'joined_players': [
-                                            currentUserReference
-                                          ],
-                                        },
-                                      ),
-                                    });
-                                    gameRef =
-                                        GamesRecord.getDocumentFromData({
-                                      ...createGamesRecordData(
-                                        nameGame:
-                                            gameNameTextController.text,
-                                        date: datePicked,
-                                        numPlayers: countControllerValue,
-                                        styleGame: styleGameValue,
-                                        gameType: gameTypeValue,
-                                        coursePlay: courseValue,
-                                        memberDiscount: memberValue,
-                                        scoring: scoringValue,
-                                        friendGame: friendsValue,
-                                        maxPlayers:
-                                            (countControllerValue ?? 1) + 1,
-                                        rulesSetting: rulesSetValue,
-                                        createdTime: getCurrentTimestamp,
-                                        chatRef: newChat?.reference,
-                                        userRef: currentUserReference,
-                                        courseRef:
-                                            selectedCourse?.reference,
-                                        isCancelled: false,
-                                      ),
-                                      ...mapToFirestore(
-                                        {
-                                          'joined_players': [
-                                            currentUserReference
-                                          ],
-                                        },
-                                      ),
-                                    }, gamesRecordReference);
-                                    await Future.wait([
-                                      Future(() async {
-                                        notifyUsers =
-                                            await actions.fetchReceiptants(
-                                          gameRef!,
-                                        );
-                                        triggerPushNotification(
-                                          notificationTitle: 'New game created',
-                                          notificationText:
-                                              'New game is created.',
-                                          userRefs: notifyUsers!
-                                              .unique((e) => e)
-                                              .toList(),
-                                          initialPageName: 'GamesList',
-                                          parameterData: {},
-                                        );
-                                      }),
-                                      Future(() async {
-                                        if (gameRef?.numPlayers == 3) {
-                                          context.pushNamed(
-                                              GamesListWidget.routeName);
-                                        } else {
-                                          context.pushNamed(
-                                            PlayerListWidget.routeName,
-                                            queryParameters: {
-                                              'gameRef': serializeParam(
-                                                gameRef,
-                                                ParamType.Document,
-                                              ),
-                                            }.withoutNulls,
-                                            extra: <String, dynamic>{
-                                              'gameRef': gameRef,
-                                              kTransitionInfoKey:
-                                                  TransitionInfo(
-                                                hasTransition: true,
-                                                transitionType:
-                                                    PageTransitionType
-                                                        .bottomToTop,
-                                                duration:
-                                                    Duration(milliseconds: 220),
-                                              ),
-                                            },
-                                          );
-                                        }
-
+                                    try {
+                                      final currentUser =
+                                          FirebaseAuth.instance.currentUser;
+                                      if (currentUser == null) {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
                                           SnackBar(
                                             content: Text(
-                                              'You have created a game!',
-                                              style: AppTheme.of(
-                                                      context)
+                                              'Please sign in to create a game.',
+                                              style: AppTheme.of(context)
                                                   .titleMedium
                                                   .override(
                                                     font: GoogleFonts.outfit(
                                                       fontWeight:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .titleMedium
                                                               .fontWeight,
                                                       fontStyle:
-                                                          AppTheme.of(
-                                                                  context)
+                                                          AppTheme.of(context)
                                                               .titleMedium
                                                               .fontStyle,
                                                     ),
-                                                    color: AppTheme.of(
-                                                            context)
+                                                    color: AppTheme.of(context)
                                                         .secondaryBackground,
                                                     letterSpacing: 0.0,
                                                     fontWeight:
-                                                        AppTheme.of(
-                                                                context)
+                                                        AppTheme.of(context)
                                                             .titleMedium
                                                             .fontWeight,
                                                     fontStyle:
-                                                        AppTheme.of(
-                                                                context)
+                                                        AppTheme.of(context)
                                                             .titleMedium
                                                             .fontStyle,
                                                   ),
@@ -2056,12 +1767,195 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                             duration:
                                                 Duration(milliseconds: 4000),
                                             backgroundColor:
-                                                AppTheme.of(context)
-                                                    .primary,
+                                                AppTheme.of(context).primary,
                                           ),
                                         );
-                                      }),
-                                    ]);
+                                        return;
+                                      }
+                                      final currentUserRef = FirebaseFirestore
+                                          .instance
+                                          .collection('users')
+                                          .doc(currentUser.uid);
+                                      final numPlayers =
+                                          countControllerValue ?? 0;
+                                      final maxPlayers = numPlayers + 1;
+                                      debugPrint(
+                                        'CreateGame: creating game ${gameNameTextController.text}',
+                                      );
+                                      // Create game doc reference first (before creating chat)
+                                      final gamesRecordReference =
+                                          FirebaseFirestore.instance
+                                              .collection('games')
+                                              .doc();
+
+                                      // Create chat with gameId
+                                      final chatsRecordReference =
+                                          await context
+                                              .read<ChatProvider>()
+                                              .createGameChat(
+                                                createdByUid: currentUser.uid,
+                                                gameId: gamesRecordReference.id,
+                                              );
+                                      chatRef = chatsRecordReference;
+
+                                      // Now set game data
+                                      await gamesRecordReference.set({
+                                        'name_game':
+                                            gameNameTextController.text,
+                                        'date': datePicked,
+                                        'num_players': numPlayers,
+                                        'style_game': styleGameValue,
+                                        'game_type': gameTypeValue,
+                                        'course_play': courseValue,
+                                        'member_discount': memberValue,
+                                        'scoring': scoringValue,
+                                        'friend_game': friendsValue,
+                                        'max_players': maxPlayers,
+                                        'rules_setting': rulesSetValue,
+                                        'created_time': DateTime.now(),
+                                        'chatRef': chatRef,
+                                        'userRef': currentUserRef,
+                                        'courseRef': selectedCourse?.reference,
+                                        'isCancelled': false,
+                                        'joined_players': [currentUserRef],
+                                        'guest_players': [],
+                                        'uid': currentUser.uid,
+                                      });
+                                      gameRef = gamesRecordReference;
+                                      debugPrint(
+                                        'CreateGame: game saved ${gamesRecordReference.path}',
+                                      );
+                                      await Future.wait([
+                                        Future(() async {
+                                          context.userProvider
+                                              .refreshAvailableGames();
+                                          context.userProvider.refreshMyGames();
+                                          debugPrint(
+                                            'CreateGame: refreshed game caches',
+                                          );
+
+                                          // Calculate number of existing friends to add
+                                          // Formula: 4 - numPlayers - 1 (creator)
+                                          final numExistingFriends =
+                                              4 - numPlayers - 1;
+
+                                          debugPrint(
+                                            'CreateGame: numPlayers=$numPlayers, existingFriends=$numExistingFriends',
+                                          );
+
+                                          // If no existing friends to add (playing solo, looking for 3 randoms), go to Game List
+                                          if (numExistingFriends <= 0) {
+                                            debugPrint(
+                                              'CreateGame: No existing friends, skipping Player List',
+                                            );
+                                            context.pushNamed(
+                                                GamesListWidget.routeName);
+                                          } else {
+                                            // Otherwise go to Player List to add existing friends
+                                            debugPrint(
+                                              'CreateGame: Has $numExistingFriends existing friends, showing Player List',
+                                            );
+                                            context.pushNamed(
+                                              PlayerListWidget.routeName,
+                                              extra: <String, dynamic>{
+                                                'gameRef': gamesRecordReference,
+                                                kTransitionInfoKey:
+                                                    TransitionInfo(
+                                                  hasTransition: true,
+                                                  transitionType:
+                                                      PageTransitionType
+                                                          .bottomToTop,
+                                                  duration: Duration(
+                                                      milliseconds: 220),
+                                                ),
+                                              },
+                                            );
+                                          }
+
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'You have created a game!',
+                                                style: AppTheme.of(context)
+                                                    .titleMedium
+                                                    .override(
+                                                      font: GoogleFonts.outfit(
+                                                        fontWeight:
+                                                            AppTheme.of(context)
+                                                                .titleMedium
+                                                                .fontWeight,
+                                                        fontStyle:
+                                                            AppTheme.of(context)
+                                                                .titleMedium
+                                                                .fontStyle,
+                                                      ),
+                                                      color: AppTheme.of(
+                                                              context)
+                                                          .secondaryBackground,
+                                                      letterSpacing: 0.0,
+                                                      fontWeight:
+                                                          AppTheme.of(context)
+                                                              .titleMedium
+                                                              .fontWeight,
+                                                      fontStyle:
+                                                          AppTheme.of(context)
+                                                              .titleMedium
+                                                              .fontStyle,
+                                                    ),
+                                              ),
+                                              duration:
+                                                  Duration(milliseconds: 4000),
+                                              backgroundColor:
+                                                  AppTheme.of(context).primary,
+                                            ),
+                                          );
+                                        }),
+                                      ]);
+                                    } catch (error, stackTrace) {
+                                      debugPrint(
+                                        'CreateGame: failed to create game $error',
+                                      );
+                                      debugPrintStack(stackTrace: stackTrace);
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Failed to create game. Please try again.',
+                                            style: AppTheme.of(context)
+                                                .titleMedium
+                                                .override(
+                                                  font: GoogleFonts.outfit(
+                                                    fontWeight:
+                                                        AppTheme.of(context)
+                                                            .titleMedium
+                                                            .fontWeight,
+                                                    fontStyle:
+                                                        AppTheme.of(context)
+                                                            .titleMedium
+                                                            .fontStyle,
+                                                  ),
+                                                  color: AppTheme.of(context)
+                                                      .secondaryBackground,
+                                                  letterSpacing: 0.0,
+                                                  fontWeight:
+                                                      AppTheme.of(context)
+                                                          .titleMedium
+                                                          .fontWeight,
+                                                  fontStyle:
+                                                      AppTheme.of(context)
+                                                          .titleMedium
+                                                          .fontStyle,
+                                                ),
+                                          ),
+                                          duration:
+                                              Duration(milliseconds: 4000),
+                                          backgroundColor:
+                                              AppTheme.of(context).primary,
+                                        ),
+                                      );
+                                      return;
+                                    }
 
                                     if (mounted) setState(() {});
                                   },

@@ -1,0 +1,387 @@
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import '/auth/firebase_auth/auth_util.dart';
+import '/backend/backend.dart';
+import '/core/request_manager.dart';
+import '/models/game.dart';
+
+/// UserProvider manages global user state and provides cached access to user data
+///
+/// Usage:
+/// - Access via Provider.of<UserProvider>(context)
+/// - Or use Consumer<UserProvider> for reactive updates
+///
+/// Features:
+/// - Reactive user state updates
+/// - Cached queries for games, friends, and courses
+/// - Automatic cache invalidation
+/// - Convenient helper methods
+class UserProvider extends ChangeNotifier {
+  UserProvider() {
+    _init();
+  }
+
+  // Current user data
+  UsersRecord? _currentUser;
+  UsersRecord? get currentUser => _currentUser;
+  bool get isLoggedIn => _currentUser != null;
+
+  // Loading states
+  bool _isLoading = true;
+  bool get isLoading => _isLoading;
+
+  // Stream subscription
+  StreamSubscription<UsersRecord?>? _userSubscription;
+
+  // Request managers for caching
+  final _myGamesManager = StreamRequestManager<List<Game>>(5);
+  final _availableGamesManager = StreamRequestManager<List<Game>>(5);
+  final _friendsManager = StreamRequestManager<List<UsersRecord>>(5);
+  final _friendRequestsManager = StreamRequestManager<List<UsersRecord>>(5);
+  final _coursesManager = FutureRequestManager<List<CourseRecord>>(10);
+
+  /// Initialize the provider by listening to auth changes
+  void _init() {
+    _userSubscription = authenticatedUserStream.listen(
+      (user) {
+        final wasLoggedIn = _currentUser != null;
+        final isNowLoggedIn = user != null;
+
+        _currentUser = user;
+        _isLoading = false;
+
+        // If user logged out, clear all caches
+        if (wasLoggedIn && !isNowLoggedIn) {
+          clearAllCaches();
+        }
+
+        notifyListeners();
+      },
+      onError: (error) {
+        debugPrint('UserProvider error: $error');
+        _isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _userSubscription?.cancel();
+    clearAllCaches();
+    super.dispose();
+  }
+
+  // ========================================
+  // USER DATA ACCESSORS
+  // ========================================
+
+  String get userId => _currentUser?.reference.id ?? '';
+  String get displayName => _currentUser?.displayName ?? '';
+  String get firstName => _currentUser?.firstName ?? '';
+  String get lastName => _currentUser?.lastName ?? '';
+  String get email => _currentUser?.email ?? '';
+  String get photoUrl => _currentUser?.photoUrl ?? '';
+  String get phoneNumber => _currentUser?.phoneNumber ?? '';
+  String get homeCourse => _currentUser?.homeCourse ?? '';
+  int get handicap => _currentUser?.handicap ?? 0;
+  int get music => _currentUser?.music ?? 0;
+  int get drinks => _currentUser?.drinks ?? 0;
+  int get playForMoney => _currentUser?.playForMoney ?? 0;
+  int get paceOfPlay => _currentUser?.paceOfPlay ?? 0;
+  bool get onboardingCompleted => _currentUser?.onboardingCompleted ?? false;
+
+  List<DocumentReference> get friends => _currentUser?.friends ?? [];
+  List<DocumentReference> get friendRequests => _currentUser?.friendRequests ?? [];
+
+  /// Check if a user is a friend
+  bool isFriend(DocumentReference userRef) {
+    return friends.contains(userRef);
+  }
+
+  /// Check if user has pending friend request from someone
+  bool hasFriendRequest(DocumentReference userRef) {
+    return friendRequests.contains(userRef);
+  }
+
+  // ========================================
+  // GAMES QUERIES (CACHED)
+  // ========================================
+
+  /// Get games the current user has joined (cached)
+  Stream<List<Game>> getMyGames({
+    bool overrideCache = false,
+  }) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return Stream.value([]);
+    }
+    final userRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser.uid);
+
+    debugPrint(
+      'UserProvider: getMyGames overrideCache=$overrideCache userId=$userId',
+    );
+    return _myGamesManager.performRequest(
+      uniqueQueryKey: 'my_games_${userId}',
+      overrideCache: overrideCache,
+      requestFn: () => FirebaseFirestore.instance
+          .collection('games')
+          .where('joined_players', arrayContains: userRef)
+          .where('isCancelled', isEqualTo: false)
+          .orderBy('date')
+          .snapshots()
+          .map(
+            (snapshot) =>
+                snapshot.docs.map(Game.fromDoc).toList(),
+          ),
+    );
+  }
+
+  /// Get available games to join (cached)
+  Stream<List<Game>> getAvailableGames({
+    bool overrideCache = false,
+    DateTime? fromDate,
+  }) {
+    if (!isLoggedIn) return Stream.value([]);
+
+    final queryKey = fromDate != null
+        ? 'available_games_${fromDate.toIso8601String()}'
+        : 'available_games';
+
+    debugPrint(
+      'UserProvider: getAvailableGames overrideCache=$overrideCache key=$queryKey',
+    );
+    return _availableGamesManager.performRequest(
+      uniqueQueryKey: queryKey,
+      overrideCache: overrideCache,
+      requestFn: () {
+        var query = FirebaseFirestore.instance
+            .collection('games')
+            .where('isCancelled', isEqualTo: false);
+        if (fromDate != null) {
+          query = query.where('date', isGreaterThanOrEqualTo: fromDate);
+        }
+        return query.orderBy('date').snapshots().map(
+              (snapshot) =>
+                  snapshot.docs.map(Game.fromDoc).toList(),
+            );
+      },
+    );
+  }
+
+  /// Refresh my games cache
+  void refreshMyGames() {
+    debugPrint('UserProvider: refreshMyGames userId=$userId');
+    _myGamesManager.clearRequest('my_games_${userId}');
+    notifyListeners();
+  }
+
+  /// Refresh available games cache
+  void refreshAvailableGames() {
+    debugPrint('UserProvider: refreshAvailableGames');
+    _availableGamesManager.clear();
+    notifyListeners();
+  }
+
+  // ========================================
+  // FRIENDS QUERIES (CACHED)
+  // ========================================
+
+  /// Get user's friends list (cached)
+  Stream<List<UsersRecord>> getFriends({
+    bool overrideCache = false,
+  }) {
+    if (!isLoggedIn || friends.isEmpty) return Stream.value([]);
+
+    return _friendsManager.performRequest(
+      uniqueQueryKey: 'friends_${userId}',
+      overrideCache: overrideCache,
+      requestFn: () => queryUsersRecord(
+        queryBuilder: (usersRecord) => usersRecord.where(
+          FieldPath.documentId,
+          whereIn: friends.map((ref) => ref.id).toList(),
+        ),
+      ),
+    );
+  }
+
+  /// Get user's friend requests (cached)
+  Stream<List<UsersRecord>> getFriendRequests({
+    bool overrideCache = false,
+  }) {
+    if (!isLoggedIn || friendRequests.isEmpty) return Stream.value([]);
+
+    return _friendRequestsManager.performRequest(
+      uniqueQueryKey: 'friend_requests_${userId}',
+      overrideCache: overrideCache,
+      requestFn: () => queryUsersRecord(
+        queryBuilder: (usersRecord) => usersRecord.where(
+          FieldPath.documentId,
+          whereIn: friendRequests.map((ref) => ref.id).toList(),
+        ),
+      ),
+    );
+  }
+
+  /// Refresh friends cache
+  void refreshFriends() {
+    _friendsManager.clearRequest('friends_${userId}');
+    notifyListeners();
+  }
+
+  /// Refresh friend requests cache
+  void refreshFriendRequests() {
+    _friendRequestsManager.clearRequest('friend_requests_${userId}');
+    notifyListeners();
+  }
+
+  // ========================================
+  // COURSES QUERIES (CACHED)
+  // ========================================
+
+  /// Get all golf courses (cached)
+  Future<List<CourseRecord>> getCourses({
+    bool overrideCache = false,
+  }) {
+    return _coursesManager.performRequest(
+      uniqueQueryKey: 'all_courses',
+      overrideCache: overrideCache,
+      requestFn: () => queryCourseRecordOnce(),
+    );
+  }
+
+  /// Refresh courses cache
+  void refreshCourses() {
+    _coursesManager.clearRequest('all_courses');
+    notifyListeners();
+  }
+
+  // ========================================
+  // USER ACTIONS
+  // ========================================
+
+  /// Update user profile data
+  Future<void> updateProfile(Map<String, dynamic> data) async {
+    if (!isLoggedIn) return;
+
+    try {
+      await currentUserReference!.update(data);
+      // User data will automatically update via authenticatedUserStream
+    } catch (e) {
+      debugPrint('Error updating profile: $e');
+      rethrow;
+    }
+  }
+
+  /// Add a friend
+  Future<void> addFriend(DocumentReference friendRef) async {
+    if (!isLoggedIn) return;
+
+    try {
+      await currentUserReference!.update({
+        'friends': FieldValue.arrayUnion([friendRef]),
+      });
+      refreshFriends();
+    } catch (e) {
+      debugPrint('Error adding friend: $e');
+      rethrow;
+    }
+  }
+
+  /// Remove a friend
+  Future<void> removeFriend(DocumentReference friendRef) async {
+    if (!isLoggedIn) return;
+
+    try {
+      await currentUserReference!.update({
+        'friends': FieldValue.arrayRemove([friendRef]),
+      });
+      refreshFriends();
+    } catch (e) {
+      debugPrint('Error removing friend: $e');
+      rethrow;
+    }
+  }
+
+  /// Send friend request
+  Future<void> sendFriendRequest(DocumentReference targetUserRef) async {
+    if (!isLoggedIn) return;
+
+    try {
+      await targetUserRef.update({
+        'friend_requests': FieldValue.arrayUnion([currentUserReference]),
+      });
+    } catch (e) {
+      debugPrint('Error sending friend request: $e');
+      rethrow;
+    }
+  }
+
+  /// Accept friend request
+  Future<void> acceptFriendRequest(DocumentReference requesterRef) async {
+    if (!isLoggedIn) return;
+
+    try {
+      // Add to friends list
+      await currentUserReference!.update({
+        'friends': FieldValue.arrayUnion([requesterRef]),
+        'friend_requests': FieldValue.arrayRemove([requesterRef]),
+      });
+
+      // Add current user to requester's friends
+      await requesterRef.update({
+        'friends': FieldValue.arrayUnion([currentUserReference]),
+      });
+
+      refreshFriends();
+      refreshFriendRequests();
+    } catch (e) {
+      debugPrint('Error accepting friend request: $e');
+      rethrow;
+    }
+  }
+
+  /// Reject friend request
+  Future<void> rejectFriendRequest(DocumentReference requesterRef) async {
+    if (!isLoggedIn) return;
+
+    try {
+      await currentUserReference!.update({
+        'friend_requests': FieldValue.arrayRemove([requesterRef]),
+      });
+      refreshFriendRequests();
+    } catch (e) {
+      debugPrint('Error rejecting friend request: $e');
+      rethrow;
+    }
+  }
+
+  // ========================================
+  // CACHE MANAGEMENT
+  // ========================================
+
+  /// Clear all caches
+  void clearAllCaches() {
+    _myGamesManager.clear();
+    _availableGamesManager.clear();
+    _friendsManager.clear();
+    _friendRequestsManager.clear();
+    _coursesManager.clear();
+  }
+
+  /// Clear game-related caches
+  void clearGameCaches() {
+    _myGamesManager.clear();
+    _availableGamesManager.clear();
+  }
+
+  /// Clear social-related caches
+  void clearSocialCaches() {
+    _friendsManager.clear();
+    _friendRequestsManager.clear();
+  }
+}

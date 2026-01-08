@@ -3,7 +3,7 @@ import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
-import '/profile/home/home_widget.dart';
+import '/profile/main_profile/main_profile_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -133,7 +133,7 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                             child: AppButtonEnhanced(
                               onPressed: () async {
                                 context.pushNamed(
-                                  HomeWidget.routeName,
+                                  MainProfileWidget.routeName,
                                   extra: <String, dynamic>{
                                     kTransitionInfoKey: TransitionInfo(
                                       hasTransition: true,

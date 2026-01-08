@@ -1,5 +1,3 @@
-import '/auth/firebase_auth/auth_util.dart';
-import '/backend/backend.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -7,16 +5,21 @@ import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import 'dart:ui';
 import '/main_function/success_page/success_page_widget.dart';
+import '/models/game.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import '/providers/chat_provider.dart';
 class LeaveGameWidget extends StatefulWidget {
   const LeaveGameWidget({
     super.key,
     required this.gameRef,
   });
 
-  final GamesRecord? gameRef;
+  final Game gameRef;
 
   @override
   State<LeaveGameWidget> createState() => _LeaveGameWidgetState();
@@ -114,7 +117,7 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                                 ),
                                 TextSpan(
                                   text: valueOrDefault<String>(
-                                    widget.gameRef?.nameGame,
+                                    widget.gameRef.nameGame,
                                     'game name',
                                   ),
                                   style: TextStyle(),
@@ -160,23 +163,31 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                           ),
                           child: AppButtonEnhanced(
                             onPressed: () async {
-                              await widget.gameRef!.reference.update({
-                                ...mapToFirestore(
-                                  {
-                                    'joined_players': FieldValue.arrayRemove(
-                                        [currentUserReference]),
-                                  },
-                                ),
+                              final currentUser =
+                                  FirebaseAuth.instance.currentUser;
+                              if (currentUser == null) {
+                                showSnackbar(
+                                  context,
+                                  'Please sign in to leave this game.',
+                                );
+                                return;
+                              }
+                              final currentUserRef = FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(currentUser.uid);
+                              await widget.gameRef.reference.update({
+                                'joined_players':
+                                    FieldValue.arrayRemove([currentUserRef]),
                               });
 
-                              await widget.gameRef!.chatRef!.update({
-                                ...mapToFirestore(
-                                  {
-                                    'users': FieldValue.arrayRemove(
-                                        [currentUserReference]),
-                                  },
-                                ),
-                              });
+                              if (widget.gameRef.chatRef != null) {
+                                await context
+                                    .read<ChatProvider>()
+                                    .removeMember(
+                                      chatId: widget.gameRef.chatRef!.id,
+                                      uid: currentUser.uid,
+                                    );
+                              }
 
                               context.pushNamed(
                                 SuccessPageWidget.routeName,

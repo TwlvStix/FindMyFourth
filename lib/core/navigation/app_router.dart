@@ -14,15 +14,14 @@ import '/utils/app_util.dart';
 import '/utils/serialization_util.dart';
 
 import '/chat_group/chat/chat_widget.dart';
-import '/chat_group/chat_2_details/chat2_details_widget.dart';
-import '/chat_group/chat_2_invite_users/chat2_invite_users_widget.dart';
-import '/chat_group/image_details/image_details_widget.dart';
+import '/chat_group/game_chat_details/game_chat_details_widget.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/main_function/community/community_widget.dart';
 import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
+import '/main_function/golfers/golfers_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
 import '/main_function/success_leave/success_leave_widget.dart';
@@ -34,9 +33,8 @@ import '/notifications/notification_page/notification_page_widget.dart';
 import '/notifications/notifications_list/notifications_list_widget.dart';
 import '/profile/create_profile/create_profile_widget.dart';
 import '/profile/edit_profile/edit_profile_widget.dart';
-import '/profile/home/home_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
-import '/profile/profile_user/profile_user_widget.dart';
+import '/profile/main_profile/main_profile_widget.dart';
 import '/user_auth/recover_password/recover_password_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import '/user_auth/sign_up_account/sign_up_account_widget.dart';
@@ -165,6 +163,22 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         GoRoute(
+          name: GolfersWidget.routeName,
+          path: GolfersWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            _isEmptyStateParams(state)
+                ? NavBarPage(initialPage: 'Golfers')
+                : NavBarPage(
+                    initialPage: 'Golfers',
+                    page: GolfersWidget(),
+                  ),
+          ),
+        ),
+        GoRoute(
           name: JoinGameDetailedWidget.routeName,
           path: JoinGameDetailedWidget.routePath,
           redirect: _buildRedirect(appStateNotifier),
@@ -175,19 +189,14 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             NavBarPage(
               initialPage: '',
               page: JoinGameDetailedWidget(
-                gameRef: _deserializeParam(
-                  state,
-                  'gameRef',
-                  ParamType.DocumentReference,
-                  collectionNamePath: ['games'],
-                ),
+                gameRef: _gameRefFromState(state),
               ),
             ),
           ),
         ),
         GoRoute(
-          name: HomeWidget.routeName,
-          path: HomeWidget.routePath,
+          name: MainProfileWidget.routeName,
+          path: MainProfileWidget.routePath,
           redirect: _buildRedirect(appStateNotifier),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
@@ -197,7 +206,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
                 ? NavBarPage(initialPage: 'Profile')
                 : NavBarPage(
                     initialPage: 'Profile',
-                    page: HomeWidget(),
+                    page: MainProfileWidget(),
                   ),
           ),
         ),
@@ -257,20 +266,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         GoRoute(
-          name: MainProfileWidget.routeName,
-          path: MainProfileWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
-          pageBuilder: (context, state) => _buildPageWithTransition(
-            context,
-            state,
-            appStateNotifier,
-            NavBarPage(
-              initialPage: '',
-              page: MainProfileWidget(),
-            ),
-          ),
-        ),
-        GoRoute(
           name: EditProfileWidget.routeName,
           path: EditProfileWidget.routePath,
           redirect: _buildRedirect(appStateNotifier),
@@ -309,26 +304,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         GoRoute(
-          name: Chat2DetailsWidget.routeName,
-          path: Chat2DetailsWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
-          pageBuilder: (context, state) => _buildPageWithTransition(
-            context,
-            state,
-            appStateNotifier,
-            FutureBuilder<ChatsRecord?>(
-              future: _resolveAsyncParam(
-                state,
-                'chatRef',
-                getDoc(['chats'], ChatsRecord.fromSnapshot),
-              ),
-              builder: (context, snapshot) => Chat2DetailsWidget(
-                chatRef: snapshot.data,
-              ),
-            ),
-          ),
-        ),
-        GoRoute(
           name: ChatWidget.routeName,
           path: ChatWidget.routePath,
           redirect: _buildRedirect(appStateNotifier),
@@ -345,42 +320,15 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         GoRoute(
-          name: Chat2InviteUsersWidget.routeName,
-          path: Chat2InviteUsersWidget.routePath,
+          name: 'ChatDetails',
+          path: '/chat/:chatId',
           redirect: _buildRedirect(appStateNotifier),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
             appStateNotifier,
-            FutureBuilder<ChatsRecord?>(
-              future: _resolveAsyncParam(
-                state,
-                'chatRef',
-                getDoc(['chats'], ChatsRecord.fromSnapshot),
-              ),
-              builder: (context, snapshot) => Chat2InviteUsersWidget(
-                chatRef: snapshot.data,
-              ),
-            ),
-          ),
-        ),
-        GoRoute(
-          name: ImageDetailsWidget.routeName,
-          path: ImageDetailsWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
-          pageBuilder: (context, state) => _buildPageWithTransition(
-            context,
-            state,
-            appStateNotifier,
-            FutureBuilder<ChatMessagesRecord?>(
-              future: _resolveAsyncParam(
-                state,
-                'chatMessage',
-                getDoc(['chat_messages'], ChatMessagesRecord.fromSnapshot),
-              ),
-              builder: (context, snapshot) => ImageDetailsWidget(
-                chatMessage: snapshot.data,
-              ),
+            GameChatDetailsWidget(
+              chatId: state.pathParameters['chatId']!,
             ),
           ),
         ),
@@ -393,26 +341,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             state,
             appStateNotifier,
             SuccessPageWidget(),
-          ),
-        ),
-        GoRoute(
-          name: ProfileUserWidget.routeName,
-          path: ProfileUserWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
-          pageBuilder: (context, state) => _buildPageWithTransition(
-            context,
-            state,
-            appStateNotifier,
-            FutureBuilder<UsersRecord?>(
-              future: _resolveAsyncParam(
-                state,
-                'userRef',
-                getDoc(['users'], UsersRecord.fromSnapshot),
-              ),
-              builder: (context, snapshot) => ProfileUserWidget(
-                userRef: snapshot.data,
-              ),
-            ),
           ),
         ),
         GoRoute(
@@ -434,16 +362,15 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             context,
             state,
             appStateNotifier,
-            FutureBuilder<GamesRecord?>(
-              future: _resolveAsyncParam(
-                state,
-                'gameRef',
-                getDoc(['games'], GamesRecord.fromSnapshot),
-              ),
-              builder: (context, snapshot) => PlayerListWidget(
-                gameRef: snapshot.data,
-              ),
-            ),
+            _gameRefFromState(state) == null
+                ? Scaffold(
+                    body: Center(
+                      child: Text('Game not found.'),
+                    ),
+                  )
+                : PlayerListWidget(
+                    gameRef: _gameRefFromState(state)!,
+                  ),
           ),
         ),
         GoRoute(
@@ -465,10 +392,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             context,
             state,
             appStateNotifier,
-            NavBarPage(
-              initialPage: '',
-              page: TabFriendsWidget(),
-            ),
+            _isEmptyStateParams(state)
+                ? NavBarPage(initialPage: 'Golfers')
+                : NavBarPage(
+                    initialPage: 'Golfers',
+                    page: GolfersWidget(),
+                  ),
           ),
         ),
         GoRoute(
@@ -527,12 +456,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             NavBarPage(
               initialPage: '',
               page: GameJoinedDetailedWidget(
-                gameRef: _deserializeParam(
-                  state,
-                  'gameRef',
-                  ParamType.DocumentReference,
-                  collectionNamePath: ['games'],
-                ),
+                gameRef: _gameRefFromState(state),
               ),
             ),
           ),
@@ -571,6 +495,26 @@ GoRouterRedirect _buildRedirect(
     }
     return null;
   };
+}
+
+DocumentReference? _gameRefFromState(GoRouterState state) {
+  final extra = state.extra;
+  if (extra is DocumentReference) {
+    return extra;
+  }
+  if (extra is Map && extra['gameRef'] is DocumentReference) {
+    return extra['gameRef'] as DocumentReference;
+  }
+  final fromQuery = _deserializeParam(
+    state,
+    'gameRef',
+    ParamType.DocumentReference,
+    collectionNamePath: ['games'],
+  );
+  if (fromQuery is DocumentReference) {
+    return fromQuery;
+  }
+  return null;
 }
 
 Page<dynamic> _buildPageWithTransition(

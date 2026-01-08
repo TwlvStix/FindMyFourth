@@ -41,7 +41,19 @@ List<GamesRecord>? filterFunction(
   List<GamesRecord>? gamesList,
   String? choiceChipValue,
 ) {
-  if (gamesList == null) return [];
+  if (gamesList == null) {
+    debugPrint('filterFunction: gamesList is null, returning empty');
+    return [];
+  }
+
+  debugPrint(
+      'filterFunction: received ${gamesList.length} games, filter=$choiceChipValue');
+
+  // Default to showing all games if no filter is selected or filter is 'All'
+  if (choiceChipValue == null || choiceChipValue == 'All') {
+    debugPrint('filterFunction: returning all ${gamesList.length} games');
+    return gamesList;
+  }
 
   List<GamesRecord> filteredList = [];
   if (choiceChipValue == '\$\$\$\$') {
@@ -52,12 +64,16 @@ List<GamesRecord>? filterFunction(
   } else if (choiceChipValue == 'For Fun') {
     filteredList =
         gamesList.where((game) => game.styleGame == 'All Fun').toList();
-  } else if (choiceChipValue == 'All') {
-    filteredList = gamesList;
   } else if (choiceChipValue == 'Discount') {
     filteredList =
         gamesList.where((game) => game.memberDiscount == 'Yes').toList();
+  } else {
+    // If unknown filter value, default to showing all games
+    debugPrint(
+        'filterFunction: unknown filter "$choiceChipValue", showing all games');
+    filteredList = gamesList;
   }
+  debugPrint('filterFunction: returning ${filteredList.length} filtered games');
   return filteredList;
 }
 

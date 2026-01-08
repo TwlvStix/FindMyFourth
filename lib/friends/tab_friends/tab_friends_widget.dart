@@ -9,14 +9,18 @@ import '/core/widgets/app_button.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
-import '/core/random_data_util.dart' as random_data;
-import '/chat_group/chat_2_details/chat2_details_widget.dart';
-import '/profile/profile_user/profile_user_widget.dart';
+import '/core/navigation/app_router.dart';
+import '/profile/profile_user/profile_user_firebase_widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
+import '/providers/chat_provider.dart';
 
 class TabFriendsWidget extends StatefulWidget {
   const TabFriendsWidget({super.key});
@@ -62,12 +66,37 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
   TextEditingController? textController;
   String? textFieldSelectedOption;
   String? Function(BuildContext, String?)? textControllerValidator;
-  ChatsRecord? chatsChecker;
-  ChatsRecord? chatsChecker2;
-  ChatsRecord? chatroomReference;
-  ChatsRecord? chatroomChecker;
-  ChatsRecord? chatroomChecker2;
-  ChatsRecord? chatroomReference2;
+
+  Future<void> _openDirectChat(UsersRecord user) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      if (mounted) {
+        showSnackbar(context, 'Please sign in to chat.');
+      }
+      return;
+    }
+    final currentUserId = currentUser.uid;
+    final otherUserId = user.reference.id;
+    try {
+      final chatRef = await context.read<ChatProvider>().createOrGetDirectChat(
+            currentUid: currentUserId,
+            otherUid: otherUserId,
+          );
+      context.pushNamed(
+        'ChatDetails',
+        pathParameters: {
+          'chatId': chatRef.id,
+        },
+      );
+    } catch (error, stackTrace) {
+      context
+          .read<ChatProvider>()
+          .logError('createOrGetDirectChat failed', error, stackTrace);
+      if (mounted) {
+        showSnackbar(context, 'Unable to start chat. Please try again.');
+      }
+    }
+  }
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -767,33 +796,16 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                     0.0),
                                                         child: AppButtonEnhanced(
                                                           onPressed: () async {
-                                                            context.pushNamed(
-                                                              ProfileUserWidget
-                                                                  .routeName,
-                                                              queryParameters: {
-                                                                'userRef':
-                                                                    serializeParam(
-                                                                  listViewUsersRecord,
-                                                                  ParamType
-                                                                      .Document,
+                                                            Navigator.of(context)
+                                                                .push(
+                                                              MaterialPageRoute(
+                                                                builder: (context) =>
+                                                                    ProfileUserFirebaseWidget(
+                                                                  userRef:
+                                                                      listViewUsersRecord
+                                                                          .reference,
                                                                 ),
-                                                              }.withoutNulls,
-                                                              extra: <String,
-                                                                  dynamic>{
-                                                                'userRef':
-                                                                    listViewUsersRecord,
-                                                                kTransitionInfoKey:
-                                                                    TransitionInfo(
-                                                                  hasTransition:
-                                                                      true,
-                                                                  transitionType:
-                                                                      PageTransitionType
-                                                                          .bottomToTop,
-                                                                  duration: Duration(
-                                                                      milliseconds:
-                                                                          220),
-                                                                ),
-                                                              },
+                                                              ),
                                                             );
                                                           },
                                                           text: 'View',
@@ -827,187 +839,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                             size: 18.0,
                                                           ),
                                                           onPressed: () async {
-                                                            addToFriendList(
-                                                                currentUserReference!);
-                                                            if (mounted) setState(() {});
-                                                            addToFriendList(
-                                                                listViewUsersRecord
-                                                                    .reference);
-                                                            if (mounted) setState(() {});
-                                                            chatsChecker =
-                                                                await queryChatsRecordOnce(
-                                                              queryBuilder:
-                                                                  (chatsRecord) =>
-                                                                      chatsRecord
-                                                                          .where(
-                                                                            'user_a',
-                                                                            isEqualTo:
-                                                                                currentUserReference,
-                                                                          )
-                                                                          .where(
-                                                                            'user_b',
-                                                                            isEqualTo:
-                                                                                listViewUsersRecord.reference,
-                                                                          ),
-                                                              singleRecord:
-                                                                  true,
-                                                            ).then((s) => s
-                                                                    .firstOrNull);
-                                                            if (chatsChecker !=
-                                                                null) {
-                                                              if (Navigator.of(
-                                                                      context)
-                                                                  .canPop()) {
-                                                                context.pop();
-                                                              }
-                                                              context.pushNamed(
-                                                                Chat2DetailsWidget
-                                                                    .routeName,
-                                                                queryParameters:
-                                                                    {
-                                                                  'chatRef':
-                                                                      serializeParam(
-                                                                    chatsChecker,
-                                                                    ParamType
-                                                                        .Document,
-                                                                  ),
-                                                                }.withoutNulls,
-                                                                extra: <String,
-                                                                    dynamic>{
-                                                                  'chatRef':
-                                                                      chatsChecker,
-                                                                },
-                                                              );
-                                                            } else {
-                                                              chatsChecker2 =
-                                                                  await queryChatsRecordOnce(
-                                                                queryBuilder:
-                                                                    (chatsRecord) =>
-                                                                        chatsRecord
-                                                                            .where(
-                                                                              'user_a',
-                                                                              isEqualTo: listViewUsersRecord.reference,
-                                                                            )
-                                                                            .where(
-                                                                              'user_b',
-                                                                              isEqualTo: currentUserReference,
-                                                                            ),
-                                                                singleRecord:
-                                                                    true,
-                                                              ).then((s) => s
-                                                                      .firstOrNull);
-                                                              if (chatsChecker2 !=
-                                                                  null) {
-                                                                if (Navigator.of(
-                                                                        context)
-                                                                    .canPop()) {
-                                                                  context.pop();
-                                                                }
-                                                                context
-                                                                    .pushNamed(
-                                                                  Chat2DetailsWidget
-                                                                      .routeName,
-                                                                  queryParameters:
-                                                                      {
-                                                                    'chatRef':
-                                                                        serializeParam(
-                                                                      chatsChecker2,
-                                                                      ParamType
-                                                                          .Document,
-                                                                    ),
-                                                                  }.withoutNulls,
-                                                                  extra: <String,
-                                                                      dynamic>{
-                                                                    'chatRef':
-                                                                        chatsChecker2,
-                                                                  },
-                                                                );
-                                                              } else {
-                                                                // newChat
-
-                                                                var chatsRecordReference =
-                                                                    ChatsRecord
-                                                                        .collection
-                                                                        .doc();
-                                                                await chatsRecordReference
-                                                                    .set({
-                                                                  ...createChatsRecordData(
-                                                                    userA:
-                                                                        currentUserReference,
-                                                                    userB: listViewUsersRecord
-                                                                        .reference,
-                                                                    lastMessage:
-                                                                        '',
-                                                                    lastMessageTime:
-                                                                        getCurrentTimestamp,
-                                                                    lastMessageSentBy:
-                                                                        currentUserReference,
-                                                                    groupChatId:
-                                                                        random_data.randomInteger(
-                                                                            1000000,
-                                                                            9999999),
-                                                                  ),
-                                                                  ...mapToFirestore(
-                                                                    {
-                                                                      'users':
-                                                                          friendList,
-                                                                    },
-                                                                  ),
-                                                                });
-                                                                chatroomReference =
-                                                                    ChatsRecord
-                                                                        .getDocumentFromData({
-                                                                  ...createChatsRecordData(
-                                                                    userA:
-                                                                        currentUserReference,
-                                                                    userB: listViewUsersRecord
-                                                                        .reference,
-                                                                    lastMessage:
-                                                                        '',
-                                                                    lastMessageTime:
-                                                                        getCurrentTimestamp,
-                                                                    lastMessageSentBy:
-                                                                        currentUserReference,
-                                                                    groupChatId:
-                                                                        random_data.randomInteger(
-                                                                            1000000,
-                                                                            9999999),
-                                                                  ),
-                                                                  ...mapToFirestore(
-                                                                    {
-                                                                      'users':
-                                                                          friendList,
-                                                                    },
-                                                                  ),
-                                                                }, chatsRecordReference);
-                                                                if (Navigator.of(
-                                                                        context)
-                                                                    .canPop()) {
-                                                                  context.pop();
-                                                                }
-                                                                context
-                                                                    .pushNamed(
-                                                                  Chat2DetailsWidget
-                                                                      .routeName,
-                                                                  queryParameters:
-                                                                      {
-                                                                    'chatRef':
-                                                                        serializeParam(
-                                                                      chatroomReference,
-                                                                      ParamType
-                                                                          .Document,
-                                                                    ),
-                                                                  }.withoutNulls,
-                                                                  extra: <String,
-                                                                      dynamic>{
-                                                                    'chatRef':
-                                                                        chatroomReference,
-                                                                  },
-                                                                );
-                                                              }
-                                                            }
-
-                                                            if (mounted) setState(() {});
+                                                            await _openDirectChat(
+                                                                listViewUsersRecord);
                                                           },
                                                         ),
                                                       ),
@@ -1429,33 +1262,15 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   AppButtonEnhanced(
                                                                 onPressed:
                                                                     () async {
-                                                                  context
-                                                                      .pushNamed(
-                                                                    ProfileUserWidget
-                                                                        .routeName,
-                                                                    queryParameters:
-                                                                        {
-                                                                      'userRef':
-                                                                          serializeParam(
-                                                                        userList5UsersRecord,
-                                                                        ParamType
-                                                                            .Document,
+                                                                  Navigator.of(context)
+                                                                      .push(
+                                                                    MaterialPageRoute(
+                                                                      builder: (context) =>
+                                                                          ProfileUserFirebaseWidget(
+                                                                        userRef:
+                                                                            userList5UsersRecord.reference,
                                                                       ),
-                                                                    }.withoutNulls,
-                                                                    extra: <String,
-                                                                        dynamic>{
-                                                                      'userRef':
-                                                                          userList5UsersRecord,
-                                                                      kTransitionInfoKey:
-                                                                          TransitionInfo(
-                                                                        hasTransition:
-                                                                            true,
-                                                                        transitionType:
-                                                                            PageTransitionType.bottomToTop,
-                                                                        duration:
-                                                                            Duration(milliseconds: 220),
-                                                                      ),
-                                                                    },
+                                                                    ),
                                                                   );
                                                                 },
                                                                 text: 'View',
@@ -1772,33 +1587,15 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   AppButtonEnhanced(
                                                                 onPressed:
                                                                     () async {
-                                                                  context
-                                                                      .pushNamed(
-                                                                    ProfileUserWidget
-                                                                        .routeName,
-                                                                    queryParameters:
-                                                                        {
-                                                                      'userRef':
-                                                                          serializeParam(
-                                                                        userList5UsersRecord,
-                                                                        ParamType
-                                                                            .Document,
+                                                                  Navigator.of(context)
+                                                                      .push(
+                                                                    MaterialPageRoute(
+                                                                      builder: (context) =>
+                                                                          ProfileUserFirebaseWidget(
+                                                                        userRef:
+                                                                            userList5UsersRecord.reference,
                                                                       ),
-                                                                    }.withoutNulls,
-                                                                    extra: <String,
-                                                                        dynamic>{
-                                                                      'userRef':
-                                                                          userList5UsersRecord,
-                                                                      kTransitionInfoKey:
-                                                                          TransitionInfo(
-                                                                        hasTransition:
-                                                                            true,
-                                                                        transitionType:
-                                                                            PageTransitionType.bottomToTop,
-                                                                        duration:
-                                                                            Duration(milliseconds: 220),
-                                                                      ),
-                                                                    },
+                                                                    ),
                                                                   );
                                                                 },
                                                                 text: 'View',
@@ -2157,33 +1954,15 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   AppButtonEnhanced(
                                                                 onPressed:
                                                                     () async {
-                                                                  context
-                                                                      .pushNamed(
-                                                                    ProfileUserWidget
-                                                                        .routeName,
-                                                                    queryParameters:
-                                                                        {
-                                                                      'userRef':
-                                                                          serializeParam(
-                                                                        userList5UsersRecord,
-                                                                        ParamType
-                                                                            .Document,
+                                                                  Navigator.of(context)
+                                                                      .push(
+                                                                    MaterialPageRoute(
+                                                                      builder: (context) =>
+                                                                          ProfileUserFirebaseWidget(
+                                                                        userRef:
+                                                                            userList5UsersRecord.reference,
                                                                       ),
-                                                                    }.withoutNulls,
-                                                                    extra: <String,
-                                                                        dynamic>{
-                                                                      'userRef':
-                                                                          userList5UsersRecord,
-                                                                      kTransitionInfoKey:
-                                                                          TransitionInfo(
-                                                                        hasTransition:
-                                                                            true,
-                                                                        transitionType:
-                                                                            PageTransitionType.bottomToTop,
-                                                                        duration:
-                                                                            Duration(milliseconds: 220),
-                                                                      ),
-                                                                    },
+                                                                    ),
                                                                   );
                                                                 },
                                                                 text: 'View',
@@ -2347,190 +2126,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   ),
                                                                   onPressed:
                                                                       () async {
-                                                                    addToFriendList(
-                                                                        userList5UsersRecord
-                                                                            .reference);
-                                                                    if (mounted) setState(
-                                                                        () {});
-                                                                    chatroomChecker =
-                                                                        await queryChatsRecordOnce(
-                                                                      queryBuilder: (chatsRecord) => chatsRecord
-                                                                          .where(
-                                                                            'user_a',
-                                                                            isEqualTo:
-                                                                                userList5UsersRecord.reference,
-                                                                          )
-                                                                          .where(
-                                                                            'user_b',
-                                                                            isEqualTo:
-                                                                                currentUserReference,
-                                                                          ),
-                                                                      singleRecord:
-                                                                          true,
-                                                                    ).then((s) =>
-                                                                            s.firstOrNull);
-                                                                    if (chatroomChecker !=
-                                                                        null) {
-                                                                      if (Navigator.of(
-                                                                              context)
-                                                                          .canPop()) {
-                                                                        context
-                                                                            .pop();
-                                                                      }
-                                                                      context
-                                                                          .pushNamed(
-                                                                        Chat2DetailsWidget
-                                                                            .routeName,
-                                                                        queryParameters:
-                                                                            {
-                                                                          'chatRef':
-                                                                              serializeParam(
-                                                                            chatroomChecker,
-                                                                            ParamType.Document,
-                                                                          ),
-                                                                        }.withoutNulls,
-                                                                        extra: <String,
-                                                                            dynamic>{
-                                                                          'chatRef':
-                                                                              chatroomChecker,
-                                                                        },
-                                                                      );
-                                                                    } else {
-                                                                      chatroomChecker2 =
-                                                                          await queryChatsRecordOnce(
-                                                                        queryBuilder: (chatsRecord) => chatsRecord
-                                                                            .where(
-                                                                              'user_a',
-                                                                              isEqualTo: currentUserReference,
-                                                                            )
-                                                                            .where(
-                                                                              'user_b',
-                                                                              isEqualTo: currentUserReference,
-                                                                            ),
-                                                                        singleRecord:
-                                                                            true,
-                                                                      ).then((s) =>
-                                                                              s.firstOrNull);
-                                                                      if (chatroomChecker2 !=
-                                                                          null) {
-                                                                        if (Navigator.of(context)
-                                                                            .canPop()) {
-                                                                          context
-                                                                              .pop();
-                                                                        }
-                                                                        context
-                                                                            .pushNamed(
-                                                                          Chat2DetailsWidget
-                                                                              .routeName,
-                                                                          queryParameters:
-                                                                              {
-                                                                            'chatRef':
-                                                                                serializeParam(
-                                                                              chatroomChecker2,
-                                                                              ParamType.Document,
-                                                                            ),
-                                                                          }.withoutNulls,
-                                                                          extra: <String,
-                                                                              dynamic>{
-                                                                            'chatRef':
-                                                                                chatroomChecker2,
-                                                                          },
-                                                                        );
-                                                                      } else {
-                                                                        // newChat
-
-                                                                        var chatsRecordReference = ChatsRecord
-                                                                            .collection
-                                                                            .doc();
-                                                                        await chatsRecordReference
-                                                                            .set({
-                                                                          ...createChatsRecordData(
-                                                                            userA:
-                                                                                currentUserReference,
-                                                                            userB:
-                                                                                userList5UsersRecord.reference,
-                                                                            lastMessage:
-                                                                                '',
-                                                                            lastMessageTime:
-                                                                                getCurrentTimestamp,
-                                                                            lastMessageSentBy:
-                                                                                currentUserReference,
-                                                                            groupChatId:
-                                                                                random_data.randomInteger(1000000, 9999999),
-                                                                          ),
-                                                                          ...mapToFirestore(
-                                                                            {
-                                                                              'users': friendList,
-                                                                            },
-                                                                          ),
-                                                                        });
-                                                                        chatroomReference2 =
-                                                                            ChatsRecord.getDocumentFromData({
-                                                                          ...createChatsRecordData(
-                                                                            userA:
-                                                                                currentUserReference,
-                                                                            userB:
-                                                                                userList5UsersRecord.reference,
-                                                                            lastMessage:
-                                                                                '',
-                                                                            lastMessageTime:
-                                                                                getCurrentTimestamp,
-                                                                            lastMessageSentBy:
-                                                                                currentUserReference,
-                                                                            groupChatId:
-                                                                                random_data.randomInteger(1000000, 9999999),
-                                                                          ),
-                                                                          ...mapToFirestore(
-                                                                            {
-                                                                              'users': friendList,
-                                                                            },
-                                                                          ),
-                                                                        }, chatsRecordReference);
-                                                                        if (Navigator.of(context)
-                                                                            .canPop()) {
-                                                                          context
-                                                                              .pop();
-                                                                        }
-                                                                        context
-                                                                            .pushNamed(
-                                                                          Chat2DetailsWidget
-                                                                              .routeName,
-                                                                          queryParameters:
-                                                                              {
-                                                                            'chatRef':
-                                                                                serializeParam(
-                                                                              chatroomReference2,
-                                                                              ParamType.Document,
-                                                                            ),
-                                                                          }.withoutNulls,
-                                                                          extra: <String,
-                                                                              dynamic>{
-                                                                            'chatRef':
-                                                                                chatroomReference2,
-                                                                          },
-                                                                        );
-
-                                                                        await showDialog(
-                                                                          context:
-                                                                              context,
-                                                                          builder:
-                                                                              (alertDialogContext) {
-                                                                            return AlertDialog(
-                                                                              content: Text('Create chatroom'),
-                                                                              actions: [
-                                                                                TextButton(
-                                                                                  onPressed: () => Navigator.pop(alertDialogContext),
-                                                                                  child: Text('Ok'),
-                                                                                ),
-                                                                              ],
-                                                                            );
-                                                                          },
-                                                                        );
-                                                                      }
-                                                                    }
-
-                                                                    if (mounted) setState(
-                                                                        () {});
+                                                                    await _openDirectChat(
+                                                                        userList5UsersRecord);
                                                                   },
                                                                 ),
                                                               ),

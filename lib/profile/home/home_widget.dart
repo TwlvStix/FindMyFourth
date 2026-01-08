@@ -1,8 +1,6 @@
 import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/friends/tab_friends/tab_friends_widget.dart';
-import '/profile/main_profile/main_profile_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -72,62 +70,6 @@ class _HomeWidgetState extends State<HomeWidget> {
                   ),
             ),
           ),
-          actions: [
-            Padding(
-              padding: AppSpacing.only(right: AppSpacing.md - 1.0),
-              child: AppIconButton(
-                borderColor: AppTheme.of(context).primaryBackground,
-                borderRadius: 20.0,
-                borderWidth: 1.0,
-                buttonSize: 40.0,
-                fillColor: AppTheme.of(context).primaryBackground,
-                icon: Icon(
-                  Icons.person_outline_outlined,
-                  color: AppTheme.of(context).primary,
-                  size: 30.0,
-                ),
-                onPressed: () async {
-                  context.pushNamed(
-                    MainProfileWidget.routeName,
-                    extra: <String, dynamic>{
-                      kTransitionInfoKey: TransitionInfo(
-                        hasTransition: true,
-                        transitionType: PageTransitionType.fade,
-                        duration: Duration(milliseconds: 200),
-                      ),
-                    },
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: AppSpacing.only(right: AppSpacing.xs + 2.0),
-              child: AppIconButton(
-                borderColor: AppTheme.of(context).primaryBackground,
-                borderRadius: 20.0,
-                borderWidth: 1.0,
-                buttonSize: 40.0,
-                fillColor: AppTheme.of(context).primaryBackground,
-                icon: Icon(
-                  Icons.search_sharp,
-                  color: AppTheme.of(context).primary,
-                  size: 26.0,
-                ),
-                onPressed: () async {
-                  context.pushNamed(
-                    TabFriendsWidget.routeName,
-                    extra: <String, dynamic>{
-                      kTransitionInfoKey: TransitionInfo(
-                        hasTransition: true,
-                        transitionType: PageTransitionType.fade,
-                        duration: Duration(milliseconds: 200),
-                      ),
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
           centerTitle: false,
           elevation: 10.0,
         ),

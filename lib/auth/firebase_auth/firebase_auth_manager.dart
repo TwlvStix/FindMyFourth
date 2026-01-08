@@ -245,7 +245,7 @@ class FirebaseAuthManager extends AuthManager
         });
         await handlePostAuthNavigation(
           context,
-          fallbackRouteName: 'Home',
+          fallbackRouteName: 'GamesList',
         );
       },
       verificationFailed: (e) {

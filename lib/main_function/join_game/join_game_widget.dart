@@ -1,15 +1,18 @@
-import '/auth/firebase_auth/auth_util.dart';
-import '/backend/backend.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
-import '/core/design_tokens/colors.dart';
 import 'dart:ui';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
+import '/models/game.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
+import '/providers/chat_provider.dart';
 
 class JoinGameWidget extends StatefulWidget {
   const JoinGameWidget({
@@ -17,7 +20,7 @@ class JoinGameWidget extends StatefulWidget {
     required this.gameRef,
   });
 
-  final GamesRecord? gameRef;
+  final Game gameRef;
 
   @override
   State<JoinGameWidget> createState() => _JoinGameWidgetState();
@@ -115,7 +118,7 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                 ),
                                 TextSpan(
                                   text: valueOrDefault<String>(
-                                    widget.gameRef?.nameGame,
+                                    widget.gameRef.nameGame,
                                     'game name',
                                   ),
                                   style: TextStyle(),
@@ -152,38 +155,32 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                           ),
                           child: AppButtonEnhanced(
                             onPressed: () async {
-                              if (widget.gameRef == null) {
-                                showSnackbar(
-                                  context,
-                                  'Game details are unavailable. Please try again.',
-                                );
-                                return;
-                              }
-                              if (currentUserReference == null) {
+                              final currentUser =
+                                  FirebaseAuth.instance.currentUser;
+                              if (currentUser == null) {
                                 showSnackbar(
                                   context,
                                   'Please sign in to join this game.',
                                 );
                                 return;
                               }
+                              final currentUserRef = FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(currentUser.uid);
                               try {
-                                await widget.gameRef!.reference.update({
-                                  ...mapToFirestore(
-                                    {
-                                      'joined_players': FieldValue.arrayUnion(
-                                          [currentUserReference]),
-                                    },
-                                  ),
+                                await widget.gameRef.reference.update({
+                                  'joined_players':
+                                      FieldValue.arrayUnion([currentUserRef]),
                                 });
 
-                                await widget.gameRef!.chatRef!.update({
-                                  ...mapToFirestore(
-                                    {
-                                      'users': FieldValue.arrayUnion(
-                                          [currentUserReference]),
-                                    },
-                                  ),
-                                });
+                                if (widget.gameRef.chatRef != null) {
+                                  await context
+                                      .read<ChatProvider>()
+                                      .addMember(
+                                        chatId: widget.gameRef.chatRef!.id,
+                                        uid: currentUser.uid,
+                                      );
+                                }
                               } on FirebaseException catch (error) {
                                 if (!mounted) {
                                   return;
@@ -210,13 +207,8 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                               Navigator.of(context).pop();
                               context.goNamed(
                                 GameJoinedDetailedWidget.routeName,
-                                queryParameters: {
-                                  'gameRef': serializeParam(
-                                    widget.gameRef!.reference,
-                                    ParamType.DocumentReference,
-                                  ),
-                                }.withoutNulls,
                                 extra: <String, dynamic>{
+                                  'gameRef': widget.gameRef.reference,
                                   kTransitionInfoKey: TransitionInfo(
                                     hasTransition: true,
                                     transitionType:

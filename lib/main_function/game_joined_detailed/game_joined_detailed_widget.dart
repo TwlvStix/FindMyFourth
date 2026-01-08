@@ -1,4 +1,3 @@
-import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/branded_golf_header.dart';
@@ -7,13 +6,18 @@ import '/utils/app_util.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_button_enhanced.dart';
-import '/chat_group/chat_2_details/chat2_details_widget.dart';
+import '/core/navigation/app_router.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
-import '/profile/profile_user/profile_user_widget.dart';
+import '/models/game.dart';
+import '/profile/profile_user/profile_user_firebase_widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import '/providers/chat_provider.dart';
 class GameJoinedDetailedWidget extends StatefulWidget {
   const GameJoinedDetailedWidget({
     super.key,
@@ -50,8 +54,23 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<GamesRecord>(
-      stream: GamesRecord.getDocument(widget.gameRef!),
+    if (widget.gameRef == null) {
+      return Scaffold(
+        backgroundColor: AppTheme.of(context).secondaryBackground,
+        body: Center(
+          child: Text(
+            'Game details are unavailable.',
+            style: AppTheme.of(context).bodyMedium,
+          ),
+        ),
+      );
+    }
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final currentUserRef = currentUser == null
+        ? null
+        : FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
+    return StreamBuilder<DocumentSnapshot>(
+      stream: widget.gameRef!.snapshots(),
       builder: (context, snapshot) {
         // Customize what your widget looks like when it's loading.
         if (!snapshot.hasData) {
@@ -70,7 +89,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
           );
         }
 
-        final gameJoinedDetailedGamesRecord = snapshot.data!;
+        final gameJoinedDetailedGamesRecord = Game.fromDoc(snapshot.data!);
 
         return Scaffold(
           key: scaffoldKey,
@@ -101,14 +120,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
               style: AppTheme.of(context).headlineSmall.override(
                     font: GoogleFonts.outfit(
                       fontWeight: FontWeight.w500,
-                      fontStyle:
-                          AppTheme.of(context).headlineSmall.fontStyle,
+                      fontStyle: AppTheme.of(context).headlineSmall.fontStyle,
                     ),
                     color: AppTheme.of(context).primary,
                     letterSpacing: 0.0,
                     fontWeight: FontWeight.w500,
-                    fontStyle:
-                        AppTheme.of(context).headlineSmall.fontStyle,
+                    fontStyle: AppTheme.of(context).headlineSmall.fontStyle,
                   ),
             ),
             actions: [],
@@ -142,21 +159,16 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                         variant: AppButtonVariant.secondary,
                         size: AppButtonSize.medium,
                         fullWidth: true,
-                        onPressed: () async {
-                          final chat = await ChatsRecord.getDocumentOnce(
-                            gameJoinedDetailedGamesRecord.chatRef!,
-                          );
-
+                        onPressed: () {
+                          final chatRef =
+                              gameJoinedDetailedGamesRecord.chatRef;
+                          if (chatRef == null) {
+                            return;
+                          }
                           context.pushNamed(
-                            Chat2DetailsWidget.routeName,
-                            queryParameters: {
-                              'chatRef': serializeParam(
-                                chat,
-                                ParamType.Document,
-                              ),
-                            }.withoutNulls,
-                            extra: <String, dynamic>{
-                              'chatRef': chat,
+                            'ChatDetails',
+                            pathParameters: {
+                              'chatId': chatRef.id,
                             },
                           );
                         },
@@ -187,7 +199,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                           SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: Text(
-                              _formatDateTime(gameJoinedDetailedGamesRecord.date),
+                              _formatDateTime(
+                                  gameJoinedDetailedGamesRecord.date),
                               style: AppTheme.of(context).bodyLarge.override(
                                     font: GoogleFonts.outfit(
                                       fontWeight: FontWeight.w500,
@@ -274,7 +287,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                               context,
                               icon: '💬',
                               label: 'Member Discount',
-                              value: gameJoinedDetailedGamesRecord.memberDiscount,
+                              value:
+                                  gameJoinedDetailedGamesRecord.memberDiscount,
                             ),
                             _buildInfoCard(
                               context,
@@ -332,8 +346,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                               return Padding(
                                 padding: EdgeInsets.only(bottom: AppSpacing.sm),
                                 child: StreamBuilder<UsersRecord>(
-                                  stream: UsersRecord.getDocument(
-                                      groupPlayersItem),
+                                  stream:
+                                      UsersRecord.getDocument(groupPlayersItem),
                                   builder: (context, snapshot) {
                                     if (!snapshot.hasData) {
                                       return Center(
@@ -341,7 +355,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                           width: 40.0,
                                           height: 40.0,
                                           child: SpinKitWanderingCubes(
-                                            color: AppTheme.of(context).secondary,
+                                            color:
+                                                AppTheme.of(context).secondary,
                                             size: 40.0,
                                           ),
                                         ),
@@ -351,34 +366,27 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                     final friend1UsersRecord = snapshot.data!;
 
                                     return InkWell(
-                                      onTap: () async {
-                                        context.pushNamed(
-                                          ProfileUserWidget.routeName,
-                                          queryParameters: {
-                                            'userRef': serializeParam(
-                                              friend1UsersRecord,
-                                              ParamType.Document,
+                                      onTap: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                ProfileUserFirebaseWidget(
+                                              userRef:
+                                                  friend1UsersRecord.reference,
                                             ),
-                                          }.withoutNulls,
-                                          extra: <String, dynamic>{
-                                            'userRef': friend1UsersRecord,
-                                            kTransitionInfoKey: TransitionInfo(
-                                              hasTransition: true,
-                                              transitionType:
-                                                  PageTransitionType.bottomToTop,
-                                              duration:
-                                                  Duration(milliseconds: 220),
-                                            ),
-                                          },
+                                          ),
                                         );
                                       },
                                       child: Container(
                                         padding: EdgeInsets.all(AppSpacing.sm),
                                         decoration: BoxDecoration(
-                                          color: AppColors.fairway.withValues(alpha: 0.3),
-                                          borderRadius: BorderRadius.circular(12),
+                                          color: AppColors.fairway
+                                              .withValues(alpha: 0.3),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                           border: Border.all(
-                                            color: AppColors.fairwayLight.withValues(alpha: 0.3),
+                                            color: AppColors.fairwayLight
+                                                .withValues(alpha: 0.3),
                                             width: 1,
                                           ),
                                         ),
@@ -398,8 +406,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                               ),
                                               clipBehavior: Clip.antiAlias,
                                               child: Image.network(
-                                                friend1UsersRecord.photoUrl != ''
-                                                    ? friend1UsersRecord.photoUrl
+                                                friend1UsersRecord.photoUrl !=
+                                                        ''
+                                                    ? friend1UsersRecord
+                                                        .photoUrl
                                                     : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
                                                 fit: BoxFit.cover,
                                                 errorBuilder: (context, error,
@@ -419,15 +429,18 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   Text(
-                                                    friend1UsersRecord.displayName,
+                                                    friend1UsersRecord
+                                                        .displayName,
                                                     style: AppTheme.of(context)
                                                         .bodyLarge
                                                         .override(
-                                                          font: GoogleFonts.outfit(
+                                                          font: GoogleFonts
+                                                              .outfit(
                                                             fontWeight:
                                                                 FontWeight.w500,
                                                             fontStyle:
-                                                                AppTheme.of(context)
+                                                                AppTheme.of(
+                                                                        context)
                                                                     .bodyLarge
                                                                     .fontStyle,
                                                           ),
@@ -436,7 +449,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                           fontWeight:
                                                               FontWeight.w500,
                                                           fontStyle:
-                                                              AppTheme.of(context)
+                                                              AppTheme.of(
+                                                                      context)
                                                                   .bodyLarge
                                                                   .fontStyle,
                                                         ),
@@ -450,20 +464,25 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                     style: AppTheme.of(context)
                                                         .bodySmall
                                                         .override(
-                                                          font: GoogleFonts.outfit(
+                                                          font: GoogleFonts
+                                                              .outfit(
                                                             fontWeight:
-                                                                FontWeight.normal,
+                                                                FontWeight
+                                                                    .normal,
                                                             fontStyle:
-                                                                AppTheme.of(context)
+                                                                AppTheme.of(
+                                                                        context)
                                                                     .bodySmall
                                                                     .fontStyle,
                                                           ),
-                                                          color: AppColors.sunsetGold,
+                                                          color: AppColors
+                                                              .sunsetGold,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
-                                                              AppTheme.of(context)
+                                                              AppTheme.of(
+                                                                      context)
                                                                   .bodySmall
                                                                   .fontStyle,
                                                         ),
@@ -492,10 +511,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 child: Container(
                                   padding: EdgeInsets.all(AppSpacing.sm),
                                   decoration: BoxDecoration(
-                                    color: AppColors.fairway.withValues(alpha: 0.3),
+                                    color: AppColors.fairway
+                                        .withValues(alpha: 0.3),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: AppColors.fairwayLight.withValues(alpha: 0.3),
+                                      color: AppColors.fairwayLight
+                                          .withValues(alpha: 0.3),
                                       width: 1,
                                     ),
                                   ),
@@ -506,10 +527,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         width: 48.0,
                                         height: 48.0,
                                         decoration: BoxDecoration(
-                                          color: AppColors.fairwayLight.withValues(alpha: 0.5),
+                                          color: AppColors.fairwayLight
+                                              .withValues(alpha: 0.5),
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                            color: Colors.white.withValues(alpha: 0.3),
+                                            color: Colors.white
+                                                .withValues(alpha: 0.3),
                                             width: 2.0,
                                           ),
                                         ),
@@ -529,9 +552,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                   color: Colors.white,
                                                   letterSpacing: 0.0,
                                                   fontWeight: FontWeight.w600,
-                                                  fontStyle: AppTheme.of(context)
-                                                      .titleMedium
-                                                      .fontStyle,
+                                                  fontStyle:
+                                                      AppTheme.of(context)
+                                                          .titleMedium
+                                                          .fontStyle,
                                                 ),
                                           ),
                                         ),
@@ -582,9 +606,11 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                               .bodySmall
                                                               .fontStyle,
                                                     ),
-                                                    color: Colors.white.withValues(alpha: 0.7),
+                                                    color: Colors.white
+                                                        .withValues(alpha: 0.7),
                                                     letterSpacing: 0.0,
-                                                    fontWeight: FontWeight.normal,
+                                                    fontWeight:
+                                                        FontWeight.normal,
                                                     fontStyle:
                                                         AppTheme.of(context)
                                                             .bodySmall
@@ -606,21 +632,26 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                   ),
                   SizedBox(height: AppSpacing.md),
                   // Leave game button (for non-owner)
-                  if (gameJoinedDetailedGamesRecord.userRef !=
-                      currentUserReference)
+                  if (gameJoinedDetailedGamesRecord.userRef != currentUserRef)
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       child: _buildDestructiveButton(
                         context: context,
                         text: 'Leave game',
                         onPressed: () async {
+                          if (currentUserRef == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('Please sign in to leave the game.'),
+                                backgroundColor: AppTheme.of(context).error,
+                              ),
+                            );
+                            return;
+                          }
                           await widget.gameRef!.update({
-                            ...mapToFirestore(
-                              {
-                                'joined_players': FieldValue.arrayRemove(
-                                    [currentUserReference]),
-                              },
-                            ),
+                            'joined_players':
+                                FieldValue.arrayRemove([currentUserRef]),
                           });
 
                           // Show success toast
@@ -638,21 +669,30 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                       ),
                     ),
                   // Cancel game button (for owner)
-                  if (gameJoinedDetailedGamesRecord.userRef ==
-                      currentUserReference)
+                  if (gameJoinedDetailedGamesRecord.userRef == currentUserRef)
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       child: _buildDestructiveButton(
                         context: context,
                         text: 'Cancel game',
                         onPressed: () async {
+                          if (currentUserRef == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('Please sign in to cancel the game.'),
+                                backgroundColor: AppTheme.of(context).error,
+                              ),
+                            );
+                            return;
+                          }
                           var confirmDialogResponse = await showDialog<bool>(
                                 context: context,
                                 builder: (alertDialogContext) {
                                   return AlertDialog(
                                     title: Text('Are  you sure?'),
-                                    content: Text(
-                                        'Do you really cancel the game?'),
+                                    content:
+                                        Text('Do you really cancel the game?'),
                                     actions: [
                                       TextButton(
                                         onPressed: () => Navigator.pop(
@@ -670,27 +710,52 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                               ) ??
                               false;
                           if (confirmDialogResponse) {
-                            await widget.gameRef!
-                                .update(createGamesRecordData(
-                              isCancelled: true,
-                            ));
-                            if (gameJoinedDetailedGamesRecord.chatRef !=
-                                    null &&
-                                currentUserReference != null) {
-                              final gameName =
-                                  gameJoinedDetailedGamesRecord.nameGame;
-                              final cancelMessage = (gameName != null &&
-                                      gameName.trim().isNotEmpty)
-                                  ? 'Game "$gameName" has been cancelled.'
-                                  : 'This game has been cancelled.';
-                              await ChatMessagesRecord.collection.add(
-                                createChatMessagesRecordData(
-                                  user: currentUserReference,
-                                  chat: gameJoinedDetailedGamesRecord.chatRef,
-                                  text: cancelMessage,
-                                  timestamp: getCurrentTimestamp,
+                            try {
+                              debugPrint(
+                                'CancelGame: updating ${widget.gameRef?.path}',
+                              );
+                              await widget.gameRef!.update({
+                                'isCancelled': true,
+                              });
+                              final updatedSnapshot =
+                                  await widget.gameRef!.get();
+                              final updatedData = updatedSnapshot.data()
+                                  as Map<String, dynamic>?;
+                              debugPrint(
+                                'CancelGame: isCancelled=${updatedData?['isCancelled']}',
+                              );
+
+                              final currentUserId =
+                                  FirebaseAuth.instance.currentUser?.uid;
+                              if (gameJoinedDetailedGamesRecord.chatRef !=
+                                      null &&
+                                  currentUserId != null) {
+                                final gameName =
+                                    gameJoinedDetailedGamesRecord.nameGame;
+                                final cancelMessage = (gameName != null &&
+                                        gameName.trim().isNotEmpty)
+                                    ? 'Game "$gameName" has been cancelled.'
+                                    : 'This game has been cancelled.';
+                                final chatRef =
+                                    gameJoinedDetailedGamesRecord.chatRef!;
+                                await context.read<ChatProvider>().sendMessage(
+                                      chatId: chatRef.id,
+                                      senderId: currentUserId,
+                                      text: cancelMessage,
+                                    );
+                              }
+                            } catch (error, stackTrace) {
+                              debugPrint('CancelGame: failed $error');
+                              debugPrintStack(stackTrace: stackTrace);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Unable to cancel the game. Please try again.',
+                                  ),
+                                  backgroundColor: AppTheme.of(context).error,
                                 ),
                               );
+                              return;
                             }
 
                             // Show success toast
@@ -761,14 +826,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                   style: AppTheme.of(context).labelSmall.override(
                         font: GoogleFonts.outfit(
                           fontWeight: FontWeight.w500,
-                          fontStyle:
-                              AppTheme.of(context).labelSmall.fontStyle,
+                          fontStyle: AppTheme.of(context).labelSmall.fontStyle,
                         ),
                         color: Colors.white.withValues(alpha: 0.7),
                         letterSpacing: 0.0,
                         fontWeight: FontWeight.w500,
-                        fontStyle:
-                            AppTheme.of(context).labelSmall.fontStyle,
+                        fontStyle: AppTheme.of(context).labelSmall.fontStyle,
                       ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -798,11 +861,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
   }
 
   // Helper method to get player count
-  int _getPlayerCount(GamesRecord gameRecord) {
+  int _getPlayerCount(Game gameRecord) {
     final joinedCount = gameRecord.joinedPlayers.length;
-    final guestCount = gameRecord.guestPlayers
-        .where((name) => name.trim().isNotEmpty)
-        .length;
+    final guestCount =
+        gameRecord.guestPlayers.where((name) => name.trim().isNotEmpty).length;
     return joinedCount + guestCount;
   }
 
