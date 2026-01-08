@@ -1,7 +1,10 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -96,18 +99,19 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
           centerTitle: true,
           elevation: 10.0,
         ),
-        body: SafeArea(
-          top: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+        body: FairwayBackgroundLight(
+          child: SafeArea(
+            top: true,
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding:
+                            EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.md, 0.0, 0.0),
                       child: Container(
                         width: 100.0,
                         height: 100.0,
@@ -116,7 +120,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                         ),
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
-                              20.0, 20.0, 20.0, 0.0),
+                              AppSpacing.md, AppSpacing.md, AppSpacing.md, 0.0),
                           child: Text(
                             'We will send you an email with a link to reset your password, please enter the email associated with your account below. ',
                             style: AppTheme.of(context)
@@ -151,7 +155,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                   Expanded(
                     child: Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
+                          EdgeInsetsDirectional.fromSTEB(AppSpacing.md, 0.0, AppSpacing.md, 0.0),
                       child: Container(
                         width: 100.0,
                         height: 75.0,
@@ -173,7 +177,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                           alignment: AlignmentDirectional(-1.0, 0.0),
                           child: Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
-                                20.0, 0.0, 20.0, 0.0),
+                                AppSpacing.md, 0.0, AppSpacing.md, 0.0),
                             child: TextFormField(
                               controller: enterEmailTextController,
                               focusNode: enterEmailFocusNode,
@@ -235,8 +239,8 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                 ],
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-                child: AppButton(
+                padding: EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.md, 0.0, 0.0),
+                child: AppButtonEnhanced(
                   onPressed: () async {
                     if (enterEmailTextController.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -257,47 +261,14 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                     }
                   },
                   text: 'Send Link',
-                  options: AppButtonOptions(
-                    width: 200.0,
-                    height: 40.0,
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
-                    iconPadding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                    color: AppTheme.of(context).primary,
-                    textStyle: AppTheme.of(context).titleSmall.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: FontWeight.bold,
-                            fontStyle: AppTheme.of(context)
-                                .titleSmall
-                                .fontStyle,
-                          ),
-                          color: Colors.white,
-                          letterSpacing: 0.0,
-                          fontWeight: FontWeight.bold,
-                          fontStyle:
-                              AppTheme.of(context).titleSmall.fontStyle,
-                        ),
-                    elevation: 6.0,
-                    borderSide: BorderSide(
-                      color: Colors.transparent,
-                      width: 1.0,
-                    ),
-                    borderRadius: BorderRadius.circular(8.0),
-                    hoverColor: Colors.white,
-                    hoverBorderSide: BorderSide(
-                      color: AppTheme.of(context).primary,
-                      width: 1.0,
-                    ),
-                    hoverTextColor: AppTheme.of(context).primary,
-                    hoverElevation: 3.0,
-                  ),
+                  variant: AppButtonVariant.primary,
+                  size: AppButtonSize.large,
                 ),
               ),
               if (emailSent)
                 Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(24.0, 16.0, 24.0, 0.0),
+                      EdgeInsetsDirectional.fromSTEB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0.0),
                   child: Text(
                     'Check your email for the reset link. You can return to sign in once you receive it.',
                     textAlign: TextAlign.center,
@@ -318,7 +289,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                   ),
                 ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                padding: EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.xs, 0.0, 0.0),
                 child: TextButton(
                   onPressed: _returnToSignIn,
                   child: Text(
@@ -338,6 +309,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                 ),
               ),
             ],
+            ),
           ),
         ),
       ),

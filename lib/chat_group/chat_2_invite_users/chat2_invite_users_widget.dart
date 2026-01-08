@@ -4,7 +4,9 @@ import '/chat_group/empty_state_simple/empty_state_simple_widget.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/widgets/fairway_background.dart';
 import '/core/random_data_util.dart' as random_data;
 import '/chat_group/chat_2_details/chat2_details_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -124,10 +126,11 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
         FocusScope.of(context).unfocus();
         FocusManager.instance.primaryFocus?.unfocus();
       },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: AppTheme.of(context).accent4,
-        appBar: AppBar(
+      child: FairwayBackgroundLight(
+        child: Scaffold(
+          key: scaffoldKey,
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
           backgroundColor: AppTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
           title: Column(
@@ -154,7 +157,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                     ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 0.0),
+                padding: EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.xxs, 0.0, 0.0),
                 child: Text(
                   'Select users from below to start a chat.',
                   style: AppTheme.of(context).labelSmall.override(
@@ -177,7 +180,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
           ),
           actions: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 12.0, 4.0),
+              padding: EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.xs, AppSpacing.sm, AppSpacing.xxs),
               child: AppIconButton(
                 borderColor: AppTheme.of(context).alternate,
                 borderRadius: 12.0,
@@ -210,7 +213,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 16.0, 0.0),
+                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, AppSpacing.md, 0.0),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -218,7 +221,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
-                              16.0, 12.0, 0.0, 0.0),
+                              AppSpacing.md, AppSpacing.sm, 0.0, 0.0),
                           child: Text(
                             'Invite Players',
                             style: AppTheme.of(context)
@@ -245,7 +248,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                       ),
                       Padding(
                         padding: EdgeInsetsDirectional.fromSTEB(
-                            16.0, 12.0, 0.0, 0.0),
+                            AppSpacing.md, AppSpacing.sm, 0.0, 0.0),
                         child: Text(
                           ((valueOrDefault<int>(
                                     friendsList.length,
@@ -275,7 +278,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                       ),
                       Padding(
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(2.0, 12.0, 0.0, 0.0),
+                            EdgeInsetsDirectional.fromSTEB(AppSpacing.xxs / 2, AppSpacing.sm, 0.0, 0.0),
                         child: Text(
                           'Selected',
                           style:
@@ -304,7 +307,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                 Expanded(
                   child: Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                        EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.sm, 0.0, 0.0),
                     child:
                         PagedListView<DocumentSnapshot<Object?>?, UsersRecord>(
                       pagingController: setListViewController(
@@ -359,7 +362,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                                 currentUserReference,
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 0.0, 16.0, 8.0),
+                                  AppSpacing.md, 0.0, AppSpacing.md, AppSpacing.xs),
                               child: Container(
                                 width: 100.0,
                                 height: 70.0,
@@ -384,7 +387,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                                   children: [
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          12.0, 0.0, 0.0, 0.0),
+                                          AppSpacing.sm, 0.0, 0.0, 0.0),
                                       child: Container(
                                         width: 44.0,
                                         height: 44.0,
@@ -551,7 +554,7 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                                                     .trailing,
                                             contentPadding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    12.0, 0.0, 8.0, 0.0),
+                                                    AppSpacing.sm, 0.0, AppSpacing.xs, 0.0),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(8.0),
@@ -590,8 +593,14 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
                 ),
                 alignment: AlignmentDirectional(0.0, 0.0),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                  child: AppButton(
+                  padding: EdgeInsetsDirectional.fromSTEB(AppSpacing.md, 0.0, AppSpacing.md, 0.0),
+                  child: AppButtonEnhanced(
+                    text: widget.chatRef != null
+                        ? 'Add to Chat'
+                        : 'Start to Chat',
+                    variant: AppButtonVariant.primary,
+                    size: AppButtonSize.large,
+                    fullWidth: true,
                     onPressed: () async {
                       if (friendsList.length >= 2) {
                         if (widget.chatRef != null) {
@@ -716,49 +725,13 @@ class _Chat2InviteUsersWidgetState extends State<Chat2InviteUsersWidget> {
 
                       if (mounted) setState(() {});
                     },
-                    text: widget.chatRef != null
-                        ? 'Add to Chat'
-                        : 'Start to Chat',
-                    options: AppButtonOptions(
-                      width: double.infinity,
-                      height: 50.0,
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                      iconPadding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                      color: AppTheme.of(context).primary,
-                      textStyle:
-                          AppTheme.of(context).titleSmall.override(
-                                font: GoogleFonts.outfit(
-                                  fontWeight: AppTheme.of(context)
-                                      .titleSmall
-                                      .fontWeight,
-                                  fontStyle: AppTheme.of(context)
-                                      .titleSmall
-                                      .fontStyle,
-                                ),
-                                color: Colors.white,
-                                letterSpacing: 0.0,
-                                fontWeight: AppTheme.of(context)
-                                    .titleSmall
-                                    .fontWeight,
-                                fontStyle: AppTheme.of(context)
-                                    .titleSmall
-                                    .fontStyle,
-                              ),
-                      elevation: 2.0,
-                      borderSide: BorderSide(
-                        color: Colors.transparent,
-                        width: 1.0,
-                      ),
-                      borderRadius: BorderRadius.circular(50.0),
-                    ),
                   ),
                 ),
               ),
             ),
           ],
         ),
+      ),
       ),
     );
   }

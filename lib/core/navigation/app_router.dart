@@ -18,6 +18,7 @@ import '/chat_group/chat_2_details/chat2_details_widget.dart';
 import '/chat_group/chat_2_invite_users/chat2_invite_users_widget.dart';
 import '/chat_group/image_details/image_details_widget.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
+import '/main_function/community/community_widget.dart';
 import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
@@ -39,7 +40,7 @@ import '/profile/profile_user/profile_user_widget.dart';
 import '/user_auth/recover_password/recover_password_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import '/user_auth/sign_up_account/sign_up_account_widget.dart';
-import '/user_onboarding/user_onboarding_widget.dart';
+import '/user_onboarding/progressive_onboarding_widget.dart';
 
 export 'package:go_router/go_router.dart';
 export '/utils/serialization_util.dart';
@@ -144,9 +145,23 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             context,
             state,
             appStateNotifier,
+            CreateGameWidget(),
+          ),
+        ),
+        GoRoute(
+          name: CommunityWidget.routeName,
+          path: CommunityWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
             _isEmptyStateParams(state)
-                ? NavBarPage(initialPage: 'CreateGame')
-                : CreateGameWidget(),
+                ? NavBarPage(initialPage: 'Community')
+                : NavBarPage(
+                    initialPage: 'Community',
+                    page: CommunityWidget(),
+                  ),
           ),
         ),
         GoRoute(
@@ -179,9 +194,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             state,
             appStateNotifier,
             _isEmptyStateParams(state)
-                ? NavBarPage(initialPage: 'Home')
+                ? NavBarPage(initialPage: 'Profile')
                 : NavBarPage(
-                    initialPage: 'Home',
+                    initialPage: 'Profile',
                     page: HomeWidget(),
                   ),
           ),
@@ -209,14 +224,14 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         GoRoute(
-          name: UserOnboardingWidget.routeName,
-          path: UserOnboardingWidget.routePath,
+          name: ProgressiveOnboardingWidget.routeName,
+          path: ProgressiveOnboardingWidget.routePath,
           redirect: _buildRedirect(appStateNotifier),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
             appStateNotifier,
-            UserOnboardingWidget(),
+            ProgressiveOnboardingWidget(),
           ),
         ),
         GoRoute(
@@ -322,8 +337,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             state,
             appStateNotifier,
             _isEmptyStateParams(state)
-                ? NavBarPage(initialPage: 'Chat')
-                : ChatWidget(),
+                ? NavBarPage(initialPage: 'Community')
+                : NavBarPage(
+                    initialPage: 'Community',
+                    page: CommunityWidget(),
+                  ),
           ),
         ),
         GoRoute(
@@ -462,10 +480,10 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             state,
             appStateNotifier,
             _isEmptyStateParams(state)
-                ? NavBarPage(initialPage: 'Newsfeed')
+                ? NavBarPage(initialPage: 'Community')
                 : NavBarPage(
-                    initialPage: 'Newsfeed',
-                    page: NewsfeedWidget(),
+                    initialPage: 'Community',
+                    page: CommunityWidget(),
                   ),
           ),
         ),

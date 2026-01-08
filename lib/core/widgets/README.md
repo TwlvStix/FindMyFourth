@@ -45,6 +45,60 @@ FairwayBackgroundSunset(
 
 ---
 
+### 🏌️ BrandedGolfHeader (NEW)
+Premium branded header component with refined topographic pattern and curved bottom edge.
+
+**File**: `branded_golf_header.dart`
+
+**Features**:
+- 150px height with elegant curved bottom edge (concave curve)
+- Deep forest green gradient background (3-tone)
+- Subtle topographic contour pattern overlay (12% opacity)
+- Username displayed bottom-left, course name bottom-right
+- White text with layered shadows for excellent contrast
+- Professional country club aesthetic
+
+**Components Included**:
+- `CurvedHeaderClipper`: Custom clipper for elegant curved bottom edge
+- `SubtleTopographicPainter`: Atmospheric topographic pattern with elevation bands
+- `BrandedGolfHeader`: Main header widget
+
+**Quick Start**:
+```dart
+import 'package:find_my_fourth/core/widgets/branded_golf_header.dart';
+
+BrandedGolfHeader(
+  username: 'Ryan New Test',
+  courseName: 'Predator Ridge Golf Resort',
+)
+```
+
+**Usage in Screens**:
+```dart
+Column(
+  children: [
+    Padding(
+      padding: EdgeInsets.all(AppSpacing.md),
+      child: BrandedGolfHeader(
+        username: gameRecord.nameGame,
+        courseName: gameRecord.coursePlay,
+      ),
+    ),
+    // Rest of screen content
+  ],
+)
+```
+
+**Design Notes**:
+- Replaces photo headers with consistent branded element
+- Curves use quadratic bezier (dips 15px in center)
+- Topographic lines mimic golf course elevation maps
+- Pattern has multiple elevation bands (upper, middle, lower)
+- Very subtle 0.8px stroke width maintains atmosphere
+- Text positioned 20px from curved bottom edge
+
+---
+
 ### 🎴 AppCard (NEW)
 Production-grade card component with variants and micro-interactions.
 
@@ -404,6 +458,7 @@ Column(
 
 - [x] FairwayBackground - Production ready ✅
 - [x] FairwayBackgroundExamples - Demo/reference ✅
+- [x] BrandedGolfHeader - Production ready ✅
 - [x] AppCard - Production ready ✅
 - [x] AppCardExamples - Demo/reference ✅
 - [x] AppButtonEnhanced - Production ready ✅

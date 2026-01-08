@@ -3,7 +3,10 @@ import '/backend/backend.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/form_field_controller.dart';
 import '/core/custom_functions.dart' as functions;
 import '/main_function/games_list/games_list_widget.dart';
@@ -116,20 +119,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         ),
         body: SafeArea(
           top: true,
-          child: Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration(
-              color: AppTheme.of(context).tertiary,
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: Image.asset(
-                  'assets/images/igdownloader.com_2980395830721545943.jpg',
-                ).image,
-              ),
-            ),
+          child: FairwayBackgroundDark(
             child: Padding(
-              padding: EdgeInsets.all(20.0),
+              padding: AppSpacing.allLg,
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
@@ -185,8 +177,10 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                 Align(
                                   alignment: AlignmentDirectional(-1.0, 0.0),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        8.0, 10.0, 0.0, 10.0),
+                                    padding: AppSpacing.only(
+                                        left: AppSpacing.xs,
+                                        top: AppSpacing.sm,
+                                        bottom: AppSpacing.sm),
                                     child: Text(
                                       'Add Current Players',
                                       style: AppTheme.of(context)
@@ -220,8 +214,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                 Align(
                                   alignment: AlignmentDirectional(-1.0, 0.0),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        8.0, 0.0, 0.0, 15.0),
+                                    padding: AppSpacing.only(
+                                        left: AppSpacing.xs,
+                                        bottom: AppSpacing.md),
                                     child: AuthUserStreamWidget(
                                       builder: (context) => Text(
                                         valueOrDefault<String>(
@@ -257,8 +252,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                   Align(
                                     alignment: AlignmentDirectional(-1.0, 0.0),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 0.0, 20.0),
+                                      padding: AppSpacing.only(
+                                          bottom: AppSpacing.lg),
                                       child: AppDropDown<String>(
                                         controller:
                                             dropDownValueController1 ??=
@@ -363,8 +358,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                 .alternate,
                                         borderWidth: 2.0,
                                         borderRadius: 8.0,
-                                        margin: EdgeInsetsDirectional.fromSTEB(
-                                            16.0, 4.0, 16.0, 4.0),
+                                        margin: AppSpacing.symmetric(
+                                            horizontal: AppSpacing.md,
+                                            vertical: AppSpacing.xxs),
                                         hidesUnderline: true,
                                         isOverButton: true,
                                         isSearchable: true,
@@ -429,8 +425,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                           .alternate,
                                       borderWidth: 2.0,
                                       borderRadius: 8.0,
-                                      margin: EdgeInsetsDirectional.fromSTEB(
-                                          16.0, 4.0, 16.0, 4.0),
+                                      margin: AppSpacing.symmetric(
+                                          horizontal: AppSpacing.md,
+                                          vertical: AppSpacing.xxs),
                                       hidesUnderline: true,
                                       isOverButton: true,
                                       isSearchable: false,
@@ -438,9 +435,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                     ),
                                   ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 30.0, 0.0, 0.0),
-                                  child: AppButton(
+                                  padding: AppSpacing.only(
+                                      top: AppSpacing.xxxl),
+                                  child: AppButtonEnhanced(
                                     onPressed: () async {
                                       final selections = <String?>[
                                         dropDownValue1,
@@ -500,45 +497,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                       );
                                     },
                                     text: 'Submit Players',
-                                    options: AppButtonOptions(
-                                      height: 40.0,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          24.0, 0.0, 24.0, 0.0),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0.0, 0.0, 0.0, 0.0),
-                                      color: Colors.white,
-                                      textStyle: AppTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            font: GoogleFonts.outfit(
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .titleSmall
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .titleSmall
-                                                      .fontStyle,
-                                            ),
-                                            color: AppTheme.of(context).primary,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .titleSmall
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .titleSmall
-                                                    .fontStyle,
-                                          ),
-                                      elevation: 3.0,
-                                      borderSide: BorderSide(
-                                        color: Colors.transparent,
-                                        width: 1.0,
-                                      ),
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
+                                    variant: AppButtonVariant.primary,
+                                    size: AppButtonSize.medium,
                                   ),
                                 ),
                               ],

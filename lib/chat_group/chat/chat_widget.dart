@@ -6,6 +6,8 @@ import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/chat_group/chat_2_details/chat2_details_widget.dart';
 import '/chat_group/chat_2_invite_users/chat2_invite_users_widget.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -71,7 +73,7 @@ class _ChatWidgetState extends State<ChatWidget> {
           ),
           actions: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 16.0, 8.0),
+              padding: EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
               child: AppIconButton(
                 borderColor: AppTheme.of(context).primary,
                 borderRadius: 12.0,
@@ -101,14 +103,15 @@ class _ChatWidgetState extends State<ChatWidget> {
           centerTitle: false,
           elevation: 0.0,
         ),
-        body: SafeArea(
-          top: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        body: FairwayBackgroundDark(
+          child: SafeArea(
+            top: true,
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 0.0, 0.0),
+                padding: EdgeInsetsDirectional.fromSTEB(AppSpacing.md, 0.0, 0.0, 0.0),
                 child: Text(
                   'Below are your chats and group chats',
                   style: AppTheme.of(context).labelMedium.override(
@@ -229,7 +232,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                     if (listViewChatsRecord.users.length == 1) {
                                       return Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            16.0, 12.0, 12.0, 12.0),
+                                            AppSpacing.md, AppSpacing.sm, AppSpacing.sm, AppSpacing.sm),
                                         child: FutureBuilder<UsersRecord>(
                                           future: AppState().userDocQuery(
                                             uniqueQueryKey: listViewChatsRecord
@@ -345,7 +348,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                   child: Padding(
                                                     padding:
                                                         EdgeInsetsDirectional
-                                                            .fromSTEB(8.0, 0.0,
+                                                            .fromSTEB(AppSpacing.xs, 0.0,
                                                                 0.0, 0.0),
                                                     child: Column(
                                                       mainAxisSize:
@@ -365,7 +368,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                         .fromSTEB(
                                                                             0.0,
                                                                             0.0,
-                                                                            12.0,
+                                                                            AppSpacing.sm,
                                                                             0.0),
                                                                 child: Text(
                                                                   valueOrDefault<
@@ -412,7 +415,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                         .fromSTEB(
                                                                             0.0,
                                                                             0.0,
-                                                                            8.0,
+                                                                            AppSpacing.xs,
                                                                             0.0),
                                                                 child:
                                                                     Container(
@@ -444,7 +447,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                               EdgeInsetsDirectional
                                                                   .fromSTEB(
                                                                       0.0,
-                                                                      4.0,
+                                                                      AppSpacing.xxs,
                                                                       0.0,
                                                                       0.0),
                                                           child: Text(
@@ -538,7 +541,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                               size: 24.0,
                                                             ),
                                                           ].divide(SizedBox(
-                                                              width: 16.0)),
+                                                              width: AppSpacing.md)),
                                                         ),
                                                       ],
                                                     ),
@@ -554,7 +557,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                         2) {
                                       return Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            16.0, 12.0, 12.0, 12.0),
+                                            AppSpacing.md, AppSpacing.sm, AppSpacing.sm, AppSpacing.sm),
                                         child: FutureBuilder<UsersRecord>(
                                           future: AppState().userDocQuery(
                                             uniqueQueryKey: listViewChatsRecord
@@ -670,7 +673,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                   child: Padding(
                                                     padding:
                                                         EdgeInsetsDirectional
-                                                            .fromSTEB(8.0, 0.0,
+                                                            .fromSTEB(AppSpacing.xs, 0.0,
                                                                 0.0, 0.0),
                                                     child: Column(
                                                       mainAxisSize:
@@ -690,7 +693,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                         .fromSTEB(
                                                                             0.0,
                                                                             0.0,
-                                                                            12.0,
+                                                                            AppSpacing.sm,
                                                                             0.0),
                                                                 child: Text(
                                                                   valueOrDefault<
@@ -737,7 +740,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                         .fromSTEB(
                                                                             0.0,
                                                                             0.0,
-                                                                            8.0,
+                                                                            AppSpacing.xs,
                                                                             0.0),
                                                                 child:
                                                                     Container(
@@ -769,7 +772,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                               EdgeInsetsDirectional
                                                                   .fromSTEB(
                                                                       0.0,
-                                                                      4.0,
+                                                                      AppSpacing.xxs,
                                                                       0.0,
                                                                       0.0),
                                                           child: Text(
@@ -863,7 +866,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                               size: 24.0,
                                                             ),
                                                           ].divide(SizedBox(
-                                                              width: 16.0)),
+                                                              width: AppSpacing.md)),
                                                         ),
                                                       ],
                                                     ),
@@ -877,7 +880,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                     } else {
                                       return Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            16.0, 12.0, 12.0, 12.0),
+                                            AppSpacing.md, AppSpacing.sm, AppSpacing.sm, AppSpacing.sm),
                                         child: FutureBuilder<UsersRecord>(
                                           future: AppState().userDocQuery(
                                             uniqueQueryKey: listViewChatsRecord
@@ -917,7 +920,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                 Padding(
                                                   padding: EdgeInsetsDirectional
                                                       .fromSTEB(
-                                                          0.0, 0.0, 0.0, 8.0),
+                                                          0.0, 0.0, 0.0, AppSpacing.xs),
                                                   child: Container(
                                                     width: 44.0,
                                                     height: 54.0,
@@ -1203,7 +1206,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                   child: Padding(
                                                     padding:
                                                         EdgeInsetsDirectional
-                                                            .fromSTEB(8.0, 0.0,
+                                                            .fromSTEB(AppSpacing.xs, 0.0,
                                                                 0.0, 0.0),
                                                     child: Column(
                                                       mainAxisSize:
@@ -1223,7 +1226,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                         .fromSTEB(
                                                                             0.0,
                                                                             0.0,
-                                                                            12.0,
+                                                                            AppSpacing.sm,
                                                                             0.0),
                                                                 child: Text(
                                                                   'Group Chat',
@@ -1265,7 +1268,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                                         .fromSTEB(
                                                                             0.0,
                                                                             0.0,
-                                                                            8.0,
+                                                                            AppSpacing.xs,
                                                                             0.0),
                                                                 child:
                                                                     Container(
@@ -1297,7 +1300,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                               EdgeInsetsDirectional
                                                                   .fromSTEB(
                                                                       0.0,
-                                                                      4.0,
+                                                                      AppSpacing.xxs,
                                                                       0.0,
                                                                       0.0),
                                                           child: Text(
@@ -1399,7 +1402,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                               size: 24.0,
                                                             ),
                                                           ].divide(SizedBox(
-                                                              width: 16.0)),
+                                                              width: AppSpacing.md)),
                                                         ),
                                                       ],
                                                     ),
@@ -1422,7 +1425,8 @@ class _ChatWidgetState extends State<ChatWidget> {
                   },
                 ),
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

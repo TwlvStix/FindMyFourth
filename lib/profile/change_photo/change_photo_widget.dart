@@ -3,7 +3,9 @@ import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
 import '/utils/upload_data.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -38,48 +40,48 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0.0, 60.0, 0.0, 60.0),
-      child: Container(
-        width: MediaQuery.sizeOf(context).width * 1.0,
-        height: 350.0,
-        decoration: BoxDecoration(
-          color: AppTheme.of(context).secondaryBackground,
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(0.0),
-            bottomRight: Radius.circular(0.0),
-            topLeft: Radius.circular(16.0),
-            topRight: Radius.circular(16.0),
+    return FairwayBackgroundLight(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.xxxxl),
+        child: Container(
+          width: MediaQuery.sizeOf(context).width * 1.0,
+          height: 350.0,
+          decoration: BoxDecoration(
+            color: AppTheme.of(context).secondaryBackground,
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(0.0),
+              bottomRight: Radius.circular(0.0),
+              topLeft: Radius.circular(16.0),
+              topRight: Radius.circular(16.0),
+            ),
           ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(4.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(20.0, 8.0, 20.0, 0.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Divider(
-                          thickness: 3.0,
-                          indent: 150.0,
-                          endIndent: 150.0,
-                          color: AppTheme.of(context).primaryBackground,
-                        ),
+          child: Padding(
+            padding: EdgeInsets.all(AppSpacing.xxs),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.xs, AppSpacing.lg, 0.0),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Divider(
+                            thickness: 3.0,
+                            indent: 150.0,
+                            endIndent: 150.0,
+                            color: AppTheme.of(context).primaryBackground,
+                          ),
                         Row(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 4.0, 16.0, 0.0),
+                                padding: EdgeInsets.fromLTRB(0.0, AppSpacing.xxs, AppSpacing.md, 0.0),
                                 child: Text(
                                   'Change Profile Picture',
                                   style: AppTheme.of(context)
@@ -108,8 +110,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                           children: [
                             Expanded(
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 8.0, 0.0, 0.0),
+                                padding: EdgeInsets.only(top: AppSpacing.xs),
                                 child: Text(
                                   'Upload a new photo below in order to change your profile picture.',
                                   style: AppTheme.of(context)
@@ -139,8 +140,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                           ],
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 16.0, 0.0, 0.0),
+                          padding: EdgeInsets.only(top: AppSpacing.md),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -161,7 +161,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                 child: Stack(
                                   children: [
                                     Padding(
-                                      padding: EdgeInsets.all(4.0),
+                                      padding: EdgeInsets.all(AppSpacing.xxs),
                                       child: AuthUserStreamWidget(
                                         builder: (context) => Container(
                                           width: 120.0,
@@ -177,7 +177,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.all(4.0),
+                                      padding: AppSpacing.allXxs,
                                       child: Container(
                                         width: 120.0,
                                         height: 120.0,
@@ -207,13 +207,12 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 24.0, 0.0, 44.0),
+                          padding: EdgeInsets.fromLTRB(0.0, AppSpacing.xl, 0.0, AppSpacing.xxxl + AppSpacing.sm),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              AppButton(
+                              AppButtonEnhanced(
                                 onPressed: () async {
                                   final selectedMedia =
                                       await selectMediaWithSourceBottomSheet(
@@ -280,44 +279,10 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                   }
                                 },
                                 text: 'Upload Image',
-                                options: AppButtonOptions(
-                                  width: 150.0,
-                                  height: 50.0,
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 0.0),
-                                  iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 0.0),
-                                  color: AppTheme.of(context).tertiary,
-                                  textStyle: AppTheme.of(context)
-                                      .labelMedium
-                                      .override(
-                                        font: GoogleFonts.outfit(
-                                          fontWeight:
-                                              AppTheme.of(context)
-                                                  .labelMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .labelMedium
-                                                  .fontStyle,
-                                        ),
-                                        color: Colors.white,
-                                        letterSpacing: 0.0,
-                                        fontWeight: AppTheme.of(context)
-                                            .labelMedium
-                                            .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .labelMedium
-                                            .fontStyle,
-                                      ),
-                                  elevation: 2.0,
-                                  borderSide: BorderSide(
-                                    color: AppTheme.of(context).primary,
-                                    width: 1.0,
-                                  ),
-                                ),
+                                variant: AppButtonVariant.secondary,
+                                size: AppButtonSize.medium,
                               ),
-                              AppButton(
+                              AppButtonEnhanced(
                                 onPressed: () async {
                                   await currentUserReference!
                                       .update(createUsersRecordData(
@@ -327,38 +292,8 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                   Navigator.pop(context);
                                 },
                                 text: 'Save Changes',
-                                options: AppButtonOptions(
-                                  width: 150.0,
-                                  height: 50.0,
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 0.0),
-                                  iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 0.0),
-                                  color: AppTheme.of(context).primary,
-                                  textStyle: AppTheme.of(context)
-                                      .titleSmall
-                                      .override(
-                                        font: GoogleFonts.lexendDeca(
-                                          fontWeight: FontWeight.normal,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .titleSmall
-                                                  .fontStyle,
-                                        ),
-                                        color: Colors.white,
-                                        fontSize: 14.0,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.normal,
-                                        fontStyle: AppTheme.of(context)
-                                            .titleSmall
-                                            .fontStyle,
-                                      ),
-                                  elevation: 2.0,
-                                  borderSide: BorderSide(
-                                    color: Colors.transparent,
-                                    width: 1.0,
-                                  ),
-                                ),
+                                variant: AppButtonVariant.primary,
+                                size: AppButtonSize.medium,
                               ),
                             ],
                           ),
@@ -372,6 +307,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
           ),
         ),
       ),
+    ),
     );
   }
 }

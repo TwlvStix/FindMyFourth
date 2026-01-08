@@ -6,6 +6,10 @@ import '/profile/main_profile/main_profile_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// Design system imports
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
+
 class HomeWidget extends StatefulWidget {
   const HomeWidget({super.key});
 
@@ -70,7 +74,7 @@ class _HomeWidgetState extends State<HomeWidget> {
           ),
           actions: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 15.0, 0.0),
+              padding: AppSpacing.only(right: AppSpacing.md - 1.0),
               child: AppIconButton(
                 borderColor: AppTheme.of(context).primaryBackground,
                 borderRadius: 20.0,
@@ -97,7 +101,7 @@ class _HomeWidgetState extends State<HomeWidget> {
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
+              padding: AppSpacing.only(right: AppSpacing.xs + 2.0),
               child: AppIconButton(
                 borderColor: AppTheme.of(context).primaryBackground,
                 borderRadius: 20.0,
@@ -127,23 +131,25 @@ class _HomeWidgetState extends State<HomeWidget> {
           centerTitle: false,
           elevation: 10.0,
         ),
-        body: SafeArea(
-          top: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(0.0),
-                  child: Image.asset(
-                    'assets/images/igdownloader.com_3046829577184117896.jpg',
-                    width: double.infinity,
-                    height: double.infinity,
-                    fit: BoxFit.cover,
+        body: FairwayBackgroundDark(
+          child: SafeArea(
+            top: true,
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(0.0),
+                    child: Image.asset(
+                      'assets/images/igdownloader.com_3046829577184117896.jpg',
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

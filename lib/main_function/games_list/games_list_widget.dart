@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_choice_chips.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/fairway_background.dart';
@@ -7,17 +8,14 @@ import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/form_field_controller.dart';
 import '/core/custom_functions.dart' as functions;
-import '/app_state.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
-import 'package:auto_size_text/auto_size_text.dart';
+import '/providers/provider_extensions.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 enum CancelledGameHandling {
@@ -37,8 +35,6 @@ class GamesListWidget extends StatefulWidget {
 }
 
 class _GamesListWidgetState extends State<GamesListWidget> {
-  List<GamesRecord> filteredList = [];
-  List<GamesRecord>? snapshotGames;
   FormFieldController<List<String>>? choiceChipsValueController;
   final Map<DocumentReference, CancelledGameHandling>
       _cancelledGameHandlingByGame = {};
@@ -58,24 +54,6 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   @override
   void initState() {
     super.initState();
-    // On page load action.
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      snapshotGames = await queryGamesRecordOnce(
-        queryBuilder: (gamesRecord) => gamesRecord.where(Filter.or(
-          Filter(
-            'isCancelled',
-            isEqualTo: false,
-          ),
-          Filter(
-            'userRef',
-            isEqualTo: currentUserReference,
-          ),
-        )),
-      );
-      filteredList = snapshotGames!.toList().cast<GamesRecord>();
-      if (mounted) setState(() {});
-    });
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -228,7 +206,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
           ),
           actions: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 15.0, 0.0),
+              padding: AppSpacing.only(right: 15.0),
               child: AppIconButton(
                 borderRadius: 20.0,
                 borderWidth: 1.0,
@@ -254,7 +232,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
+              padding: AppSpacing.only(right: AppSpacing.xs + 2.0),
               child: AppIconButton(
                 borderRadius: 20.0,
                 borderWidth: 1.0,
@@ -283,46 +261,66 @@ class _GamesListWidgetState extends State<GamesListWidget> {
           centerTitle: false,
           elevation: 0.0,
         ),
-        body: FairwayBackgroundLight(
+        body: FairwayBackgroundDark(
           showOrganic: true,
           child: SafeArea(
             top: true,
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 12.0),
-                    child: Row(
+              padding: AppSpacing.screen,
+              child: StreamBuilder<List<GamesRecord>>(
+                stream: context.userProvider.getAvailableGames(),
+                builder: (context, snapshot) {
+                  // Show loading indicator
+                  if (!snapshot.hasData) {
+                    return Center(
+                      child: SizedBox(
+                        width: 50.0,
+                        height: 50.0,
+                        child: SpinKitWanderingCubes(
+                          color: AppTheme.of(context).secondary,
+                          size: 50.0,
+                        ),
+                      ),
+                    );
+                  }
+
+                  final allGames = snapshot.data!;
+                  final filteredList = functions
+                      .filterFunction(allGames, choiceChipsValue)!
+                      .toList()
+                      .cast<GamesRecord>();
+
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      context.userProvider.refreshAvailableGames();
+                      await Future.delayed(Duration(milliseconds: 500));
+                    },
+                    child: Column(
                       mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: Align(
-                            alignment: AlignmentDirectional(0.0, 0.0),
-                            child: AppChoiceChips(
-                              options: [
-                                ChipData('\$\$\$\$'),
-                                ChipData('Vegas'),
-                                ChipData('For Fun'),
-                                ChipData('Discount'),
-                                ChipData('All')
-                              ],
-                              onChanged: (val) async {
-                                if (mounted) {
-                                  setState(() =>
-                                      choiceChipsValue = val?.firstOrNull);
-                                }
-                                filteredList = functions
-                                    .filterFunction(
-                                        snapshotGames?.toList(),
-                                        choiceChipsValue)!
-                                    .toList()
-                                    .cast<GamesRecord>();
-                                if (mounted) setState(() {});
-                              },
+                        Padding(
+                          padding: AppSpacing.verticalSm,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Align(
+                                  alignment: AlignmentDirectional(0.0, 0.0),
+                                  child: AppChoiceChips(
+                                    options: [
+                                      ChipData('\$\$\$\$'),
+                                      ChipData('Vegas'),
+                                      ChipData('For Fun'),
+                                      ChipData('Discount'),
+                                      ChipData('All')
+                                    ],
+                                    onChanged: (val) async {
+                                      if (mounted) {
+                                        setState(() =>
+                                            choiceChipsValue = val?.firstOrNull);
+                                      }
+                                    },
                               selectedChipStyle: ChipStyle(
                                 backgroundColor: Color(0xFFA2A2A2),
                                 textStyle: AppTheme.of(context)
@@ -383,8 +381,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                     AppTheme.of(context).primaryBtnText,
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
-                              chipSpacing: 12.0,
-                              rowSpacing: 12.0,
+                              chipSpacing: AppSpacing.sm,
+                              rowSpacing: AppSpacing.sm,
                               multiselect: false,
                               initialized: choiceChipsValue != null,
                               alignment: WrapAlignment.start,
@@ -407,708 +405,241 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             .toList();
 
                         return ListView.separated(
-                          padding: EdgeInsets.fromLTRB(
-                            0,
-                            12.0,
-                            0,
-                            44.0,
+                          padding: EdgeInsets.only(
+                            top: AppSpacing.sm,
+                            bottom: 44.0,
                           ),
                           scrollDirection: Axis.vertical,
                           itemCount: containerVar.length,
-                          separatorBuilder: (_, __) => SizedBox(height: 12.0),
+                          separatorBuilder: (_, __) => SizedBox(height: AppSpacing.sm),
                           itemBuilder: (context, containerVarIndex) {
                             final containerVarItem =
                                 containerVar[containerVarIndex];
-                            final playersNeeded = containerVarItem.maxPlayers -
-                                (containerVarItem.joinedPlayers.length +
-                                    containerVarItem.guestPlayers.length);
-                            return Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 15.0),
+                            return InkWell(
+                              onTap: () async {
+                                if (containerVarItem.isCancelled == true) {
+                                  if (_getCancelledHandling(containerVarItem) == null) {
+                                    await _showCancelledGameOptions(containerVarItem);
+                                  }
+                                } else {
+                                  if ((containerVarItem.userRef == currentUserReference) ||
+                                      containerVarItem.joinedPlayers.contains(currentUserReference)) {
+                                    context.pushNamed(
+                                      GameJoinedDetailedWidget.routeName,
+                                      queryParameters: {
+                                        'gameRef': serializeParam(
+                                          containerVarItem.reference,
+                                          ParamType.DocumentReference,
+                                        ),
+                                      }.withoutNulls,
+                                    );
+                                  } else {
+                                    context.pushNamed(
+                                      JoinGameDetailedWidget.routeName,
+                                      queryParameters: {
+                                        'gameRef': serializeParam(
+                                          containerVarItem.reference,
+                                          ParamType.DocumentReference,
+                                        ),
+                                      }.withoutNulls,
+                                    );
+                                  }
+                                }
+                              },
                               child: Container(
-                                width: MediaQuery.sizeOf(context).width * 0.85,
-                                height: MediaQuery.sizeOf(context).height * 0.2,
+                                width: double.infinity,
                                 decoration: BoxDecoration(
-                                  color: AppTheme.of(context)
-                                      .secondaryBackground,
-                                  borderRadius: BorderRadius.circular(15.0),
-                                  shape: BoxShape.rectangle,
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(14.0),
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: Color(0xFF1A4D2E),
+                                      width: 5.0,
+                                    ),
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.06),
+                                      blurRadius: 8.0,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
-                                child: Stack(
-                                  alignment: AlignmentDirectional(0.0, 0.0),
-                                  children: [
-                                    StreamBuilder<CourseRecord>(
-                                      stream: CourseRecord.getDocument(
-                                          containerVarItem.courseRef!),
-                                      builder: (context, snapshot) {
-                                        // Customize what your widget looks like when it's loading.
-                                        if (!snapshot.hasData) {
-                                          return Center(
-                                            child: SizedBox(
-                                              width: 50.0,
-                                              height: 50.0,
-                                              child: SpinKitWanderingCubes(
-                                                color: AppTheme.of(context).secondary,
-                                                size: 50.0,
-                                              ),
-                                            ),
-                                          );
-                                        }
-
-                                        final imageCourseRecord =
-                                            snapshot.data!;
-
-                                        return ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(8.0),
-                                          child: Image.network(
-                                            imageCourseRecord.picture,
-                                            width: double.infinity,
-                                            height: double.infinity,
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) =>
-                                                    Image.asset(
-                                              'assets/images/error_image.png',
-                                              width: double.infinity,
-                                              height: double.infinity,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    Container(
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      decoration: BoxDecoration(
-                                        color: Color(0x4014181B),
-                                        shape: BoxShape.rectangle,
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          12.0, 0.0, 12.0, 0.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                child: Padding(
+                                  padding: EdgeInsets.all(20.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // COURSE NAME - HERO ELEMENT
+                                      Row(
                                         children: [
-                                          Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Expanded(
-                                                child: Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          5.0, 0.0, 0.0, 0.0),
-                                                  child: AutoSizeText(
-                                                    valueOrDefault<String>(
-                                                      containerVarItem.nameGame,
-                                                      'Game Name',
-                                                    ).maybeHandleOverflow(
-                                                      maxChars: 20,
-                                                      replacement: '…',
-                                                    ),
-                                                    style: AppTheme.of(
-                                                            context)
-                                                        .headlineMedium
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .outfit(
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .headlineMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .headlineMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: AppTheme
-                                                                  .of(context)
-                                                              .info,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .headlineMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .headlineMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                  ),
-                                                ),
+                                          Icon(
+                                            Icons.location_on,
+                                            color: Color(0xFF1A4D2E),
+                                            size: 22.0,
+                                          ),
+                                          SizedBox(width: 6.0),
+                                          Expanded(
+                                            child: Text(
+                                              valueOrDefault<String>(
+                                                containerVarItem.coursePlay,
+                                                'Course Name',
                                               ),
-                                              AppIconButton(
-                                                borderRadius: 20.0,
-                                                borderWidth: 1.0,
-                                                buttonSize: 40.0,
-                                                hoverColor:
-                                                    AppTheme.of(context)
-                                                        .primaryText,
-                                                hoverIconColor:
-                                                    AppTheme.of(context)
-                                                        .primaryBtnText,
-                                                icon: Icon(
-                                                  Icons.navigate_next,
-                                                  color: AppTheme.of(
-                                                          context)
-                                                      .primaryBackground,
-                                                  size: 36.0,
-                                                ),
-                                                onPressed: () async {
-                                                  if (containerVarItem
-                                                          .isCancelled ==
-                                                      true) {
-                                                    if (_getCancelledHandling(
-                                                            containerVarItem) ==
-                                                        null) {
-                                                      await _showCancelledGameOptions(
-                                                          containerVarItem);
-                                                    }
-                                                  } else {
-                                                    if ((containerVarItem
-                                                                .userRef ==
-                                                            currentUserReference) ||
-                                                        containerVarItem
-                                                            .joinedPlayers
-                                                            .contains(
-                                                                currentUserReference)) {
-                                                      context.pushNamed(
-                                                        GameJoinedDetailedWidget
-                                                            .routeName,
-                                                        queryParameters: {
-                                                          'gameRef':
-                                                              serializeParam(
-                                                            containerVarItem
-                                                                .reference,
-                                                            ParamType
-                                                                .DocumentReference,
-                                                          ),
-                                                        }.withoutNulls,
-                                                      );
-                                                    } else {
-                                                      context.pushNamed(
-                                                        JoinGameDetailedWidget
-                                                            .routeName,
-                                                        queryParameters: {
-                                                          'gameRef':
-                                                              serializeParam(
-                                                            containerVarItem
-                                                                .reference,
-                                                            ParamType
-                                                                .DocumentReference,
-                                                          ),
-                                                        }.withoutNulls,
-                                                      );
-                                                    }
-                                                  }
-                                                },
+                                              style: GoogleFonts.outfit(
+                                                fontSize: 20.0,
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xFF1A4D2E),
+                                                letterSpacing: -0.2,
+                                                height: 1.3,
                                               ),
-                                            ],
-                                          ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 5.0, 0.0, 0.0),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          5.0, 0.0, 0.0, 0.0),
-                                                  child: FaIcon(
-                                                    FontAwesomeIcons.calendar,
-                                                    color: AppTheme.of(
-                                                            context)
-                                                        .info,
-                                                    size: 24.0,
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          5.0, 0.0, 0.0, 0.0),
-                                                  child: Text(
-                                                    valueOrDefault<String>(
-                                                      dateTimeFormat(
-                                                          "EEEE",
-                                                          containerVarItem
-                                                              .date),
-                                                      'Friday',
-                                                    ),
-                                                    style: AppTheme.of(
-                                                            context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .outfit(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: AppTheme
-                                                                  .of(context)
-                                                              .info,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                  ),
-                                                ),
-                                                Text(
-                                                  ',',
-                                                  style: AppTheme.of(
-                                                          context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.outfit(
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        fontStyle:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          2.0, 0.0, 0.0, 0.0),
-                                                  child: Text(
-                                                    valueOrDefault<String>(
-                                                      dateTimeFormat(
-                                                          "MMMM",
-                                                          containerVarItem
-                                                              .date),
-                                                      'July',
-                                                    ),
-                                                    style: AppTheme.of(
-                                                            context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .outfit(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: AppTheme
-                                                                  .of(context)
-                                                              .info,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          3.0, 0.0, 0.0, 0.0),
-                                                  child: Text(
-                                                    valueOrDefault<String>(
-                                                      dateTimeFormat(
-                                                          "d",
-                                                          containerVarItem
-                                                              .date),
-                                                      '16',
-                                                    ),
-                                                    style: AppTheme.of(
-                                                            context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .outfit(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: AppTheme
-                                                                  .of(context)
-                                                              .info,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          5.0, 0.0, 0.0, 0.0),
-                                                  child: Text(
-                                                    valueOrDefault<String>(
-                                                      dateTimeFormat(
-                                                          "jm",
-                                                          containerVarItem
-                                                              .date),
-                                                      '9:00',
-                                                    ),
-                                                    style: AppTheme.of(
-                                                            context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .outfit(
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: AppTheme
-                                                                  .of(context)
-                                                              .info,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 10.0, 0.0, 0.0),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  5.0,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0),
-                                                      child: Icon(
-                                                        Icons.golf_course,
-                                                        color:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .info,
-                                                        size: 24.0,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      valueOrDefault<String>(
-                                                        containerVarItem
-                                                            .coursePlay,
-                                                        'Tower Ranch',
-                                                      ),
-                                                      style:
-                                                          AppTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .outfit(
-                                                                  fontWeight: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                color: AppTheme.of(
-                                                                        context)
-                                                                    .info,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                                fontStyle: AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 10.0, 0.0, 0.0),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceEvenly,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  5.0,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0),
-                                                      child: Icon(
-                                                        Icons.person,
-                                                        color:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .info,
-                                                        size: 24.0,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      'Players Needed:  ',
-                                                      style:
-                                                          AppTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .outfit(
-                                                                  fontWeight: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                color: AppTheme.of(
-                                                                        context)
-                                                                    .info,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                                fontStyle: AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                    ),
-                                                    Text(
-                                                      (playersNeeded < 0
-                                                              ? 0
-                                                              : playersNeeded)
-                                                          .toString(),
-                                                      style: AppTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .outfit(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                            color: AppTheme
-                                                                    .of(context)
-                                                                .info,
-                                                            fontSize: 20.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.end,
-                                                  children: [
-                                                    if (containerVarItem
-                                                        .isCancelled)
-                                                      Text(
-                                                        'Cancelled',
-                                                        textAlign:
-                                                            TextAlign.end,
-                                                        style:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  font: GoogleFonts
-                                                                      .outfit(
-                                                                    fontWeight: AppTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontWeight,
-                                                                    fontStyle: AppTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: AppTheme.of(
-                                                                          context)
-                                                                      .error,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                      ),
-                                                    if (((containerVarItem
-                                                                    .date !=
-                                                                null) &&
-                                                            (containerVarItem
-                                                                    .date! <
-                                                                getCurrentTimestamp)) &&
-                                                        (containerVarItem
-                                                                .isCancelled ==
-                                                            false))
-                                                      Text(
-                                                        'Expired',
-                                                        textAlign:
-                                                            TextAlign.end,
-                                                        style:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  font: GoogleFonts
-                                                                      .outfit(
-                                                                    fontWeight: AppTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontWeight,
-                                                                    fontStyle: AppTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: AppTheme.of(
-                                                                          context)
-                                                                      .error,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                      ),
-                                                  ],
-                                                ),
-                                              ],
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                  ],
+                                      SizedBox(height: 14.0),
+
+                                      // GAME NAME
+                                      Text(
+                                        valueOrDefault<String>(
+                                          containerVarItem.nameGame,
+                                          'Game Name',
+                                        ),
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 16.0,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF4A5568),
+                                          letterSpacing: -0.1,
+                                        ),
+                                      ),
+                                      SizedBox(height: 10.0),
+
+                                      // DATE & TIME
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.calendar_today,
+                                            color: Color(0xFF718096),
+                                            size: 16.0,
+                                          ),
+                                          SizedBox(width: 6.0),
+                                          Expanded(
+                                            child: Text(
+                                              '${dateTimeFormat("EEEE", containerVarItem.date)}, ${dateTimeFormat("MMMM", containerVarItem.date)} ${dateTimeFormat("d", containerVarItem.date)} • ${dateTimeFormat("jm", containerVarItem.date)}',
+                                              style: GoogleFonts.outfit(
+                                                fontSize: 14.0,
+                                                fontWeight: FontWeight.normal,
+                                                color: Color(0xFF718096),
+                                                letterSpacing: 0.0,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 12.0),
+
+                                      // GAME TYPE & PLAYERS
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          // Game Type Badge
+                                          if (containerVarItem.gameType.isNotEmpty)
+                                            Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 12.0,
+                                                vertical: 6.0,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Color(0xFFE8F5E9),
+                                                borderRadius: BorderRadius.circular(20.0),
+                                                border: Border.all(
+                                                  color: Color(0xFF1A4D2E).withValues(alpha: 0.2),
+                                                  width: 1.0,
+                                                ),
+                                              ),
+                                              child: Text(
+                                                valueOrDefault<String>(
+                                                  containerVarItem.gameType,
+                                                  'Game Type',
+                                                ),
+                                                style: GoogleFonts.outfit(
+                                                  fontSize: 12.0,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Color(0xFF1A4D2E),
+                                                  letterSpacing: 0.2,
+                                                ),
+                                              ),
+                                            ),
+                                          if (containerVarItem.gameType.isNotEmpty)
+                                            Spacer(),
+
+                                          // Players Info
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.people,
+                                                color: Color(0xFF718096),
+                                                size: 18.0,
+                                              ),
+                                              SizedBox(width: 6.0),
+                                              Text(
+                                                '${containerVarItem.joinedPlayers.length + containerVarItem.guestPlayers.length}/${containerVarItem.maxPlayers} players',
+                                                style: GoogleFonts.outfit(
+                                                  fontSize: 14.0,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Color(0xFF4A5568),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          // Status Badges
+                                          if (containerVarItem.isCancelled)
+                                            Container(
+                                              margin: EdgeInsets.only(left: 12.0),
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 10.0,
+                                                vertical: 4.0,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Color(0xFFFFEBEE),
+                                                borderRadius: BorderRadius.circular(12.0),
+                                              ),
+                                              child: Text(
+                                                'Cancelled',
+                                                style: GoogleFonts.outfit(
+                                                  fontSize: 12.0,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Color(0xFFD32F2F),
+                                                ),
+                                              ),
+                                            ),
+                                          if (((containerVarItem.date != null) &&
+                                              (containerVarItem.date! < getCurrentTimestamp)) &&
+                                              (containerVarItem.isCancelled == false))
+                                            Container(
+                                              margin: EdgeInsets.only(left: 12.0),
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 10.0,
+                                                vertical: 4.0,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Color(0xFFFFF3E0),
+                                                borderRadius: BorderRadius.circular(12.0),
+                                              ),
+                                              child: Text(
+                                                'Expired',
+                                                style: GoogleFonts.outfit(
+                                                  fontSize: 12.0,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Color(0xFFE65100),
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             );
@@ -1117,7 +648,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       },
                     ),
                   ),
-                ],
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ),

@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
 
 class Chat2DetailsWidget extends StatefulWidget {
   const Chat2DetailsWidget({
@@ -161,7 +163,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                   alignment: AlignmentDirectional(-1.0, -1.0),
                                   child: Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 12.0, 0.0),
+                                        0.0, 0.0, AppSpacing.sm, 0.0),
                                     child: Container(
                                       width: 44.0,
                                       height: 44.0,
@@ -182,7 +184,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                         ),
                                       ),
                                       child: Padding(
-                                        padding: EdgeInsets.all(2.0),
+                                        padding: EdgeInsets.all(AppSpacing.xxs / 2),
                                         child: ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(8.0),
@@ -244,7 +246,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                             children: [
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 4.0, 12.0, 4.0),
+                                    0.0, AppSpacing.xxs, AppSpacing.sm, AppSpacing.xxs),
                                 child: Container(
                                   width: 54.0,
                                   height: 44.0,
@@ -302,7 +304,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                                           '') {
                                                     return Padding(
                                                       padding:
-                                                          EdgeInsets.all(2.0),
+                                                          EdgeInsets.all(AppSpacing.xxs / 2),
                                                       child: ClipRRect(
                                                         borderRadius:
                                                             BorderRadius
@@ -333,7 +335,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                                   } else {
                                                     return Padding(
                                                       padding:
-                                                          EdgeInsets.all(2.0),
+                                                          EdgeInsets.all(AppSpacing.xxs / 2),
                                                       child: Container(
                                                         width: 100.0,
                                                         height: 100.0,
@@ -421,7 +423,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                                           .photoUrl !=
                                                       '') {
                                                 return Padding(
-                                                  padding: EdgeInsets.all(2.0),
+                                                  padding: EdgeInsets.all(AppSpacing.xxs / 2),
                                                   child: ClipRRect(
                                                     borderRadius:
                                                         BorderRadius.circular(
@@ -445,7 +447,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                                 );
                                               } else {
                                                 return Padding(
-                                                  padding: EdgeInsets.all(2.0),
+                                                  padding: EdgeInsets.all(AppSpacing.xxs / 2),
                                                   child: Container(
                                                     width: 100.0,
                                                     height: 100.0,
@@ -539,7 +541,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
                                     ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 4.0, 0.0, 0.0),
+                                          0.0, AppSpacing.xxs, 0.0, 0.0),
                                       child: Text(
                                         '${valueOrDefault<String>(
                                           widget.chatRef?.users.length
@@ -590,7 +592,7 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
           actions: [
             Builder(
               builder: (context) => Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 16.0, 8.0),
+                padding: EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                 child: InkWell(
                   splashColor: Colors.transparent,
                   focusColor: Colors.transparent,
@@ -668,10 +670,12 @@ class _Chat2DetailsWidgetState extends State<Chat2DetailsWidget> {
           centerTitle: false,
           elevation: 0.0,
         ),
-        body: SafeArea(
-          top: true,
-          child: ChatThreadComponentWidget(
-            chatRef: widget.chatRef,
+        body: FairwayBackgroundDark(
+          child: SafeArea(
+            top: true,
+            child: ChatThreadComponentWidget(
+              chatRef: widget.chatRef,
+            ),
           ),
         ),
       ),

@@ -3,6 +3,8 @@ import '/backend/backend.dart';
 import '/core/app_theme.dart';
 import '/core/random_data_util.dart' as random_data;
 import '/core/widgets/app_icon_button.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
 import '/chat_group/chat_2_details/chat2_details_widget.dart';
 import '/utils/app_util.dart';
 import 'package:collection/collection.dart';
@@ -176,16 +178,17 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
           centerTitle: false,
           elevation: 0.0,
         ),
-        body: Container(
-          width: double.infinity,
-          child: Form(
-            key: formKey,
-            autovalidateMode: AutovalidateMode.always,
-            child: Align(
-              alignment: AlignmentDirectional(0.0, 0.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
+        body: FairwayBackgroundDark(
+          child: Container(
+            width: double.infinity,
+            child: Form(
+              key: formKey,
+              autovalidateMode: AutovalidateMode.always,
+              child: Align(
+                alignment: AlignmentDirectional(0.0, 0.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
                   Container(
                     width: 140.0,
                     child: Stack(
@@ -194,7 +197,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                           alignment: AlignmentDirectional(0.0, 0.0),
                           child: Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 12.0, 0.0, 0.0),
+                                0.0, AppSpacing.sm, 0.0, 0.0),
                             child: Container(
                               width: 100.0,
                               height: 100.0,
@@ -204,7 +207,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                 shape: BoxShape.circle,
                               ),
                               child: Padding(
-                                padding: EdgeInsets.all(2.0),
+                                padding: EdgeInsets.all(AppSpacing.xxs / 2),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(50.0),
                                   child: Image.network(
@@ -234,7 +237,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                   ),
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 40.0, 0.0, 0.0),
+                        EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.xxxl, 0.0, 0.0),
                     child: Row(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -269,7 +272,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                         ),
                         Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
-                              10.0, 0.0, 0.0, 0.0),
+                              AppSpacing.xs, 0.0, 0.0, 0.0),
                           child: Text(
                             valueOrDefault<String>(
                               widget.userRef?.lastName,
@@ -304,7 +307,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                   ),
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 15.0, 0.0, 15.0),
+                        EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.md, 0.0, AppSpacing.md),
                     child: Row(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -339,7 +342,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                         ),
                         Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
-                              40.0, 0.0, 0.0, 0.0),
+                              AppSpacing.xxxl, 0.0, 0.0, 0.0),
                           child: Text(
                             valueOrDefault<String>(
                               widget.userRef?.phoneNumber,
@@ -374,7 +377,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                   ),
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 50.0),
+                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, AppSpacing.xxxl + AppSpacing.xxs),
                     child: Row(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -412,12 +415,12 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                   ),
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 24.0),
+                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, AppSpacing.xl),
                     child: AppIconButton(
                       borderColor: AppTheme.of(context).primary,
-                      borderRadius: 24.0,
+                      borderRadius: AppSpacing.xl,
                       borderWidth: 1.0,
-                      buttonSize: 48.0,
+                      buttonSize: AppSpacing.xxxl,
                       fillColor: AppTheme.of(context).primary,
                       icon: FaIcon(
                         FontAwesomeIcons.facebookMessenger,
@@ -463,14 +466,14 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                           children: [
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 16.0, 16.0, 0.0),
+                                  AppSpacing.md, AppSpacing.md, AppSpacing.md, 0.0),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 8.0),
+                                        0.0, 0.0, 0.0, AppSpacing.xs),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       mainAxisAlignment:
@@ -479,19 +482,19 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 8.0, 16.0, 8.0),
+                                                  0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                           child: FaIcon(
                                             FontAwesomeIcons.mapMarkerAlt,
                                             color: AppTheme.of(context)
                                                 .secondaryText,
-                                            size: 24.0,
+                                            size: AppSpacing.xl,
                                           ),
                                         ),
                                         Expanded(
                                           child: Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 12.0, 0.0),
+                                                    0.0, 0.0, AppSpacing.sm, 0.0),
                                             child: Text(
                                               'Home Course',
                                               textAlign: TextAlign.start,
@@ -524,7 +527,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                   ),
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 8.0),
+                                        0.0, 0.0, 0.0, AppSpacing.xs),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       mainAxisAlignment:
@@ -537,7 +540,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                             child: Padding(
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
-                                                      0.0, 0.0, 12.0, 0.0),
+                                                      0.0, 0.0, AppSpacing.sm, 0.0),
                                               child: Text(
                                                 valueOrDefault<String>(
                                                   widget.userRef?.homeCourse,
@@ -576,7 +579,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                   ),
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 8.0),
+                                        0.0, 0.0, 0.0, AppSpacing.xs),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       mainAxisAlignment:
@@ -585,19 +588,19 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 8.0, 16.0, 8.0),
+                                                  0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                           child: FaIcon(
                                             FontAwesomeIcons.golfBall,
                                             color: AppTheme.of(context)
                                                 .secondaryText,
-                                            size: 24.0,
+                                            size: AppSpacing.xl,
                                           ),
                                         ),
                                         Expanded(
                                           child: Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 12.0, 0.0),
+                                                    0.0, 0.0, AppSpacing.sm, 0.0),
                                             child: Text(
                                               'Handicap',
                                               textAlign: TextAlign.start,
@@ -632,7 +635,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                             child: Padding(
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
-                                                      0.0, 0.0, 12.0, 0.0),
+                                                      0.0, 0.0, AppSpacing.sm, 0.0),
                                               child: Text(
                                                 valueOrDefault<String>(
                                                   widget.userRef?.handicap
@@ -672,7 +675,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                   ),
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 8.0),
+                                        0.0, 0.0, 0.0, AppSpacing.xs),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       mainAxisAlignment:
@@ -681,19 +684,19 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 8.0, 16.0, 8.0),
+                                                  0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                           child: Icon(
                                             Icons.local_drink,
                                             color: AppTheme.of(context)
                                                 .secondaryText,
-                                            size: 24.0,
+                                            size: AppSpacing.xl,
                                           ),
                                         ),
                                         Expanded(
                                           child: Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 12.0, 0.0),
+                                                    0.0, 0.0, AppSpacing.sm, 0.0),
                                             child: Text(
                                               'Drinks',
                                               textAlign: TextAlign.start,
@@ -728,7 +731,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                             child: Padding(
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
-                                                      0.0, 0.0, 12.0, 0.0),
+                                                      0.0, 0.0, AppSpacing.sm, 0.0),
                                               child: Text(
                                                 valueOrDefault<String>(
                                                   widget.userRef?.drinks
@@ -768,7 +771,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                   ),
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 8.0),
+                                        0.0, 0.0, 0.0, AppSpacing.xs),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       mainAxisAlignment:
@@ -777,19 +780,19 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 8.0, 16.0, 8.0),
+                                                  0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                           child: FaIcon(
                                             FontAwesomeIcons.music,
                                             color: AppTheme.of(context)
                                                 .secondaryText,
-                                            size: 24.0,
+                                            size: AppSpacing.xl,
                                           ),
                                         ),
                                         Expanded(
                                           child: Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 12.0, 0.0),
+                                                    0.0, 0.0, AppSpacing.sm, 0.0),
                                             child: Text(
                                               'Music',
                                               textAlign: TextAlign.start,
@@ -824,7 +827,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                             child: Padding(
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
-                                                      0.0, 0.0, 12.0, 0.0),
+                                                      0.0, 0.0, AppSpacing.sm, 0.0),
                                               child: Text(
                                                 valueOrDefault<String>(
                                                   widget.userRef?.music
@@ -864,7 +867,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                   ),
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 8.0),
+                                        0.0, 0.0, 0.0, AppSpacing.xs),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       mainAxisAlignment:
@@ -873,19 +876,19 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 8.0, 16.0, 8.0),
+                                                  0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                           child: FaIcon(
                                             FontAwesomeIcons.moneyBillAlt,
                                             color: AppTheme.of(context)
                                                 .secondaryText,
-                                            size: 24.0,
+                                            size: AppSpacing.xl,
                                           ),
                                         ),
                                         Expanded(
                                           child: Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 12.0, 0.0),
+                                                    0.0, 0.0, AppSpacing.sm, 0.0),
                                             child: Text(
                                               'Play for Money',
                                               textAlign: TextAlign.start,
@@ -920,7 +923,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                             child: Padding(
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
-                                                      0.0, 0.0, 12.0, 0.0),
+                                                      0.0, 0.0, AppSpacing.sm, 0.0),
                                               child: Text(
                                                 valueOrDefault<String>(
                                                   widget.userRef?.playForMoney
@@ -960,7 +963,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                   ),
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 8.0),
+                                        0.0, 0.0, 0.0, AppSpacing.xs),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       mainAxisAlignment:
@@ -969,19 +972,19 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 8.0, 16.0, 8.0),
+                                                  0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                           child: FaIcon(
                                             FontAwesomeIcons.clock,
                                             color: AppTheme.of(context)
                                                 .secondaryText,
-                                            size: 24.0,
+                                            size: AppSpacing.xl,
                                           ),
                                         ),
                                         Expanded(
                                           child: Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 12.0, 0.0),
+                                                    0.0, 0.0, AppSpacing.sm, 0.0),
                                             child: Text(
                                               'Pace of Play',
                                               textAlign: TextAlign.start,
@@ -1016,7 +1019,7 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                                             child: Padding(
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
-                                                      0.0, 0.0, 12.0, 0.0),
+                                                      0.0, 0.0, AppSpacing.sm, 0.0),
                                               child: Text(
                                                 valueOrDefault<String>(
                                                   widget.userRef?.paceOfPlay
@@ -1062,7 +1065,8 @@ class _ProfileUserWidgetState extends State<ProfileUserWidget> {
                       ),
                     ),
                   ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

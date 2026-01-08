@@ -3,7 +3,9 @@ import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
 import '/utils/upload_data.dart';
 import '/newsfeed/newsfeed/newsfeed_widget.dart';
 import 'package:flutter/material.dart';
@@ -105,16 +107,17 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
         centerTitle: false,
         elevation: 0.0,
       ),
-      body: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Row(
+      body: FairwayBackgroundLight(
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.all(10.0),
+                  padding: AppSpacing.allSm,
                   child: TextFormField(
                     controller: inputTitleTextController,
                     focusNode: inputTitleFocusNode,
@@ -209,7 +212,7 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 12.0),
+                padding: EdgeInsets.only(top: AppSpacing.xs, bottom: AppSpacing.sm),
                 child: Container(
                   width: MediaQuery.sizeOf(context).width * 0.94,
                   decoration: BoxDecoration(),
@@ -217,8 +220,7 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                        padding: EdgeInsets.only(top: AppSpacing.sm),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
                           children: [
@@ -279,9 +281,11 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
-                                  contentPadding:
-                                      EdgeInsetsDirectional.fromSTEB(
-                                          20.0, 32.0, 20.0, 12.0),
+                                  contentPadding: EdgeInsets.only(
+                                      left: AppSpacing.lg,
+                                      top: AppSpacing.xxl,
+                                      right: AppSpacing.lg,
+                                      bottom: AppSpacing.sm),
                                 ),
                                 style: AppTheme.of(context)
                                     .bodyMedium
@@ -333,7 +337,10 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                   fit: BoxFit.cover,
                 ),
               ),
-              AppButton(
+              AppButtonEnhanced(
+                text: 'Upload Image',
+                variant: AppButtonVariant.secondary,
+                size: AppButtonSize.medium,
                 onPressed: () async {
                   final selectedMedia = await selectMediaWithSourceBottomSheet(
                     context: context,
@@ -388,42 +395,15 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                     }
                   }
                 },
-                text: 'Upload Image',
-                options: AppButtonOptions(
-                  width: 150.0,
-                  height: 50.0,
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                  iconPadding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                  color: AppTheme.of(context).tertiary,
-                  textStyle: AppTheme.of(context).labelMedium.override(
-                        font: GoogleFonts.outfit(
-                          fontWeight: AppTheme.of(context)
-                              .labelMedium
-                              .fontWeight,
-                          fontStyle: AppTheme.of(context)
-                              .labelMedium
-                              .fontStyle,
-                        ),
-                        color: Colors.white,
-                        letterSpacing: 0.0,
-                        fontWeight:
-                            AppTheme.of(context).labelMedium.fontWeight,
-                        fontStyle:
-                            AppTheme.of(context).labelMedium.fontStyle,
-                      ),
-                  elevation: 2.0,
-                  borderSide: BorderSide(
-                    color: AppTheme.of(context).primary,
-                    width: 1.0,
-                  ),
-                ),
               ),
             ],
           ),
           Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
-            child: AppButton(
+            padding: EdgeInsets.only(top: AppSpacing.md),
+            child: AppButtonEnhanced(
+              text: 'Create Post',
+              variant: AppButtonVariant.primary,
+              size: AppButtonSize.large,
               onPressed: () async {
                 await PostsRecord.collection.doc().set(createPostsRecordData(
                       content: inputContentTextController.text,
@@ -443,35 +423,10 @@ class _BlogCreateWidgetState extends State<BlogCreateWidget> {
                   },
                 );
               },
-              text: 'Create Post',
-              options: AppButtonOptions(
-                width: 270.0,
-                height: 50.0,
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                color: AppTheme.of(context).primary,
-                textStyle: AppTheme.of(context).titleSmall.override(
-                      font: GoogleFonts.lexendDeca(
-                        fontWeight: FontWeight.w500,
-                        fontStyle:
-                            AppTheme.of(context).titleSmall.fontStyle,
-                      ),
-                      color: Colors.white,
-                      fontSize: 20.0,
-                      letterSpacing: 0.0,
-                      fontWeight: FontWeight.w500,
-                      fontStyle:
-                          AppTheme.of(context).titleSmall.fontStyle,
-                    ),
-                elevation: 3.0,
-                borderSide: BorderSide(
-                  color: Colors.transparent,
-                  width: 1.0,
-                ),
-              ),
             ),
           ),
         ],
+        ),
       ),
     );
   }

@@ -2,7 +2,9 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
 import '/profile/create_profile/create_profile_widget.dart';
 import '/profile/home/home_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
@@ -80,8 +82,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        body: FairwayBackgroundSunset(
-          showOrganic: true,
+        body: FairwayBackgroundLight(
           child: Row(
             mainAxisSize: MainAxisSize.max,
             children: [
@@ -108,7 +109,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                           alignment: AlignmentDirectional(0.0, 0.0),
                           child: Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
-                                24.0, 90.0, 24.0, 0.0),
+                                AppSpacing.lg, 90.0, AppSpacing.lg, 0.0),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,7 +141,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                 ),
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 12.0, 0.0, 24.0),
+                                      0.0, AppSpacing.xs, 0.0, AppSpacing.lg),
                                   child: Text(
                                     'Let\'s get started by filling out the form below.',
                                     style: AppTheme.of(context)
@@ -156,7 +157,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                     .labelMedium
                                                     .fontStyle,
                                           ),
-                                          color: Colors.white,
+                                          color: AppTheme.of(context).secondaryText,
                                           letterSpacing: 0.0,
                                           fontWeight:
                                               AppTheme.of(context)
@@ -171,7 +172,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                 ),
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 16.0),
+                                      0.0, 0.0, 0.0, AppSpacing.md),
                                   child: Container(
                                     width: double.infinity,
                                     child: TextFormField(
@@ -305,7 +306,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                 ),
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 16.0),
+                                      0.0, 0.0, 0.0, AppSpacing.md),
                                   child: Container(
                                     width: double.infinity,
                                     child: TextFormField(
@@ -431,7 +432,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                 ),
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 16.0),
+                                      0.0, 0.0, 0.0, AppSpacing.md),
                                   child: Container(
                                     width: double.infinity,
                                     child: TextFormField(
@@ -559,8 +560,8 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                 ),
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 16.0),
-                                  child: AppButton(
+                                      0.0, 0.0, 0.0, AppSpacing.md),
+                                  child: AppButtonEnhanced(
                                     onPressed: () async {
                                       GoRouter.of(context).prepareAuthEvent();
                                       if (passwordTextController.text !=
@@ -611,52 +612,14 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       );
                                     },
                                     text: 'Create Account',
-                                    options: AppButtonOptions(
-                                      width: double.infinity,
-                                      height: 44.0,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 0.0, 0.0),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0.0, 0.0, 0.0, 0.0),
-                                      color:
-                                          AppTheme.of(context).primary,
-                                      textStyle: AppTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            font: GoogleFonts.outfit(
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .titleSmall
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .titleSmall
-                                                      .fontStyle,
-                                            ),
-                                            color: Colors.white,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .titleSmall
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .titleSmall
-                                                    .fontStyle,
-                                          ),
-                                      elevation: 3.0,
-                                      borderSide: BorderSide(
-                                        color: Colors.transparent,
-                                        width: 1.0,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12.0),
-                                    ),
+                                    variant: AppButtonVariant.primary,
+                                    size: AppButtonSize.large,
+                                    fullWidth: true,
                                   ),
                                 ),
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 24.0),
+                                      0.0, 0.0, 0.0, AppSpacing.lg),
                                   child: Container(
                                     width: double.infinity,
                                     child: Stack(
@@ -668,7 +631,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                           child: Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 12.0, 0.0, 12.0),
+                                                    0.0, AppSpacing.xs, 0.0, AppSpacing.xs),
                                             child: Container(
                                               width: double.infinity,
                                               height: 2.0,
@@ -733,8 +696,8 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                 ),
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 16.0),
-                                  child: AppButton(
+                                      0.0, 0.0, 0.0, AppSpacing.md),
+                                  child: AppButtonEnhanced(
                                     onPressed: () async {
                                       GoRouter.of(context).prepareAuthEvent();
                                       final user = await authManager
@@ -764,63 +727,18 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       );
                                     },
                                     text: 'Continue with Google',
-                                    icon: FaIcon(
-                                      FontAwesomeIcons.google,
-                                      size: 20.0,
-                                    ),
-                                    options: AppButtonOptions(
-                                      width: double.infinity,
-                                      height: 44.0,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 0.0, 0.0),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0.0, 0.0, 0.0, 0.0),
-                                      color: AppTheme.of(context)
-                                          .secondaryBackground,
-                                      textStyle: AppTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            font: GoogleFonts.outfit(
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .titleSmall
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .titleSmall
-                                                      .fontStyle,
-                                            ),
-                                            color: AppTheme.of(context)
-                                                .primaryText,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .titleSmall
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .titleSmall
-                                                    .fontStyle,
-                                          ),
-                                      elevation: 0.0,
-                                      borderSide: BorderSide(
-                                        color: AppTheme.of(context)
-                                            .alternate,
-                                        width: 2.0,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12.0),
-                                      hoverColor: AppTheme.of(context)
-                                          .primaryBackground,
-                                    ),
+                                    leadingIcon: FontAwesomeIcons.google,
+                                    variant: AppButtonVariant.gradient,
+                                    size: AppButtonSize.large,
+                                    fullWidth: true,
                                   ),
                                 ),
                                 isAndroid
                                     ? Container()
                                     : Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 0.0, 16.0),
-                                        child: AppButton(
+                                            0.0, 0.0, 0.0, AppSpacing.md),
+                                        child: AppButtonEnhanced(
                                           onPressed: () async {
                                             GoRouter.of(context)
                                                 .prepareAuthEvent();
@@ -853,73 +771,17 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             );
                                           },
                                           text: 'Continue with Apple',
-                                          icon: FaIcon(
-                                            FontAwesomeIcons.apple,
-                                            size: 20.0,
-                                          ),
-                                          options: AppButtonOptions(
-                                            width: double.infinity,
-                                            height: 44.0,
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 0.0, 0.0),
-                                            iconPadding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 0.0, 0.0),
-                                            color: AppTheme.of(context)
-                                                .secondaryBackground,
-                                            textStyle:
-                                                AppTheme.of(context)
-                                                    .titleSmall
-                                                    .override(
-                                                      font: GoogleFonts.outfit(
-                                                        fontWeight:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .titleSmall
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .titleSmall
-                                                                .fontStyle,
-                                                      ),
-                                                      color:
-                                                          AppTheme.of(
-                                                                  context)
-                                                              .primaryText,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          AppTheme.of(
-                                                                  context)
-                                                              .titleSmall
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          AppTheme.of(
-                                                                  context)
-                                                              .titleSmall
-                                                              .fontStyle,
-                                                    ),
-                                            elevation: 0.0,
-                                            borderSide: BorderSide(
-                                              color:
-                                                  AppTheme.of(context)
-                                                      .alternate,
-                                              width: 2.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(12.0),
-                                            hoverColor:
-                                                AppTheme.of(context)
-                                                    .primaryBackground,
-                                          ),
+                                          leadingIcon: FontAwesomeIcons.apple,
+                                          variant: AppButtonVariant.gradient,
+                                          size: AppButtonSize.large,
+                                          fullWidth: true,
                                         ),
                                       ),
                                 Align(
                                   alignment: AlignmentDirectional(0.0, 0.0),
                                   child: Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 12.0, 0.0, 12.0),
+                                        0.0, AppSpacing.xs, 0.0, AppSpacing.xs),
                                     child: InkWell(
                                       splashColor: Colors.transparent,
                                       focusColor: Colors.transparent,
@@ -963,7 +825,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                               .bodyMedium
                                                               .fontStyle,
                                                     ),
-                                                    color: Colors.white,
+                                                    color: AppTheme.of(context).primary,
                                                     letterSpacing: 0.0,
                                                     fontWeight: FontWeight.w600,
                                                     fontStyle:
@@ -989,7 +851,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                           .bodyMedium
                                                           .fontStyle,
                                                 ),
-                                                color: Colors.white,
+                                                color: AppTheme.of(context).secondaryText,
                                                 letterSpacing: 0.0,
                                                 fontWeight:
                                                     AppTheme.of(context)
@@ -1023,7 +885,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
               Expanded(
                 flex: 8,
                 child: Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(AppSpacing.md),
                   child: Container(
                     width: 100.0,
                     height: double.infinity,
@@ -1040,7 +902,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                       borderRadius: BorderRadius.circular(16.0),
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(24.0),
+                      padding: EdgeInsets.all(AppSpacing.lg),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -1071,13 +933,13 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                               ),
                             ),
                             child: Padding(
-                              padding: EdgeInsets.all(4.0),
+                              padding: EdgeInsets.all(AppSpacing.xxs),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        12.0, 12.0, 12.0, 8.0),
+                                        AppSpacing.xs, AppSpacing.xs, AppSpacing.xs, AppSpacing.xxs),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       mainAxisAlignment:
@@ -1090,7 +952,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                           children: [
                                             Padding(
                                               padding: EdgeInsetsDirectional
-                                                  .fromSTEB(0.0, 0.0, 8.0, 0.0),
+                                                  .fromSTEB(0.0, 0.0, AppSpacing.xxs, 0.0),
                                               child: Container(
                                                 width: 40.0,
                                                 height: 40.0,
@@ -1184,7 +1046,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                 Padding(
                                                   padding: EdgeInsetsDirectional
                                                       .fromSTEB(
-                                                          0.0, 0.0, 4.0, 0.0),
+                                                          0.0, 0.0, AppSpacing.xxs, 0.0),
                                                   child: Text(
                                                     '5',
                                                     style: AppTheme.of(
@@ -1234,7 +1096,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                   ),
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        12.0, 0.0, 12.0, 8.0),
+                                        AppSpacing.xs, 0.0, AppSpacing.xs, AppSpacing.xxs),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       children: [

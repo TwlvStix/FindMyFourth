@@ -2,7 +2,9 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
 import 'dart:ui';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import 'package:flutter/material.dart';
@@ -39,23 +41,24 @@ class _BecomeFriendsWidgetState extends State<BecomeFriendsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: 6.0,
-          sigmaY: 8.0,
-        ),
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            color: AppTheme.of(context).accent4,
+    return FairwayBackgroundDark(
+      child: ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: 6.0,
+            sigmaY: 8.0,
           ),
-          alignment: AlignmentDirectional(0.0, 1.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              color: AppTheme.of(context).accent4,
+            ),
+            alignment: AlignmentDirectional(0.0, 1.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
               StreamBuilder<List<UsersRecord>>(
                 stream: queryUsersRecord(
                   singleRecord: true,
@@ -107,7 +110,7 @@ class _BecomeFriendsWidgetState extends State<BecomeFriendsWidget> {
                     ),
                     child: Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
+                          EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.xs, 0.0, 0.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,7 +131,7 @@ class _BecomeFriendsWidgetState extends State<BecomeFriendsWidget> {
                           ),
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
-                                16.0, 16.0, 0.0, 0.0),
+                                AppSpacing.md, AppSpacing.md, 0.0, 0.0),
                             child: RichText(
                               textScaler: MediaQuery.of(context).textScaler,
                               text: TextSpan(
@@ -169,8 +172,12 @@ class _BecomeFriendsWidgetState extends State<BecomeFriendsWidget> {
                           ),
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
-                                16.0, 16.0, 16.0, 44.0),
-                            child: AppButton(
+                                AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.xxxl),
+                            child: AppButtonEnhanced(
+                              text: 'Send Friend Request',
+                              variant: AppButtonVariant.primary,
+                              size: AppButtonSize.large,
+                              fullWidth: true,
                               onPressed: () async {
                                 await FriendRequestRecord.collection
                                     .doc()
@@ -193,43 +200,6 @@ class _BecomeFriendsWidgetState extends State<BecomeFriendsWidget> {
                                   },
                                 );
                               },
-                              text: 'Send Friend Request',
-                              options: AppButtonOptions(
-                                width: double.infinity,
-                                height: 50.0,
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
-                                iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
-                                color: AppTheme.of(context).primary,
-                                textStyle: AppTheme.of(context)
-                                    .titleLarge
-                                    .override(
-                                      font: GoogleFonts.outfit(
-                                        fontWeight: AppTheme.of(context)
-                                            .titleLarge
-                                            .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .titleLarge
-                                            .fontStyle,
-                                      ),
-                                      color: AppTheme.of(context)
-                                          .secondaryBackground,
-                                      letterSpacing: 0.0,
-                                      fontWeight: AppTheme.of(context)
-                                          .titleLarge
-                                          .fontWeight,
-                                      fontStyle: AppTheme.of(context)
-                                          .titleLarge
-                                          .fontStyle,
-                                    ),
-                                elevation: 4.0,
-                                borderSide: BorderSide(
-                                  color: Colors.transparent,
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
                             ),
                           ),
                         ],
@@ -241,6 +211,7 @@ class _BecomeFriendsWidgetState extends State<BecomeFriendsWidget> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

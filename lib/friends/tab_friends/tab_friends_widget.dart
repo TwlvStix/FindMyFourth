@@ -6,6 +6,9 @@ import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
 import '/core/random_data_util.dart' as random_data;
 import '/chat_group/chat_2_details/chat2_details_widget.dart';
 import '/profile/profile_user/profile_user_widget.dart';
@@ -145,12 +148,13 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
           actions: [],
           centerTitle: false,
         ),
-        body: SafeArea(
-          top: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        body: FairwayBackgroundDark(
+          child: SafeArea(
+            top: true,
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Expanded(
                 child: Column(
                   children: [
@@ -191,10 +195,10 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                         borderRadius: 8.0,
                         elevation: 0.0,
                         labelPadding: EdgeInsetsDirectional.fromSTEB(
-                            12.0, 0.0, 12.0, 0.0),
+                            AppSpacing.sm, 0.0, AppSpacing.sm, 0.0),
                         buttonMargin:
-                            EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
-                        padding: EdgeInsets.all(4.0),
+                            EdgeInsetsDirectional.fromSTEB(AppSpacing.xs, 0.0, AppSpacing.xs, 0.0),
+                        padding: AppSpacing.allXxs,
                         tabs: [
                           Tab(
                             text: 'Search',
@@ -247,14 +251,14 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                   children: [
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          16.0, 8.0, 16.0, 12.0),
+                                          AppSpacing.md, AppSpacing.xs, AppSpacing.md, AppSpacing.sm),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
                                           Expanded(
                                             child: Padding(
                                               padding: EdgeInsetsDirectional
-                                                  .fromSTEB(8.0, 0.0, 8.0, 0.0),
+                                                  .fromSTEB(AppSpacing.xs, 0.0, AppSpacing.xs, 0.0),
                                               child: Autocomplete<String>(
                                                 initialValue:
                                                     TextEditingValue(),
@@ -522,7 +526,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                           Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    12.0, 0.0, 0.0, 0.0),
+                                                    AppSpacing.sm, 0.0, 0.0, 0.0),
                                             child: AppIconButton(
                                               borderColor: Colors.transparent,
                                               borderRadius: 30.0,
@@ -550,7 +554,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                     ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          24.0, 0.0, 0.0, 0.0),
+                                          AppSpacing.xl, 0.0, 0.0, 0.0),
                                       child: Text(
                                         'Add a Friend Request',
                                         style: AppTheme.of(context)
@@ -625,7 +629,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                         return ListView.separated(
                                           padding: EdgeInsets.fromLTRB(
                                             0,
-                                            12.0,
+                                            AppSpacing.sm,
                                             0,
                                             44.0,
                                           ),
@@ -635,7 +639,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                           itemCount:
                                               listViewUsersRecordList.length,
                                           separatorBuilder: (_, __) =>
-                                              SizedBox(height: 12.0),
+                                              SizedBox(height: AppSpacing.sm),
                                           itemBuilder:
                                               (context, listViewIndex) {
                                             final listViewUsersRecord =
@@ -759,9 +763,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                 .fromSTEB(
                                                                     0.0,
                                                                     0.0,
-                                                                    10.0,
+                                                                    AppSpacing.sm,
                                                                     0.0),
-                                                        child: AppButton(
+                                                        child: AppButtonEnhanced(
                                                           onPressed: () async {
                                                             context.pushNamed(
                                                               ProfileUserWidget
@@ -793,65 +797,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                             );
                                                           },
                                                           text: 'View',
-                                                          options:
-                                                              AppButtonOptions(
-                                                            width: 51.0,
-                                                            height: 36.0,
-                                                            padding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        0.0,
-                                                                        0.0,
-                                                                        0.0,
-                                                                        0.0),
-                                                            iconPadding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        0.0,
-                                                                        0.0,
-                                                                        0.0,
-                                                                        0.0),
-                                                            color: Color(
-                                                                0xFF253551),
-                                                            textStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .override(
-                                                                      font: GoogleFonts
-                                                                          .outfit(
-                                                                        fontWeight:
-                                                                            FontWeight.normal,
-                                                                        fontStyle: AppTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                      color: Colors
-                                                                          .white,
-                                                                      fontSize:
-                                                                          14.0,
-                                                                      letterSpacing:
-                                                                          0.0,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .normal,
-                                                                      fontStyle: AppTheme.of(
-                                                                              context)
-                                                                          .bodyMedium
-                                                                          .fontStyle,
-                                                                    ),
-                                                            elevation: 2.0,
-                                                            borderSide:
-                                                                BorderSide(
-                                                              color: Colors
-                                                                  .transparent,
-                                                              width: 1.0,
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        8.0),
-                                                          ),
+                                                          variant: AppButtonVariant.primary,
+                                                          size: AppButtonSize.small,
                                                         ),
                                                       ),
                                                       Padding(
@@ -1338,7 +1285,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                 listViewFriendRequestRecordList
                                                     .length,
                                             separatorBuilder: (_, __) =>
-                                                SizedBox(height: 12.0),
+                                                SizedBox(height: AppSpacing.sm),
                                             itemBuilder:
                                                 (context, listViewIndex) {
                                               final listViewFriendRequestRecord =
@@ -1347,7 +1294,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                               return Padding(
                                                 padding: EdgeInsetsDirectional
                                                     .fromSTEB(
-                                                        16.0, 12.0, 16.0, 12.0),
+                                                        AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
                                                 child:
                                                     StreamBuilder<UsersRecord>(
                                                   stream: UsersRecord.getDocument(
@@ -1476,10 +1423,10 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                       .fromSTEB(
                                                                           0.0,
                                                                           0.0,
-                                                                          5.0,
+                                                                          AppSpacing.xs,
                                                                           0.0),
                                                               child:
-                                                                  AppButton(
+                                                                  AppButtonEnhanced(
                                                                 onPressed:
                                                                     () async {
                                                                   context
@@ -1512,61 +1459,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   );
                                                                 },
                                                                 text: 'View',
-                                                                options:
-                                                                    AppButtonOptions(
-                                                                  width: 51.0,
-                                                                  height: 36.0,
-                                                                  padding: EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
-                                                                  iconPadding: EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
-                                                                  color: Color(
-                                                                      0xFF253551),
-                                                                  textStyle: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .outfit(
-                                                                          fontWeight:
-                                                                              FontWeight.normal,
-                                                                          fontStyle: AppTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .fontStyle,
-                                                                        ),
-                                                                        color: Colors
-                                                                            .white,
-                                                                        fontSize:
-                                                                            14.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight:
-                                                                            FontWeight.normal,
-                                                                        fontStyle: AppTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                  elevation:
-                                                                      2.0,
-                                                                  borderSide:
-                                                                      BorderSide(
-                                                                    color: Colors
-                                                                        .transparent,
-                                                                    width: 1.0,
-                                                                  ),
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              8.0),
-                                                                ),
+                                                                variant: AppButtonVariant.primary,
+                                                                size: AppButtonSize.small,
                                                               ),
                                                             ),
                                                             Padding(
@@ -1730,7 +1624,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                             scrollDirection: Axis.vertical,
                                             itemCount: friendRequestList.length,
                                             separatorBuilder: (_, __) =>
-                                                SizedBox(height: 12.0),
+                                                SizedBox(height: AppSpacing.sm),
                                             itemBuilder: (context,
                                                 friendRequestListIndex) {
                                               final friendRequestListItem =
@@ -1739,7 +1633,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                               return Padding(
                                                 padding: EdgeInsetsDirectional
                                                     .fromSTEB(
-                                                        16.0, 12.0, 16.0, 12.0),
+                                                        AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
                                                 child:
                                                     StreamBuilder<UsersRecord>(
                                                   stream:
@@ -1872,10 +1766,10 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                       .fromSTEB(
                                                                           0.0,
                                                                           0.0,
-                                                                          5.0,
+                                                                          AppSpacing.xs,
                                                                           0.0),
                                                               child:
-                                                                  AppButton(
+                                                                  AppButtonEnhanced(
                                                                 onPressed:
                                                                     () async {
                                                                   context
@@ -1908,61 +1802,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   );
                                                                 },
                                                                 text: 'View',
-                                                                options:
-                                                                    AppButtonOptions(
-                                                                  width: 51.0,
-                                                                  height: 36.0,
-                                                                  padding: EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
-                                                                  iconPadding: EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
-                                                                  color: Color(
-                                                                      0xFF253551),
-                                                                  textStyle: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .outfit(
-                                                                          fontWeight:
-                                                                              FontWeight.normal,
-                                                                          fontStyle: AppTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .fontStyle,
-                                                                        ),
-                                                                        color: Colors
-                                                                            .white,
-                                                                        fontSize:
-                                                                            14.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight:
-                                                                            FontWeight.normal,
-                                                                        fontStyle: AppTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                  elevation:
-                                                                      2.0,
-                                                                  borderSide:
-                                                                      BorderSide(
-                                                                    color: Colors
-                                                                        .transparent,
-                                                                    width: 1.0,
-                                                                  ),
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              8.0),
-                                                                ),
+                                                                variant: AppButtonVariant.primary,
+                                                                size: AppButtonSize.small,
                                                               ),
                                                             ),
                                                             Padding(
@@ -2166,7 +2007,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                             scrollDirection: Axis.vertical,
                                             itemCount: friendsList.length,
                                             separatorBuilder: (_, __) =>
-                                                SizedBox(height: 12.0),
+                                                SizedBox(height: AppSpacing.sm),
                                             itemBuilder:
                                                 (context, friendsListIndex) {
                                               final friendsListItem =
@@ -2174,7 +2015,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                               return Padding(
                                                 padding: EdgeInsetsDirectional
                                                     .fromSTEB(
-                                                        16.0, 12.0, 16.0, 12.0),
+                                                        AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
                                                 child:
                                                     StreamBuilder<UsersRecord>(
                                                   stream:
@@ -2310,10 +2151,10 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                       .fromSTEB(
                                                                           0.0,
                                                                           0.0,
-                                                                          5.0,
+                                                                          AppSpacing.xs,
                                                                           0.0),
                                                               child:
-                                                                  AppButton(
+                                                                  AppButtonEnhanced(
                                                                 onPressed:
                                                                     () async {
                                                                   context
@@ -2346,61 +2187,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   );
                                                                 },
                                                                 text: 'View',
-                                                                options:
-                                                                    AppButtonOptions(
-                                                                  width: 51.0,
-                                                                  height: 36.0,
-                                                                  padding: EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
-                                                                  iconPadding: EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
-                                                                  color: Color(
-                                                                      0xFF253551),
-                                                                  textStyle: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .outfit(
-                                                                          fontWeight:
-                                                                              FontWeight.normal,
-                                                                          fontStyle: AppTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .fontStyle,
-                                                                        ),
-                                                                        color: Colors
-                                                                            .white,
-                                                                        fontSize:
-                                                                            14.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight:
-                                                                            FontWeight.normal,
-                                                                        fontStyle: AppTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                  elevation:
-                                                                      2.0,
-                                                                  borderSide:
-                                                                      BorderSide(
-                                                                    color: Colors
-                                                                        .transparent,
-                                                                    width: 1.0,
-                                                                  ),
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              8.0),
-                                                                ),
+                                                                variant: AppButtonVariant.primary,
+                                                                size: AppButtonSize.small,
                                                               ),
                                                             ),
                                                             Padding(
@@ -2771,6 +2559,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                 ),
               ),
             ],
+            ),
           ),
         ),
       ),

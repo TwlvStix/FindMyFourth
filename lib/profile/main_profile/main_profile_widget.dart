@@ -7,6 +7,7 @@ import '/friends/tab_friends/tab_friends_widget.dart';
 import '/notifications/notification_page/notification_page_widget.dart';
 import '/profile/edit_profile/edit_profile_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
+import '/core/design_tokens/spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -74,7 +75,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
           centerTitle: false,
           elevation: 0.0,
         ),
-        body: FairwayBackgroundSunset(
+        body: FairwayBackgroundDark(
           showOrganic: true,
           child: Align(
             alignment: AlignmentDirectional(0.0, 0.0),
@@ -114,7 +115,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(10.0, 20.0, 10.0, 0.0),
+                padding: EdgeInsetsDirectional.fromSTEB(AppSpacing.sm, AppSpacing.lg, AppSpacing.sm, 0.0),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -144,7 +145,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                     ),
                     Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(5.0, 0.0, 0.0, 0.0),
+                          EdgeInsetsDirectional.fromSTEB(AppSpacing.xs, 0.0, 0.0, 0.0),
                       child: AuthUserStreamWidget(
                         builder: (context) => Text(
                           valueOrDefault(currentUserDocument?.lastName, ''),
@@ -174,7 +175,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(10.0, 15.0, 10.0, 15.0),
+                padding: EdgeInsetsDirectional.fromSTEB(AppSpacing.sm, AppSpacing.md, AppSpacing.sm, AppSpacing.md),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -230,7 +231,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(10.0, 0.0, 10.0, 15.0),
+                padding: EdgeInsetsDirectional.fromSTEB(AppSpacing.sm, 0.0, AppSpacing.sm, AppSpacing.md),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -289,21 +290,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                       children: [
                         Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
-                              16.0, 16.0, 16.0, 0.0),
+                              AppSpacing.md, AppSpacing.md, AppSpacing.md, 0.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 20.0, 0.0, 8.0),
+                                    0.0, AppSpacing.lg, 0.0, AppSpacing.xs),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 8.0, 16.0, 8.0),
+                                          0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                       child: FaIcon(
                                         FontAwesomeIcons.mapMarkerAlt,
                                         color: AppTheme.of(context)
@@ -314,7 +315,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     Expanded(
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 12.0, 0.0),
+                                            0.0, 0.0, AppSpacing.sm, 0.0),
                                         child: Text(
                                           'Home Course',
                                           textAlign: TextAlign.start,
@@ -351,7 +352,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 20.0, 0.0),
+                                    0.0, 0.0, AppSpacing.lg, 0.0),
                                 child: AuthUserStreamWidget(
                                   builder: (context) => Text(
                                     valueOrDefault(
@@ -384,14 +385,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 20.0, 8.0),
+                                    0.0, 0.0, AppSpacing.lg, AppSpacing.xs),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 8.0, 16.0, 8.0),
+                                          0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                       child: FaIcon(
                                         FontAwesomeIcons.golfBall,
                                         color: AppTheme.of(context)
@@ -402,7 +403,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     Expanded(
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 12.0, 0.0),
+                                            0.0, 0.0, AppSpacing.sm, 0.0),
                                         child: Text(
                                           'Handicap',
                                           textAlign: TextAlign.start,
@@ -470,14 +471,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 20.0, 8.0),
+                                    0.0, 0.0, AppSpacing.lg, AppSpacing.xs),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 8.0, 16.0, 8.0),
+                                          0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                       child: Icon(
                                         Icons.local_drink,
                                         color: AppTheme.of(context)
@@ -488,7 +489,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     Expanded(
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 12.0, 0.0),
+                                            0.0, 0.0, AppSpacing.sm, 0.0),
                                         child: Text(
                                           'Drinks',
                                           textAlign: TextAlign.start,
@@ -555,14 +556,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 8.0),
+                                    0.0, 0.0, 0.0, AppSpacing.xs),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 8.0, 16.0, 8.0),
+                                          0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                       child: FaIcon(
                                         FontAwesomeIcons.music,
                                         color: AppTheme.of(context)
@@ -573,7 +574,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     Expanded(
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 12.0, 0.0),
+                                            0.0, 0.0, AppSpacing.sm, 0.0),
                                         child: Text(
                                           'Music',
                                           textAlign: TextAlign.start,
@@ -607,7 +608,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 20.0, 0.0),
+                                          0.0, 0.0, AppSpacing.lg, 0.0),
                                       child: AuthUserStreamWidget(
                                         builder: (context) => Text(
                                           valueOrDefault(
@@ -646,14 +647,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 8.0),
+                                    0.0, 0.0, 0.0, AppSpacing.xs),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 8.0, 16.0, 8.0),
+                                          0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                       child: FaIcon(
                                         FontAwesomeIcons.music,
                                         color: AppTheme.of(context)
@@ -664,7 +665,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     Expanded(
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 12.0, 0.0),
+                                            0.0, 0.0, AppSpacing.sm, 0.0),
                                         child: Text(
                                           'Play for Money',
                                           textAlign: TextAlign.start,
@@ -698,7 +699,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 20.0, 0.0),
+                                          0.0, 0.0, AppSpacing.lg, 0.0),
                                       child: AuthUserStreamWidget(
                                         builder: (context) => Text(
                                           valueOrDefault(
@@ -739,14 +740,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 8.0),
+                                    0.0, 0.0, 0.0, AppSpacing.xs),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 8.0, 16.0, 8.0),
+                                          0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                       child: FaIcon(
                                         FontAwesomeIcons.music,
                                         color: AppTheme.of(context)
@@ -757,7 +758,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     Expanded(
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 12.0, 0.0),
+                                            0.0, 0.0, AppSpacing.sm, 0.0),
                                         child: Text(
                                           'Pace of Play',
                                           textAlign: TextAlign.start,
@@ -791,7 +792,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 20.0, 0.0),
+                                          0.0, 0.0, AppSpacing.lg, 0.0),
                                       child: AuthUserStreamWidget(
                                         builder: (context) => Text(
                                           valueOrDefault(
@@ -832,14 +833,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 8.0),
+                                    0.0, 0.0, 0.0, AppSpacing.xs),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 8.0, 16.0, 8.0),
+                                          0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                       child: FaIcon(
                                         FontAwesomeIcons.userFriends,
                                         color: AppTheme.of(context)
@@ -850,7 +851,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     Expanded(
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 12.0, 0.0),
+                                            0.0, 0.0, AppSpacing.sm, 0.0),
                                         child: Text(
                                           'Friends List',
                                           textAlign: TextAlign.start,
@@ -884,7 +885,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 20.0, 0.0),
+                                          0.0, 0.0, AppSpacing.lg, 0.0),
                                       child: InkWell(
                                         splashColor: Colors.transparent,
                                         focusColor: Colors.transparent,
@@ -919,14 +920,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 8.0),
+                                    0.0, 0.0, 0.0, AppSpacing.xs),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 8.0, 16.0, 8.0),
+                                          0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                       child: FaIcon(
                                         FontAwesomeIcons.solidBell,
                                         color: AppTheme.of(context)
@@ -937,7 +938,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     Expanded(
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 12.0, 0.0),
+                                            0.0, 0.0, AppSpacing.sm, 0.0),
                                         child: Text(
                                           'Notification Settings',
                                           textAlign: TextAlign.start,
@@ -971,7 +972,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 8.0, 20.0, 8.0),
+                                          0.0, AppSpacing.xs, AppSpacing.lg, AppSpacing.xs),
                                       child: InkWell(
                                         splashColor: Colors.transparent,
                                         focusColor: Colors.transparent,
@@ -1006,14 +1007,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 8.0),
+                                    0.0, 0.0, 0.0, AppSpacing.xs),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 8.0, 16.0, 8.0),
+                                          0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                       child: Icon(
                                         Icons.edit,
                                         color: AppTheme.of(context)
@@ -1024,7 +1025,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     Expanded(
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 12.0, 0.0),
+                                            0.0, 0.0, AppSpacing.sm, 0.0),
                                         child: Text(
                                           'Profile Settings',
                                           textAlign: TextAlign.start,
@@ -1058,7 +1059,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 20.0, 0.0),
+                                          0.0, 0.0, AppSpacing.lg, 0.0),
                                       child: InkWell(
                                         splashColor: Colors.transparent,
                                         focusColor: Colors.transparent,
@@ -1118,14 +1119,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 8.0),
+                                    0.0, 0.0, 0.0, AppSpacing.xs),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 8.0, 16.0, 8.0),
+                                          0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                       child: Icon(
                                         Icons.login_rounded,
                                         color: AppTheme.of(context)
@@ -1136,7 +1137,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     Expanded(
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 12.0, 0.0),
+                                            0.0, 0.0, AppSpacing.sm, 0.0),
                                         child: Text(
                                           'Log out of account',
                                           textAlign: TextAlign.start,
@@ -1170,7 +1171,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 20.0, 0.0),
+                                          0.0, 0.0, AppSpacing.lg, 0.0),
                                       child: InkWell(
                                         splashColor: Colors.transparent,
                                         focusColor: Colors.transparent,

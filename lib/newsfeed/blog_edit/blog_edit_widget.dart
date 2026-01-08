@@ -2,7 +2,9 @@ import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
 import '/utils/upload_data.dart';
 import '/newsfeed/newsfeed/newsfeed_widget.dart';
 import 'package:flutter/material.dart';
@@ -133,16 +135,17 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
             centerTitle: false,
             elevation: 0.0,
           ),
-          body: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.all(10.0),
+          body: FairwayBackgroundLight(
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: AppSpacing.allSm,
                       child: TextFormField(
                         controller: inputTitleTextController,
                         focusNode: inputTitleFocusNode,
@@ -238,8 +241,7 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 12.0),
+                    padding: AppSpacing.only(top: AppSpacing.xs, bottom: AppSpacing.sm),
                     child: Container(
                       width: MediaQuery.sizeOf(context).width * 0.94,
                       decoration: BoxDecoration(),
@@ -247,8 +249,7 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                         mainAxisSize: MainAxisSize.max,
                         children: [
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 12.0, 0.0, 0.0),
+                            padding: AppSpacing.only(top: AppSpacing.sm),
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
                               children: [
@@ -319,9 +320,12 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                                         borderRadius:
                                             BorderRadius.circular(8.0),
                                       ),
-                                      contentPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              20.0, 32.0, 20.0, 12.0),
+                                      contentPadding: AppSpacing.only(
+                                        left: AppSpacing.lg,
+                                        top: AppSpacing.xxl,
+                                        right: AppSpacing.lg,
+                                        bottom: AppSpacing.sm,
+                                      ),
                                     ),
                                     style: AppTheme.of(context)
                                         .bodyMedium
@@ -393,155 +397,106 @@ class _BlogEditWidgetState extends State<BlogEditWidget> {
                       ],
                     ),
                   ),
-                  AppButton(
-                    onPressed: () async {
-                      final selectedMedia =
-                          await selectMediaWithSourceBottomSheet(
-                        context: context,
-                        allowPhoto: true,
-                        backgroundColor:
-                            AppTheme.of(context).primaryBtnText,
-                        textColor: AppTheme.of(context).primary,
-                      );
-                      if (selectedMedia != null &&
-                          selectedMedia.every((m) =>
-                              validateFileFormat(m.storagePath, context))) {
-                        if (mounted) setState(() =>
-                            isDataUploadingEditPicNewsfeed = true);
-                        var selectedUploadedFiles = <UploadedFile>[];
+                  SizedBox(
+                    width: 150.0,
+                    child: AppButtonEnhanced(
+                      text: 'Edit Image',
+                      variant: AppButtonVariant.secondary,
+                      size: AppButtonSize.medium,
+                      onPressed: () async {
+                        final selectedMedia =
+                            await selectMediaWithSourceBottomSheet(
+                          context: context,
+                          allowPhoto: true,
+                          backgroundColor:
+                              AppTheme.of(context).primaryBtnText,
+                          textColor: AppTheme.of(context).primary,
+                        );
+                        if (selectedMedia != null &&
+                            selectedMedia.every((m) =>
+                                validateFileFormat(m.storagePath, context))) {
+                          if (mounted) setState(() =>
+                              isDataUploadingEditPicNewsfeed = true);
+                          var selectedUploadedFiles = <UploadedFile>[];
 
-                        var downloadUrls = <String>[];
-                        try {
-                          selectedUploadedFiles = selectedMedia
-                              .map((m) => UploadedFile(
-                                    name: m.storagePath.split('/').last,
-                                    bytes: m.bytes,
-                                    height: m.dimensions?.height,
-                                    width: m.dimensions?.width,
-                                    blurHash: m.blurHash,
-                                    originalFilename: m.originalFilename,
-                                  ))
-                              .toList();
+                          var downloadUrls = <String>[];
+                          try {
+                            selectedUploadedFiles = selectedMedia
+                                .map((m) => UploadedFile(
+                                      name: m.storagePath.split('/').last,
+                                      bytes: m.bytes,
+                                      height: m.dimensions?.height,
+                                      width: m.dimensions?.width,
+                                      blurHash: m.blurHash,
+                                      originalFilename: m.originalFilename,
+                                    ))
+                                .toList();
 
-                          downloadUrls = (await Future.wait(
-                            selectedMedia.map(
-                              (m) async =>
-                                  await uploadData(m.storagePath, m.bytes),
-                            ),
-                          ))
-                              .where((u) => u != null)
-                              .map((u) => u!)
-                              .toList();
-                        } finally {
-                          isDataUploadingEditPicNewsfeed = false;
-                        }
-                        if (selectedUploadedFiles.length ==
-                                selectedMedia.length &&
-                            downloadUrls.length == selectedMedia.length) {
-                          if (mounted) setState(() {
-                            uploadedLocalFileEditPicNewsfeed =
-                                selectedUploadedFiles.first;
-                            uploadedFileUrlEditPicNewsfeed =
-                                downloadUrls.first;
-                          });
-                        } else {
-                          if (mounted) setState(() {});
-                          return;
-                        }
-                      }
-                    },
-                    text: 'Edit Image',
-                    options: AppButtonOptions(
-                      width: 150.0,
-                      height: 50.0,
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                      iconPadding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                      color: AppTheme.of(context).tertiary,
-                      textStyle:
-                          AppTheme.of(context).labelMedium.override(
-                                font: GoogleFonts.outfit(
-                                  fontWeight: AppTheme.of(context)
-                                      .labelMedium
-                                      .fontWeight,
-                                  fontStyle: AppTheme.of(context)
-                                      .labelMedium
-                                      .fontStyle,
-                                ),
-                                color: Colors.white,
-                                letterSpacing: 0.0,
-                                fontWeight: AppTheme.of(context)
-                                    .labelMedium
-                                    .fontWeight,
-                                fontStyle: AppTheme.of(context)
-                                    .labelMedium
-                                    .fontStyle,
+                            downloadUrls = (await Future.wait(
+                              selectedMedia.map(
+                                (m) async =>
+                                    await uploadData(m.storagePath, m.bytes),
                               ),
-                      elevation: 2.0,
-                      borderSide: BorderSide(
-                        color: AppTheme.of(context).primary,
-                        width: 1.0,
-                      ),
+                            ))
+                                .where((u) => u != null)
+                                .map((u) => u!)
+                                .toList();
+                          } finally {
+                            isDataUploadingEditPicNewsfeed = false;
+                          }
+                          if (selectedUploadedFiles.length ==
+                                  selectedMedia.length &&
+                              downloadUrls.length == selectedMedia.length) {
+                            if (mounted) setState(() {
+                              uploadedLocalFileEditPicNewsfeed =
+                                  selectedUploadedFiles.first;
+                              uploadedFileUrlEditPicNewsfeed =
+                                  downloadUrls.first;
+                            });
+                          } else {
+                            if (mounted) setState(() {});
+                            return;
+                          }
+                        }
+                      },
                     ),
                   ),
                 ],
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
-                child: AppButton(
-                  onPressed: () async {
-                    await blogEditPostsRecord.reference
-                        .update(createPostsRecordData(
-                      title: inputTitleTextController.text,
-                      content:
-                          (inputContentFocusNode?.hasFocus ?? false).toString(),
-                      mainImage: uploadedFileUrlEditPicNewsfeed,
-                    ));
+                padding: AppSpacing.only(top: AppSpacing.md),
+                child: SizedBox(
+                  width: 270.0,
+                  child: AppButtonEnhanced(
+                    text: 'Save Edit',
+                    variant: AppButtonVariant.primary,
+                    size: AppButtonSize.large,
+                    onPressed: () async {
+                      await blogEditPostsRecord.reference
+                          .update(createPostsRecordData(
+                        title: inputTitleTextController.text,
+                        content:
+                            (inputContentFocusNode?.hasFocus ?? false).toString(),
+                        mainImage: uploadedFileUrlEditPicNewsfeed,
+                      ));
 
-                    context.pushNamed(
-                      NewsfeedWidget.routeName,
-                      extra: <String, dynamic>{
-                        kTransitionInfoKey: TransitionInfo(
-                          hasTransition: true,
-                          transitionType: PageTransitionType.bottomToTop,
-                          duration: Duration(milliseconds: 220),
-                        ),
-                      },
-                    );
-                  },
-                  text: 'Save Edit',
-                  options: AppButtonOptions(
-                    width: 270.0,
-                    height: 50.0,
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                    iconPadding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                    color: AppTheme.of(context).primary,
-                    textStyle: AppTheme.of(context).titleSmall.override(
-                          font: GoogleFonts.lexendDeca(
-                            fontWeight: FontWeight.w500,
-                            fontStyle: AppTheme.of(context)
-                                .titleSmall
-                                .fontStyle,
+                      context.pushNamed(
+                        NewsfeedWidget.routeName,
+                        extra: <String, dynamic>{
+                          kTransitionInfoKey: TransitionInfo(
+                            hasTransition: true,
+                            transitionType: PageTransitionType.bottomToTop,
+                            duration: Duration(milliseconds: 220),
                           ),
-                          color: Colors.white,
-                          fontSize: 20.0,
-                          letterSpacing: 0.0,
-                          fontWeight: FontWeight.w500,
-                          fontStyle:
-                              AppTheme.of(context).titleSmall.fontStyle,
-                        ),
-                    elevation: 3.0,
-                    borderSide: BorderSide(
-                      color: Colors.transparent,
-                      width: 1.0,
-                    ),
+                        },
+                      );
+                    },
                   ),
                 ),
               ),
             ],
           ),
+        ),
         );
       },
     );

@@ -3,7 +3,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'auth/firebase_auth/firebase_user_provider.dart';
 import 'auth/firebase_auth/auth_util.dart';
@@ -13,13 +12,12 @@ import 'backend/firebase/firebase_config.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/typography.dart';
 import '/utils/app_util.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '/providers/user_provider.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import '/chat_group/chat/chat_widget.dart';
+import '/main_function/community/community_widget.dart';
 import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
-import '/newsfeed/newsfeed/newsfeed_widget.dart';
 import '/profile/home/home_widget.dart';
 
 void main() async {
@@ -32,10 +30,15 @@ void main() async {
   final appState = AppState();
   await appState.initializePersistedState();
 
-  runApp(ChangeNotifierProvider<AppState>(
-    create: (context) => appState,
-    child: MyApp(),
-  ));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AppState>(create: (_) => appState),
+        ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -184,7 +187,7 @@ class NavBarPage extends StatefulWidget {
 
 /// This is the private State class that goes with NavBarPage.
 class _NavBarPageState extends State<NavBarPage> {
-  String _currentPageName = 'Home';
+  String _currentPageName = 'GamesList';
   late Widget? _currentPage;
 
   @override
@@ -198,17 +201,37 @@ class _NavBarPageState extends State<NavBarPage> {
   Widget build(BuildContext context) {
     final tabs = {
       'GamesList': GamesListWidget(),
-      'CreateGame': CreateGameWidget(),
-      'Home': HomeWidget(),
       'GamesJoined': GamesJoinedWidget(),
-      'Chat': ChatWidget(),
-      'Newsfeed': NewsfeedWidget(),
+      'Community': CommunityWidget(),
+      'Profile': HomeWidget(),
     };
     final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
 
     return Scaffold(
       resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
       body: _currentPage ?? tabs[_currentPageName],
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.pushNamed(
+            CreateGameWidget.routeName,
+            extra: <String, dynamic>{
+              kTransitionInfoKey: TransitionInfo(
+                hasTransition: true,
+                transitionType: PageTransitionType.bottomToTop,
+                duration: Duration(milliseconds: 250),
+              ),
+            },
+          );
+        },
+        backgroundColor: AppTheme.of(context).primary,
+        elevation: 8.0,
+        child: Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 28.0,
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: GNav(
         selectedIndex: currentIndex,
         onTabChange: (i) {
@@ -233,34 +256,23 @@ class _NavBarPageState extends State<NavBarPage> {
         tabs: [
           GButton(
             icon: Icons.list_alt,
-            text: 'Games List',
+            text: 'Games',
             iconSize: 24.0,
             backgroundColor: AppTheme.of(context).primaryBackground,
           ),
           GButton(
-            icon: FontAwesomeIcons.plus,
-            text: 'Add Game',
-            iconSize: 24.0,
-            backgroundColor: Color(0xFFE0E0DB),
-          ),
-          GButton(
-            icon: Icons.home_outlined,
-            text: '',
-            iconSize: 24.0,
-          ),
-          GButton(
             icon: Icons.calendar_month,
-            text: 'Scheduled',
+            text: 'Schedule',
             iconSize: 24.0,
           ),
           GButton(
-            icon: Icons.forum_outlined,
-            text: '__',
+            icon: Icons.people_outline,
+            text: 'Community',
             iconSize: 24.0,
           ),
           GButton(
-            icon: Icons.newspaper,
-            text: 'NewsFeed',
+            icon: Icons.person_outline,
+            text: 'Profile',
             iconSize: 24.0,
           )
         ],

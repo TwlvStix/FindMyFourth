@@ -1,4 +1,6 @@
 import '/core/app_theme.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -65,17 +67,18 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
           centerTitle: false,
           elevation: 0.0,
         ),
-        body: ListView(
+        body: FairwayBackgroundDark(
+          child: ListView(
           padding: EdgeInsets.fromLTRB(
             0,
-            4.0,
+            AppSpacing.xxs,
             0,
-            44.0,
+            AppSpacing.xxxl,
           ),
           scrollDirection: Axis.vertical,
           children: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+              padding: EdgeInsetsDirectional.fromSTEB(AppSpacing.md, 0.0, AppSpacing.md, 0.0),
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -97,7 +100,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                   ),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.all(12.0),
+                  padding: EdgeInsets.all(AppSpacing.sm),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,7 +125,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
-                              12.0, 0.0, 4.0, 0.0),
+                              AppSpacing.sm, 0.0, AppSpacing.xxs, 0.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -153,7 +156,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 4.0, 0.0, 0.0),
+                                    0.0, AppSpacing.xxs, 0.0, 0.0),
                                 child: Text(
                                   'John Smith has requested to be friends.',
                                   maxLines: 2,
@@ -179,7 +182,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 12.0, 0.0, 0.0),
+                                    0.0, AppSpacing.sm, 0.0, 0.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
@@ -197,7 +200,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                         ),
                                       ),
                                       child: Padding(
-                                        padding: EdgeInsets.all(2.0),
+                                        padding: EdgeInsets.all(2.0), // Keep 2.0 for tight fit around avatar
                                         child: ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(10.0),
@@ -212,7 +215,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                     ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          12.0, 0.0, 0.0, 0.0),
+                                          AppSpacing.sm, 0.0, 0.0, 0.0),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         mainAxisAlignment:
@@ -295,7 +298,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 8.0, 0.0, 4.0),
+                                    0.0, AppSpacing.xs, 0.0, AppSpacing.xxs),
                                 child: Text(
                                   '2 hours ago',
                                   style: AppTheme.of(context)
@@ -333,7 +336,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+              padding: EdgeInsetsDirectional.fromSTEB(AppSpacing.md, 0.0, AppSpacing.md, 0.0),
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -355,7 +358,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                   ),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.all(12.0),
+                  padding: EdgeInsets.all(AppSpacing.sm),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,7 +383,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
-                              12.0, 0.0, 4.0, 0.0),
+                              AppSpacing.sm, 0.0, AppSpacing.xxs, 0.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -411,7 +414,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 4.0, 0.0, 0.0),
+                                    0.0, AppSpacing.xxs, 0.0, 0.0),
                                 child: Text(
                                   'John Smith has requested to be friends.',
                                   maxLines: 2,
@@ -437,7 +440,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 12.0, 0.0, 0.0),
+                                    0.0, AppSpacing.sm, 0.0, 0.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
@@ -455,7 +458,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                         ),
                                       ),
                                       child: Padding(
-                                        padding: EdgeInsets.all(2.0),
+                                        padding: EdgeInsets.all(2.0), // Keep 2.0 for tight fit around avatar
                                         child: ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(10.0),
@@ -470,7 +473,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                     ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          12.0, 0.0, 0.0, 0.0),
+                                          AppSpacing.sm, 0.0, 0.0, 0.0),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         mainAxisAlignment:
@@ -553,7 +556,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 8.0, 0.0, 4.0),
+                                    0.0, AppSpacing.xs, 0.0, AppSpacing.xxs),
                                 child: Text(
                                   '2 hours ago',
                                   style: AppTheme.of(context)
@@ -591,7 +594,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+              padding: EdgeInsetsDirectional.fromSTEB(AppSpacing.md, 0.0, AppSpacing.md, 0.0),
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -613,7 +616,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                   ),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.all(12.0),
+                  padding: EdgeInsets.all(AppSpacing.sm),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -638,7 +641,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
-                              12.0, 0.0, 4.0, 0.0),
+                              AppSpacing.sm, 0.0, AppSpacing.xxs, 0.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -669,7 +672,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 4.0, 0.0, 0.0),
+                                    0.0, AppSpacing.xxs, 0.0, 0.0),
                                 child: Text(
                                   '\"You are so awesome! Keep it up!\"',
                                   maxLines: 2,
@@ -708,7 +711,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 8.0, 0.0, 4.0),
+                                    0.0, AppSpacing.xs, 0.0, AppSpacing.xxs),
                                 child: Text(
                                   '2 hours ago',
                                   style: AppTheme.of(context)
@@ -746,7 +749,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+              padding: EdgeInsetsDirectional.fromSTEB(AppSpacing.md, 0.0, AppSpacing.md, 0.0),
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -768,7 +771,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                   ),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.all(12.0),
+                  padding: EdgeInsets.all(AppSpacing.sm),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -793,7 +796,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
-                              12.0, 0.0, 4.0, 0.0),
+                              AppSpacing.sm, 0.0, AppSpacing.xxs, 0.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -824,7 +827,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 4.0, 0.0, 0.0),
+                                    0.0, AppSpacing.xxs, 0.0, 0.0),
                                 child: Text(
                                   'You have a new like from John Smith.',
                                   maxLines: 2,
@@ -850,7 +853,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 8.0, 0.0, 4.0),
+                                    0.0, AppSpacing.xs, 0.0, AppSpacing.xxs),
                                 child: Text(
                                   '2 hours ago',
                                   style: AppTheme.of(context)
@@ -885,7 +888,8 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                 ),
               ),
             ),
-          ].divide(SizedBox(height: 8.0)),
+          ].divide(SizedBox(height: AppSpacing.xs)),
+          ),
         ),
       ),
     );

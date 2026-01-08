@@ -2,7 +2,9 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
 import '/profile/home/home_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -60,103 +62,85 @@ class _UserOnboardingWidgetState extends State<UserOnboardingWidget> {
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: AppTheme.of(context).primaryBackground,
-      body: SafeArea(
-        top: true,
-        child: Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(24.0, 32.0, 24.0, 32.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Welcome to Find My Fourth',
-                style: AppTheme.of(context).headlineMedium.override(
-                      font: GoogleFonts.outfit(
+      body: FairwayBackgroundSunset(
+        child: SafeArea(
+          top: true,
+          child: Padding(
+            padding: AppSpacing.symmetric(
+              horizontal: AppSpacing.xl,
+              vertical: AppSpacing.xxl,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome to Find My Fourth',
+                  style: AppTheme.of(context).headlineMedium.override(
+                        font: GoogleFonts.outfit(
+                          fontWeight:
+                              AppTheme.of(context).headlineMedium.fontWeight,
+                          fontStyle:
+                              AppTheme.of(context).headlineMedium.fontStyle,
+                        ),
+                        letterSpacing: 0.0,
                         fontWeight:
                             AppTheme.of(context).headlineMedium.fontWeight,
-                        fontStyle:
-                            AppTheme.of(context).headlineMedium.fontStyle,
+                        fontStyle: AppTheme.of(context).headlineMedium.fontStyle,
                       ),
-                      letterSpacing: 0.0,
-                      fontWeight:
-                          AppTheme.of(context).headlineMedium.fontWeight,
-                      fontStyle: AppTheme.of(context).headlineMedium.fontStyle,
-                    ),
-              ),
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
-                child: Text(
-                  'A quick primer before you tee off.',
-                  style: AppTheme.of(context).bodyLarge.override(
-                        font: GoogleFonts.outfit(
-                          fontWeight:
-                              AppTheme.of(context).bodyLarge.fontWeight,
+                ),
+                Padding(
+                  padding: AppSpacing.only(top: AppSpacing.sm),
+                  child: Text(
+                    'A quick primer before you tee off.',
+                    style: AppTheme.of(context).bodyLarge.override(
+                          font: GoogleFonts.outfit(
+                            fontWeight:
+                                AppTheme.of(context).bodyLarge.fontWeight,
+                            fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
+                          ),
+                          letterSpacing: 0.0,
+                          fontWeight: AppTheme.of(context).bodyLarge.fontWeight,
                           fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                         ),
-                        letterSpacing: 0.0,
-                        fontWeight: AppTheme.of(context).bodyLarge.fontWeight,
-                        fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
-                      ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 32.0, 0.0, 0.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    _OnboardingFeature(
-                      icon: Icons.golf_course_rounded,
-                      title: 'Join games fast',
-                      description:
-                          'Find rounds in your area and jump in with a tap.',
-                    ),
-                    _OnboardingFeature(
-                      icon: Icons.people_alt_rounded,
-                      title: 'Meet new players',
-                      description:
-                          'Connect with friends and manage invites easily.',
-                    ),
-                    _OnboardingFeature(
-                      icon: Icons.notifications_active_rounded,
-                      title: 'Stay in the loop',
-                      description:
-                          'Enable alerts so you never miss a tee time.',
-                    ),
-                  ],
-                ),
-              ),
-              Spacer(),
-              AppButton(
-                onPressed: _completeOnboarding,
-                text: 'Get Started',
-                options: AppButtonOptions(
-                  width: double.infinity,
-                  height: 48.0,
-                  padding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                  iconPadding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                  color: AppTheme.of(context).primary,
-                  textStyle: AppTheme.of(context).titleSmall.override(
-                        font: GoogleFonts.outfit(
-                          fontWeight:
-                              AppTheme.of(context).titleSmall.fontWeight,
-                          fontStyle: AppTheme.of(context).titleSmall.fontStyle,
-                        ),
-                        color: Colors.white,
-                        letterSpacing: 0.0,
-                        fontWeight: AppTheme.of(context).titleSmall.fontWeight,
-                        fontStyle: AppTheme.of(context).titleSmall.fontStyle,
-                      ),
-                  elevation: 2.0,
-                  borderSide: BorderSide(
-                    color: Colors.transparent,
-                    width: 1.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
                 ),
-              ),
-            ],
+                Padding(
+                  padding: AppSpacing.only(top: AppSpacing.xxl),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      _OnboardingFeature(
+                        icon: Icons.golf_course_rounded,
+                        title: 'Join games fast',
+                        description:
+                            'Find rounds in your area and jump in with a tap.',
+                      ),
+                      _OnboardingFeature(
+                        icon: Icons.people_alt_rounded,
+                        title: 'Meet new players',
+                        description:
+                            'Connect with friends and manage invites easily.',
+                      ),
+                      _OnboardingFeature(
+                        icon: Icons.notifications_active_rounded,
+                        title: 'Stay in the loop',
+                        description:
+                            'Enable alerts so you never miss a tee time.',
+                      ),
+                    ],
+                  ),
+                ),
+                Spacer(),
+                AppButtonEnhanced(
+                  text: 'Get Started',
+                  onPressed: _completeOnboarding,
+                  variant: AppButtonVariant.gradient,
+                  size: AppButtonSize.medium,
+                  fullWidth: true,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -178,7 +162,7 @@ class _OnboardingFeature extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 20.0),
+      padding: AppSpacing.only(bottom: AppSpacing.lg),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -198,7 +182,7 @@ class _OnboardingFeature extends StatelessWidget {
           ),
           Expanded(
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 0.0, 0.0),
+              padding: AppSpacing.only(left: AppSpacing.md),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -218,8 +202,7 @@ class _OnboardingFeature extends StatelessWidget {
                         ),
                   ),
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 0.0),
+                    padding: AppSpacing.only(top: AppSpacing.xxs),
                     child: Text(
                       description,
                       style: AppTheme.of(context).bodyMedium.override(

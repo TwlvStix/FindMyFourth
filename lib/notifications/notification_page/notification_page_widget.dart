@@ -3,7 +3,9 @@ import '/backend/backend.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -123,12 +125,13 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
         centerTitle: false,
         elevation: 0.0,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          children: [
+      body: FairwayBackgroundLight(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
+              padding: AppSpacing.horizontalLg,
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
@@ -158,7 +161,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+              padding: AppSpacing.only(top: AppSpacing.sm),
               child: Material(
                 color: Colors.transparent,
                 child: SwitchListTile.adaptive(
@@ -227,7 +230,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   dense: false,
                   controlAffinity: ListTileControlAffinity.trailing,
                   contentPadding:
-                      EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 12.0),
+                      AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 ),
               ),
             ),
@@ -269,7 +272,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+              padding: AppSpacing.only(top: AppSpacing.sm),
               child: Material(
                 color: Colors.transparent,
                 child: SwitchListTile.adaptive(
@@ -332,12 +335,12 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   dense: false,
                   controlAffinity: ListTileControlAffinity.trailing,
                   contentPadding:
-                      EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 12.0),
+                      AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 ),
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+              padding: AppSpacing.only(top: AppSpacing.sm),
               child: Material(
                 color: Colors.transparent,
                 child: SwitchListTile.adaptive(
@@ -400,12 +403,12 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   dense: false,
                   controlAffinity: ListTileControlAffinity.trailing,
                   contentPadding:
-                      EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 12.0),
+                      AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 ),
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+              padding: AppSpacing.only(top: AppSpacing.sm),
               child: Material(
                 color: Colors.transparent,
                 child: SwitchListTile.adaptive(
@@ -468,12 +471,12 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   dense: false,
                   controlAffinity: ListTileControlAffinity.trailing,
                   contentPadding:
-                      EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 12.0),
+                      AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 ),
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+              padding: AppSpacing.only(top: AppSpacing.sm),
               child: Material(
                 color: Colors.transparent,
                 child: SwitchListTile.adaptive(
@@ -536,12 +539,12 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   dense: false,
                   controlAffinity: ListTileControlAffinity.trailing,
                   contentPadding:
-                      EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 12.0),
+                      AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 ),
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+              padding: AppSpacing.only(top: AppSpacing.sm),
               child: Material(
                 color: Colors.transparent,
                 child: SwitchListTile.adaptive(
@@ -604,7 +607,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   dense: false,
                   controlAffinity: ListTileControlAffinity.trailing,
                   contentPadding:
-                      EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 12.0),
+                      AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 ),
               ),
             ),
@@ -666,7 +669,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 dense: false,
                 controlAffinity: ListTileControlAffinity.trailing,
                 contentPadding:
-                    EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 12.0),
+                    AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
               ),
             ),
             Material(
@@ -730,12 +733,15 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 dense: false,
                 controlAffinity: ListTileControlAffinity.trailing,
                 contentPadding:
-                    EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 12.0),
+                    AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 24.0),
-              child: AppButton(
+              padding: AppSpacing.verticalXl,
+              child: AppButtonEnhanced(
+                text: 'Save Settings',
+                variant: AppButtonVariant.primary,
+                size: AppButtonSize.large,
                 onPressed: () async {
                   await currentUserReference!.update(createUsersRecordData(
                     notifyAll: notifyAll,
@@ -749,39 +755,10 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   ));
                   context.pop();
                 },
-                text: 'Save Settings',
-                options: AppButtonOptions(
-                  width: 190.0,
-                  height: 50.0,
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                  iconPadding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                  color: AppTheme.of(context).primary,
-                  textStyle: AppTheme.of(context).titleSmall.override(
-                        font: GoogleFonts.outfit(
-                          fontWeight: AppTheme.of(context)
-                              .titleSmall
-                              .fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).titleSmall.fontStyle,
-                        ),
-                        color: Colors.white,
-                        letterSpacing: 0.0,
-                        fontWeight:
-                            AppTheme.of(context).titleSmall.fontWeight,
-                        fontStyle:
-                            AppTheme.of(context).titleSmall.fontStyle,
-                      ),
-                  elevation: 3.0,
-                  borderSide: BorderSide(
-                    color: Colors.transparent,
-                    width: 1.0,
-                  ),
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

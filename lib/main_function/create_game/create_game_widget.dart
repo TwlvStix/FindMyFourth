@@ -6,7 +6,10 @@ import '/core/widgets/app_drop_down.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/form_field_controller.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/core/random_data_util.dart' as random_data;
@@ -139,7 +142,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
           ),
           actions: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 15.0, 0.0),
+              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, AppSpacing.md, 0.0),
               child: AppIconButton(
                 borderRadius: 20.0,
                 borderWidth: 1.0,
@@ -165,7 +168,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
+              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, AppSpacing.sm, 0.0),
               child: AppIconButton(
                 borderRadius: 20.0,
                 borderWidth: 1.0,
@@ -196,20 +199,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
         ),
         body: SafeArea(
           top: true,
-          child: Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration(
-              color: AppTheme.of(context).tertiary,
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: Image.asset(
-                  'assets/images/316573745_782549542841731_7795237797025439822_n_(1).jpg',
-                ).image,
-              ),
-            ),
+          child: FairwayBackgroundDark(
             child: Padding(
-              padding: EdgeInsets.all(20.0),
+              padding: EdgeInsets.all(AppSpacing.lg),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
@@ -221,7 +213,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                         autovalidateMode: AutovalidateMode.always,
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
-                              12.0, 0.0, 12.0, 0.0),
+                              AppSpacing.sm, 0.0, AppSpacing.sm, 0.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -479,14 +471,14 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     ),
                                     child: Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 10.0, 0.0),
+                                          0.0, 0.0, AppSpacing.sm, 0.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
                                           Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    10.0, 0.0, 0.0, 0.0),
+                                                    AppSpacing.sm, 0.0, 0.0, 0.0),
                                             child: Container(
                                               width: MediaQuery.sizeOf(context)
                                                       .width *
@@ -706,7 +698,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                           Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    12.0, 0.0, 0.0, 0.0),
+                                                    AppSpacing.sm, 0.0, 0.0, 0.0),
                                             child: InkWell(
                                               splashColor: Colors.transparent,
                                               focusColor: Colors.transparent,
@@ -983,7 +975,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     borderWidth: 1.0,
                                     borderRadius: 8.0,
                                     margin: EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 4.0, 16.0, 4.0),
+                                        AppSpacing.md, 4.0, AppSpacing.md, 4.0),
                                     hidesUnderline: true,
                                     isOverButton: true,
                                     isSearchable: false,
@@ -1317,7 +1309,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     borderWidth: 1.0,
                                     borderRadius: 10.0,
                                     margin: EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 4.0, 16.0, 4.0),
+                                        AppSpacing.md, 4.0, AppSpacing.md, 4.0),
                                     hidesUnderline: true,
                                     isOverButton: true,
                                     isSearchable: true,
@@ -1538,7 +1530,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     borderWidth: 1.0,
                                     borderRadius: 8.0,
                                     margin: EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 4.0, 16.0, 4.0),
+                                        AppSpacing.md, 4.0, AppSpacing.md, 4.0),
                                     hidesUnderline: true,
                                     isOverButton: true,
                                     isSearchable: false,
@@ -1649,7 +1641,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     borderWidth: 1.0,
                                     borderRadius: 8.0,
                                     margin: EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 4.0, 16.0, 4.0),
+                                        AppSpacing.md, 4.0, AppSpacing.md, 4.0),
                                     hidesUnderline: true,
                                     isOverButton: true,
                                     isSearchable: false,
@@ -1756,7 +1748,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     borderWidth: 1.0,
                                     borderRadius: 10.0,
                                     margin: EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 4.0, 16.0, 4.0),
+                                        AppSpacing.md, 4.0, AppSpacing.md, 4.0),
                                     hidesUnderline: true,
                                     isOverButton: true,
                                     isSearchable: false,
@@ -1861,7 +1853,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                     borderWidth: 1.0,
                                     borderRadius: 10.0,
                                     margin: EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 4.0, 16.0, 4.0),
+                                        AppSpacing.md, 4.0, AppSpacing.md, 4.0),
                                     hidesUnderline: true,
                                     isOverButton: true,
                                     isSearchable: false,
@@ -1872,7 +1864,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 30.0, 0.0, 0.0),
-                                child: AppButton(
+                                child: AppButtonEnhanced(
+                                  text: 'Submit Game',
+                                  variant: AppButtonVariant.primary,
+                                  size: AppButtonSize.large,
                                   onPressed: () async {
                                     if (formKey.currentState == null ||
                                         !formKey.currentState!
@@ -2070,51 +2065,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
 
                                     if (mounted) setState(() {});
                                   },
-                                  text: 'Submit Game',
-                                  options: AppButtonOptions(
-                                    height: 40.0,
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        24.0, 0.0, 24.0, 0.0),
-                                    iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 0.0),
-                                    color: Colors.white,
-                                    textStyle: AppTheme.of(context)
-                                        .titleSmall
-                                        .override(
-                                          font: GoogleFonts.outfit(
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .titleSmall
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .titleSmall
-                                                    .fontStyle,
-                                          ),
-                                          color: AppTheme.of(context).primary,
-                                          letterSpacing: 0.0,
-                                          fontWeight:
-                                              AppTheme.of(context)
-                                                  .titleSmall
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .titleSmall
-                                                  .fontStyle,
-                                        ),
-                                    elevation: 3.0,
-                                    borderSide: BorderSide(
-                                      color: Colors.transparent,
-                                      width: 1.0,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
                                 ),
                               ),
                             ]
-                                .divide(SizedBox(height: 8.0))
-                                .addToStart(SizedBox(height: 8.0))
-                                .addToEnd(SizedBox(height: 8.0)),
+                                .divide(SizedBox(height: AppSpacing.xs))
+                                .addToStart(SizedBox(height: AppSpacing.xs))
+                                .addToEnd(SizedBox(height: AppSpacing.xs)),
                           ),
                         ),
                       ),

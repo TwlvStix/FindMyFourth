@@ -4,7 +4,10 @@ import '/core/animations.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/widgets/app_card.dart';
+import '/core/design_tokens/spacing.dart';
 import '/core/custom_functions.dart' as functions;
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/newsfeed/blog_create/blog_create_widget.dart';
@@ -200,7 +203,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
               ),
               actions: [
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 15.0, 0.0),
+                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, AppSpacing.md, 0.0),
                   child: AppIconButton(
                     borderRadius: 20.0,
                     borderWidth: 1.0,
@@ -226,7 +229,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
+                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, AppSpacing.sm, 0.0),
                   child: AppIconButton(
                     borderRadius: 20.0,
                     borderWidth: 1.0,
@@ -255,15 +258,16 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
               centerTitle: false,
               elevation: 10.0,
             ),
-            body: SafeArea(
-              top: true,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
+            body: FairwayBackgroundDark(
+              child: SafeArea(
+                top: true,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
                     Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 16.0, 0.0),
+                          EdgeInsetsDirectional.fromSTEB(AppSpacing.xl, 0.0, AppSpacing.md, 0.0),
                       child: Row(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -271,7 +275,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                           Expanded(
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 10.0, 5.0, 0.0),
+                                  0.0, AppSpacing.sm, AppSpacing.xs, 0.0),
                               child: TextFormField(
                                 controller: inputSearchTextController,
                                 focusNode: inputSearchFocusNode,
@@ -368,8 +372,11 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                           ),
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 10.0, 5.0, 0.0),
-                            child: AppButton(
+                                0.0, AppSpacing.sm, AppSpacing.xs, 0.0),
+                            child: AppButtonEnhanced(
+                              text: 'SEARCH',
+                              variant: AppButtonVariant.primary,
+                              size: AppButtonSize.medium,
                               onPressed: () async {
                                 if (mounted) setState(() {
                                   simpleSearchResults = TextSearch(
@@ -403,42 +410,6 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                   );
                                 }
                               },
-                              text: 'SEARCH',
-                              options: AppButtonOptions(
-                                width: 100.0,
-                                height: 40.0,
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
-                                iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
-                                color: AppTheme.of(context).primary,
-                                textStyle: AppTheme.of(context)
-                                    .titleSmall
-                                    .override(
-                                      font: GoogleFonts.outfit(
-                                        fontWeight: AppTheme.of(context)
-                                            .titleSmall
-                                            .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .titleSmall
-                                            .fontStyle,
-                                      ),
-                                      color: Colors.white,
-                                      letterSpacing: 0.0,
-                                      fontWeight: AppTheme.of(context)
-                                          .titleSmall
-                                          .fontWeight,
-                                      fontStyle: AppTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                elevation: 2.0,
-                                borderSide: BorderSide(
-                                  color: Colors.transparent,
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
                             ),
                           ),
                           if (valueOrDefault<bool>(
@@ -448,7 +419,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                           ))
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 10.0, 0.0, 0.0),
+                                  0.0, AppSpacing.sm, 0.0, 0.0),
                               child: AuthUserStreamWidget(
                                 builder: (context) => AppIconButton(
                                   borderColor:
@@ -485,7 +456,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                     ),
                     Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 44.0),
+                          EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.sm, 0.0, AppSpacing.xxxl),
                       child: Builder(
                         builder: (context) {
                           final posts = functions
@@ -503,13 +474,10 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                               final postsItem = posts[postsIndex];
                               return Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 2.0),
-                                child: Container(
-                                  width: 100.0,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.of(context)
-                                        .secondaryBackground,
-                                  ),
+                                    AppSpacing.md, 0.0, AppSpacing.md, AppSpacing.md),
+                                child: AppCard(
+                                  variant: AppCardVariant.standard,
+                                  padding: EdgeInsets.zero,
                                   child: Column(
                                     mainAxisSize: MainAxisSize.max,
                                     children: [
@@ -610,7 +578,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                       ),
                                       Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            16.0, 20.0, 16.0, 0.0),
+                                            AppSpacing.md, AppSpacing.lg, AppSpacing.md, 0.0),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.max,
                                           mainAxisAlignment:
@@ -654,7 +622,7 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                                       ),
                                       Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            16.0, 0.0, 16.0, 16.0),
+                                            AppSpacing.md, 0.0, AppSpacing.md, AppSpacing.md),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
@@ -708,7 +676,8 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                         },
                       ),
                     ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

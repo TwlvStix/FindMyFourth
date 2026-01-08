@@ -1,6 +1,8 @@
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/spacing.dart';
 import '/profile/home/home_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -38,18 +40,19 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: AppTheme.of(context).secondaryBackground,
-      body: SafeArea(
-        top: true,
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
+      body: FairwayBackgroundSunset(
+        showOrganic: true,
+        child: SafeArea(
+          top: true,
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 150.0, 0.0, 0.0),
+                    padding: AppSpacing.only(top: 150.0),
                     child: Container(
                       width: 140.0,
                       height: 140.0,
@@ -63,7 +66,7 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                       ),
                       alignment: AlignmentDirectional(0.0, 0.0),
                       child: Padding(
-                        padding: EdgeInsets.all(30.0),
+                        padding: AppSpacing.only(left: 30.0, top: 30.0, right: 30.0, bottom: 30.0),
                         child: Icon(
                           Icons.check_rounded,
                           color: AppTheme.of(context).primaryBtnText,
@@ -73,8 +76,7 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                     ),
                   ),
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
+                    padding: AppSpacing.only(top: AppSpacing.xl),
                     child: Text(
                       'Enjoy Your Boring Existence',
                       style: AppTheme.of(context).titleLarge.override(
@@ -97,8 +99,7 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                     ),
                   ),
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
+                    padding: AppSpacing.only(top: AppSpacing.md),
                     child: Text(
                       'We will have fun without you!',
                       style: AppTheme.of(context).titleLarge.override(
@@ -122,62 +123,30 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                   ),
                   Expanded(
                     child: Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 32.0),
+                      padding: AppSpacing.only(bottom: AppSpacing.xxl),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          AppButton(
-                            onPressed: () async {
-                              context.pushNamed(
-                                HomeWidget.routeName,
-                                extra: <String, dynamic>{
-                                  kTransitionInfoKey: TransitionInfo(
-                                    hasTransition: true,
-                                    transitionType:
-                                        PageTransitionType.topToBottom,
-                                    duration: Duration(milliseconds: 220),
-                                  ),
-                                },
-                              );
-                            },
-                            text: 'Go Home',
-                            options: AppButtonOptions(
-                              width: 230.0,
-                              height: 50.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              color: AppTheme.of(context).primary,
-                              textStyle: AppTheme.of(context)
-                                  .bodyLarge
-                                  .override(
-                                    font: GoogleFonts.outfit(
-                                      fontWeight: AppTheme.of(context)
-                                          .bodyLarge
-                                          .fontWeight,
-                                      fontStyle: AppTheme.of(context)
-                                          .bodyLarge
-                                          .fontStyle,
+                          SizedBox(
+                            width: 230.0,
+                            child: AppButtonEnhanced(
+                              onPressed: () async {
+                                context.pushNamed(
+                                  HomeWidget.routeName,
+                                  extra: <String, dynamic>{
+                                    kTransitionInfoKey: TransitionInfo(
+                                      hasTransition: true,
+                                      transitionType:
+                                          PageTransitionType.topToBottom,
+                                      duration: Duration(milliseconds: 220),
                                     ),
-                                    color: AppTheme.of(context)
-                                        .primaryBtnText,
-                                    letterSpacing: 0.0,
-                                    fontWeight: AppTheme.of(context)
-                                        .bodyLarge
-                                        .fontWeight,
-                                    fontStyle: AppTheme.of(context)
-                                        .bodyLarge
-                                        .fontStyle,
-                                  ),
-                              elevation: 0.0,
-                              borderSide: BorderSide(
-                                color: Colors.transparent,
-                                width: 1.0,
-                              ),
-                              borderRadius: BorderRadius.circular(40.0),
+                                  },
+                                );
+                              },
+                              text: 'Go Home',
+                              variant: AppButtonVariant.primary,
+                              size: AppButtonSize.large,
                             ),
                           ),
                         ],
@@ -185,9 +154,10 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                     ),
                   ),
                 ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
