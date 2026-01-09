@@ -87,7 +87,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   }
 
   bool _shouldHideCancelledGame(Game game) {
-    if (!game.isCancelled) {
+    // Use status field instead of isCancelled
+    if (game.status != 'cancelled') {
       return false;
     }
     final handling = _getCancelledHandling(game);
@@ -313,20 +314,33 @@ class _GamesListWidgetState extends State<GamesListWidget> {
 
                   debugPrint('📊 GAME LIST: Total games parsed: ${allGames.length}');
 
-                  // Filter out cancelled games first (moved from _shouldHideCancelledGame)
-                  final nonCancelledGames = allGames.where((game) {
-                    if (game.isCancelled) {
+                  // Filter games by status: only show active games, hide expired/completed
+                  // For cancelled games, respect user preference
+                  final activeGames = allGames.where((game) {
+                    debugPrint('  - Checking game: ${game.nameGame} (status: ${game.status})');
+
+                    // Always hide expired and completed games
+                    if (game.status == 'expired' || game.status == 'completed') {
+                      debugPrint('    → Hiding ${game.status} game');
+                      return false;
+                    }
+
+                    // For cancelled games, check user preference
+                    if (game.status == 'cancelled') {
                       final shouldHide = _shouldHideCancelledGame(game);
-                      debugPrint('  - Filtering cancelled game: ${game.nameGame} (shouldHide: $shouldHide)');
+                      debugPrint('    → Cancelled game, shouldHide: $shouldHide');
                       return !shouldHide;
                     }
+
+                    // Show active games
+                    debugPrint('    → Showing active game');
                     return true;
                   }).toList();
 
-                  debugPrint('📊 GAME LIST: After cancelled filter: ${nonCancelledGames.length} games');
+                  debugPrint('📊 GAME LIST: After status filter: ${activeGames.length} games');
 
                   final filteredList =
-                      _filterGames(nonCancelledGames, choiceChipsValue);
+                      _filterGames(activeGames, choiceChipsValue);
 
                   debugPrint('📊 GAME LIST: After choice chip filter ("$choiceChipsValue"): ${filteredList.length} games');
 
@@ -464,7 +478,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   ),
                                   child: InkWell(
                                     onTap: () async {
-                                      if (containerVarItem.isCancelled == true) {
+                                      if (containerVarItem.status == 'cancelled') {
                                         if (_getCancelledHandling(
                                                 containerVarItem) ==
                                             null) {
@@ -661,7 +675,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 ),
 
                                                 // Status Badges
-                                                if (containerVarItem.isCancelled)
+                                                if (containerVarItem.status == 'cancelled')
                                                   Container(
                                                     margin:
                                                         EdgeInsets.only(left: 12.0),
@@ -687,11 +701,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                       ),
                                                     ),
                                                   ),
-                                                if (((containerVarItem.date != null) &&
-                                                        (containerVarItem.date! <
-                                                            getCurrentTimestamp)) &&
-                                                    (containerVarItem.isCancelled ==
-                                                        false))
+                                                if (containerVarItem.status == 'expired')
                                                   Container(
                                                     margin:
                                                         EdgeInsets.only(left: 12.0),

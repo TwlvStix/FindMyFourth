@@ -32,6 +32,32 @@ service cloud.firestore {
           data.directKey == data.memberIds[1] + '_' + data.memberIds[0]));
     }
 
+    function userRef(uid) {
+      return /databases/$(database)/documents/users/$(uid);
+    }
+
+    function isSelfFriendChange() {
+      let self = userRef(request.auth.uid);
+      return request.resource.data.friends is list &&
+        request.resource.data.diff(resource.data).changedKeys().hasOnly(['friends']) &&
+        ((request.resource.data.friends.hasAny([self]) &&
+          !(resource.data.friends is list && resource.data.friends.hasAny([self]))) ||
+         ((resource.data.friends is list && resource.data.friends.hasAny([self])) &&
+          !request.resource.data.friends.hasAny([self])));
+    }
+
+    function isSelfFriendRequestChange() {
+      let self = userRef(request.auth.uid);
+      return request.resource.data.friend_requests is list &&
+        request.resource.data.diff(resource.data).changedKeys().hasOnly(['friend_requests']) &&
+        ((request.resource.data.friend_requests.hasAny([self]) &&
+          !(resource.data.friend_requests is list &&
+            resource.data.friend_requests.hasAny([self]))) ||
+         ((resource.data.friend_requests is list &&
+            resource.data.friend_requests.hasAny([self])) &&
+          !request.resource.data.friend_requests.hasAny([self])));
+    }
+
     function canUpdateUnreadCount(oldData, newData) {
       let oldCounts = oldData.get('unreadCountByUser', {});
       let newCounts = newData.get('unreadCountByUser', {});
@@ -42,9 +68,11 @@ service cloud.firestore {
     }
 
     match /users/{document} {
+      allow update: if request.auth.uid == document ||
+        (request.auth != null &&
+          (isSelfFriendChange() || isSelfFriendRequestChange()));
       allow create: if request.auth.uid == document;
       allow read: if request.auth != null;
-      allow write: if request.auth.uid == document;
       allow delete: if false;
     }
 
@@ -124,6 +152,16 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if request.auth != null;
       allow delete: if request.auth != null;
+    }
+
+    match /usernames/{name} {
+      allow create: if request.auth != null &&
+        request.resource.data.uid == userRef(request.auth.uid) &&
+        !exists(/databases/$(database)/documents/usernames/$(name));
+      allow read: if request.auth != null;
+      allow update: if false;
+      allow delete: if request.auth != null &&
+        resource.data.uid == userRef(request.auth.uid);
     }
 
     match /games/{parent}/addPlayers/{document} {

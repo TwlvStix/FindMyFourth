@@ -163,11 +163,7 @@ class FirebaseAuthManager extends AuthManager
     String email,
     String password,
   ) =>
-      _signInOrCreateAccount(
-        context,
-        () => emailCreateAccountFunc(email, password),
-        'EMAIL',
-      );
+      _createOrFallbackToSignInWithEmail(context, email, password);
 
   @override
   Future<BaseAuthUser?> signInAnonymously(
@@ -336,6 +332,43 @@ class FirebaseAuthManager extends AuthManager
       debugPrint('❌ AUTH: Unexpected error during sign in/create account');
       debugPrint('❌ AUTH: Error: $e');
       debugPrint('❌ AUTH: Stack trace: $stackTrace');
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: An unexpected error occurred')),
+      );
+      return null;
+    }
+  }
+
+  Future<BaseAuthUser?> _createOrFallbackToSignInWithEmail(
+    BuildContext context,
+    String email,
+    String password,
+  ) async {
+    try {
+      final userCredential =
+          await emailCreateAccountFunc(email, password);
+      if (userCredential?.user != null) {
+        await maybeCreateUser(userCredential!.user!);
+      }
+      return userCredential == null
+          ? null
+          : FindMyFourthFirebaseUser.fromUserCredential(userCredential);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        debugPrint('🔐 AUTH: Email in use, attempting sign-in');
+        return _signInOrCreateAccount(
+          context,
+          () => emailSignInFunc(email, password),
+          'EMAIL',
+        );
+      }
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.message ?? 'Unknown error'}')),
+      );
+      return null;
+    } catch (e) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: An unexpected error occurred')),

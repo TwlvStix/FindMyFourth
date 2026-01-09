@@ -6,8 +6,10 @@ import '/utils/app_util.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/app_icon_button.dart';
 import '/core/navigation/app_router.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
+import '/main_function/player_list/player_list_widget.dart';
 import '/models/game.dart';
 import '/profile/profile_user/profile_user_firebase_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -115,7 +117,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
               ),
             ),
             title: Text(
-              'Joined Game',
+              'Game Dashboard',
               style: AppTheme.of(context).headlineSmall.override(
                     font: GoogleFonts.outfit(
                       fontWeight: FontWeight.w500,
@@ -489,12 +491,31 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                 ],
                                               ),
                                             ),
-                                            // Checkmark icon
-                                            Icon(
-                                              Icons.check_circle,
-                                              color: AppColors.sunsetGold,
-                                              size: 24.0,
-                                            ),
+                                            // Show remove button for owner, checkmark for others
+                                            if (gameJoinedDetailedGamesRecord.userRef == currentUserRef)
+                                              AppIconButton(
+                                                icon: Icon(
+                                                  Icons.remove_circle_outline,
+                                                  color: AppTheme.of(context).error,
+                                                  size: 24.0,
+                                                ),
+                                                borderRadius: 20.0,
+                                                buttonSize: 40.0,
+                                                fillColor: Colors.transparent,
+                                                onPressed: () => _showRemovePlayerDialog(
+                                                  context: context,
+                                                  playerName: friend1UsersRecord.displayName,
+                                                  playerRef: groupPlayersItem,
+                                                  isGuest: false,
+                                                  gameRecord: gameJoinedDetailedGamesRecord,
+                                                ),
+                                              )
+                                            else
+                                              Icon(
+                                                Icons.check_circle,
+                                                color: AppColors.sunsetGold,
+                                                size: 24.0,
+                                              ),
                                           ],
                                         ),
                                       ),
@@ -619,6 +640,26 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                           ],
                                         ),
                                       ),
+                                      // Remove button for owner
+                                      if (gameJoinedDetailedGamesRecord.userRef == currentUserRef)
+                                        AppIconButton(
+                                          icon: Icon(
+                                            Icons.remove_circle_outline,
+                                            color: AppTheme.of(context).error,
+                                            size: 24.0,
+                                          ),
+                                          borderRadius: 20.0,
+                                          buttonSize: 40.0,
+                                          fillColor: Colors.transparent,
+                                          onPressed: () => _showRemovePlayerDialog(
+                                            context: context,
+                                            playerName: guestName,
+                                            playerRef: null,
+                                            isGuest: true,
+                                            guestName: guestName,
+                                            gameRecord: gameJoinedDetailedGamesRecord,
+                                          ),
+                                        ),
                                     ],
                                   ),
                                 ),
@@ -630,6 +671,23 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                     ),
                   ),
                   SizedBox(height: AppSpacing.md),
+                  // Add Players button (for owner, when not full)
+                  if (gameJoinedDetailedGamesRecord.userRef == currentUserRef &&
+                      _getPlayerCount(gameJoinedDetailedGamesRecord) < 4)
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                      child: AppButtonEnhanced(
+                        text: 'Add Players',
+                        leadingIcon: Icons.person_add,
+                        variant: AppButtonVariant.secondary,
+                        size: AppButtonSize.medium,
+                        fullWidth: true,
+                        onPressed: () => _navigateToAddPlayers(context),
+                      ),
+                    ),
+                  if (gameJoinedDetailedGamesRecord.userRef == currentUserRef &&
+                      _getPlayerCount(gameJoinedDetailedGamesRecord) < 4)
+                    SizedBox(height: AppSpacing.md),
                   // Leave game button (for non-owner)
                   if (gameJoinedDetailedGamesRecord.userRef != currentUserRef)
                     Padding(
@@ -715,6 +773,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                               );
                               await widget.gameRef!.update({
                                 'isCancelled': true,
+                                'status': 'cancelled',
                               });
                               final updatedSnapshot =
                                   await widget.gameRef!.get();
@@ -865,6 +924,144 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     final guestCount =
         gameRecord.guestPlayers.where((name) => name.trim().isNotEmpty).length;
     return joinedCount + guestCount;
+  }
+
+  // Player management helper methods
+
+  Future<void> _showRemovePlayerDialog({
+    required BuildContext context,
+    required String playerName,
+    required DocumentReference? playerRef,
+    required bool isGuest,
+    String? guestName,
+    required Game gameRecord,
+  }) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final currentUserRef = currentUser == null
+        ? null
+        : FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
+
+    // Prevent owner from removing themselves
+    if (!isGuest && playerRef == currentUserRef) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('You cannot remove yourself. Use "Cancel game" instead.'),
+          backgroundColor: AppTheme.of(context).error,
+        ),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (alertDialogContext) {
+        return AlertDialog(
+          title: Text('Remove Player?'),
+          content: Text('Remove $playerName from this game?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(alertDialogContext, false),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(alertDialogContext, true),
+              child: Text(
+                'Remove',
+                style: TextStyle(color: AppTheme.of(context).error),
+              ),
+            ),
+          ],
+        );
+      },
+    ) ?? false;
+
+    if (confirmed) {
+      await _removePlayer(
+        context: context,
+        playerRef: playerRef,
+        isGuest: isGuest,
+        guestName: guestName,
+        playerName: playerName,
+        gameRecord: gameRecord,
+      );
+    }
+  }
+
+  Future<void> _removePlayer({
+    required BuildContext context,
+    required DocumentReference? playerRef,
+    required bool isGuest,
+    String? guestName,
+    required String playerName,
+    required Game gameRecord,
+  }) async {
+    try {
+
+      if (isGuest && guestName != null) {
+        // Remove guest player
+        await widget.gameRef!.update({
+          'guest_players': FieldValue.arrayRemove([guestName]),
+        });
+
+        debugPrint('Player Management: Removed guest player: $guestName');
+      } else if (!isGuest && playerRef != null) {
+        // Remove registered player from game
+        await widget.gameRef!.update({
+          'joined_players': FieldValue.arrayRemove([playerRef]),
+        });
+
+        // Remove from chat group if chat exists
+        if (gameRecord.chatRef != null) {
+          try {
+            await context.read<ChatProvider>().removeMember(
+              chatId: gameRecord.chatRef!.id,
+              uid: playerRef.id,
+            );
+            debugPrint('Player Management: Removed from chat: ${playerRef.id}');
+          } catch (chatError) {
+            debugPrint('Player Management: Chat removal failed: $chatError');
+            // Continue even if chat removal fails - game removal succeeded
+          }
+        }
+
+        debugPrint('Player Management: Removed registered player: ${playerRef.id}');
+      }
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$playerName removed from game'),
+          backgroundColor: AppTheme.of(context).success,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (error, stackTrace) {
+      debugPrint('Player Management: Remove failed - $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to remove player. Please try again.'),
+          backgroundColor: AppTheme.of(context).error,
+        ),
+      );
+    }
+  }
+
+  void _navigateToAddPlayers(BuildContext context) {
+    // Navigate to PlayerListWidget with game reference
+    // This reuses the exact same flow as game creation
+    context.pushNamed(
+      PlayerListWidget.routeName,
+      extra: <String, dynamic>{
+        'gameRef': widget.gameRef,
+        kTransitionInfoKey: const TransitionInfo(
+          hasTransition: true,
+          transitionType: PageTransitionType.bottomToTop,
+          duration: Duration(milliseconds: 220),
+        ),
+      },
+    );
   }
 
   // Helper method to build destructive action buttons (Leave/Cancel)

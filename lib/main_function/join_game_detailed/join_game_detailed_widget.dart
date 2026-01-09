@@ -112,7 +112,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
               ),
             ),
             title: Text(
-              'Join Game',
+              'Available Game',
               style: AppTheme.of(context).headlineSmall.override(
                     font: GoogleFonts.outfit(
                       fontWeight: FontWeight.w500,

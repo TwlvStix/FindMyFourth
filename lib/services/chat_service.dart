@@ -97,7 +97,9 @@ class ChatService {
           debugPrint('📨 ChatService: Received snapshot with ${snapshot.docs.length} messages');
           if (snapshot.docs.isNotEmpty) {
             final firstMsg = snapshot.docs.first.data();
-            debugPrint('📨 ChatService: First message: ${firstMsg['text']?.toString().substring(0, 30) ?? 'no text'}');
+            final messageText = firstMsg['text']?.toString() ?? '';
+            final previewLength = messageText.length < 30 ? messageText.length : 30;
+            debugPrint('📨 ChatService: First message: ${messageText.isNotEmpty ? messageText.substring(0, previewLength) : 'no text'}');
           }
           return snapshot;
         });

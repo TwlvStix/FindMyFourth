@@ -1898,6 +1898,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         'userRef': currentUserRef,
                                         'courseRef': selectedCourse?.reference,
                                         'isCancelled': false,
+                                        'status': 'active', // Soft delete: active, cancelled, expired, completed
                                         'joined_players': [currentUserRef],
                                         'guest_players': [],
                                         'uid': currentUser.uid,

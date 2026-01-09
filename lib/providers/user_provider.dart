@@ -277,14 +277,21 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  /// Add a friend
+  /// Add a friend (bidirectional - adds both users to each other's friends list)
   Future<void> addFriend(DocumentReference friendRef) async {
     if (!isLoggedIn) return;
 
     try {
+      // Add friend to current user's friends list
       await currentUserReference!.update({
         'friends': FieldValue.arrayUnion([friendRef]),
       });
+
+      // Add current user to friend's friends list (bidirectional)
+      await friendRef.update({
+        'friends': FieldValue.arrayUnion([currentUserReference]),
+      });
+
       refreshFriends();
     } catch (e) {
       debugPrint('Error adding friend: $e');
@@ -292,14 +299,21 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  /// Remove a friend
+  /// Remove a friend (bidirectional - removes both users from each other's friends list)
   Future<void> removeFriend(DocumentReference friendRef) async {
     if (!isLoggedIn) return;
 
     try {
+      // Remove friend from current user's friends list
       await currentUserReference!.update({
         'friends': FieldValue.arrayRemove([friendRef]),
       });
+
+      // Remove current user from friend's friends list (bidirectional)
+      await friendRef.update({
+        'friends': FieldValue.arrayRemove([currentUserReference]),
+      });
+
       refreshFriends();
     } catch (e) {
       debugPrint('Error removing friend: $e');

@@ -1167,6 +1167,85 @@ class _GolfersWidgetState extends State<GolfersWidget>
                     await _openDirectChat(user);
                   },
                 ),
+                SizedBox(width: 8.0),
+                AppIconButton(
+                  borderColor: AppTheme.of(context).error,
+                  borderRadius: 20.0,
+                  borderWidth: 1.0,
+                  buttonSize: 40.0,
+                  fillColor: AppTheme.of(context).error,
+                  icon: Icon(
+                    Icons.person_remove,
+                    color: Colors.white,
+                    size: 18.0,
+                  ),
+                  onPressed: () async {
+                    try {
+                      final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (alertDialogContext) {
+                              return AlertDialog(
+                                title: Text('Remove friend?'),
+                                content: Text(
+                                  'This will remove you from each other’s friends list.',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(alertDialogContext, false),
+                                    child: Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(alertDialogContext, true),
+                                    child: Text('Remove'),
+                                  ),
+                                ],
+                              );
+                            },
+                          ) ??
+                          false;
+                      if (!confirm) {
+                        return;
+                      }
+                      await currentUserReference!.update({
+                        ...mapToFirestore(
+                          {
+                            'friends': FieldValue.arrayRemove(
+                                [user.reference]),
+                          },
+                        ),
+                      });
+                      try {
+                        await user.reference.update({
+                          ...mapToFirestore(
+                            {
+                              'friends': FieldValue.arrayRemove(
+                                  [currentUserReference]),
+                            },
+                          ),
+                        });
+                      } catch (_) {}
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Friend removed.',
+                            style: GoogleFonts.outfit(color: Colors.white),
+                          ),
+                          duration: Duration(milliseconds: 1500),
+                          backgroundColor: AppTheme.of(context).error,
+                        ),
+                      );
+                    } catch (_) {
+                      if (!mounted) return;
+                      showSnackbar(
+                        context,
+                        'Unable to remove friend. Please try again.',
+                      );
+                    }
+                  },
+                ),
               ],
             ),
           ],

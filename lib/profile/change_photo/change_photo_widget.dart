@@ -260,7 +260,10 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                           .map((u) => u!)
                                           .toList();
                                     } finally {
-                                      isDataUploadingUploadDataJ3j = false;
+                                      if (mounted) {
+                                        setState(() =>
+                                            isDataUploadingUploadDataJ3j = false);
+                                      }
                                     }
                                     if (selectedUploadedFiles.length ==
                                             selectedMedia.length &&
@@ -284,6 +287,20 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                               ),
                               AppButtonEnhanced(
                                 onPressed: () async {
+                                  if (isDataUploadingUploadDataJ3j) {
+                                    showUploadMessage(
+                                      context,
+                                      'Upload in progress. Please wait.',
+                                    );
+                                    return;
+                                  }
+                                  if (uploadedFileUrlUploadDataJ3j.isEmpty) {
+                                    showUploadMessage(
+                                      context,
+                                      'Please upload a photo before saving.',
+                                    );
+                                    return;
+                                  }
                                   await currentUserReference!
                                       .update(createUsersRecordData(
                                     photoUrl:

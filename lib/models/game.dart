@@ -16,6 +16,7 @@ class Game {
     required this.joinedPlayers,
     required this.guestPlayers,
     required this.isCancelled,
+    required this.status,
     required this.date,
     required this.createdTime,
     required this.chatRef,
@@ -38,6 +39,7 @@ class Game {
   final List<DocumentReference> joinedPlayers;
   final List<String> guestPlayers;
   final bool isCancelled;
+  final String status; // 'active', 'completed', 'cancelled', 'expired'
   final DateTime? date;
   final DateTime? createdTime;
   final DocumentReference? chatRef;
@@ -47,6 +49,21 @@ class Game {
 
   static Game fromDoc(DocumentSnapshot doc) {
     final data = (doc.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
+
+    // For backward compatibility, derive status from isCancelled if status field doesn't exist
+    String gameStatus = (data['status'] as String?) ?? 'active';
+    if (gameStatus == 'active') {
+      // Check if game should be marked as expired based on date
+      final gameDate = (data['date'] as Timestamp?)?.toDate();
+      final isCancelled = (data['isCancelled'] as bool?) ?? false;
+
+      if (isCancelled) {
+        gameStatus = 'cancelled';
+      } else if (gameDate != null && gameDate.isBefore(DateTime.now())) {
+        gameStatus = 'expired';
+      }
+    }
+
     return Game(
       reference: doc.reference,
       nameGame: (data['name_game'] as String?) ?? '',
@@ -68,6 +85,7 @@ class Game {
               .toList() ??
           [],
       isCancelled: (data['isCancelled'] as bool?) ?? false,
+      status: gameStatus,
       date: (data['date'] as Timestamp?)?.toDate(),
       createdTime: (data['created_time'] as Timestamp?)?.toDate(),
       chatRef: data['chatRef'] as DocumentReference?,
@@ -76,4 +94,10 @@ class Game {
       uid: (data['uid'] as String?) ?? doc.id,
     );
   }
+
+  // Helper getters
+  bool get isActive => status == 'active';
+  bool get isCancelledStatus => status == 'cancelled';
+  bool get isExpired => status == 'expired';
+  bool get isCompleted => status == 'completed';
 }
