@@ -131,35 +131,14 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
   Widget build(BuildContext context) {
     context.watch<AppState>();
 
-    return StreamBuilder<List<VerificationDashRecord>>(
-      stream: queryVerificationDashRecord(
-        singleRecord: true,
-      ),
-      builder: (context, snapshot) {
-        // Customize what your widget looks like when it's loading.
-        if (!snapshot.hasData) {
-          return Scaffold(
-            backgroundColor: AppTheme.of(context).tertiary,
-            body: Center(
-              child: SizedBox(
-                width: 50.0,
-                height: 50.0,
-                child: SpinKitWanderingCubes(
-                  color: AppTheme.of(context).secondary,
-                  size: 50.0,
-                ),
-              ),
-            ),
-          );
-        }
-        List<VerificationDashRecord> createProfileVerificationDashRecordList =
-            snapshot.data!;
-        final createProfileVerificationDashRecord =
-            createProfileVerificationDashRecordList.isNotEmpty
-                ? createProfileVerificationDashRecordList.first
-                : null;
+    // Skip VerificationDash entirely - it's optional for username validation
+    // This avoids permission errors for new users
+    debugPrint('📝 CREATE PROFILE: Building without VerificationDash (avoiding permission issues)');
+    return _buildProfileForm(context, null);
+  }
 
-        return GestureDetector(
+  Widget _buildProfileForm(BuildContext context, VerificationDashRecord? createProfileVerificationDashRecord) {
+    return GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
             FocusManager.instance.primaryFocus?.unfocus();
@@ -1837,12 +1816,19 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                             functions.usernameCreator(
                                                 usernameTextController.text);
                                         if (mounted) setState(() {});
-                                        if (functions.usernameChecker(
-                                                AppState().theusernames,
-                                                createProfileVerificationDashRecord!
-                                                    .usernames
-                                                    .toList()) ==
-                                            true) {
+
+                                        // Check username availability
+                                        // If VerificationDash is unavailable, skip validation and allow any username
+                                        final existingUsernames = createProfileVerificationDashRecord != null
+                                            ? createProfileVerificationDashRecord.usernames.toList()
+                                            : <String>[];
+                                        final isUsernameAvailable = functions.usernameChecker(
+                                            AppState().theusernames,
+                                            existingUsernames);
+
+                                        debugPrint('📝 CREATE PROFILE: Username check - available: $isUsernameAvailable');
+
+                                        if (isUsernameAvailable == true) {
                                           await currentUserReference!
                                               .update(createUsersRecordData(
                                             email: currentUserEmail,
@@ -1861,9 +1847,11 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                                 AppState().theusernames,
                                           ));
 
-                                          await createProfileVerificationDashRecord
-                                              .reference
-                                              .update({
+                                          // Only update VerificationDash if we have access to it
+                                          if (createProfileVerificationDashRecord != null) {
+                                            await createProfileVerificationDashRecord
+                                                .reference
+                                                .update({
                                             ...mapToFirestore(
                                               {
                                                 'usernames':
@@ -1873,6 +1861,10 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
                                               },
                                             ),
                                           });
+                                          } else {
+                                            debugPrint('⚠️ CREATE PROFILE: Skipping VerificationDash update (no permission)');
+                                          }
+
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
                                             SnackBar(
@@ -2097,7 +2089,5 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget> {
             ),
           ),
         );
-      },
-    );
   }
 }

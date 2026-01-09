@@ -102,12 +102,11 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
               onTap: () async {
+                debugPrint('🔙 GAME DETAIL: Back button pressed, navigating to Game List');
+                // Always navigate to Game List, not pop() which could go to "Add Your Group"
+                // This ensures clean navigation flow
                 final router = GoRouter.of(context);
-                if (router.canPop()) {
-                  router.pop();
-                } else {
-                  router.go('/');
-                }
+                router.go('/gamesList');
               },
               child: Icon(
                 Icons.chevron_left_rounded,

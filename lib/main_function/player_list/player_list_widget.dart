@@ -61,6 +61,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  // Track if submission is in progress to prevent double submission
+  bool _isSubmitting = false;
+
   @override
   void initState() {
     super.initState();
@@ -78,9 +81,23 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: widget.gameRef.snapshots(),
-      builder: (context, snapshot) {
+    return PopScope(
+      // Prevent back navigation after submission
+      canPop: !_isSubmitting,
+      onPopInvokedWithResult: (didPop, result) {
+        if (_isSubmitting) {
+          debugPrint('⚠️ PLAYER LIST: Back navigation blocked - submission in progress');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Please wait while we add your players...'),
+              duration: Duration(seconds: 1),
+            ),
+          );
+        }
+      },
+      child: StreamBuilder<DocumentSnapshot>(
+        stream: widget.gameRef.snapshots(),
+        builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Scaffold(
             key: scaffoldKey,
@@ -642,7 +659,41 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                             SizedBox(
                                               width: double.infinity,
                                               child: AppButtonEnhanced(
-                                                onPressed: () async {
+                                                onPressed: _isSubmitting ? null : () async {
+                                                  // Prevent double submission
+                                                  if (_isSubmitting) {
+                                                    debugPrint('⚠️ PLAYER LIST: Already submitting, ignoring click');
+                                                    return;
+                                                  }
+
+                                                  setState(() {
+                                                    _isSubmitting = true;
+                                                  });
+
+                                                  debugPrint('👥 PLAYER LIST: Starting player submission');
+                                                  debugPrint('👥 PLAYER LIST: Current game max players: ${game.maxPlayers}');
+                                                  debugPrint('👥 PLAYER LIST: Current joined players: ${game.joinedPlayers.length}');
+                                                  debugPrint('👥 PLAYER LIST: Current guest players: ${game.guestPlayers.length}');
+
+                                                  // Calculate current player count
+                                                  final currentPlayerCount = game.joinedPlayers.length + game.guestPlayers.length;
+                                                  debugPrint('👥 PLAYER LIST: Current total players: $currentPlayerCount / ${game.maxPlayers}');
+
+                                                  // Validate we haven't exceeded max players
+                                                  if (currentPlayerCount >= game.maxPlayers) {
+                                                    debugPrint('❌ PLAYER LIST: Game is already full!');
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text('Game is already full (${game.maxPlayers} players)'),
+                                                        backgroundColor: Colors.red,
+                                                      ),
+                                                    );
+                                                    setState(() {
+                                                      _isSubmitting = false;
+                                                    });
+                                                    return;
+                                                  }
+
                                                   final selections = <String?>[
                                                     if (numExistingFriends >= 1)
                                                       dropDownValue1,
@@ -663,7 +714,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                     if (selection ==
                                                         guestOptionValue) {
                                                       guestPlayersToAdd.add(
-                                                        'Guest ${guestPlayersToAdd.length + 1}',
+                                                        'Guest ${game.guestPlayers.length + guestPlayersToAdd.length + 1}',
                                                       );
                                                     } else {
                                                       final playerRef =
@@ -679,41 +730,71 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                     }
                                                   }
 
-                                                  if (joinedPlayersToAdd
-                                                          .isNotEmpty ||
-                                                      guestPlayersToAdd
-                                                          .isNotEmpty) {
-                                                    await widget.gameRef
-                                                        .update({
-                                                      if (joinedPlayersToAdd
-                                                          .isNotEmpty)
-                                                        'joined_players':
-                                                            FieldValue.arrayUnion(
-                                                                joinedPlayersToAdd),
-                                                      if (guestPlayersToAdd
-                                                          .isNotEmpty)
-                                                        'guest_players':
-                                                            FieldValue.arrayUnion(
-                                                                guestPlayersToAdd),
+                                                  debugPrint('👥 PLAYER LIST: Adding ${joinedPlayersToAdd.length} joined players');
+                                                  debugPrint('👥 PLAYER LIST: Adding ${guestPlayersToAdd.length} guest players');
+
+                                                  // Validate total count won't exceed max
+                                                  final newPlayerCount = currentPlayerCount + joinedPlayersToAdd.length + guestPlayersToAdd.length;
+                                                  if (newPlayerCount > game.maxPlayers) {
+                                                    debugPrint('❌ PLAYER LIST: Would exceed max players: $newPlayerCount > ${game.maxPlayers}');
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text('Cannot add ${joinedPlayersToAdd.length + guestPlayersToAdd.length} players - would exceed max (${game.maxPlayers})'),
+                                                        backgroundColor: Colors.red,
+                                                      ),
+                                                    );
+                                                    setState(() {
+                                                      _isSubmitting = false;
                                                     });
+                                                    return;
                                                   }
 
-                                                  context.pushNamed(
-                                                    GamesListWidget.routeName,
-                                                    extra: <String, dynamic>{
-                                                      kTransitionInfoKey:
-                                                          TransitionInfo(
-                                                        hasTransition: true,
-                                                        transitionType:
-                                                            PageTransitionType
-                                                                .bottomToTop,
-                                                        duration: Duration(
-                                                            milliseconds: 220),
+                                                  try {
+                                                    if (joinedPlayersToAdd
+                                                            .isNotEmpty ||
+                                                        guestPlayersToAdd
+                                                            .isNotEmpty) {
+                                                      await widget.gameRef
+                                                          .update({
+                                                        if (joinedPlayersToAdd
+                                                            .isNotEmpty)
+                                                          'joined_players':
+                                                              FieldValue.arrayUnion(
+                                                                  joinedPlayersToAdd),
+                                                        if (guestPlayersToAdd
+                                                            .isNotEmpty)
+                                                          'guest_players':
+                                                              FieldValue.arrayUnion(
+                                                                  guestPlayersToAdd),
+                                                      });
+                                                      debugPrint('✅ PLAYER LIST: Players added successfully');
+                                                    } else {
+                                                      debugPrint('ℹ️ PLAYER LIST: No players selected, proceeding anyway');
+                                                    }
+
+                                                    // Use router.go() to navigate to Game List
+                                                    // This replaces the current location and prevents back navigation issues
+                                                    debugPrint('🚀 PLAYER LIST: Navigating to Game List');
+
+                                                    if (!mounted) return;
+
+                                                    // Use go_router to navigate - this maintains consistent navigation state
+                                                    final router = GoRouter.of(context);
+                                                    router.go(GamesListWidget.routePath);
+                                                  } catch (e) {
+                                                    debugPrint('❌ PLAYER LIST: Error adding players: $e');
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text('Error adding players: $e'),
+                                                        backgroundColor: Colors.red,
                                                       ),
-                                                    },
-                                                  );
+                                                    );
+                                                    setState(() {
+                                                      _isSubmitting = false;
+                                                    });
+                                                  }
                                                 },
-                                                text: 'Add to Group',
+                                                text: _isSubmitting ? 'Adding...' : 'Add to Group',
                                                 variant:
                                                     AppButtonVariant.primary,
                                                 size: AppButtonSize.medium,
@@ -798,6 +879,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
           ),
         );
       },
+      ),
     );
   }
 

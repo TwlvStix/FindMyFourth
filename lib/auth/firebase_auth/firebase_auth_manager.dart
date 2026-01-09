@@ -301,14 +301,23 @@ class FirebaseAuthManager extends AuthManager
     String authProvider,
   ) async {
     try {
+      debugPrint('🔐 AUTH: Starting sign in/create account with provider: $authProvider');
       final userCredential = await signInFunc();
+      debugPrint('🔐 AUTH: Received user credential: ${userCredential?.user?.uid}');
       if (userCredential?.user != null) {
-        await maybeCreateUser(userCredential!.user!);
+        debugPrint('🔐 AUTH: Creating/updating user document for ${userCredential!.user!.uid}');
+        await maybeCreateUser(userCredential.user!);
+        debugPrint('🔐 AUTH: User document created/updated successfully');
       }
       return userCredential == null
           ? null
           : FindMyFourthFirebaseUser.fromUserCredential(userCredential);
     } on FirebaseAuthException catch (e) {
+      debugPrint('❌ AUTH: FirebaseAuthException caught');
+      debugPrint('❌ AUTH: Error code: ${e.code}');
+      debugPrint('❌ AUTH: Error message: ${e.message}');
+      debugPrint('❌ AUTH: Provider: $authProvider');
+
       final errorMsg = switch (e.code) {
         'email-already-in-use' =>
           'Error: The email is already in use by a different account',
@@ -316,9 +325,20 @@ class FirebaseAuthManager extends AuthManager
           'Error: The supplied auth credential is incorrect, malformed or has expired',
         _ => 'Error: ${e.message!}',
       };
+
+      debugPrint('❌ AUTH: Showing error to user: $errorMsg');
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMsg)),
+      );
+      return null;
+    } catch (e, stackTrace) {
+      debugPrint('❌ AUTH: Unexpected error during sign in/create account');
+      debugPrint('❌ AUTH: Error: $e');
+      debugPrint('❌ AUTH: Stack trace: $stackTrace');
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: An unexpected error occurred')),
       );
       return null;
     }

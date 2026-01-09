@@ -1669,25 +1669,67 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                   variant: AppButtonVariant.primary,
                                   size: AppButtonSize.large,
                                   onPressed: () async {
+                                    debugPrint('🎮 CREATE GAME: Submit button clicked');
+
                                     if (formKey.currentState == null ||
                                         !formKey.currentState!.validate()) {
+                                      debugPrint('❌ CREATE GAME: Form validation failed');
                                       return;
                                     }
+                                    debugPrint('✅ CREATE GAME: Form validation passed');
+
                                     if (courseValue == null) {
+                                      debugPrint('❌ CREATE GAME: courseValue is null');
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Please select a course'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
                                       return;
                                     }
                                     if (friendsValue == null) {
+                                      debugPrint('❌ CREATE GAME: friendsValue is null');
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Please select Friends or Public game'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
                                       return;
                                     }
                                     if (rulesSetValue == null) {
+                                      debugPrint('❌ CREATE GAME: rulesSetValue is null');
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Please select a rules setting'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
                                       return;
                                     }
                                     if (styleGameValue == null) {
+                                      debugPrint('❌ CREATE GAME: styleGameValue is null');
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Please select a game style'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
                                       return;
                                     }
                                     if (gameTypeValue == null) {
+                                      debugPrint('❌ CREATE GAME: gameTypeValue is null');
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Please select a game type'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
                                       return;
                                     }
+                                    debugPrint('✅ CREATE GAME: All dropdown values present');
+
                                     if (datePicked == null) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
@@ -1729,10 +1771,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                       return;
                                     }
 
+                                    debugPrint('✅ CREATE GAME: Date validation passed');
+
+                                    debugPrint('🎮 CREATE GAME: Starting game creation...');
+                                    debugPrint('🎮 CREATE GAME: Game name: ${gameNameTextController.text}');
+                                    debugPrint('🎮 CREATE GAME: Course: $courseValue');
+                                    debugPrint('🎮 CREATE GAME: Date: $datePicked');
+                                    debugPrint('🎮 CREATE GAME: Style: $styleGameValue');
+                                    debugPrint('🎮 CREATE GAME: Type: $gameTypeValue');
+                                    debugPrint('🎮 CREATE GAME: Friends: $friendsValue');
+                                    debugPrint('🎮 CREATE GAME: Rules: $rulesSetValue');
+                                    debugPrint('🎮 CREATE GAME: Player count: ${countControllerValue ?? 0}');
+
                                     try {
+                                      debugPrint('🎮 CREATE GAME: Checking authentication...');
                                       final currentUser =
                                           FirebaseAuth.instance.currentUser;
                                       if (currentUser == null) {
+                                        debugPrint('❌ CREATE GAME: User not authenticated');
+
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
                                           SnackBar(
@@ -1772,15 +1829,22 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         );
                                         return;
                                       }
+                                      debugPrint('✅ CREATE GAME: User authenticated: ${currentUser.uid}');
+
                                       final currentUserRef = FirebaseFirestore
                                           .instance
                                           .collection('users')
                                           .doc(currentUser.uid);
                                       final numPlayers =
                                           countControllerValue ?? 0;
-                                      final maxPlayers = numPlayers + 1;
+                                      // Golf games are always 4 players total
+                                      // Formula: 1 (creator) + existing friends + numPlayers (randoms) = 4
+                                      final maxPlayers = 4;
                                       debugPrint(
                                         'CreateGame: creating game ${gameNameTextController.text}',
+                                      );
+                                      debugPrint(
+                                        'CreateGame: numPlayers=$numPlayers (randoms needed), maxPlayers=$maxPlayers',
                                       );
                                       // Create game doc reference first (before creating chat)
                                       final gamesRecordReference =
@@ -1789,17 +1853,34 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                               .doc();
 
                                       // Create chat with gameId
-                                      final chatsRecordReference =
-                                          await context
-                                              .read<ChatProvider>()
-                                              .createGameChat(
-                                                createdByUid: currentUser.uid,
-                                                gameId: gamesRecordReference.id,
-                                              );
-                                      chatRef = chatsRecordReference;
+                                      debugPrint('🎮 CREATE GAME: Creating game chat...');
+                                      debugPrint('🎮 CREATE GAME: Game ID: ${gamesRecordReference.id}');
+                                      debugPrint('🎮 CREATE GAME: Creator UID: ${currentUser.uid}');
+
+                                      try {
+                                        final chatsRecordReference =
+                                            await context
+                                                .read<ChatProvider>()
+                                                .createGameChat(
+                                                  createdByUid: currentUser.uid,
+                                                  gameId: gamesRecordReference.id,
+                                                );
+                                        chatRef = chatsRecordReference;
+                                        debugPrint('✅ CREATE GAME: Game chat created: ${chatsRecordReference.id}');
+                                      } catch (chatError, chatStackTrace) {
+                                        debugPrint('❌ CREATE GAME: Chat creation failed!');
+                                        debugPrint('❌ CREATE GAME: Error type: ${chatError.runtimeType}');
+                                        debugPrint('❌ CREATE GAME: Error: $chatError');
+                                        debugPrintStack(stackTrace: chatStackTrace);
+                                        throw Exception('Failed to create game chat: $chatError');
+                                      }
 
                                       // Now set game data
-                                      await gamesRecordReference.set({
+                                      debugPrint('🎮 CREATE GAME: Saving game to Firestore...');
+                                      debugPrint('🎮 CREATE GAME: Path: ${gamesRecordReference.path}');
+
+                                      try {
+                                        await gamesRecordReference.set({
                                         'name_game':
                                             gameNameTextController.text,
                                         'date': datePicked,
@@ -1821,10 +1902,16 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         'guest_players': [],
                                         'uid': currentUser.uid,
                                       });
-                                      gameRef = gamesRecordReference;
-                                      debugPrint(
-                                        'CreateGame: game saved ${gamesRecordReference.path}',
-                                      );
+                                        gameRef = gamesRecordReference;
+                                        debugPrint('✅ CREATE GAME: Game saved to Firestore successfully');
+                                        debugPrint('CreateGame: game saved ${gamesRecordReference.path}');
+                                      } catch (saveError, saveStackTrace) {
+                                        debugPrint('❌ CREATE GAME: Game save failed!');
+                                        debugPrint('❌ CREATE GAME: Error type: ${saveError.runtimeType}');
+                                        debugPrint('❌ CREATE GAME: Error: $saveError');
+                                        debugPrintStack(stackTrace: saveStackTrace);
+                                        throw Exception('Failed to save game data: $saveError');
+                                      }
                                       await Future.wait([
                                         Future(() async {
                                           context.userProvider
@@ -1913,15 +2000,23 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                         }),
                                       ]);
                                     } catch (error, stackTrace) {
-                                      debugPrint(
-                                        'CreateGame: failed to create game $error',
-                                      );
+                                      debugPrint('❌ CREATE GAME: FAILED TO CREATE GAME');
+                                      debugPrint('❌ CREATE GAME: Error type: ${error.runtimeType}');
+                                      debugPrint('❌ CREATE GAME: Error message: $error');
+                                      debugPrint('❌ CREATE GAME: Stack trace:');
                                       debugPrintStack(stackTrace: stackTrace);
+
+                                      // Extract meaningful error message
+                                      String errorMsg = error.toString();
+                                      if (errorMsg.length > 100) {
+                                        errorMsg = errorMsg.substring(0, 100) + '...';
+                                      }
+
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         SnackBar(
                                           content: Text(
-                                            'Failed to create game. Please try again.',
+                                            'Failed to create game: $errorMsg',
                                             style: AppTheme.of(context)
                                                 .titleMedium
                                                 .override(
@@ -1935,8 +2030,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                             .titleMedium
                                                             .fontStyle,
                                                   ),
-                                                  color: AppTheme.of(context)
-                                                      .secondaryBackground,
+                                                  color: Colors.white,
                                                   letterSpacing: 0.0,
                                                   fontWeight:
                                                       AppTheme.of(context)
@@ -1949,9 +2043,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                                 ),
                                           ),
                                           duration:
-                                              Duration(milliseconds: 4000),
-                                          backgroundColor:
-                                              AppTheme.of(context).primary,
+                                              Duration(milliseconds: 6000), // Longer to read error
+                                          backgroundColor: Colors.red, // Red for errors
                                         ),
                                       );
                                       return;

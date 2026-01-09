@@ -113,22 +113,38 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   }
 
   List<Game> _filterGames(List<Game> gamesList, String? choiceChipValue) {
+    debugPrint('🔍 FILTER: Applying choice chip filter: "$choiceChipValue"');
+    debugPrint('🔍 FILTER: Input games: ${gamesList.length}');
+
     if (choiceChipValue == '\$\$\$\$') {
-      return gamesList
+      debugPrint('🔍 FILTER: Filtering for Money Game');
+      final filtered = gamesList
           .where((game) => game.styleGame == 'Money Game')
           .toList();
+      debugPrint('🔍 FILTER: Found ${filtered.length} Money Games');
+      return filtered;
     }
     if (choiceChipValue == 'Vegas') {
-      return gamesList.where((game) => game.gameType == 'Vegas').toList();
+      debugPrint('🔍 FILTER: Filtering for Vegas');
+      final filtered = gamesList.where((game) => game.gameType == 'Vegas').toList();
+      debugPrint('🔍 FILTER: Found ${filtered.length} Vegas games');
+      return filtered;
     }
     if (choiceChipValue == 'For Fun') {
-      return gamesList.where((game) => game.styleGame == 'All Fun').toList();
+      debugPrint('🔍 FILTER: Filtering for All Fun');
+      final filtered = gamesList.where((game) => game.styleGame == 'All Fun').toList();
+      debugPrint('🔍 FILTER: Found ${filtered.length} All Fun games');
+      return filtered;
     }
     if (choiceChipValue == 'Discount') {
-      return gamesList
+      debugPrint('🔍 FILTER: Filtering for Member Discount');
+      final filtered = gamesList
           .where((game) => game.memberDiscount == 'Yes')
           .toList();
+      debugPrint('🔍 FILTER: Found ${filtered.length} games with discount');
+      return filtered;
     }
+    debugPrint('🔍 FILTER: No filter applied (showing all ${gamesList.length} games)');
     return gamesList;
   }
 
@@ -209,12 +225,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
               size: 25.0,
             ),
             onPressed: () async {
+              debugPrint('🔙 GAME LIST: Back button pressed');
               final router = GoRouter.of(context);
-              if (router.canPop()) {
-                router.pop();
-              } else {
-                router.go('/');
-              }
+
+              // Always navigate to home screen instead of popping
+              // This prevents navigation stack issues and ensures consistent behavior
+              debugPrint('🔙 GAME LIST: Navigating to home screen');
+              router.go('/home');
             },
           ),
           title: Text(
@@ -239,12 +256,39 @@ class _GamesListWidgetState extends State<GamesListWidget> {
               child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                 stream: FirebaseFirestore.instance
                     .collection('games')
-                    .where('isCancelled', isEqualTo: false)
                     .orderBy('date')
                     .snapshots(),
                 builder: (context, snapshot) {
+                  debugPrint('📋 GAME LIST: StreamBuilder triggered');
+
+                  // Handle errors
+                  if (snapshot.hasError) {
+                    debugPrint('❌ GAME LIST: Error fetching games: ${snapshot.error}');
+                    debugPrint('❌ GAME LIST: Error type: ${snapshot.error.runtimeType}');
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.error_outline, size: 48, color: Colors.red),
+                          SizedBox(height: 16),
+                          Text(
+                            'Error loading games',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            '${snapshot.error}',
+                            style: TextStyle(fontSize: 14),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
                   // Show loading indicator
                   if (!snapshot.hasData) {
+                    debugPrint('⏳ GAME LIST: Waiting for data...');
                     return Center(
                       child: SizedBox(
                         width: 50.0,
@@ -257,14 +301,41 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                     );
                   }
 
+                  debugPrint('✅ GAME LIST: Received ${snapshot.data!.docs.length} documents from Firestore');
+
                   final allGames = snapshot.data!.docs
-                      .map((doc) => Game.fromDoc(doc))
+                      .map((doc) {
+                        final game = Game.fromDoc(doc);
+                        debugPrint('  - Game: ${game.nameGame} (ID: ${doc.id}, isCancelled: ${game.isCancelled})');
+                        return game;
+                      })
                       .toList();
+
+                  debugPrint('📊 GAME LIST: Total games parsed: ${allGames.length}');
+
+                  // Filter out cancelled games first (moved from _shouldHideCancelledGame)
+                  final nonCancelledGames = allGames.where((game) {
+                    if (game.isCancelled) {
+                      final shouldHide = _shouldHideCancelledGame(game);
+                      debugPrint('  - Filtering cancelled game: ${game.nameGame} (shouldHide: $shouldHide)');
+                      return !shouldHide;
+                    }
+                    return true;
+                  }).toList();
+
+                  debugPrint('📊 GAME LIST: After cancelled filter: ${nonCancelledGames.length} games');
+
                   final filteredList =
-                      _filterGames(allGames, choiceChipsValue);
-                  final visibleGames = filteredList
-                      .where((game) => !_shouldHideCancelledGame(game))
-                      .toList();
+                      _filterGames(nonCancelledGames, choiceChipsValue);
+
+                  debugPrint('📊 GAME LIST: After choice chip filter ("$choiceChipsValue"): ${filteredList.length} games');
+
+                  final visibleGames = filteredList;
+
+                  debugPrint('✅ GAME LIST: Final visible games: ${visibleGames.length}');
+                  visibleGames.forEach((game) {
+                    debugPrint('  ✓ ${game.nameGame} at ${game.coursePlay}');
+                  });
 
                   return RefreshIndicator(
                     onRefresh: () async {

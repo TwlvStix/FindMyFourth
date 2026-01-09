@@ -39,6 +39,7 @@ import '/user_auth/recover_password/recover_password_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import '/user_auth/sign_up_account/sign_up_account_widget.dart';
 import '/user_onboarding/progressive_onboarding_widget.dart';
+import '/user_onboarding/user_onboarding_widget.dart';
 
 export 'package:go_router/go_router.dart';
 export '/utils/serialization_util.dart';
@@ -241,6 +242,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             state,
             appStateNotifier,
             ProgressiveOnboardingWidget(),
+          ),
+        ),
+        GoRoute(
+          name: UserOnboardingWidget.routeName,
+          path: UserOnboardingWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            UserOnboardingWidget(),
           ),
         ),
         GoRoute(

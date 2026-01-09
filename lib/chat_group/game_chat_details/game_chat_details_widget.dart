@@ -178,7 +178,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Failed to delete chat: ${error.toString().substring(0, error.toString().length > 50 ? 50 : error.toString().length)}',
+            'Failed to delete chat: ${error.toString().length > 50 ? error.toString().substring(0, 50) : error.toString()}',
           ),
           backgroundColor: Colors.red,
         ),
@@ -587,7 +587,9 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                         debugPrint('📨 UI: Rendering ListView with $itemCount items');
 
                         if (messages.isNotEmpty) {
-                          debugPrint('📨 UI: First message text: ${messages.first.text.substring(0, messages.first.text.length > 30 ? 30 : messages.first.text.length)}');
+                          final firstMessageText = messages.first.text;
+                          final previewLength = firstMessageText.length < 30 ? firstMessageText.length : 30;
+                          debugPrint('📨 UI: First message text: ${firstMessageText.substring(0, previewLength)}');
                         }
 
                         return ListView.builder(
