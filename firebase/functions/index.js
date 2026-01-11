@@ -197,6 +197,81 @@ exports.fetchReceiptants = functions
     return { user_refs: Array.from(users) };
   });
 
+exports.completeOnboarding = functions
+  .region("us-west2")
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Authentication required.",
+      );
+    }
+    const userDocPath = data?.userDocPath;
+    if (typeof userDocPath !== "string" || userDocPath.split("/").length !== 2) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "A valid user document path is required.",
+      );
+    }
+    if (context.auth.uid !== userDocPath.split("/")[1]) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "Authenticated user doesn't match provided user reference.",
+      );
+    }
+
+    try {
+      await firestore.doc(userDocPath).update({
+        onboarding_completed: true,
+      });
+      return { success: true };
+    } catch (error) {
+      console.error("completeOnboarding failed", error);
+      throw new functions.https.HttpsError(
+        "internal",
+        "Unable to mark onboarding as completed.",
+        { message: error?.message ?? String(error) },
+      );
+    }
+  });
+
+exports.checkOnboardingComplete = functions
+  .region("us-west2")
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Authentication required.",
+      );
+    }
+    const userDocPath = data?.userDocPath;
+    if (typeof userDocPath !== "string" || userDocPath.split("/").length !== 2) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "A valid user document path is required.",
+      );
+    }
+    if (context.auth.uid !== userDocPath.split("/")[1]) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "Authenticated user doesn't match provided user reference.",
+      );
+    }
+
+    try {
+      const doc = await firestore.doc(userDocPath).get();
+      const completed = doc.exists && doc.data()?.onboarding_completed === true;
+      return { completed };
+    } catch (error) {
+      console.error("checkOnboardingComplete failed", error);
+      throw new functions.https.HttpsError(
+        "internal",
+        "Unable to verify onboarding status.",
+        { message: error?.message ?? String(error) },
+      );
+    }
+  });
+
 async function sendPushNotifications(snapshot) {
   const notificationData = snapshot.data();
   const title = notificationData.notification_title || "";
@@ -335,6 +410,18 @@ exports.onUserDeleted = functions
   .onDelete(async (user) => {
     let firestore = admin.firestore();
     let userRef = firestore.doc("users/" + user.uid);
+    const userDoc = await userRef.get();
+    const displayName = userDoc.exists ? userDoc.data()?.display_name || null : null;
+    if (displayName) {
+      const usernameRef = firestore.doc("usernames/" + displayName);
+      const usernameDoc = await usernameRef.get();
+      if (
+        usernameDoc.exists &&
+        usernameDoc.data()?.uid?.path === userRef.path
+      ) {
+        await usernameRef.delete();
+      }
+    }
     await firestore.collection("users").doc(user.uid).delete();
     await firestore
       .collection("chat_messages")
@@ -348,4 +435,32 @@ exports.onUserDeleted = functions
           await doc.ref.delete();
         }
       });
+  });
+
+exports.monitorUsernameChanges = functions
+  .region("us-west2")
+  .firestore.document("users/{uid}")
+  .onWrite(async (change, context) => {
+    const beforeDisplayName = change.before.data()?.display_name || "";
+    const afterDisplayName = change.after.data()?.display_name || "";
+    if (beforeDisplayName === afterDisplayName || afterDisplayName === "") {
+      return;
+    }
+    try {
+      const usernameRef = firestore.doc(`usernames/${afterDisplayName}`);
+      const usernameDoc = await usernameRef.get();
+      if (
+        !usernameDoc.exists ||
+        usernameDoc.data()?.uid?.path !== change.after.ref.path
+      ) {
+        console.warn(
+          `Username inconsistency detected for ${change.after.ref.path}:`,
+          "display_name changed to",
+          afterDisplayName,
+          "without matching /usernames entry",
+        );
+      }
+    } catch (error) {
+      console.error("monitorUsernameChanges failed", error);
+    }
   });

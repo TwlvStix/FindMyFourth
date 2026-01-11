@@ -67,10 +67,57 @@ service cloud.firestore {
         newCounts[request.auth.uid] <= oldCounts.get(request.auth.uid, 0);
     }
 
+    function allowedUserFieldChangesOnly() {
+      let allowedFields = [
+        'first_name',
+        'last_name',
+        'phone_number',
+        'photo_url',
+        'handicap',
+        'home_course',
+        'music',
+        'drinks',
+        'shortDescription',
+        'title',
+        'notify_all',
+        'notify_money_game',
+        'notify_vegas_game',
+        'notify_competitive_game',
+        'notify_for_fun',
+        'notify_only_from_friends',
+        'notify_member_discount',
+        'notify_off',
+        'pace_of_play',
+        'play_for_money'
+      ];
+      let changed = request.resource.data.diff(resource.data).changedKeys();
+      return changed.hasOnly(allowedFields);
+    }
+
+    function roleUnchanged() {
+      return !request.resource.data.diff(resource.data).changedKeys().hasAny(['role']);
+    }
+
+    function displayNameChangeAllowed() {
+      let desired = request.resource.data.display_name;
+      let current = resource.data.display_name;
+      if (desired == current) {
+        return true;
+      }
+      if (!(desired is string) || desired == '') {
+        return false;
+      }
+      let usernameDoc = get(/databases/$(database)/documents/usernames/$(desired));
+      return usernameDoc.exists && usernameDoc.data.uid == userRef(request.auth.uid);
+    }
+
     match /users/{document} {
-      allow update: if request.auth.uid == document ||
-        (request.auth != null &&
-          (isSelfFriendChange() || isSelfFriendRequestChange()));
+      allow update: if roleUnchanged() &&
+        ((request.auth.uid == document &&
+          allowedUserFieldChangesOnly() &&
+          displayNameChangeAllowed()) ||
+          (request.auth != null &&
+            (isSelfFriendChange() || isSelfFriendRequestChange())));
       allow create: if request.auth.uid == document;
       allow read: if request.auth != null;
       allow delete: if false;
@@ -160,8 +207,7 @@ service cloud.firestore {
         !exists(/databases/$(database)/documents/usernames/$(name));
       allow read: if request.auth != null;
       allow update: if false;
-      allow delete: if request.auth != null &&
-        resource.data.uid == userRef(request.auth.uid);
+      allow delete: if false;
     }
 
     match /games/{parent}/addPlayers/{document} {

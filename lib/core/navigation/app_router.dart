@@ -236,7 +236,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: ProgressiveOnboardingWidget.routeName,
           path: ProgressiveOnboardingWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -247,7 +247,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: UserOnboardingWidget.routeName,
           path: UserOnboardingWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,

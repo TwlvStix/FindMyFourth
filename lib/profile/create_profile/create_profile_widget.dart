@@ -121,116 +121,6 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     super.dispose();
   }
 
-  Future<void> _saveProfileWithUsername() async {
-    AppState().theusernames =
-        functions.usernameCreator(usernameTextController.text);
-    if (mounted) setState(() {});
-
-    final desiredUsername = AppState().theusernames;
-    final userRef = currentUserReference;
-    if (userRef == null || desiredUsername.isEmpty) {
-      return;
-    }
-
-    final usernamesRef = FirebaseFirestore.instance
-        .collection('usernames')
-        .doc(desiredUsername);
-
-    try {
-      await FirebaseFirestore.instance.runTransaction((transaction) async {
-        final usernameSnap = await transaction.get(usernamesRef);
-        if (usernameSnap.exists) {
-          final existingRef = usernameSnap.get('uid') as DocumentReference?;
-          if (existingRef != null && existingRef.path != userRef.path) {
-            throw StateError('username_taken');
-          }
-        } else {
-          transaction.set(usernamesRef, {
-            'uid': userRef,
-            'created_at': FieldValue.serverTimestamp(),
-          });
-        }
-
-        transaction.update(
-          userRef,
-          createUsersRecordData(
-            email: currentUserEmail,
-            photoUrl: currentUserPhoto,
-            phoneNumber: phoneNumTextController.text,
-            handicap: handicapValue,
-            homeCourse: coursesValue,
-            music: musicValue,
-            drinks: drinksValue,
-            firstName: firstNameTextController.text,
-            lastName: lastNameTextController.text,
-            displayName: desiredUsername,
-            paceOfPlay: paceplayValue,
-            playForMoney: playmoneyValue,
-          ),
-        );
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'You have successfully created your profile!',
-            style: AppTheme.of(context).titleMedium.override(
-              font: GoogleFonts.outfit(
-                fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-                fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-              ),
-              color: AppTheme.of(context).primaryBtnText,
-              letterSpacing: 0.0,
-              fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-              fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-            ),
-          ),
-          duration: Duration(milliseconds: 4000),
-          backgroundColor: AppTheme.of(context).primary,
-        ),
-      );
-
-      context.goNamed(
-        MainProfileWidget.routeName,
-        extra: <String, dynamic>{
-          kTransitionInfoKey: TransitionInfo(
-            hasTransition: true,
-            transitionType: PageTransitionType.bottomToTop,
-            duration: Duration(milliseconds: 220),
-          ),
-        },
-      );
-    } on StateError catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'This Username is Taken. Please chose another Name.',
-            style: GoogleFonts.roboto(
-              color: AppTheme.of(context).secondaryBackground,
-              fontSize: 15.0,
-            ),
-          ),
-          duration: Duration(milliseconds: 1500),
-          backgroundColor: AppTheme.of(context).primary,
-        ),
-      );
-    } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Unable to save profile. Please try again.',
-            style: GoogleFonts.roboto(
-              color: AppTheme.of(context).secondaryBackground,
-              fontSize: 15.0,
-            ),
-          ),
-          duration: Duration(milliseconds: 1500),
-          backgroundColor: AppTheme.of(context).primary,
-        ),
-      );
-    }
-  }
-
   String? _validateUsername(BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
       return 'Username is required';
@@ -257,13 +147,29 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     }
 
     // Create username
-    AppState().theusernames =
-        functions.usernameCreator(usernameTextController!.text);
+    final desiredUsername = functions.usernameCreator(usernameTextController!.text);
     if (mounted) setState(() {});
-
-    final desiredUsername = AppState().theusernames;
     final userRef = currentUserReference;
     if (userRef == null || desiredUsername.isEmpty) {
+      return;
+    }
+
+    final desiredEmail = emailTextController?.text.trim() ?? '';
+    if (desiredEmail.isNotEmpty && desiredEmail != currentUserEmail) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Please update your Firebase Auth email before saving your profile.',
+            style: GoogleFonts.outfit(
+              color: AppTheme.of(context).secondaryBackground,
+              fontSize: 15.0,
+            ),
+          ),
+          duration: Duration(milliseconds: 2000),
+          backgroundColor: AppTheme.of(context).primary,
+        ),
+      );
       return;
     }
 
@@ -566,7 +472,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                 controller: coursesValueController ??=
                                     FormFieldController<String>(null),
                                 options: courses
-                                    .map((c) => c.courseName)
+                                    .map((c) => c.name)
                                     .toList(),
                                 onChanged: (val) =>
                                     setState(() => coursesValue = val),
@@ -635,7 +541,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                     color: AppColors.onyx,
                                   ),
                                 ),
-                                count: handicapValue ??= 0,
+                                count: handicapValue ?? 0,
                                 updateCount: (count) =>
                                     setState(() => handicapValue = count),
                                 stepSize: 1,
@@ -649,7 +555,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                           Expanded(
                             child: ProfilePreferenceItem(
                               icon: FontAwesomeIcons.dollarSign,
-                              label: 'Play $',
+                              label: 'Play \$',
                               iconColor: AppColors.sunsetGold,
                               valueWidget: AppCountController(
                                 decrementIconBuilder: (enabled) => Icon(
@@ -674,7 +580,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                     color: AppColors.onyx,
                                   ),
                                 ),
-                                count: playmoneyValue ??= 0,
+                                count: playmoneyValue ?? 0,
                                 updateCount: (count) =>
                                     setState(() => playmoneyValue = count),
                                 stepSize: 1,
@@ -729,7 +635,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                         color: AppColors.onyx,
                                       ),
                                     ),
-                                    count: musicValue ??= 0,
+                                    count: musicValue ?? 0,
                                     updateCount: (count) =>
                                         setState(() => musicValue = count),
                                     stepSize: 1,
@@ -768,7 +674,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                         color: AppColors.onyx,
                                       ),
                                     ),
-                                    count: drinksValue ??= 0,
+                                    count: drinksValue ?? 0,
                                     updateCount: (count) =>
                                         setState(() => drinksValue = count),
                                     stepSize: 1,
@@ -809,7 +715,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                   color: AppColors.onyx,
                                 ),
                               ),
-                              count: paceplayValue ??= 0,
+                              count: paceplayValue ?? 0,
                               updateCount: (count) =>
                                   setState(() => paceplayValue = count),
                               stepSize: 1,

@@ -1,5 +1,8 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '/backend/cloud_functions/cloud_functions.dart';
+import '/core/custom_functions.dart' as functions;
 import '/core/widgets/app_count_controller.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/app_theme.dart';
@@ -9,6 +12,8 @@ import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/form_field_controller.dart';
 import '/profile/main_profile/main_profile_widget.dart';
+import '/user_auth/sign_in/sign_in_widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -143,46 +148,128 @@ class _ProgressiveOnboardingWidgetState
     setState(() => _isLoading = true);
 
     try {
-      // Check if username is unique
-      final usernameExists = await queryUsersRecordOnce(
-        queryBuilder: (usersRecord) => usersRecord.where(
-          'display_name',
-          isEqualTo: _usernameController.text,
-        ),
-        singleRecord: true,
-      ).then((s) => s.firstOrNull);
+      final desiredUsername = functions.usernameCreator(_usernameController.text);
+      // Update user record
+      final userRef = currentUserReference;
+      if (userRef != null) {
+        final desiredEmail = _emailController.text.trim();
+        if (desiredEmail.isNotEmpty && desiredEmail != currentUserEmail) {
+          try {
+            await authManager.updateEmail(
+              email: desiredEmail,
+              context: context,
+            );
+          } on FirebaseAuthException catch (e) {
+            final needsReauth = e.code == 'requires-recent-login';
+            if (mounted) {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    needsReauth
+                        ? 'Email change requires you to sign in again.'
+                        : 'Unable to update email. ${e.message}',
+                  ),
+                  backgroundColor: AppTheme.of(context).error,
+                ),
+              );
+            }
+            if (needsReauth && mounted) {
+              await showDialog<void>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('Re-authentication required'),
+                  content: Text(
+                      'To update your email, please sign in again and retry.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        context.goNamed(SignInWidget.routeName);
+                      },
+                      child: Text('Sign In'),
+                    ),
+                  ],
+                ),
+              );
+            }
+            setState(() => _isLoading = false);
+            return;
+          }
+        }
+        final usernamesRef = FirebaseFirestore.instance
+            .collection('usernames')
+            .doc(desiredUsername);
 
-      if (usernameExists != null &&
-          usernameExists.reference != currentUserReference) {
-        if (mounted) {
+        var profileUpdated = false;
+        try {
+          await FirebaseFirestore.instance.runTransaction((transaction) async {
+            final usernameSnap = await transaction.get(usernamesRef);
+            if (usernameSnap.exists) {
+              final existingRef =
+                  usernameSnap.get('uid') as DocumentReference?;
+              if (existingRef != null && existingRef.path != userRef.path) {
+                throw StateError('username_taken');
+              }
+            } else {
+              transaction.set(usernamesRef, {
+                'uid': userRef,
+                'created_at': FieldValue.serverTimestamp(),
+              });
+            }
+
+            transaction.update(
+              userRef,
+              createUsersRecordData(
+                displayName: desiredUsername,
+                firstName: _firstNameController.text,
+                lastName: _lastNameController.text,
+                phoneNumber: _phoneController.text,
+                homeCourse: _homeCourseValue,
+                handicap: _handicapValue,
+                drinks: _drinksValue,
+                music: _musicValue,
+                playForMoney: _playMoneyValue,
+                paceOfPlay: _paceValue,
+              ),
+            );
+          });
+          profileUpdated = true;
+        } on StateError catch (_) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Username already taken'),
               backgroundColor: AppTheme.of(context).error,
             ),
           );
+          setState(() => _isLoading = false);
+          return;
         }
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      // Update user record
-      final userRef = currentUserReference;
-      if (userRef != null) {
-        await userRef.update(createUsersRecordData(
-          displayName: _usernameController.text,
-          firstName: _firstNameController.text,
-          lastName: _lastNameController.text,
-          phoneNumber: _phoneController.text,
-          email: _emailController.text,
-          homeCourse: _homeCourseValue,
-          handicap: _handicapValue,
-          drinks: _drinksValue,
-          music: _musicValue,
-          playForMoney: _playMoneyValue,
-          paceOfPlay: _paceValue,
-          onboardingCompleted: true,
-        ));
+        try {
+          if (!profileUpdated) {
+            return;
+          }
+          await makeCloudCall(
+            'completeOnboarding',
+            {'userDocPath': userRef.path},
+          );
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Unable to finish onboarding; please try again.'),
+                backgroundColor: AppTheme.of(context).error,
+              ),
+            );
+          }
+          setState(() => _isLoading = false);
+          return;
+        }
       }
 
       if (mounted) {

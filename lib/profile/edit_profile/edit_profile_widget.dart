@@ -147,7 +147,13 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     if (mounted) setState(() {});
 
     // Check if username changed
-    if (currentUserDisplayName == AppState().theusernames) {
+    final desiredUsername = AppState().theusernames;
+    final normalizedCurrentUsername =
+        functions.usernameCreator(currentUserDisplayName);
+    final usernameChanged = desiredUsername.isNotEmpty &&
+        normalizedCurrentUsername != desiredUsername;
+
+    if (!usernameChanged) {
       // Username unchanged - save directly
       await currentUserReference!.update(createUsersRecordData(
         email: emailTextController!.text,
@@ -170,9 +176,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       if (userRef == null) {
         return;
       }
-      final desiredUsername = AppState().theusernames;
-      final currentUsername =
-          functions.usernameCreator(currentUserDisplayName);
+      final currentUsername = normalizedCurrentUsername;
       final usernamesCollection =
           FirebaseFirestore.instance.collection('usernames');
       final newUsernameRef = usernamesCollection.doc(desiredUsername);
@@ -520,7 +524,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                                   controller: coursesValueController ??=
                                       FormFieldController<String>(coursesValue),
                                   options: courses
-                                      .map((c) => c.courseName)
+                                      .map((c) => c.name)
                                       .toList(),
                                   onChanged: (val) =>
                                       setState(() => coursesValue = val),
@@ -591,7 +595,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                                       color: AppColors.onyx,
                                     ),
                                   ),
-                                  count: handicapValue ??=
+                                  count: handicapValue ??
                                       valueOrDefault(
                                         currentUserDocument?.handicap,
                                         0,
@@ -609,7 +613,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             Expanded(
                               child: ProfilePreferenceItem(
                                 icon: FontAwesomeIcons.dollarSign,
-                                label: 'Play $',
+                                label: 'Play \$',
                                 iconColor: AppColors.sunsetGold,
                                 valueWidget: AppCountController(
                                   decrementIconBuilder: (enabled) => Icon(
@@ -634,7 +638,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                                       color: AppColors.onyx,
                                     ),
                                   ),
-                                  count: playmoneyValue ??=
+                                  count: playmoneyValue ??
                                       valueOrDefault(
                                         currentUserDocument?.playForMoney,
                                         0,
@@ -695,7 +699,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                                           color: AppColors.onyx,
                                         ),
                                       ),
-                                      count: musicValue ??=
+                                      count: musicValue ??
                                           valueOrDefault(
                                             currentUserDocument?.music,
                                             0,
@@ -738,7 +742,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                                           color: AppColors.onyx,
                                         ),
                                       ),
-                                      count: drinksValue ??=
+                                      count: drinksValue ??
                                           valueOrDefault(
                                             currentUserDocument?.drinks,
                                             0,
@@ -783,7 +787,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                                     color: AppColors.onyx,
                                   ),
                                 ),
-                                count: paceplayValue ??=
+                                count: paceplayValue ??
                                     valueOrDefault(
                                       currentUserDocument?.paceOfPlay,
                                       0,

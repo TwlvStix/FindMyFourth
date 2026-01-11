@@ -39,12 +39,6 @@ class _UserOnboardingWidgetState extends State<UserOnboardingWidget> {
 
   Future<void> _completeOnboarding() async {
     final userRef = currentUserReference;
-    if (userRef != null) {
-      await userRef.update(createUsersRecordData(
-        onboardingCompleted: true,
-      ));
-    }
-
     if (!mounted) {
       return;
     }

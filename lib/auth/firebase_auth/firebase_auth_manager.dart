@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../auth_manager.dart';
+import '/backend/cloud_functions/cloud_functions.dart';
 
 import '/backend/backend.dart';
 import 'anonymous_auth.dart';
@@ -40,6 +41,8 @@ class FirebasePhoneAuthManager extends ChangeNotifier {
   }
 }
 
+const _genericAuthErrorMessage = 'Unable to complete the request. Please try again later.';
+
 class FirebaseAuthManager extends AuthManager
     with
         EmailSignInManager,
@@ -54,6 +57,19 @@ class FirebaseAuthManager extends AuthManager
   // Set when using phone sign in in web mode (ignored otherwise).
   ConfirmationResult? _webPhoneAuthConfirmationResult;
   FirebasePhoneAuthManager phoneAuthManager = FirebasePhoneAuthManager();
+  final Map<String, DateTime> _authRequestExpiry = {};
+  static const _authThrottleDuration = Duration(milliseconds: 1200);
+
+  bool _allowAuthAttempt(String email) {
+    final normalizedEmail = email.trim().toLowerCase();
+    final now = DateTime.now();
+    final expiry = _authRequestExpiry[normalizedEmail];
+    if (expiry != null && now.isBefore(expiry)) {
+      return false;
+    }
+    _authRequestExpiry[normalizedEmail] = now.add(_authThrottleDuration);
+    return true;
+  }
 
   @override
   Future signOut() {
@@ -151,11 +167,7 @@ class FirebaseAuthManager extends AuthManager
     String email,
     String password,
   ) =>
-      _signInOrCreateAccount(
-        context,
-        () => emailSignInFunc(email, password),
-        'EMAIL',
-      );
+      _signInWithEmail(context, email, password);
 
   @override
   Future<BaseAuthUser?> createAccountWithEmail(
@@ -163,7 +175,7 @@ class FirebaseAuthManager extends AuthManager
     String email,
     String password,
   ) =>
-      _createOrFallbackToSignInWithEmail(context, email, password);
+      _createAccountWithEmail(context, email, password);
 
   @override
   Future<BaseAuthUser?> signInAnonymously(
@@ -299,81 +311,177 @@ class FirebaseAuthManager extends AuthManager
     try {
       debugPrint('🔐 AUTH: Starting sign in/create account with provider: $authProvider');
       final userCredential = await signInFunc();
-      debugPrint('🔐 AUTH: Received user credential: ${userCredential?.user?.uid}');
-      if (userCredential?.user != null) {
-        debugPrint('🔐 AUTH: Creating/updating user document for ${userCredential!.user!.uid}');
-        await maybeCreateUser(userCredential.user!);
+      debugPrint('🔐 AUTH: Received user credential.');
+      final firebaseUser = userCredential?.user;
+      if (firebaseUser != null) {
+        debugPrint('🔐 AUTH: Creating/updating user document.');
+        await maybeCreateUser(firebaseUser);
         debugPrint('🔐 AUTH: User document created/updated successfully');
       }
       return userCredential == null
           ? null
           : FindMyFourthFirebaseUser.fromUserCredential(userCredential);
     } on FirebaseAuthException catch (e) {
-      debugPrint('❌ AUTH: FirebaseAuthException caught');
-      debugPrint('❌ AUTH: Error code: ${e.code}');
-      debugPrint('❌ AUTH: Error message: ${e.message}');
-      debugPrint('❌ AUTH: Provider: $authProvider');
-
-      final errorMsg = switch (e.code) {
-        'email-already-in-use' =>
-          'Error: The email is already in use by a different account',
-        'INVALID_LOGIN_CREDENTIALS' =>
-          'Error: The supplied auth credential is incorrect, malformed or has expired',
-        _ => 'Error: ${e.message!}',
-      };
-
-      debugPrint('❌ AUTH: Showing error to user: $errorMsg');
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMsg)),
-      );
+      final errorMsg = _firebaseAuthErrorMessage(e);
+      _showAuthError(context, errorMsg);
       return null;
     } catch (e, stackTrace) {
       debugPrint('❌ AUTH: Unexpected error during sign in/create account');
       debugPrint('❌ AUTH: Error: $e');
       debugPrint('❌ AUTH: Stack trace: $stackTrace');
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: An unexpected error occurred')),
-      );
+      _showAuthError(context, 'Error: An unexpected error occurred');
       return null;
     }
   }
 
-  Future<BaseAuthUser?> _createOrFallbackToSignInWithEmail(
+  Future<BaseAuthUser?> _signInWithEmail(
     BuildContext context,
     String email,
     String password,
   ) async {
+    final trimmedEmail = email.trim();
+    debugPrint('🔐 AUTH: Email sign-in attempt for $trimmedEmail');
+    if (trimmedEmail.isEmpty) {
+      _showAuthError(context, 'Please enter an email address.');
+      return null;
+    }
+    if (!_allowAuthAttempt(trimmedEmail)) {
+      _showAuthError(context, _genericAuthErrorMessage);
+      return null;
+    }
+
+    return _signInOrCreateAccount(
+      context,
+      () => _attemptEmailSignIn(trimmedEmail, password),
+      'EMAIL',
+    );
+  }
+
+  Future<UserCredential?> _attemptEmailSignIn(
+    String email,
+    String password,
+  ) =>
+      attemptEmailSignInWithRetries(
+        signInFunc: () => emailSignInFunc(email, password),
+      );
+
+  @visibleForTesting
+  Future<UserCredential?> attemptEmailSignInWithRetries({
+    required Future<UserCredential?> Function() signInFunc,
+    int maxAttempts = 2,
+  }) async {
+    var attempt = 0;
+    while (attempt < maxAttempts) {
+      attempt += 1;
+      try {
+        return await signInFunc();
+      } on FirebaseAuthException catch (e) {
+      debugPrint('❌ AUTH: Email sign-in failed (attempt $attempt/$maxAttempts).');
+        if (e.code == 'user-not-found' || attempt >= maxAttempts) {
+          rethrow;
+        }
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
+    }
+    return null;
+  }
+
+  Future<BaseAuthUser?> _createAccountWithEmail(
+    BuildContext context,
+    String email,
+    String password,
+  ) async {
+    final trimmedEmail = email.trim();
+    debugPrint('🔐 AUTH: Email create attempt for $trimmedEmail');
+    if (!_allowAuthAttempt(trimmedEmail)) {
+      _showAuthError(context, _genericAuthErrorMessage);
+      return null;
+    }
+    final methods = await _fetchSignInMethods(trimmedEmail, context);
+    if (methods == null) {
+      return null;
+    }
+    debugPrint('🔐 AUTH: email create methods: $methods');
+    if (methods.isNotEmpty) {
+      _showAuthError(context, _genericAuthErrorMessage);
+      return null;
+    }
+
     try {
-      final userCredential =
-          await emailCreateAccountFunc(email, password);
-      if (userCredential?.user != null) {
-        await maybeCreateUser(userCredential!.user!);
+      debugPrint('🔐 AUTH: Calling createUserWithEmailAndPassword for $trimmedEmail');
+      final userCredential = await emailCreateAccountFunc(trimmedEmail, password);
+      final firebaseUser = userCredential?.user;
+      if (firebaseUser != null) {
+        await maybeCreateUser(firebaseUser);
+        debugPrint('🔐 AUTH: Email account created.');
       }
       return userCredential == null
           ? null
           : FindMyFourthFirebaseUser.fromUserCredential(userCredential);
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'email-already-in-use') {
-        debugPrint('🔐 AUTH: Email in use, attempting sign-in');
-        return _signInOrCreateAccount(
-          context,
-          () => emailSignInFunc(email, password),
-          'EMAIL',
-        );
-      }
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.message ?? 'Unknown error'}')),
-      );
+      debugPrint('❌ AUTH: create email failed.');
+      final errorMsg = e.code == 'email-already-in-use'
+          ? 'An account already exists for that email. Please sign in instead.'
+          : _firebaseAuthErrorMessage(e);
+      _showAuthError(context, errorMsg);
       return null;
-    } catch (e) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: An unexpected error occurred')),
-      );
+    } catch (e, stackTrace) {
+      debugPrint('❌ AUTH: Unexpected error during account creation');
+      debugPrint('❌ AUTH: Error: $e');
+      debugPrint('❌ AUTH: Stack trace: $stackTrace');
+      _showAuthError(context, 'Error: An unexpected error occurred');
       return null;
+    }
+  }
+
+  Future<List<String>?> _fetchSignInMethods(
+    String email,
+    BuildContext context,
+  ) async {
+    if (email.isEmpty) {
+      _showAuthError(context, 'Please enter an email address.');
+      return null;
+    }
+
+    try {
+      final methods =
+          await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
+      debugPrint('🔐 AUTH: fetchSignInMethodsForEmail($email) -> $methods');
+      return methods;
+    } on FirebaseAuthException catch (e) {
+      final errorMsg = _firebaseAuthErrorMessage(e);
+      _showAuthError(context, errorMsg);
+      return null;
+    }
+  }
+
+  void _showAuthError(BuildContext context, String message) {
+    debugPrint('❌ AUTH: Showing error to user: $message');
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  String _firebaseAuthErrorMessage(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'invalid-email':
+        return 'Please enter a valid email address.';
+      case 'wrong-password':
+        return 'Incorrect password. Please try again.';
+      case 'too-many-requests':
+        return 'Too many unsuccessful attempts. Please try again later.';
+      case 'user-not-found':
+      case 'email-already-in-use':
+        return _genericAuthErrorMessage;
+      case 'user-disabled':
+        return 'This account has been disabled. Contact support if you believe this is a mistake.';
+      case 'operation-not-allowed':
+        return 'Email/password sign-in is temporarily unavailable.';
+      case 'weak-password':
+        return 'Password is too weak. Choose a stronger password.';
+      default:
+        return 'Error: ${e.message ?? 'An unexpected error occurred'}';
     }
   }
 
@@ -404,7 +512,14 @@ class FirebaseAuthManager extends AuthManager
       return;
     }
 
-    if (!completedOnboarding) {
+    final user = FirebaseAuth.instance.currentUser;
+    final userDocPath =
+        user != null ? UsersRecord.collection.doc(user.uid).path : '';
+    final backendConfirmed = userDocPath.isNotEmpty
+        ? await _verifyOnboardingCompleted(userDocPath)
+        : false;
+
+    if (!completedOnboarding || !backendConfirmed) {
       context.goNamed(
         'UserOnboarding',
         queryParameters: {
@@ -420,4 +535,40 @@ class FirebaseAuthManager extends AuthManager
       context.pushNamed(fallbackRouteName, extra: fallbackExtra);
     }
   }
+
+  Future<bool> _verifyOnboardingCompleted(String userDocPath) async {
+    try {
+      final result = await makeCloudCall(
+        'checkOnboardingComplete',
+        {'userDocPath': userDocPath},
+      );
+      return result['completed'] == true;
+    } catch (e) {
+      debugPrint('❌ AUTH: Onboarding verification call failed: $e');
+      return false;
+    }
+  }
+}
+
+@visibleForTesting
+Future<UserCredential?> attemptEmailSignInWithRetries({
+  required Future<UserCredential?> Function() signInFunc,
+  int maxAttempts = 2,
+}) async {
+  var attempt = 0;
+  while (attempt < maxAttempts) {
+    attempt += 1;
+    try {
+      return await signInFunc();
+    } on FirebaseAuthException catch (e) {
+      debugPrint(
+        '❌ AUTH: Email sign-in failed (attempt $attempt/$maxAttempts).',
+      );
+      if (e.code == 'user-not-found' || attempt >= maxAttempts) {
+        rethrow;
+      }
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
+  }
+  return null;
 }
