@@ -23,7 +23,14 @@ class FirestoreRepository {
     required bool isStream,
   }) async {
     final builder = queryBuilder ?? (q) => q;
-    var query = builder(collection).limit(pageSize);
+    var query = builder(collection);
+    final orderByList =
+        (query.parameters['orderBy'] as List<dynamic>?) ?? const [];
+    if (nextPageMarker != null && orderByList.isEmpty) {
+      throw StateError(
+          'queryCollectionPage requires an orderBy clause when startAfterDocument is used.');
+    }
+    query = query.limit(pageSize);
     if (nextPageMarker != null) {
       query = query.startAfterDocument(nextPageMarker);
     }

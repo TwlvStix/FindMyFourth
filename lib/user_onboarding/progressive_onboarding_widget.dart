@@ -66,6 +66,7 @@ class _ProgressiveOnboardingWidgetState
   @override
   void initState() {
     super.initState();
+    _ensureUserRecord();
     _emailController.text = currentUserEmail;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -273,6 +274,18 @@ class _ProgressiveOnboardingWidgetState
       }
 
       if (mounted) {
+        final recordReady = await _ensureUserRecord();
+        if (!recordReady) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Finishing setup. Please wait a moment before continuing.',
+              ),
+              backgroundColor: AppTheme.of(context).error,
+            ),
+          );
+          return;
+        }
         context.goNamed(MainProfileWidget.routeName);
       }
     } catch (e) {
@@ -288,6 +301,21 @@ class _ProgressiveOnboardingWidgetState
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  Future<bool> _ensureUserRecord() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return false;
+    }
+    try {
+      await maybeCreateUser(user);
+      return true;
+    } catch (error, stackTrace) {
+      debugPrint('❌ PROGRESSIVE ONBOARDING: unable to ensure user doc exists: $error');
+      debugPrint('❌ PROGRESSIVE ONBOARDING: Stack trace: $stackTrace');
+      return false;
     }
   }
 

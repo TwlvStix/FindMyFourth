@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:provider/provider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -80,9 +82,12 @@ class _MyAppState extends State<MyApp> {
           .map((e) => getRoute(e))
           .toList();
   late Stream<BaseAuthUser> userStream;
+  bool _initialAuthHandled = false;
 
   final authUserSub = authenticatedUserStream.listen((_) {});
   final fcmTokenSub = fcmTokenUserStream.listen((_) {});
+  late StreamSubscription<BaseAuthUser> _userStreamSub;
+  late StreamSubscription<dynamic> _jwtTokenSub;
 
   @override
   void initState() {
@@ -90,21 +95,23 @@ class _MyAppState extends State<MyApp> {
 
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
-    userStream = findMyFourthFirebaseUserStream()
-      ..listen((user) {
-        _appStateNotifier.update(user);
-      });
-    jwtTokenStream.listen((_) {});
-    Future.delayed(
-      Duration(milliseconds: 1000),
-      () => _appStateNotifier.stopShowingSplashImage(),
-    );
+    userStream = findMyFourthFirebaseUserStream();
+    _userStreamSub = userStream.listen((user) {
+      _appStateNotifier.update(user);
+      if (!_initialAuthHandled && _appStateNotifier.authStateReady) {
+        _initialAuthHandled = true;
+        _appStateNotifier.stopShowingSplashImage();
+      }
+    });
+    _jwtTokenSub = jwtTokenStream.listen((_) {});
   }
 
   @override
   void dispose() {
     authUserSub.cancel();
     fcmTokenSub.cancel();
+    _userStreamSub.cancel();
+    _jwtTokenSub.cancel();
     super.dispose();
   }
 

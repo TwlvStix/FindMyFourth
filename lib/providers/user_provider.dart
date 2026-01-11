@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:rxdart/rxdart.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/request_manager.dart';
@@ -114,13 +115,11 @@ class UserProvider extends ChangeNotifier {
   Stream<List<Game>> getMyGames({
     bool overrideCache = false,
   }) {
-    final currentUser = FirebaseAuth.instance.currentUser;
+    final currentUser = _currentUser;
     if (currentUser == null) {
       return Stream.value([]);
     }
-    final userRef = FirebaseFirestore.instance
-        .collection('users')
-        .doc(currentUser.uid);
+    final userRef = currentUser.reference;
 
     debugPrint(
       'UserProvider: getMyGames overrideCache=$overrideCache userId=$userId',
@@ -200,12 +199,7 @@ class UserProvider extends ChangeNotifier {
     return _friendsManager.performRequest(
       uniqueQueryKey: 'friends_${userId}',
       overrideCache: overrideCache,
-      requestFn: () => queryUsersRecord(
-        queryBuilder: (usersRecord) => usersRecord.where(
-          FieldPath.documentId,
-          whereIn: friends.map((ref) => ref.id).toList(),
-        ),
-      ),
+      requestFn: () => _queryUsersByRefs(friends),
     );
   }
 
@@ -218,12 +212,7 @@ class UserProvider extends ChangeNotifier {
     return _friendRequestsManager.performRequest(
       uniqueQueryKey: 'friend_requests_${userId}',
       overrideCache: overrideCache,
-      requestFn: () => queryUsersRecord(
-        queryBuilder: (usersRecord) => usersRecord.where(
-          FieldPath.documentId,
-          whereIn: friendRequests.map((ref) => ref.id).toList(),
-        ),
-      ),
+      requestFn: () => _queryUsersByRefs(friendRequests),
     );
   }
 
@@ -237,6 +226,32 @@ class UserProvider extends ChangeNotifier {
   void refreshFriendRequests() {
     _friendRequestsManager.clearRequest('friend_requests_${userId}');
     notifyListeners();
+  }
+
+  Stream<List<UsersRecord>> _queryUsersByRefs(List<DocumentReference> refs) {
+    if (refs.isEmpty) {
+      return Stream.value([]);
+    }
+
+    final chunkStreams = <Stream<List<UsersRecord>>>[];
+    for (var i = 0; i < refs.length; i += 10) {
+      final end = (i + 10) > refs.length ? refs.length : i + 10;
+      final batchIds = refs.sublist(i, end).map((ref) => ref.id).toList();
+      chunkStreams.add(
+        queryUsersRecord(
+          queryBuilder: (usersRecord) => usersRecord.where(
+            FieldPath.documentId,
+            whereIn: batchIds,
+          ),
+        ),
+      );
+    }
+
+    return Rx.combineLatestList(chunkStreams).map(
+      (batches) => [
+        for (final batch in batches) ...batch,
+      ],
+    );
   }
 
   // ========================================

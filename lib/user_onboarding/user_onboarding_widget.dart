@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/app_theme.dart';
@@ -25,6 +27,7 @@ class _UserOnboardingWidgetState extends State<UserOnboardingWidget> {
   @override
   void initState() {
     super.initState();
+    _ensureUserRecord();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -44,6 +47,18 @@ class _UserOnboardingWidgetState extends State<UserOnboardingWidget> {
     }
 
     final nextRoute = GoRouterState.of(context).uri.queryParameters['next'];
+    final recordReady = await _ensureUserRecord();
+    if (!recordReady) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Finishing setup. Please wait a moment before continuing.',
+          ),
+          backgroundColor: AppTheme.of(context).error,
+        ),
+      );
+      return;
+    }
     if (nextRoute != null && nextRoute.isNotEmpty) {
       context.goNamed(nextRoute);
     } else {
@@ -139,6 +154,21 @@ class _UserOnboardingWidgetState extends State<UserOnboardingWidget> {
         ),
       ),
     );
+  }
+
+  Future<bool> _ensureUserRecord() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return false;
+    }
+    try {
+      await maybeCreateUser(user);
+      return true;
+    } catch (error, stackTrace) {
+      debugPrint('❌ ONBOARDING: unable to ensure user doc exists: $error');
+      debugPrint('❌ ONBOARDING: Stack trace: $stackTrace');
+      return false;
+    }
   }
 }
 

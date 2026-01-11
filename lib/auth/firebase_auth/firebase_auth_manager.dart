@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../auth_manager.dart';
 import '/backend/cloud_functions/cloud_functions.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '/backend/backend.dart';
 import 'anonymous_auth.dart';
@@ -322,6 +323,19 @@ class FirebaseAuthManager extends AuthManager
           ? null
           : FindMyFourthFirebaseUser.fromUserCredential(userCredential);
     } on FirebaseAuthException catch (e) {
+      final user = FirebaseAuth.instance.currentUser;
+      final userDocPath =
+          user != null ? UsersRecord.collection.doc(user.uid).path : 'unknown';
+      final authProviderInfo =
+          'authProvider=$authProvider, code=${e.code}, message=${e.message}';
+      FirebaseMessaging.instance.getToken().then((token) {
+        debugPrint(
+            '🔐 AUTH ERROR: $authProviderInfo, userDocPath=$userDocPath, fcmToken=$token');
+      }).catchError((tokenError) {
+        debugPrint(
+            '🔐 AUTH ERROR: $authProviderInfo, userDocPath=$userDocPath, fcmToken=failed');
+        debugPrint('🔐 AUTH ERROR: token fetch error: $tokenError');
+      });
       final errorMsg = _firebaseAuthErrorMessage(e);
       _showAuthError(context, errorMsg);
       return null;
@@ -377,7 +391,7 @@ class FirebaseAuthManager extends AuthManager
         return await signInFunc();
       } on FirebaseAuthException catch (e) {
       debugPrint('❌ AUTH: Email sign-in failed (attempt $attempt/$maxAttempts).');
-        if (e.code == 'user-not-found' || attempt >= maxAttempts) {
+        if (attempt >= maxAttempts || e.code != 'user-not-found') {
           rethrow;
         }
         await Future.delayed(const Duration(milliseconds: 300));

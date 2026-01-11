@@ -58,6 +58,7 @@ class AppStateNotifier extends ChangeNotifier {
   BaseAuthUser? user;
   bool showSplashImage = true;
   String? _redirectLocation;
+  bool _authStateReady = false;
 
   /// Determines whether the app will refresh and build again when a sign
   /// in or sign out happens. This is useful when the app is launched or
@@ -71,10 +72,14 @@ class AppStateNotifier extends ChangeNotifier {
   bool get initiallyLoggedIn => initialUser?.loggedIn ?? false;
   bool get shouldRedirect => loggedIn && _redirectLocation != null;
 
+  bool get authStateReady => _authStateReady;
+
   String getRedirectLocation() => _redirectLocation!;
   bool hasRedirect() => _redirectLocation != null;
   void setRedirectLocationIfUnset(String loc) => _redirectLocation ??= loc;
-  void clearRedirectLocation() => _redirectLocation = null;
+  void clearRedirectLocation() {
+    _redirectLocation = null;
+  }
 
   /// Mark as not needing to notify on a sign in / out when we intend
   /// to perform subsequent actions (such as navigation) afterwards.
@@ -85,6 +90,7 @@ class AppStateNotifier extends ChangeNotifier {
         user?.uid == null || newUser.uid == null || user?.uid != newUser.uid;
     initialUser ??= newUser;
     user = newUser;
+    _authStateReady = true;
     // Refresh the app on auth change unless explicitly marked otherwise.
     // No need to update unless the user has changed.
     if (notifyOnAuthChange && shouldUpdate) {
@@ -323,12 +329,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             context,
             state,
             appStateNotifier,
-            _isEmptyStateParams(state)
-                ? NavBarPage(initialPage: 'Community')
-                : NavBarPage(
-                    initialPage: 'Community',
-                    page: CommunityWidget(),
-                  ),
+            ChatWidget(),
           ),
         ),
         GoRoute(
@@ -479,15 +480,28 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
 
 extension GoRouterExtensions on GoRouter {
   AppStateNotifier get appState => AppStateNotifier.instance;
-  void prepareAuthEvent([bool ignoreRedirect = false]) =>
-      appState.hasRedirect() && !ignoreRedirect
-          ? null
-          : appState.updateNotifyOnAuthChange(false);
+  void prepareAuthEvent([bool ignoreRedirect = false]) {
+    if (appState.hasRedirect() && !ignoreRedirect) {
+      return;
+    }
+    appState.updateNotifyOnAuthChange(false);
+  }
+
   bool shouldRedirect(bool ignoreRedirect) =>
       !ignoreRedirect && appState.hasRedirect();
-  void clearRedirectLocation() => appState.clearRedirectLocation();
-  void setRedirectLocationIfUnset(String location) =>
-      appState.updateNotifyOnAuthChange(false);
+
+  void clearRedirectLocation() {
+    appState.clearRedirectLocation();
+    appState.updateNotifyOnAuthChange(true);
+  }
+
+  void setRedirectLocationIfUnset(String location) {
+    if (appState.hasRedirect()) {
+      return;
+    }
+    appState.setRedirectLocationIfUnset(location);
+    appState.updateNotifyOnAuthChange(false);
+  }
 }
 
 GoRouterRedirect _buildRedirect(
@@ -495,6 +509,10 @@ GoRouterRedirect _buildRedirect(
   bool requireAuth = false,
 }) {
   return (context, state) {
+    if (!appStateNotifier.authStateReady) {
+      return null;
+    }
+
     if (appStateNotifier.shouldRedirect) {
       final redirectLocation = appStateNotifier.getRedirectLocation();
       appStateNotifier.clearRedirectLocation();
