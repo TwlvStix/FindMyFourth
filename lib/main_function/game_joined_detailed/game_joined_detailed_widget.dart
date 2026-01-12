@@ -3,6 +3,7 @@ import '/core/widgets/fairway_background.dart';
 import '/core/widgets/branded_golf_header.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
+import '/providers/provider_extensions.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -706,10 +707,19 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             );
                             return;
                           }
+                          final currentUser =
+                              FirebaseAuth.instance.currentUser;
+                          final currentUserId =
+                              currentUser?.uid ?? currentUserRef.id;
+                          final removeValues = <Object>[
+                            currentUserRef,
+                            currentUserId,
+                          ];
                           await widget.gameRef!.update({
                             'joined_players':
-                                FieldValue.arrayRemove([currentUserRef]),
+                                FieldValue.arrayRemove(removeValues),
                           });
+                          context.userProvider.refreshMyGames();
 
                           // Show success toast
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -824,6 +834,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 duration: Duration(seconds: 2),
                               ),
                             );
+                            context.userProvider.refreshMyGames();
 
                             // Navigate to Schedule tab (My Games)
                             context.goNamed(GamesJoinedWidget.routeName);

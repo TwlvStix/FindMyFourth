@@ -179,7 +179,23 @@ class UsersRecord extends FirestoreRecord {
     _role = snapshotData['role'] as String?;
     _title = snapshotData['title'] as String?;
     _friends = getDataList(snapshotData['friends']);
-    _friendRequests = getDataList(snapshotData['friend_requests']);
+    final friendRequestsRaw = snapshotData['friend_requests'];
+    if (friendRequestsRaw is List) {
+      _friendRequests = friendRequestsRaw
+          .map((item) {
+            if (item is DocumentReference) {
+              return item;
+            }
+            if (item is String && item.isNotEmpty) {
+              return UsersRecord.collection.doc(item);
+            }
+            return null;
+          })
+          .whereType<DocumentReference>()
+          .toList();
+    } else {
+      _friendRequests = getDataList(snapshotData['friend_requests']);
+    }
     _notifyAll = snapshotData['notify_all'] as bool?;
     _notifyMoneyGame = snapshotData['notify_money_game'] as bool?;
     _notifyVegasGame = snapshotData['notify_vegas_game'] as bool?;

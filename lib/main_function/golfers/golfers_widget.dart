@@ -7,6 +7,7 @@ import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/navigation/app_router.dart';
 import '/profile/profile_user/profile_user_firebase_widget.dart';
@@ -124,8 +125,6 @@ class _GolfersWidgetState extends State<GolfersWidget>
   @override
   void dispose() {
     _tabBarController?.dispose();
-    textFieldFocusNode?.dispose();
-    textController?.dispose();
     super.dispose();
   }
 
@@ -772,8 +771,8 @@ class _GolfersWidgetState extends State<GolfersWidget>
                 final isFriend =
                     (currentUserDocument?.friends.toList() ?? [])
                         .contains(user.reference);
-                final hasPending = user.friendRequests
-                        .contains(currentUserReference) ||
+                final hasPending = user.friendRequests.contains(
+                        currentUserReference) ||
                     (currentUserDocument?.friendRequests.toList() ?? [])
                         .contains(user.reference);
 
@@ -839,7 +838,7 @@ class _GolfersWidgetState extends State<GolfersWidget>
                             ),
                             SizedBox(width: 6.0),
                             Text(
-                              'Pending',
+                              'Pending Request',
                               style: GoogleFonts.outfit(
                                 fontSize: 14.0,
                                 fontWeight: FontWeight.w600,
@@ -852,20 +851,34 @@ class _GolfersWidgetState extends State<GolfersWidget>
                     else
                       ElevatedButton.icon(
                         onPressed: () async {
-                          await context
-                              .read<UserProvider>()
-                              .sendFriendRequest(user.reference);
-                          if (mounted) setState(() {});
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Friend request sent!',
-                                style: GoogleFonts.outfit(color: Colors.white),
+                          try {
+                            await context
+                                .read<UserProvider>()
+                                .sendFriendRequest(user.reference);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Friend request sent!',
+                                  style:
+                                      GoogleFonts.outfit(color: Colors.white),
+                                ),
+                                duration: Duration(milliseconds: 1500),
+                                backgroundColor: Color(0xFF1A4D2E),
                               ),
-                              duration: Duration(milliseconds: 1500),
-                              backgroundColor: Color(0xFF1A4D2E),
-                            ),
-                          );
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Unable to send request. Please try again.',
+                                  style:
+                                      GoogleFonts.outfit(color: Colors.white),
+                                ),
+                                duration: Duration(milliseconds: 2000),
+                                backgroundColor: AppColors.error,
+                              ),
+                            );
+                          }
                         },
                         icon: Icon(
                           Icons.person_add,

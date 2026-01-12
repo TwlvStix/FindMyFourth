@@ -116,16 +116,17 @@ class UserProvider extends ChangeNotifier {
     bool overrideCache = false,
   }) {
     final currentUser = _currentUser;
-    if (currentUser == null) {
+    final userRef = currentUser?.reference ?? currentUserReference;
+    if (userRef == null) {
       return Stream.value([]);
     }
-    final userRef = currentUser.reference;
+    final resolvedUserId = currentUser?.reference.id ?? userRef.id;
 
     debugPrint(
-      'UserProvider: getMyGames overrideCache=$overrideCache userId=$userId',
+      'UserProvider: getMyGames overrideCache=$overrideCache userId=$resolvedUserId',
     );
     return _myGamesManager.performRequest(
-      uniqueQueryKey: 'my_games_${userId}',
+      uniqueQueryKey: 'my_games_${resolvedUserId}',
       overrideCache: overrideCache,
       requestFn: () => queryGamesRecord(
         queryBuilder: (gamesRecord) => gamesRecord
@@ -170,8 +171,11 @@ class UserProvider extends ChangeNotifier {
 
   /// Refresh my games cache
   void refreshMyGames() {
-    debugPrint('UserProvider: refreshMyGames userId=$userId');
-    _myGamesManager.clearRequest('my_games_${userId}');
+    final currentUser = _currentUser;
+    final userRef = currentUser?.reference ?? currentUserReference;
+    final resolvedUserId = currentUser?.reference.id ?? userRef?.id ?? '';
+    debugPrint('UserProvider: refreshMyGames userId=$resolvedUserId');
+    _myGamesManager.clearRequest('my_games_${resolvedUserId}');
     notifyListeners();
   }
 
@@ -342,15 +346,29 @@ class UserProvider extends ChangeNotifier {
 
     try {
       final targetUser = await UsersRecord.getDocumentOnce(targetUserRef);
+      print(
+        'Send friend request: target=${targetUserRef.path} current=${currentUserReference?.path} target_friend_requests=${targetUser.snapshotData['friend_requests']}',
+      );
       if (targetUser.friends.contains(currentUserReference) ||
           targetUser.friendRequests.contains(currentUserReference)) {
         return;
       }
+      print('Send friend request write start');
       await targetUserRef.update({
-        'friend_requests': FieldValue.arrayUnion([currentUserReference]),
+        'friend_requests': FieldValue.arrayUnion([currentUserReference!.id]),
       });
+      print('Send friend request write success');
+      try {
+        final updatedTarget = await targetUserRef.get();
+        final targetData = updatedTarget.data() as Map<String, dynamic>?;
+        print(
+          'Friend request update: ${updatedTarget.reference.path} friend_requests=${targetData?['friend_requests']}',
+        );
+      } catch (e) {
+        print('Friend request update readback failed: $e');
+      }
     } catch (e) {
-      debugPrint('Error sending friend request: $e');
+      print('Error sending friend request: $e');
       rethrow;
     }
   }
@@ -361,7 +379,9 @@ class UserProvider extends ChangeNotifier {
 
     try {
       await currentUserReference!.update({
-        'friend_requests': FieldValue.arrayRemove([requesterRef]),
+        'friend_requests': FieldValue.arrayRemove(
+          [requesterRef, requesterRef.id],
+        ),
       });
       await currentUserReference!.update({
         'friends': FieldValue.arrayUnion([requesterRef]),

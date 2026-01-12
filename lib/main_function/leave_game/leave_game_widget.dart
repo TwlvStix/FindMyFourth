@@ -175,9 +175,13 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                               final currentUserRef = FirebaseFirestore.instance
                                   .collection('users')
                                   .doc(currentUser.uid);
+                              final removeValues = <Object>[
+                                currentUserRef,
+                                currentUser.uid,
+                              ];
                               await widget.gameRef.reference.update({
                                 'joined_players':
-                                    FieldValue.arrayRemove([currentUserRef]),
+                                    FieldValue.arrayRemove(removeValues),
                               });
 
                               if (widget.gameRef.chatRef != null) {
@@ -188,6 +192,7 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                                       uid: currentUser.uid,
                                     );
                               }
+                              context.userProvider.refreshMyGames();
 
                               context.pushNamed(
                                 SuccessPageWidget.routeName,

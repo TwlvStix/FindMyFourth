@@ -87,12 +87,15 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       onPopInvokedWithResult: (didPop, result) {
         if (_isSubmitting) {
           debugPrint('⚠️ PLAYER LIST: Back navigation blocked - submission in progress');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Please wait while we add your players...'),
-              duration: Duration(seconds: 1),
-            ),
-          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Please wait while we add your players...'),
+                duration: Duration(seconds: 1),
+              ),
+            );
+          });
         }
       },
       child: StreamBuilder<DocumentSnapshot>(

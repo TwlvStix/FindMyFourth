@@ -37,26 +37,17 @@ service cloud.firestore {
     }
 
     function isSelfFriendChange() {
-      let self = userRef(request.auth.uid);
-      return request.resource.data.friends is list &&
-        request.resource.data.diff(resource.data).changedKeys().hasOnly(['friends']) &&
-        ((request.resource.data.friends.hasAny([self]) &&
-          !(resource.data.friends is list && resource.data.friends.hasAny([self]))) ||
-         ((resource.data.friends is list && resource.data.friends.hasAny([self])) &&
-          !request.resource.data.friends.hasAny([self])));
+      let nextList = request.resource.data.friends;
+      let changedKeys = request.resource.data.diff(resource.data).changedKeys();
+      return nextList is list &&
+        changedKeys.hasOnly(['friends']);
     }
 
     function isSelfFriendRequestChange() {
-      let self = userRef(request.auth.uid);
-      let selfId = request.auth.uid;
-      let nextHasSelf = request.resource.data.friend_requests.hasAny([self]) ||
-        request.resource.data.friend_requests.hasAny([selfId]);
-      let prevHasSelf = resource.data.friend_requests is list &&
-        (resource.data.friend_requests.hasAny([self]) ||
-         resource.data.friend_requests.hasAny([selfId]));
-      return request.resource.data.friend_requests is list &&
-        request.resource.data.diff(resource.data).changedKeys().hasOnly(['friend_requests']) &&
-        ((nextHasSelf && !prevHasSelf) || (prevHasSelf && !nextHasSelf));
+      let nextList = request.resource.data.friend_requests;
+      let changedKeys = request.resource.data.diff(resource.data).changedKeys();
+      return nextList is list &&
+        changedKeys.hasOnly(['friend_requests']);
     }
 
     function canUpdateUnreadCount(oldData, newData) {
@@ -79,6 +70,8 @@ service cloud.firestore {
         'music',
         'drinks',
         'display_name',
+        'friends',
+        'friend_requests',
         'shortDescription',
         'title',
         'notify_all',
@@ -118,8 +111,8 @@ service cloud.firestore {
           allowedUserFieldChangesOnly() &&
           (displayNameChangeAllowed() ||
            !request.resource.data.diff(resource.data).changedKeys().hasAny(['display_name']))) ||
-          (request.auth != null &&
-            (isSelfFriendChange() || isSelfFriendRequestChange())));
+          isSelfFriendRequestChange() ||
+          isSelfFriendChange());
       allow create: if request.auth.uid == document;
       allow read: if request.auth != null;
       allow delete: if false;

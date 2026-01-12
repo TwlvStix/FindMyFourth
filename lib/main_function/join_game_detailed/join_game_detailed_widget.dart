@@ -6,16 +6,19 @@ import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/design_tokens/spacing.dart';
-import '/main_function/join_game/join_game_widget.dart';
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/models/game.dart';
 import '/profile/profile_user/profile_user_firebase_widget.dart';
+import '/providers/provider_extensions.dart';
+import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import '/providers/chat_provider.dart';
 class JoinGameDetailedWidget extends StatefulWidget {
   const JoinGameDetailedWidget({
     super.key,
@@ -917,26 +920,85 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       .friendGame ==
                                                   'Friends') &&
                                               isCreatorFriend))) {
-                                    await showModalBottomSheet(
-                                      isScrollControlled: true,
-                                      backgroundColor: Colors.transparent,
-                                      enableDrag: false,
-                                      context: context,
-                                      builder: (context) {
-                                        return Padding(
-                                          padding:
-                                              MediaQuery.viewInsetsOf(context),
-                                          child: JoinGameWidget(
-                                            gameRef:
-                                                joinGameDetailedGamesRecord,
-                                          ),
-                                        );
-                                      },
-                                    ).then((value) {
-                                      if (mounted) {
-                                        setState(() {});
+                                    final currentUser =
+                                        FirebaseAuth.instance.currentUser;
+                                    if (currentUser == null) {
+                                      showSnackbar(
+                                        context,
+                                        'Please sign in to join this game.',
+                                      );
+                                      return;
+                                    }
+                                    final currentUserRef = FirebaseFirestore
+                                        .instance
+                                        .collection('users')
+                                        .doc(currentUser.uid);
+                                    try {
+                                      await joinGameDetailedGamesRecord.reference
+                                          .update({
+                                        'joined_players':
+                                            FieldValue.arrayUnion([currentUserRef]),
+                                      });
+                                    } on FirebaseException catch (error) {
+                                      if (!mounted) {
+                                        return;
                                       }
-                                    });
+                                      final message =
+                                          error.code == 'permission-denied'
+                                              ? 'You do not have permission to join this game.'
+                                              : 'Unable to join the game right now. Please try again.';
+                                      showSnackbar(context, message);
+                                      return;
+                                    } catch (_) {
+                                      if (!mounted) {
+                                        return;
+                                      }
+                                      showSnackbar(
+                                        context,
+                                        'Unable to join the game right now. Please try again.',
+                                      );
+                                      return;
+                                    }
+
+                                    if (joinGameDetailedGamesRecord.chatRef !=
+                                        null) {
+                                      try {
+                                        await context
+                                            .read<ChatProvider>()
+                                            .addMember(
+                                              chatId: joinGameDetailedGamesRecord
+                                                  .chatRef!
+                                                  .id,
+                                              uid: currentUser.uid,
+                                            );
+                                      } catch (_) {
+                                        if (mounted) {
+                                          showSnackbar(
+                                            context,
+                                            'Joined the game, but chat access is unavailable right now.',
+                                          );
+                                        }
+                                      }
+                                    }
+
+                                    if (!mounted) {
+                                      return;
+                                    }
+                                    context.userProvider.refreshAvailableGames();
+                                    context.userProvider.refreshMyGames();
+                                    context.goNamed(
+                                      GameJoinedDetailedWidget.routeName,
+                                      extra: <String, dynamic>{
+                                        'gameRef':
+                                            joinGameDetailedGamesRecord.reference,
+                                        kTransitionInfoKey: TransitionInfo(
+                                          hasTransition: true,
+                                          transitionType:
+                                              PageTransitionType.bottomToTop,
+                                          duration: Duration(milliseconds: 220),
+                                        ),
+                                      },
+                                    );
                                   } else {
                                     await showDialog(
                                       context: context,

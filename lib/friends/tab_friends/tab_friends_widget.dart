@@ -1091,6 +1091,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                           .toList() ??
                                                       [])
                                                   .toList();
+                                          print(
+                                            'Requests tab friend_requests raw: ${currentUserDocument?.snapshotData['friend_requests']}',
+                                          );
 
                                           return ListView.separated(
                                             padding: EdgeInsets.fromLTRB(
@@ -1298,6 +1301,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                 ),
                                                                 onPressed:
                                                                     () async {
+                                                                  print(
+                                                                    'Accept request: current=${currentUserReference?.path} requester=${userList5UsersRecord.reference.path}',
+                                                                  );
                                                                   await FirebaseFirestore
                                                                       .instance
                                                                       .runTransaction(
@@ -1314,7 +1320,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                             ]),
                                                                             'friend_requests':
                                                                                 FieldValue.arrayRemove([
-                                                                              userList5UsersRecord.reference
+                                                                              userList5UsersRecord.reference,
+                                                                              userList5UsersRecord.reference.id
                                                                             ]),
                                                                           },
                                                                         ),
@@ -1379,41 +1386,72 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                           5.0,
                                                                           0.0),
                                                               child:
-                                                                  AppIconButton(
-                                                                borderColor:
-                                                                    AppTheme.of(
-                                                                            context)
-                                                                        .primary,
-                                                                borderRadius:
-                                                                    20.0,
-                                                                borderWidth:
-                                                                    1.0,
-                                                                buttonSize:
-                                                                    40.0,
-                                                                fillColor: Color(
-                                                                    0xFF253551),
-                                                                icon: Icon(
-                                                                  Icons
-                                                                      .not_interested,
-                                                                  color: Colors
-                                                                      .white,
-                                                                  size: 18.0,
-                                                                ),
+                                                                  AppButtonEnhanced(
                                                                 onPressed:
                                                                     () async {
-                                                                  await currentUserReference!
-                                                                      .update({
-                                                                    ...mapToFirestore(
-                                                                      {
-                                                                        'friend_requests':
-                                                                            FieldValue.arrayRemove([
-                                                                          userList5UsersRecord
-                                                                              .reference
-                                                                        ]),
-                                                                      },
-                                                                    ),
-                                                                  });
+                                                                  try {
+                                                                    await currentUserReference!
+                                                                        .update({
+                                                                      ...mapToFirestore(
+                                                                        {
+                                                                          'friend_requests':
+                                                                              FieldValue.arrayRemove([
+                                                                            userList5UsersRecord
+                                                                                .reference,
+                                                                            userList5UsersRecord
+                                                                                .reference
+                                                                                .id
+                                                                          ]),
+                                                                        },
+                                                                      ),
+                                                                    });
+                                                                    if (mounted) {
+                                                                      ScaffoldMessenger.of(
+                                                                              context)
+                                                                          .showSnackBar(
+                                                                        SnackBar(
+                                                                          content: Text(
+                                                                            'Request denied.',
+                                                                            style: AppTheme.of(context)
+                                                                                .titleMedium
+                                                                                .override(
+                                                                                  font: GoogleFonts.outfit(
+                                                                                    fontWeight: AppTheme.of(context).titleMedium.fontWeight,
+                                                                                    fontStyle: AppTheme.of(context).titleMedium.fontStyle,
+                                                                                  ),
+                                                                                  color: AppTheme.of(context).primaryBtnText,
+                                                                                  letterSpacing: 0.0,
+                                                                                  fontWeight: AppTheme.of(context).titleMedium.fontWeight,
+                                                                                  fontStyle: AppTheme.of(context).titleMedium.fontStyle,
+                                                                                ),
+                                                                          ),
+                                                                          duration: Duration(
+                                                                              milliseconds:
+                                                                                  1500),
+                                                                          backgroundColor:
+                                                                              AppTheme.of(context)
+                                                                                  .primary,
+                                                                        ),
+                                                                      );
+                                                                    }
+                                                                  } catch (e) {
+                                                                    print(
+                                                                      'Deny request failed: $e',
+                                                                    );
+                                                                    if (mounted) {
+                                                                      showSnackbar(
+                                                                        context,
+                                                                        'Unable to deny request. Please try again.',
+                                                                      );
+                                                                    }
+                                                                  }
                                                                 },
+                                                                text: 'Deny',
+                                                                variant:
+                                                                    AppButtonVariant
+                                                                        .secondary,
+                                                                size: AppButtonSize
+                                                                    .small,
                                                               ),
                                                             ),
                                                           ],
