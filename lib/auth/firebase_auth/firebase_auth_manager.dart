@@ -316,7 +316,7 @@ class FirebaseAuthManager extends AuthManager
       final firebaseUser = userCredential?.user;
       if (firebaseUser != null) {
         debugPrint('🔐 AUTH: Creating/updating user document.');
-        await maybeCreateUser(firebaseUser);
+        await ensureUserDocReady(firebaseUser);
         debugPrint('🔐 AUTH: User document created/updated successfully');
       }
       return userCredential == null
@@ -426,7 +426,7 @@ class FirebaseAuthManager extends AuthManager
       final userCredential = await emailCreateAccountFunc(trimmedEmail, password);
       final firebaseUser = userCredential?.user;
       if (firebaseUser != null) {
-        await maybeCreateUser(firebaseUser);
+        await ensureUserDocReady(firebaseUser);
         debugPrint('🔐 AUTH: Email account created.');
       }
       return userCredential == null
@@ -552,6 +552,11 @@ class FirebaseAuthManager extends AuthManager
 
   Future<bool> _verifyOnboardingCompleted(String userDocPath) async {
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        return false;
+      }
+      await user.getIdToken(true);
       final result = await makeCloudCall(
         'checkOnboardingComplete',
         {'userDocPath': userDocPath},

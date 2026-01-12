@@ -16,6 +16,7 @@ import '/core/custom_functions.dart' as functions;
 import '/profile/main_profile/main_profile_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -147,10 +148,57 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     }
 
     // Create username
-    final desiredUsername = functions.usernameCreator(usernameTextController!.text);
+    final desiredUsername =
+        functions.usernameCreator(usernameTextController!.text);
     if (mounted) setState(() {});
-    final userRef = currentUserReference;
+    var firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser == null) {
+      try {
+        firebaseUser = await FirebaseAuth.instance
+            .authStateChanges()
+            .firstWhere((user) => user != null)
+            .timeout(const Duration(seconds: 5));
+      } catch (_) {}
+    }
+    if (firebaseUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Sign-in not ready. Please try again.',
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 15.0,
+            ),
+          ),
+          duration: Duration(milliseconds: 2000),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+    await firebaseUser.getIdToken(true);
+    final userRef = UsersRecord.collection.doc(firebaseUser.uid);
     if (userRef == null || desiredUsername.isEmpty) {
+      return;
+    }
+    final usernamesRef = FirebaseFirestore.instance
+        .collection('usernames')
+        .doc(desiredUsername);
+    if (desiredUsername.isNotEmpty &&
+        !RegExp(kTextValidatorUsernameRegex).hasMatch(desiredUsername)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Must start with a letter and contain only letters, digits, -, or _',
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 15.0,
+            ),
+          ),
+          duration: Duration(milliseconds: 2000),
+          backgroundColor: AppColors.error,
+        ),
+      );
       return;
     }
 
@@ -160,7 +208,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Please update your Firebase Auth email before saving your profile.',
+            'Please update your Firebase Auth email ($currentUserEmail) before saving your profile.',
             style: GoogleFonts.outfit(
               color: AppTheme.of(context).secondaryBackground,
               fontSize: 15.0,
@@ -172,10 +220,6 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       );
       return;
     }
-
-    final usernamesRef = FirebaseFirestore.instance
-        .collection('usernames')
-        .doc(desiredUsername);
 
     try {
       await FirebaseFirestore.instance.runTransaction((transaction) async {
@@ -191,11 +235,10 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
             'created_at': FieldValue.serverTimestamp(),
           });
         }
-
-        transaction.update(
-          userRef,
+      });
+      try {
+        await userRef.set(
           createUsersRecordData(
-            email: currentUserEmail,
             photoUrl: currentUserPhoto,
             phoneNumber: phoneNumTextController!.text,
             handicap: handicapValue,
@@ -208,8 +251,21 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
             paceOfPlay: paceplayValue,
             playForMoney: playmoneyValue,
           ),
+          SetOptions(merge: true),
         );
-      });
+      } catch (e) {
+        try {
+          final usernameDoc = await usernamesRef.get();
+          final existingRef = usernameDoc.get('uid') as DocumentReference?;
+          if (usernameDoc.exists &&
+              existingRef != null &&
+              existingRef.path == userRef.path) {
+            await usernamesRef.delete();
+          }
+        } catch (_) {}
+        rethrow;
+      }
+      currentUserDocument = await UsersRecord.getDocumentOnce(userRef);
     } on StateError catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -225,7 +281,29 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
         ),
       );
       return;
-    } catch (_) {
+    } on FirebaseException catch (e, stackTrace) {
+      debugPrint('CreateProfile save failed: $e');
+      debugPrint('CreateProfile save stackTrace: $stackTrace');
+      final message = e.code == 'permission-denied'
+          ? 'Unable to save profile due to permissions. Please try again.'
+          : 'Unable to save profile. Please try again.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            message,
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 15.0,
+            ),
+          ),
+          duration: Duration(milliseconds: 2000),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    } catch (e, stackTrace) {
+      debugPrint('CreateProfile save failed: $e');
+      debugPrint('CreateProfile save stackTrace: $stackTrace');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

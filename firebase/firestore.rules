@@ -48,14 +48,15 @@ service cloud.firestore {
 
     function isSelfFriendRequestChange() {
       let self = userRef(request.auth.uid);
+      let selfId = request.auth.uid;
+      let nextHasSelf = request.resource.data.friend_requests.hasAny([self]) ||
+        request.resource.data.friend_requests.hasAny([selfId]);
+      let prevHasSelf = resource.data.friend_requests is list &&
+        (resource.data.friend_requests.hasAny([self]) ||
+         resource.data.friend_requests.hasAny([selfId]));
       return request.resource.data.friend_requests is list &&
         request.resource.data.diff(resource.data).changedKeys().hasOnly(['friend_requests']) &&
-        ((request.resource.data.friend_requests.hasAny([self]) &&
-          !(resource.data.friend_requests is list &&
-            resource.data.friend_requests.hasAny([self]))) ||
-         ((resource.data.friend_requests is list &&
-            resource.data.friend_requests.hasAny([self])) &&
-          !request.resource.data.friend_requests.hasAny([self])));
+        ((nextHasSelf && !prevHasSelf) || (prevHasSelf && !nextHasSelf));
     }
 
     function canUpdateUnreadCount(oldData, newData) {
@@ -77,6 +78,7 @@ service cloud.firestore {
         'home_course',
         'music',
         'drinks',
+        'display_name',
         'shortDescription',
         'title',
         'notify_all',
@@ -101,21 +103,21 @@ service cloud.firestore {
     function displayNameChangeAllowed() {
       let desired = request.resource.data.display_name;
       let current = resource.data.display_name;
-      if (desired == current) {
-        return true;
-      }
-      if (!(desired is string) || desired == '') {
-        return false;
-      }
       let usernameDoc = get(/databases/$(database)/documents/usernames/$(desired));
-      return usernameDoc.exists && usernameDoc.data.uid == userRef(request.auth.uid);
+      return desired == current ||
+        (desired is string && desired != '' &&
+         ((!usernameDoc.exists && current == null) ||
+          (usernameDoc.exists &&
+           (usernameDoc.data.uid == userRef(request.auth.uid) ||
+            usernameDoc.data.uid == request.auth.uid))));
     }
 
     match /users/{document} {
       allow update: if roleUnchanged() &&
         ((request.auth.uid == document &&
           allowedUserFieldChangesOnly() &&
-          displayNameChangeAllowed()) ||
+          (displayNameChangeAllowed() ||
+           !request.resource.data.diff(resource.data).changedKeys().hasAny(['display_name']))) ||
           (request.auth != null &&
             (isSelfFriendChange() || isSelfFriendRequestChange())));
       allow create: if request.auth.uid == document;
@@ -203,7 +205,8 @@ service cloud.firestore {
 
     match /usernames/{name} {
       allow create: if request.auth != null &&
-        request.resource.data.uid == userRef(request.auth.uid) &&
+        (request.resource.data.uid == userRef(request.auth.uid) ||
+         request.resource.data.uid == request.auth.uid) &&
         !exists(/databases/$(database)/documents/usernames/$(name));
       allow read: if request.auth != null;
       allow update: if false;

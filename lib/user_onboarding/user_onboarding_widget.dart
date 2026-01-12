@@ -162,7 +162,7 @@ class _UserOnboardingWidgetState extends State<UserOnboardingWidget> {
       return false;
     }
     try {
-      await maybeCreateUser(user);
+      await ensureUserDocReady(user);
       return true;
     } catch (error, stackTrace) {
       debugPrint('❌ ONBOARDING: unable to ensure user doc exists: $error');

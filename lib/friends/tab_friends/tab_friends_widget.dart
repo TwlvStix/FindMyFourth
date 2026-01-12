@@ -21,6 +21,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
+import '/providers/user_provider.dart';
 
 class TabFriendsWidget extends StatefulWidget {
   const TabFriendsWidget({super.key});
@@ -615,7 +616,22 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                       ),
                                     ),
                                     StreamBuilder<List<UsersRecord>>(
-                                      stream: queryUsersRecord(),
+                                      stream: (() {
+                                        final term = textController?.text
+                                                .trim()
+                                                .toLowerCase() ??
+                                            '';
+                                        if (term.isEmpty) {
+                                          return Stream.value(<UsersRecord>[]);
+                                        }
+                                        return queryUsersRecord(
+                                          queryBuilder: (usersRecord) =>
+                                              usersRecord
+                                                  .orderBy('display_name')
+                                                  .startAt([term]).endAt(
+                                                      ['${term}\uf8ff']).limit(25),
+                                        );
+                                      })(),
                                       builder: (context, snapshot) {
                                         // Customize what your widget looks like when it's loading.
                                         if (!snapshot.hasData) {
@@ -975,18 +991,12 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   ),
                                                                   onPressed:
                                                                       () async {
-                                                                    await listViewUsersRecord
-                                                                        .reference
-                                                                        .update({
-                                                                      ...mapToFirestore(
-                                                                        {
-                                                                          'friend_requests':
-                                                                              FieldValue.arrayUnion([
-                                                                            currentUserReference
-                                                                          ]),
-                                                                        },
-                                                                      ),
-                                                                    });
+                                                                    await context
+                                                                        .read<UserProvider>()
+                                                                        .sendFriendRequest(
+                                                                          listViewUsersRecord
+                                                                              .reference,
+                                                                        );
                                                                     addToReqUserList(
                                                                         valueOrDefault<
                                                                             String>(
@@ -1071,352 +1081,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    if (isiOS)
-                                      StreamBuilder<List<FriendRequestRecord>>(
-                                        stream: queryFriendRequestRecord(
-                                          queryBuilder: (friendRequestRecord) =>
-                                              friendRequestRecord.where(
-                                            'receiver_id',
-                                            isEqualTo: currentUserReference,
-                                          ),
-                                        ),
-                                        builder: (context, snapshot) {
-                                          // Customize what your widget looks like when it's loading.
-                                          if (!snapshot.hasData) {
-                                            return Center(
-                                              child: SizedBox(
-                                                width: 50.0,
-                                                height: 50.0,
-                                                child: SpinKitWanderingCubes(
-                                                  color: AppTheme.of(context).secondary,
-                                                  size: 50.0,
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                          List<FriendRequestRecord>
-                                              listViewFriendRequestRecordList =
-                                              snapshot.data!;
-                                          if (listViewFriendRequestRecordList
-                                              .isEmpty) {
-                                            return Image.asset(
-                                              'assets/images/Whitefixed.png',
-                                            );
-                                          }
-
-                                          return ListView.separated(
-                                            padding: EdgeInsets.fromLTRB(
-                                              0,
-                                              12.0,
-                                              0,
-                                              44.0,
-                                            ),
-                                            primary: false,
-                                            shrinkWrap: true,
-                                            scrollDirection: Axis.vertical,
-                                            itemCount:
-                                                listViewFriendRequestRecordList
-                                                    .length,
-                                            separatorBuilder: (_, __) =>
-                                                SizedBox(height: AppSpacing.sm),
-                                            itemBuilder:
-                                                (context, listViewIndex) {
-                                              final listViewFriendRequestRecord =
-                                                  listViewFriendRequestRecordList[
-                                                      listViewIndex];
-                                              return Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
-                                                child:
-                                                    StreamBuilder<UsersRecord>(
-                                                  stream: UsersRecord.getDocument(
-                                                      listViewFriendRequestRecord
-                                                          .requesterId!),
-                                                  builder: (context, snapshot) {
-                                                    // Customize what your widget looks like when it's loading.
-                                                    if (!snapshot.hasData) {
-                                                      return Center(
-                                                        child: SizedBox(
-                                                          width: 50.0,
-                                                          height: 50.0,
-                                                          child:
-                                                              SpinKitWanderingCubes(
-                                                            color: Color(
-                                                                0xFF25504F),
-                                                            size: 50.0,
-                                                          ),
-                                                        ),
-                                                      );
-                                                    }
-
-                                                    final userList5UsersRecord =
-                                                        snapshot.data!;
-
-                                                    return Container(
-                                                      width: double.infinity,
-                                                      height: 60.0,
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.white,
-                                                        boxShadow: [
-                                                          BoxShadow(
-                                                            blurRadius: 4.0,
-                                                            color: Color(
-                                                                0x32000000),
-                                                            offset: Offset(
-                                                              0.0,
-                                                              2.0,
-                                                            ),
-                                                          )
-                                                        ],
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(8.0),
-                                                      ),
-                                                      child: Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    8.0,
-                                                                    0.0,
-                                                                    8.0,
-                                                                    0.0),
-                                                        child: Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceAround,
-                                                          children: [
-                                                            ClipRRect(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          26.0),
-                                                              child:
-                                                                  Image.network(
-                                                                userList5UsersRecord
-                                                                    .photoUrl,
-                                                                width: 36.0,
-                                                                height: 36.0,
-                                                                fit: BoxFit
-                                                                    .cover,
-                                                              ),
-                                                            ),
-                                                            Expanded(
-                                                              child: Padding(
-                                                                padding:
-                                                                    EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            12.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      children: [
-                                                                        Text(
-                                                                          userList5UsersRecord
-                                                                              .displayName,
-                                                                          style: AppTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .override(
-                                                                                font: GoogleFonts.outfit(
-                                                                                  fontWeight: FontWeight.w500,
-                                                                                  fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
-                                                                                ),
-                                                                                fontSize: 16.0,
-                                                                                letterSpacing: 0.0,
-                                                                                fontWeight: FontWeight.w500,
-                                                                                fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
-                                                                              ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          AppSpacing.xs,
-                                                                          0.0),
-                                                              child:
-                                                                  AppButtonEnhanced(
-                                                                onPressed:
-                                                                    () async {
-                                                                  Navigator.of(context)
-                                                                      .push(
-                                                                    MaterialPageRoute(
-                                                                      builder: (context) =>
-                                                                          ProfileUserFirebaseWidget(
-                                                                        userRef:
-                                                                            userList5UsersRecord.reference,
-                                                                      ),
-                                                                    ),
-                                                                  );
-                                                                },
-                                                                text: 'View',
-                                                                variant: AppButtonVariant.primary,
-                                                                size: AppButtonSize.small,
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0),
-                                                              child:
-                                                                  AppIconButton(
-                                                                borderColor:
-                                                                    AppTheme.of(
-                                                                            context)
-                                                                        .primary,
-                                                                borderRadius:
-                                                                    20.0,
-                                                                borderWidth:
-                                                                    1.0,
-                                                                buttonSize:
-                                                                    40.0,
-                                                                fillColor: Color(
-                                                                    0xFF253551),
-                                                                icon: Icon(
-                                                                  Icons.check,
-                                                                  color: Colors
-                                                                      .white,
-                                                                  size: 18.0,
-                                                                ),
-                                                                onPressed:
-                                                                    () async {
-                                                                  await currentUserReference!
-                                                                      .update({
-                                                                    ...mapToFirestore(
-                                                                      {
-                                                                        'friends':
-                                                                            FieldValue.arrayUnion([
-                                                                          userList5UsersRecord
-                                                                              .reference
-                                                                        ]),
-                                                                      },
-                                                                    ),
-                                                                  });
-                                                                  await userList5UsersRecord
-                                                                      .reference
-                                                                      .update({
-                                                                    ...mapToFirestore(
-                                                                      {
-                                                                        'friends':
-                                                                            FieldValue.arrayUnion([
-                                                                          currentUserReference
-                                                                        ]),
-                                                                      },
-                                                                    ),
-                                                                  });
-                                                                  await listViewFriendRequestRecord
-                                                                      .reference
-                                                                      .delete();
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .clearSnackBars();
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(
-                                                                    SnackBar(
-                                                                      content:
-                                                                          Text(
-                                                                        'You  have successfully made a Friend!',
-                                                                        style: AppTheme.of(context)
-                                                                            .titleMedium
-                                                                            .override(
-                                                                              font: GoogleFonts.outfit(
-                                                                                fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-                                                                                fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-                                                                              ),
-                                                                              color: AppTheme.of(context).primaryBtnText,
-                                                                              letterSpacing: 0.0,
-                                                                              fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-                                                                              fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-                                                                            ),
-                                                                      ),
-                                                                      duration: Duration(
-                                                                          milliseconds:
-                                                                              1500),
-                                                                      backgroundColor:
-                                                                          AppTheme.of(context)
-                                                                              .primary,
-                                                                    ),
-                                                                  );
-                                                                },
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0),
-                                                              child:
-                                                                  AppIconButton(
-                                                                borderColor:
-                                                                    AppTheme.of(
-                                                                            context)
-                                                                        .primary,
-                                                                borderRadius:
-                                                                    20.0,
-                                                                borderWidth:
-                                                                    1.0,
-                                                                buttonSize:
-                                                                    40.0,
-                                                                fillColor: Color(
-                                                                    0xFF253551),
-                                                                icon: Icon(
-                                                                  Icons
-                                                                      .not_interested,
-                                                                  color: Colors
-                                                                      .white,
-                                                                  size: 18.0,
-                                                                ),
-                                                                onPressed:
-                                                                    () async {
-                                                                  await listViewFriendRequestRecord
-                                                                      .reference
-                                                                      .delete();
-                                                                },
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
+                                    if (isiOS) const SizedBox.shrink(),
                                     AuthUserStreamWidget(
                                       builder: (context) => Builder(
                                         builder: (context) {
@@ -1633,35 +1298,43 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                 ),
                                                                 onPressed:
                                                                     () async {
-                                                                  await currentUserReference!
-                                                                      .update({
-                                                                    ...mapToFirestore(
+                                                                  await FirebaseFirestore
+                                                                      .instance
+                                                                      .runTransaction(
+                                                                          (transaction) async {
+                                                                    transaction
+                                                                        .update(
+                                                                      currentUserReference!,
                                                                       {
-                                                                        'friends':
-                                                                            FieldValue.arrayUnion([
-                                                                          userList5UsersRecord
-                                                                              .reference
-                                                                        ]),
-                                                                        'friend_requests':
-                                                                            FieldValue.arrayRemove([
-                                                                          userList5UsersRecord
-                                                                              .reference
-                                                                        ]),
+                                                                        ...mapToFirestore(
+                                                                          {
+                                                                            'friends':
+                                                                                FieldValue.arrayUnion([
+                                                                              userList5UsersRecord.reference
+                                                                            ]),
+                                                                            'friend_requests':
+                                                                                FieldValue.arrayRemove([
+                                                                              userList5UsersRecord.reference
+                                                                            ]),
+                                                                          },
+                                                                        ),
                                                                       },
-                                                                    ),
-                                                                  });
-
-                                                                  await userList5UsersRecord
-                                                                      .reference
-                                                                      .update({
-                                                                    ...mapToFirestore(
+                                                                    );
+                                                                    transaction
+                                                                        .update(
+                                                                      userList5UsersRecord
+                                                                          .reference,
                                                                       {
-                                                                        'friends':
-                                                                            FieldValue.arrayUnion([
-                                                                          currentUserReference
-                                                                        ]),
+                                                                        ...mapToFirestore(
+                                                                          {
+                                                                            'friends':
+                                                                                FieldValue.arrayUnion([
+                                                                              currentUserReference
+                                                                            ]),
+                                                                          },
+                                                                        ),
                                                                       },
-                                                                    ),
+                                                                    );
                                                                   });
                                                                   ScaffoldMessenger.of(
                                                                           context)
@@ -2001,30 +1674,39 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                 ),
                                                                 onPressed:
                                                                     () async {
-                                                                  await currentUserReference!
-                                                                      .update({
-                                                                    ...mapToFirestore(
+                                                                  await FirebaseFirestore
+                                                                      .instance
+                                                                      .runTransaction(
+                                                                          (transaction) async {
+                                                                    transaction
+                                                                        .update(
+                                                                      currentUserReference!,
                                                                       {
-                                                                        'friends':
-                                                                            FieldValue.arrayRemove([
-                                                                          userList5UsersRecord
-                                                                              .reference
-                                                                        ]),
+                                                                        ...mapToFirestore(
+                                                                          {
+                                                                            'friends':
+                                                                                FieldValue.arrayRemove([
+                                                                              userList5UsersRecord.reference
+                                                                            ]),
+                                                                          },
+                                                                        ),
                                                                       },
-                                                                    ),
-                                                                  });
-
-                                                                  await userList5UsersRecord
-                                                                      .reference
-                                                                      .update({
-                                                                    ...mapToFirestore(
+                                                                    );
+                                                                    transaction
+                                                                        .update(
+                                                                      userList5UsersRecord
+                                                                          .reference,
                                                                       {
-                                                                        'friends':
-                                                                            FieldValue.arrayRemove([
-                                                                          currentUserReference
-                                                                        ]),
+                                                                        ...mapToFirestore(
+                                                                          {
+                                                                            'friends':
+                                                                                FieldValue.arrayRemove([
+                                                                              currentUserReference
+                                                                            ]),
+                                                                          },
+                                                                        ),
                                                                       },
-                                                                    ),
+                                                                    );
                                                                   });
                                                                   ScaffoldMessenger.of(
                                                                           context)

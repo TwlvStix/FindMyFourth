@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '/models/chat.dart';
 import '/models/chat_message.dart';
+import '/services/firestore_repository.dart';
 
 class ChatService {
   ChatService({FirebaseFirestore? firestore})
@@ -21,27 +22,29 @@ class ChatService {
     debugPrint('💬 ChatService: uid=$uid, limit=$limit');
     debugPrint('💬 ChatService: Query: chats where memberIds contains $uid AND type=direct');
 
-    return _firestore
+    final query = _firestore
         .collection('chats')
         .where('memberIds', arrayContains: uid)
         .where('type', isEqualTo: 'direct')
         .orderBy('lastMessageAt', descending: true)
-        .limit(limit)
-        .snapshots()
-        .map((snapshot) {
-          debugPrint('💬 ChatService: Received snapshot with ${snapshot.docs.length} chats');
-          if (snapshot.docs.isNotEmpty) {
-            debugPrint('💬 ChatService: First chat ID: ${snapshot.docs.first.id}');
+        .limit(limit);
+
+    return const FirestoreRepository()
+        .queryCollectionPage<Chat>(
+          query,
+          (doc) => Chat.fromDoc(doc),
+          pageSize: limit,
+          isStream: true,
+        )
+        .asStream()
+        .asyncExpand((page) => page.dataStream ?? Stream.value(page.data))
+        .map((chats) {
+          debugPrint('💬 ChatService: Received snapshot with ${chats.length} chats');
+          if (chats.isNotEmpty) {
+            debugPrint('💬 ChatService: First chat ID: ${chats.first.id}');
           }
-          try {
-            final chats = snapshot.docs.map(Chat.fromDoc).toList();
-            debugPrint('💬 ChatService: Successfully converted ${chats.length} Chat objects');
-            return chats;
-          } catch (e, stackTrace) {
-            debugPrint('❌ ChatService: Error converting chats: $e');
-            debugPrint('❌ ChatService: StackTrace: $stackTrace');
-            rethrow;
-          }
+          debugPrint('💬 ChatService: Successfully converted ${chats.length} Chat objects');
+          return chats;
         });
   }
 
@@ -150,15 +153,22 @@ class ChatService {
       debugPrint('🔧 ChatService: Attempting to create chat document...');
       debugPrint('🔧 ChatService: Chat path: ${chatRef.path}');
 
-      // Try to create the chat document
-      // If it already exists, this will fail with 'already-exists' or succeed with merge
-      try {
-        await chatRef.set({
+      await _firestore.runTransaction((transaction) async {
+        final chatSnapshot = await transaction.get(chatRef);
+        if (chatSnapshot.exists) {
+          return;
+        }
+        transaction.set(chatRef, {
           'memberIds': memberIds,
+          'users': memberIds
+              .map((uid) => _firestore.collection('users').doc(uid))
+              .toList(),
+          'user_a': _firestore.collection('users').doc(currentUid),
+          'user_b': _firestore.collection('users').doc(otherUid),
           'directKey': directKey,
           'type': 'direct',
           'gameId': null,
-          'lastMessage': '',
+          'last_message': '',
           'lastMessageAt': FieldValue.serverTimestamp(),
           'lastMessageSenderId': currentUid,
           'unreadCountByUser': {
@@ -167,27 +177,11 @@ class ChatService {
           },
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true)); // Merge: won't overwrite if exists
+        });
+      });
 
-        debugPrint('✅ ChatService: Chat created/updated successfully: ${chatRef.id}');
-        return chatRef;
-      } catch (setError) {
-        debugPrint('⚠️ ChatService: Set operation result: $setError');
-        // If set fails, document might already exist and we have permission to read it
-        // Try to read it now that we know we should be a member
-        try {
-          debugPrint('🔧 ChatService: Attempting to read existing chat...');
-          final chatSnapshot = await chatRef.get();
-          if (chatSnapshot.exists) {
-            debugPrint('✅ ChatService: Found existing chat: ${chatRef.id}');
-            return chatRef;
-          }
-        } catch (readError) {
-          debugPrint('❌ ChatService: Could not read chat: $readError');
-        }
-        // If both set and read failed, rethrow the original set error
-        rethrow;
-      }
+      debugPrint('✅ ChatService: Chat created/updated successfully: ${chatRef.id}');
+      return chatRef;
     } catch (e, stackTrace) {
       debugPrint('❌ ChatService: ERROR in createOrGetDirectChat');
       debugPrint('❌ ChatService: Error type: ${e.runtimeType}');
@@ -204,9 +198,10 @@ class ChatService {
     final chatRef = _firestore.collection('chats').doc();
     await chatRef.set({
       'memberIds': [createdByUid],
+      'users': [_firestore.collection('users').doc(createdByUid)],
       'type': 'game',
       'gameId': gameId,
-      'lastMessage': '',
+      'last_message': '',
       'lastMessageAt': FieldValue.serverTimestamp(),
       'lastMessageSenderId': createdByUid,
       'unreadCountByUser': {
@@ -224,6 +219,9 @@ class ChatService {
   }) async {
     await _firestore.collection('chats').doc(chatId).update({
       'memberIds': FieldValue.arrayUnion([uid]),
+      'users': FieldValue.arrayUnion(
+        [_firestore.collection('users').doc(uid)],
+      ),
       'updatedAt': FieldValue.serverTimestamp(),
       'unreadCountByUser.$uid': 0,
     });
@@ -235,6 +233,9 @@ class ChatService {
   }) async {
     await _firestore.collection('chats').doc(chatId).update({
       'memberIds': FieldValue.arrayRemove([uid]),
+      'users': FieldValue.arrayRemove(
+        [_firestore.collection('users').doc(uid)],
+      ),
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
@@ -257,7 +258,7 @@ class ChatService {
               <String>[];
 
       final updates = <String, dynamic>{
-        'lastMessage': text,
+        'last_message': text,
         'lastMessageAt': FieldValue.serverTimestamp(),
         'lastMessageSenderId': senderId,
         'updatedAt': FieldValue.serverTimestamp(),

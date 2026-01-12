@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '/backend/schema/games_record.dart';
+
 class Game {
   Game({
     required this.reference,
@@ -92,6 +94,44 @@ class Game {
       courseRef: data['courseRef'] as DocumentReference?,
       userRef: data['userRef'] as DocumentReference?,
       uid: (data['uid'] as String?) ?? doc.id,
+    );
+  }
+
+  static Game fromRecord(GamesRecord record) {
+    String gameStatus = record.snapshotData['status'] as String? ?? 'active';
+    if (gameStatus == 'active') {
+      final gameDate = record.date;
+      final isCancelled = record.isCancelled;
+
+      if (isCancelled) {
+        gameStatus = 'cancelled';
+      } else if (gameDate != null && gameDate.isBefore(DateTime.now())) {
+        gameStatus = 'expired';
+      }
+    }
+
+    return Game(
+      reference: record.reference,
+      nameGame: record.nameGame,
+      coursePlay: record.coursePlay,
+      gameType: record.gameType,
+      styleGame: record.styleGame,
+      rulesSetting: record.rulesSetting,
+      scoring: record.scoring,
+      memberDiscount: record.memberDiscount,
+      friendGame: record.friendGame,
+      numPlayers: record.numPlayers,
+      maxPlayers: record.maxPlayers,
+      joinedPlayers: record.joinedPlayers,
+      guestPlayers: record.guestPlayers,
+      isCancelled: record.isCancelled,
+      status: gameStatus,
+      date: record.date,
+      createdTime: record.createdTime,
+      chatRef: record.chatRef,
+      courseRef: record.courseRef,
+      userRef: record.userRef,
+      uid: record.uid,
     );
   }
 

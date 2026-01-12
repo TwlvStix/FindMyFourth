@@ -15,7 +15,10 @@ import '/core/form_field_controller.dart';
 import '/profile/change_photo/change_photo_widget.dart';
 import '/core/custom_functions.dart' as functions;
 import '/profile/main_profile/main_profile_widget.dart';
+import '/user_auth/sign_in/sign_in_widget.dart';
+import '/backend/cloud_functions/cloud_functions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -136,8 +139,37 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     super.dispose();
   }
 
+  String? _validateUsername(BuildContext context, String? val) {
+    if (val == null || val.isEmpty) {
+      return 'Username is required';
+    }
+    if (!RegExp(kTextValidatorUsernameRegex).hasMatch(val)) {
+      return 'Must start with a letter and contain only letters, digits, -, or _';
+    }
+    return null;
+  }
+
   Future<void> _handleSaveProfile() async {
     if (!formKey.currentState!.validate()) {
+      return;
+    }
+
+    final desiredEmail = emailTextController?.text.trim() ?? '';
+    if (desiredEmail.isNotEmpty && desiredEmail != currentUserEmail) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Please update your Firebase Auth email before saving your profile.',
+            style: GoogleFonts.outfit(
+              color: AppTheme.of(context).secondaryBackground,
+              fontSize: 15.0,
+            ),
+          ),
+          duration: Duration(milliseconds: 2000),
+          backgroundColor: AppTheme.of(context).primary,
+        ),
+      );
       return;
     }
 
@@ -148,6 +180,22 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
 
     // Check if username changed
     final desiredUsername = AppState().theusernames;
+    if (desiredUsername.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Username is required',
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 15.0,
+            ),
+          ),
+          duration: Duration(milliseconds: 2000),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
     final normalizedCurrentUsername =
         functions.usernameCreator(currentUserDisplayName);
     final usernameChanged = desiredUsername.isNotEmpty &&
@@ -155,20 +203,26 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
 
     if (!usernameChanged) {
       // Username unchanged - save directly
-      await currentUserReference!.update(createUsersRecordData(
-        email: emailTextController!.text,
-        photoUrl: currentUserPhoto,
-        phoneNumber: phoneNumTextController!.text,
-        handicap: handicapValue,
-        displayName: AppState().theusernames,
-        firstName: firstNameTextController!.text,
-        lastName: lastNameTextController!.text,
-        drinks: drinksValue,
-        music: musicValue,
-        homeCourse: coursesValue,
-        paceOfPlay: paceplayValue,
-        playForMoney: playmoneyValue,
-      ));
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        transaction.update(
+          currentUserReference!,
+          createUsersRecordData(
+            photoUrl: currentUserPhoto,
+            phoneNumber: phoneNumTextController!.text,
+            handicap: handicapValue,
+            displayName: AppState().theusernames,
+            firstName: firstNameTextController!.text,
+            lastName: lastNameTextController!.text,
+            drinks: drinksValue,
+            music: musicValue,
+            homeCourse: coursesValue,
+            paceOfPlay: paceplayValue,
+            playForMoney: playmoneyValue,
+          ),
+        );
+      });
+      currentUserDocument =
+          await UsersRecord.getDocumentOnce(currentUserReference!);
 
       _showSuccessAndNavigate();
     } else {
@@ -180,7 +234,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       final usernamesCollection =
           FirebaseFirestore.instance.collection('usernames');
       final newUsernameRef = usernamesCollection.doc(desiredUsername);
-      final oldUsernameRef = usernamesCollection.doc(currentUsername);
 
       try {
         await FirebaseFirestore.instance.runTransaction((transaction) async {
@@ -197,37 +250,35 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
               'created_at': FieldValue.serverTimestamp(),
             });
           }
-
-          if (currentUsername.isNotEmpty &&
-              currentUsername != desiredUsername) {
-            final oldUsernameSnap = await transaction.get(oldUsernameRef);
-            if (oldUsernameSnap.exists) {
-              final existingRef =
-                  oldUsernameSnap.get('uid') as DocumentReference?;
-              if (existingRef != null && existingRef.path == userRef.path) {
-                transaction.delete(oldUsernameRef);
-              }
+        });
+        await userRef.update(
+          createUsersRecordData(
+            photoUrl: currentUserPhoto,
+            phoneNumber: phoneNumTextController!.text,
+            handicap: handicapValue,
+            displayName: desiredUsername,
+            firstName: firstNameTextController!.text,
+            lastName: lastNameTextController!.text,
+            drinks: drinksValue,
+            music: musicValue,
+            homeCourse: coursesValue,
+            paceOfPlay: paceplayValue,
+            playForMoney: playmoneyValue,
+          ),
+        );
+        if (currentUsername.isNotEmpty &&
+            currentUsername != desiredUsername) {
+          final oldUsernameRef = usernamesCollection.doc(currentUsername);
+          final oldUsernameSnap = await oldUsernameRef.get();
+          if (oldUsernameSnap.exists) {
+            final existingRef =
+                oldUsernameSnap.get('uid') as DocumentReference?;
+            if (existingRef != null && existingRef.path == userRef.path) {
+              await oldUsernameRef.delete();
             }
           }
-
-          transaction.update(
-            userRef,
-            createUsersRecordData(
-              email: emailTextController!.text,
-              photoUrl: currentUserPhoto,
-              phoneNumber: phoneNumTextController!.text,
-              handicap: handicapValue,
-              displayName: desiredUsername,
-              firstName: firstNameTextController!.text,
-              lastName: lastNameTextController!.text,
-              drinks: drinksValue,
-              music: musicValue,
-              homeCourse: coursesValue,
-              paceOfPlay: paceplayValue,
-              playForMoney: playmoneyValue,
-            ),
-          );
-        });
+        }
+        currentUserDocument = await UsersRecord.getDocumentOnce(userRef);
 
         _showSuccessAndNavigate();
       } on StateError catch (_) {
@@ -244,7 +295,17 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             backgroundColor: AppColors.error,
           ),
         );
-      } catch (_) {
+      } catch (e) {
+        try {
+          final newUsernameSnap = await newUsernameRef.get();
+          final existingRef =
+              newUsernameSnap.get('uid') as DocumentReference?;
+          if (newUsernameSnap.exists &&
+              existingRef != null &&
+              existingRef.path == userRef.path) {
+            await newUsernameRef.delete();
+          }
+        } catch (_) {}
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -299,6 +360,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     required FocusNode focusNode,
     required String label,
     TextInputAction? textInputAction,
+    String? Function(BuildContext, String?)? validator,
     bool readOnly = false,
   }) {
     return TextFormField(
@@ -353,6 +415,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           vertical: AppSpacing.md,
         ),
       ),
+      validator:
+          validator != null ? (val) => validator(context, val) : null,
     );
   }
 
@@ -473,6 +537,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                                     controller: usernameTextController!,
                                     focusNode: usernameFocusNode!,
                                     label: 'Display Name',
+                                    validator: _validateUsername,
                                   ),
                                 ),
                                 SizedBox(width: AppSpacing.md),
@@ -822,6 +887,79 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         fullWidth: true,
                         onPressed: _handleSaveProfile,
                       ),
+                    ),
+                  ),
+
+                  SizedBox(height: AppSpacing.lg),
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                    ),
+                    child: AppButtonEnhanced(
+                      text: 'Delete Account',
+                      variant: AppButtonVariant.secondary,
+                      size: AppButtonSize.large,
+                      fullWidth: true,
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (alertDialogContext) => AlertDialog(
+                                title: Text('Delete account?'),
+                                content: Text(
+                                  'This permanently deletes your account and data.',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(alertDialogContext, false),
+                                    child: Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(alertDialogContext, true),
+                                    child: Text('Delete'),
+                                  ),
+                                ],
+                              ),
+                            ) ??
+                            false;
+                        if (!confirm) {
+                          return;
+                        }
+                        try {
+                          final user = FirebaseAuth.instance.currentUser;
+                          if (user == null) {
+                            throw StateError('no_user');
+                          }
+                          await user.delete();
+                          await authManager.signOut();
+                          if (!mounted) {
+                            return;
+                          }
+                          context.goNamed(SignInWidget.routeName);
+                        } on FirebaseAuthException catch (e) {
+                          debugPrint(
+                            'Delete account failed (auth): ${e.code} ${e.message}',
+                          );
+                          if (!mounted) {
+                            return;
+                          }
+                          final message = e.code == 'requires-recent-login'
+                              ? 'Please sign in again before deleting your account.'
+                              : 'Unable to delete account. Please try again.';
+                          showSnackbar(context, message);
+                        } catch (e) {
+                          debugPrint('Delete account failed: $e');
+                          if (!mounted) {
+                            return;
+                          }
+                          showSnackbar(
+                            context,
+                            'Unable to delete account. Please try again.',
+                          );
+                        }
+                      },
                     ),
                   ),
 

@@ -947,6 +947,10 @@ Future maybeCreateUser(User user) async {
   currentUserDocument = UsersRecord.getDocumentFromData(userData, userRecord);
 }
 
+Future ensureUserDocReady(User user) async {
+  await maybeCreateUser(user);
+}
+
 Future updateUserDocument({String? email}) async {
   await currentUserDocument?.reference
       .update(createUsersRecordData(email: email));

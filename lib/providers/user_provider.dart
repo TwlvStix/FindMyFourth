@@ -127,16 +127,12 @@ class UserProvider extends ChangeNotifier {
     return _myGamesManager.performRequest(
       uniqueQueryKey: 'my_games_${userId}',
       overrideCache: overrideCache,
-      requestFn: () => FirebaseFirestore.instance
-          .collection('games')
-          .where('joined_players', arrayContains: userRef)
-          .where('isCancelled', isEqualTo: false)
-          .orderBy('date')
-          .snapshots()
-          .map(
-            (snapshot) =>
-                snapshot.docs.map(Game.fromDoc).toList(),
-          ),
+      requestFn: () => queryGamesRecord(
+        queryBuilder: (gamesRecord) => gamesRecord
+            .where('joined_players', arrayContains: userRef)
+            .where('isCancelled', isEqualTo: false)
+            .orderBy('date'),
+      ).map((records) => records.map(Game.fromRecord).toList()),
     );
   }
 
@@ -158,16 +154,16 @@ class UserProvider extends ChangeNotifier {
       uniqueQueryKey: queryKey,
       overrideCache: overrideCache,
       requestFn: () {
-        var query = FirebaseFirestore.instance
-            .collection('games')
-            .where('isCancelled', isEqualTo: false);
+        Query query = GamesRecord.collection.where(
+          'isCancelled',
+          isEqualTo: false,
+        );
         if (fromDate != null) {
           query = query.where('date', isGreaterThanOrEqualTo: fromDate);
         }
-        return query.orderBy('date').snapshots().map(
-              (snapshot) =>
-                  snapshot.docs.map(Game.fromDoc).toList(),
-            );
+        return queryGamesRecord(
+          queryBuilder: (_) => query.orderBy('date'),
+        ).map((records) => records.map(Game.fromRecord).toList());
       },
     );
   }
@@ -339,8 +335,17 @@ class UserProvider extends ChangeNotifier {
   /// Send friend request
   Future<void> sendFriendRequest(DocumentReference targetUserRef) async {
     if (!isLoggedIn) return;
+    if (currentUserReference == null) return;
+    if (targetUserRef.path == currentUserReference!.path) return;
+    if (friends.contains(targetUserRef)) return;
+    if (friendRequests.contains(targetUserRef)) return;
 
     try {
+      final targetUser = await UsersRecord.getDocumentOnce(targetUserRef);
+      if (targetUser.friends.contains(currentUserReference) ||
+          targetUser.friendRequests.contains(currentUserReference)) {
+        return;
+      }
       await targetUserRef.update({
         'friend_requests': FieldValue.arrayUnion([currentUserReference]),
       });
@@ -355,13 +360,12 @@ class UserProvider extends ChangeNotifier {
     if (!isLoggedIn) return;
 
     try {
-      // Add to friends list
       await currentUserReference!.update({
-        'friends': FieldValue.arrayUnion([requesterRef]),
         'friend_requests': FieldValue.arrayRemove([requesterRef]),
       });
-
-      // Add current user to requester's friends
+      await currentUserReference!.update({
+        'friends': FieldValue.arrayUnion([requesterRef]),
+      });
       await requesterRef.update({
         'friends': FieldValue.arrayUnion([currentUserReference]),
       });

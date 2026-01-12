@@ -48,8 +48,8 @@ class ChatMessagesRecord extends FirestoreRecord {
     _createdAt = snapshotData['createdAt'] as DateTime?;
   }
 
-  static CollectionReference get collection =>
-      FirebaseFirestore.instance.collection('chat_messages');
+  static Query get collection =>
+      FirebaseFirestore.instance.collectionGroup('messages');
 
   static Stream<ChatMessagesRecord> getDocument(DocumentReference ref) =>
       ref.snapshots().map((s) => ChatMessagesRecord.fromSnapshot(s));

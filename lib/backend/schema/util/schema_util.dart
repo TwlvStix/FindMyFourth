@@ -36,5 +36,10 @@ Color? getSchemaColor(dynamic value) => value is String
 List<Color>? getColorsList(dynamic value) =>
     value is! List ? null : value.map(getSchemaColor).withoutNulls;
 
-List<T>? getDataList<T>(dynamic value) =>
-    value is! List ? null : value.map((e) => castToType<T>(e)!).toList();
+List<T>? getDataList<T>(dynamic value) => value is! List
+    ? null
+    : value
+        .map((e) => castToType<T>(e))
+        .where((e) => e != null)
+        .map((e) => e!)
+        .toList();

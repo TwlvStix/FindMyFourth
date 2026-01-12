@@ -8,6 +8,7 @@ import '/core/form_field_controller.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/models/game.dart';
+import '/services/firestore_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:collection/collection.dart';
@@ -35,6 +36,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   FormFieldController<List<String>>? choiceChipsValueController;
   final Map<DocumentReference, CancelledGameHandling>
       _cancelledGameHandlingByGame = {};
+  late final Stream<List<Game>> _gamesStream;
   static const Map<CancelledGameHandling, String>
       _cancelledHandlingStorageMap = {
     CancelledGameHandling.removeNow: 'removeNow',
@@ -51,6 +53,15 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   @override
   void initState() {
     super.initState();
+    _gamesStream = const FirestoreRepository()
+        .queryCollectionPage<Game>(
+          FirebaseFirestore.instance.collection('games').orderBy('date'),
+          (doc) => Game.fromDoc(doc),
+          pageSize: 100,
+          isStream: true,
+        )
+        .asStream()
+        .asyncExpand((page) => page.dataStream ?? Stream.value(page.data));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -254,11 +265,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
             top: true,
             child: Padding(
               padding: AppSpacing.screen,
-              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: FirebaseFirestore.instance
-                    .collection('games')
-                    .orderBy('date')
-                    .snapshots(),
+              child: StreamBuilder<List<Game>>(
+                stream: _gamesStream,
                 builder: (context, snapshot) {
                   debugPrint('📋 GAME LIST: StreamBuilder triggered');
 
@@ -302,12 +310,11 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                     );
                   }
 
-                  debugPrint('✅ GAME LIST: Received ${snapshot.data!.docs.length} documents from Firestore');
+                  debugPrint('✅ GAME LIST: Received ${snapshot.data!.length} documents from Firestore');
 
-                  final allGames = snapshot.data!.docs
-                      .map((doc) {
-                        final game = Game.fromDoc(doc);
-                        debugPrint('  - Game: ${game.nameGame} (ID: ${doc.id}, isCancelled: ${game.isCancelled})');
+                  final allGames = snapshot.data!
+                      .map((game) {
+                        debugPrint('  - Game: ${game.nameGame} (ID: ${game.reference.id}, isCancelled: ${game.isCancelled})');
                         return game;
                       })
                       .toList();

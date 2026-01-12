@@ -310,7 +310,7 @@ class _ProgressiveOnboardingWidgetState
       return false;
     }
     try {
-      await maybeCreateUser(user);
+      await ensureUserDocReady(user);
       return true;
     } catch (error, stackTrace) {
       debugPrint('❌ PROGRESSIVE ONBOARDING: unable to ensure user doc exists: $error');

@@ -10,6 +10,8 @@ import '/friends/tab_friends/tab_friends_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '/providers/user_provider.dart';
 
 class BecomeFriendsWidget extends StatefulWidget {
   const BecomeFriendsWidget({
@@ -179,14 +181,13 @@ class _BecomeFriendsWidgetState extends State<BecomeFriendsWidget> {
                               size: AppButtonSize.large,
                               fullWidth: true,
                               onPressed: () async {
-                                await FriendRequestRecord.collection
-                                    .doc()
-                                    .set(createFriendRequestRecordData(
-                                      requesterId: currentUserReference,
-                                      receiverId:
-                                          containerUsersRecord?.reference,
-                                      requestStatus: 'pending',
-                                    ));
+                                if (containerUsersRecord != null) {
+                                  await context
+                                      .read<UserProvider>()
+                                      .sendFriendRequest(
+                                        containerUsersRecord.reference,
+                                      );
+                                }
 
                                 context.pushNamed(
                                   TabFriendsWidget.routeName,

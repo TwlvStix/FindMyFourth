@@ -197,6 +197,99 @@ exports.fetchReceiptants = functions
     return { user_refs: Array.from(users) };
   });
 
+exports.deleteAccount = functions
+  .region("us-west2")
+  .https.onCall(async (data, context) => {
+    const version = "deleteAccount-v2";
+    let uid = context.auth?.uid;
+    if (!uid) {
+      const idToken = data?.idToken;
+      if (typeof idToken === "string" && idToken.length > 0) {
+        try {
+          const decoded = await admin.auth().verifyIdToken(idToken);
+          uid = decoded.uid;
+          console.log("deleteAccount verified idToken", { uid, version });
+        } catch (error) {
+          console.error("deleteAccount idToken verify failed", error);
+        }
+      }
+    }
+    if (!uid) {
+      console.error("deleteAccount unauthenticated", {
+        hasAuth: !!context.auth,
+        idTokenLength:
+          typeof data?.idToken === "string" ? data.idToken.length : 0,
+        dataKeys: data ? Object.keys(data) : [],
+        version,
+      });
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Authentication required.",
+        {
+          hasAuth: !!context.auth,
+          idTokenLength:
+            typeof data?.idToken === "string" ? data.idToken.length : 0,
+          version,
+        },
+      );
+    }
+    const userRef = firestore.doc(`users/${uid}`);
+
+    try {
+      console.log("deleteAccount start", { uid, version });
+      const userDoc = await userRef.get();
+      const displayName = userDoc.exists
+        ? userDoc.data()?.display_name || ""
+        : "";
+      console.log("deleteAccount userDoc", {
+        exists: userDoc.exists,
+        displayName,
+      });
+
+      const tokensSnap = await userRef.collection(kFcmTokensCollection).get();
+      console.log("deleteAccount tokenCount", { count: tokensSnap.size });
+      if (!tokensSnap.empty) {
+        const batch = firestore.batch();
+        tokensSnap.docs.forEach((doc) => batch.delete(doc.ref));
+        await batch.commit();
+      }
+      console.log("deleteAccount tokensDeleted");
+
+      await removeUserFromArrays(userRef);
+      console.log("deleteAccount removedFromArrays");
+
+      if (displayName) {
+        const usernameRef = firestore.doc(`usernames/${displayName}`);
+        const usernameDoc = await usernameRef.get();
+        console.log("deleteAccount usernameDoc", {
+          exists: usernameDoc.exists,
+          uid: usernameDoc.exists ? usernameDoc.data()?.uid?.path : null,
+        });
+        if (
+          usernameDoc.exists &&
+          usernameDoc.data()?.uid?.path === userRef.path
+        ) {
+          await usernameRef.delete();
+        }
+      }
+      console.log("deleteAccount usernameDeleted");
+
+      await userRef.delete();
+      console.log("deleteAccount userDocDeleted");
+      await admin.auth().deleteUser(uid);
+      console.log("deleteAccount authDeleted");
+
+      return { ok: true, version };
+    } catch (error) {
+      console.error("deleteAccount failed", error);
+      throw new functions.https.HttpsError(
+        "internal",
+        "Failed to delete account.",
+        { message: error?.message ?? String(error) },
+      );
+    }
+  });
+
 exports.completeOnboarding = functions
   .region("us-west2")
   .https.onCall(async (data, context) => {
@@ -377,6 +470,40 @@ function getUserFcmTokensCollection(userDocPath) {
   return firestore.doc(userDocPath).collection(kFcmTokensCollection);
 }
 
+async function removeUserFromArrays(userRef) {
+  const batchUpdates = async (query) => {
+    const snap = await query.get();
+    if (snap.empty) return;
+    let batch = firestore.batch();
+    let opCount = 0;
+
+    for (const doc of snap.docs) {
+      batch.update(doc.ref, {
+        friends: admin.firestore.FieldValue.arrayRemove([userRef]),
+        friend_requests: admin.firestore.FieldValue.arrayRemove([userRef]),
+      });
+      opCount++;
+      if (opCount >= 450) {
+        await batch.commit();
+        batch = firestore.batch();
+        opCount = 0;
+      }
+    }
+    if (opCount > 0) {
+      await batch.commit();
+    }
+  };
+
+  await batchUpdates(
+    firestore.collection("users").where("friends", "array-contains", userRef),
+  );
+  await batchUpdates(
+    firestore
+      .collection("users")
+      .where("friend_requests", "array-contains", userRef),
+  );
+}
+
 function getDocIdBound(index, numBatches) {
   if (index <= 0) {
     return "users/(";
@@ -410,8 +537,16 @@ exports.onUserDeleted = functions
   .onDelete(async (user) => {
     let firestore = admin.firestore();
     let userRef = firestore.doc("users/" + user.uid);
+    console.log("onUserDeleted start", { uid: user.uid });
     const userDoc = await userRef.get();
     const displayName = userDoc.exists ? userDoc.data()?.display_name || null : null;
+    const tokensSnap = await userRef.collection(kFcmTokensCollection).get();
+    if (!tokensSnap.empty) {
+      const batch = firestore.batch();
+      tokensSnap.docs.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+    }
+    await removeUserFromArrays(userRef);
     if (displayName) {
       const usernameRef = firestore.doc("usernames/" + displayName);
       const usernameDoc = await usernameRef.get();
@@ -423,6 +558,7 @@ exports.onUserDeleted = functions
       }
     }
     await firestore.collection("users").doc(user.uid).delete();
+    console.log("onUserDeleted userDocDeleted", { uid: user.uid });
     await firestore
       .collection("chat_messages")
       .where("user", "==", userRef)

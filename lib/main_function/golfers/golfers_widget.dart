@@ -19,6 +19,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
+import '/providers/user_provider.dart';
 class GolfersWidget extends StatefulWidget {
   const GolfersWidget({super.key});
 
@@ -851,12 +852,9 @@ class _GolfersWidgetState extends State<GolfersWidget>
                     else
                       ElevatedButton.icon(
                         onPressed: () async {
-                          await user.reference.update({
-                            ...mapToFirestore({
-                              'friend_requests':
-                                  FieldValue.arrayUnion([currentUserReference]),
-                            }),
-                          });
+                          await context
+                              .read<UserProvider>()
+                              .sendFriendRequest(user.reference);
                           if (mounted) setState(() {});
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -1019,19 +1017,9 @@ class _GolfersWidgetState extends State<GolfersWidget>
                     size: 18.0,
                   ),
                   onPressed: () async {
-                    await currentUserReference!.update({
-                      ...mapToFirestore({
-                        'friends': FieldValue.arrayUnion([user.reference]),
-                        'friend_requests':
-                            FieldValue.arrayRemove([user.reference]),
-                      }),
-                    });
-
-                    await user.reference.update({
-                      ...mapToFirestore({
-                        'friends': FieldValue.arrayUnion([currentUserReference]),
-                      }),
-                    });
+                    await context
+                        .read<UserProvider>()
+                        .acceptFriendRequest(user.reference);
                     if (mounted) setState(() {});
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -1058,12 +1046,9 @@ class _GolfersWidgetState extends State<GolfersWidget>
                     size: 18.0,
                   ),
                   onPressed: () async {
-                    await currentUserReference!.update({
-                      ...mapToFirestore({
-                        'friend_requests':
-                            FieldValue.arrayRemove([user.reference]),
-                      }),
-                    });
+                    await context
+                        .read<UserProvider>()
+                        .rejectFriendRequest(user.reference);
                     if (mounted) setState(() {});
                   },
                 ),
@@ -1208,24 +1193,9 @@ class _GolfersWidgetState extends State<GolfersWidget>
                       if (!confirm) {
                         return;
                       }
-                      await currentUserReference!.update({
-                        ...mapToFirestore(
-                          {
-                            'friends': FieldValue.arrayRemove(
-                                [user.reference]),
-                          },
-                        ),
-                      });
-                      try {
-                        await user.reference.update({
-                          ...mapToFirestore(
-                            {
-                              'friends': FieldValue.arrayRemove(
-                                  [currentUserReference]),
-                            },
-                          ),
-                        });
-                      } catch (_) {}
+                      await context
+                          .read<UserProvider>()
+                          .removeFriend(user.reference);
                       if (!mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

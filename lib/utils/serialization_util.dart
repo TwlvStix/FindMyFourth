@@ -36,7 +36,12 @@ String _serializeDocumentReference(DocumentReference ref) {
   while (currentRef != null) {
     docIds.add(currentRef.id);
     // Get the parent document (catching any errors that arise).
-    currentRef = safeGet<DocumentReference?>(() => currentRef?.parent.parent);
+    currentRef = safeGet<DocumentReference?>(
+      () => currentRef?.parent.parent,
+      (e) => print(
+        'Error serializing doc reference ${currentRef?.path ?? 'unknown'}:\n$e',
+      ),
+    );
   }
   // Reverse the list to get the correct ordering.
   return docIds.reversed.join(_kDocIdDelimeter);
