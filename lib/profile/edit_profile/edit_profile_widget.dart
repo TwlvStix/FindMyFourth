@@ -50,15 +50,13 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
   TextEditingController? phoneNumTextController;
   FocusNode? emailFocusNode;
   TextEditingController? emailTextController;
+  FocusNode? golfCanadaFocusNode;
+  TextEditingController? golfCanadaTextController;
 
   // Form Values
   String? coursesValue;
   FormFieldController<String>? coursesValueController;
   int? handicapValue;
-  int? drinksValue;
-  int? musicValue;
-  int? playmoneyValue;
-  int? paceplayValue;
   UsersRecord? displaynameQuery;
 
   // Animation
@@ -97,6 +95,11 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     );
     emailFocusNode = FocusNode();
 
+    golfCanadaTextController = TextEditingController(
+      text: valueOrDefault(currentUserDocument?.golfCanadaNumber, ''),
+    );
+    golfCanadaFocusNode = FocusNode();
+
     // Setup staggered fade-in animations
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -104,7 +107,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     );
 
     _fadeAnimations = List.generate(
-      4,
+      3,
       (index) => Tween<double>(begin: 0.0, end: 1.0).animate(
         CurvedAnimation(
           parent: _fadeController,
@@ -136,6 +139,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     phoneNumTextController?.dispose();
     emailFocusNode?.dispose();
     emailTextController?.dispose();
+    golfCanadaFocusNode?.dispose();
+    golfCanadaTextController?.dispose();
     super.dispose();
   }
 
@@ -174,13 +179,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             photoUrl: currentUserPhoto,
             phoneNumber: phoneNumTextController!.text,
             handicap: handicapValue,
+          golfCanadaNumber: () {
+            final golfCanadaRaw =
+                golfCanadaTextController?.text.trim() ?? '';
+            return golfCanadaRaw.isEmpty ? null : golfCanadaRaw;
+          }(),
             firstName: firstNameTextController!.text,
             lastName: lastNameTextController!.text,
-            drinks: drinksValue,
-            music: musicValue,
             homeCourse: coursesValue,
-            paceOfPlay: paceplayValue,
-            playForMoney: playmoneyValue,
           ),
         );
       });
@@ -504,225 +510,30 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
 
                   SizedBox(height: AppSpacing.md),
 
-                  // Golf Preferences Card
+                  // Golf Profile Card
                   FadeTransition(
                     opacity: _fadeAnimations[1],
                     child: ProfileCardSection(
-                      title: 'Golf Preferences',
-                      child: AuthUserStreamWidget(
-                        builder: (context) => Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            // Handicap
-                            Expanded(
-                              child: ProfilePreferenceItem(
-                                icon: FontAwesomeIcons.flagCheckered,
-                                label: 'Handicap',
-                                iconColor: AppColors.fairway,
-                                valueWidget: AppCountController(
-                                  decrementIconBuilder: (enabled) => Icon(
-                                    Icons.remove_rounded,
-                                    color: enabled
-                                        ? AppColors.fairway
-                                        : AppColors.cloud,
-                                    size: 20,
-                                  ),
-                                  incrementIconBuilder: (enabled) => Icon(
-                                    Icons.add_rounded,
-                                    color: enabled
-                                        ? AppColors.fairway
-                                        : AppColors.cloud,
-                                    size: 20,
-                                  ),
-                                  countBuilder: (count) => Text(
-                                    count.toString(),
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.onyx,
-                                    ),
-                                  ),
-                                  count: handicapValue ??
-                                      valueOrDefault(
-                                        currentUserDocument?.handicap,
-                                        0,
-                                      ),
-                                  updateCount: (count) =>
-                                      setState(() => handicapValue = count),
-                                  stepSize: 1,
-                                  minimum: 0,
-                                  maximum: 54,
-                                ),
-                              ),
-                            ),
-
-                            // Play for Money
-                            Expanded(
-                              child: ProfilePreferenceItem(
-                                icon: FontAwesomeIcons.dollarSign,
-                                label: 'Play \$',
-                                iconColor: AppColors.sunsetGold,
-                                valueWidget: AppCountController(
-                                  decrementIconBuilder: (enabled) => Icon(
-                                    Icons.remove_rounded,
-                                    color: enabled
-                                        ? AppColors.sunsetGold
-                                        : AppColors.cloud,
-                                    size: 20,
-                                  ),
-                                  incrementIconBuilder: (enabled) => Icon(
-                                    Icons.add_rounded,
-                                    color: enabled
-                                        ? AppColors.sunsetGold
-                                        : AppColors.cloud,
-                                    size: 20,
-                                  ),
-                                  countBuilder: (count) => Text(
-                                    count.toString(),
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.onyx,
-                                    ),
-                                  ),
-                                  count: playmoneyValue ??
-                                      valueOrDefault(
-                                        currentUserDocument?.playForMoney,
-                                        0,
-                                      ),
-                                  updateCount: (count) =>
-                                      setState(() => playmoneyValue = count),
-                                  stepSize: 1,
-                                  minimum: 0,
-                                  maximum: 5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: AppSpacing.md),
-
-                  // Social Preferences Card
-                  FadeTransition(
-                    opacity: _fadeAnimations[2],
-                    child: ProfileCardSection(
-                      title: 'Social Preferences',
+                      title: 'Golf Profile',
                       child: AuthUserStreamWidget(
                         builder: (context) => Column(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                // Music
-                                Expanded(
-                                  child: ProfilePreferenceItem(
-                                    icon: FontAwesomeIcons.music,
-                                    label: 'Music',
-                                    iconColor: AppColors.info,
-                                    valueWidget: AppCountController(
-                                      decrementIconBuilder: (enabled) => Icon(
-                                        Icons.remove_rounded,
-                                        color: enabled
-                                            ? AppColors.info
-                                            : AppColors.cloud,
-                                        size: 20,
-                                      ),
-                                      incrementIconBuilder: (enabled) => Icon(
-                                        Icons.add_rounded,
-                                        color: enabled
-                                            ? AppColors.info
-                                            : AppColors.cloud,
-                                        size: 20,
-                                      ),
-                                      countBuilder: (count) => Text(
-                                        count.toString(),
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.onyx,
-                                        ),
-                                      ),
-                                      count: musicValue ??
-                                          valueOrDefault(
-                                            currentUserDocument?.music,
-                                            0,
-                                          ),
-                                      updateCount: (count) =>
-                                          setState(() => musicValue = count),
-                                      stepSize: 1,
-                                      minimum: 0,
-                                      maximum: 5,
-                                    ),
-                                  ),
-                                ),
-
-                                // Drinks
-                                Expanded(
-                                  child: ProfilePreferenceItem(
-                                    icon: FontAwesomeIcons.champagneGlasses,
-                                    label: 'Drinks',
-                                    iconColor: AppColors.sunsetPeach,
-                                    valueWidget: AppCountController(
-                                      decrementIconBuilder: (enabled) => Icon(
-                                        Icons.remove_rounded,
-                                        color: enabled
-                                            ? AppColors.sunsetPeach
-                                            : AppColors.cloud,
-                                        size: 20,
-                                      ),
-                                      incrementIconBuilder: (enabled) => Icon(
-                                        Icons.add_rounded,
-                                        color: enabled
-                                            ? AppColors.sunsetPeach
-                                            : AppColors.cloud,
-                                        size: 20,
-                                      ),
-                                      countBuilder: (count) => Text(
-                                        count.toString(),
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.onyx,
-                                        ),
-                                      ),
-                                      count: drinksValue ??
-                                          valueOrDefault(
-                                            currentUserDocument?.drinks,
-                                            0,
-                                          ),
-                                      updateCount: (count) =>
-                                          setState(() => drinksValue = count),
-                                      stepSize: 1,
-                                      minimum: 0,
-                                      maximum: 5,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: AppSpacing.lg),
-
-                            // Pace of Play (full width)
                             ProfilePreferenceItem(
-                              icon: FontAwesomeIcons.gauge,
-                              label: 'Pace of Play',
-                              iconColor: AppColors.success,
+                              icon: FontAwesomeIcons.flagCheckered,
+                              label: 'Handicap',
+                              iconColor: AppColors.fairway,
                               valueWidget: AppCountController(
                                 decrementIconBuilder: (enabled) => Icon(
                                   Icons.remove_rounded,
                                   color: enabled
-                                      ? AppColors.success
+                                      ? AppColors.fairway
                                       : AppColors.cloud,
                                   size: 20,
                                 ),
                                 incrementIconBuilder: (enabled) => Icon(
                                   Icons.add_rounded,
                                   color: enabled
-                                      ? AppColors.success
+                                      ? AppColors.fairway
                                       : AppColors.cloud,
                                   size: 20,
                                 ),
@@ -734,17 +545,23 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                                     color: AppColors.onyx,
                                   ),
                                 ),
-                                count: paceplayValue ??
+                                count: handicapValue ??
                                     valueOrDefault(
-                                      currentUserDocument?.paceOfPlay,
+                                      currentUserDocument?.handicap,
                                       0,
                                     ),
                                 updateCount: (count) =>
-                                    setState(() => paceplayValue = count),
+                                    setState(() => handicapValue = count),
                                 stepSize: 1,
                                 minimum: 0,
-                                maximum: 5,
+                                maximum: 54,
                               ),
+                            ),
+                            SizedBox(height: AppSpacing.lg),
+                            _buildTextField(
+                              controller: golfCanadaTextController!,
+                              focusNode: golfCanadaFocusNode!,
+                              label: 'Golf Canada #',
                             ),
                           ],
                         ),
@@ -756,7 +573,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
 
                   // Save Button
                   FadeTransition(
-                    opacity: _fadeAnimations[3],
+                    opacity: _fadeAnimations[2],
                     child: Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: AppSpacing.md,

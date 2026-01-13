@@ -12,6 +12,7 @@ import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/form_field_controller.dart';
 import '/profile/main_profile/main_profile_widget.dart';
+import '/user_onboarding/vibe_onboarding_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
@@ -286,7 +287,12 @@ class _ProgressiveOnboardingWidgetState
           );
           return;
         }
-        context.goNamed(MainProfileWidget.routeName);
+        context.goNamed(
+          VibeOnboardingWidget.routeName,
+          queryParameters: {
+            'next': MainProfileWidget.routeName,
+          },
+        );
       }
     } catch (e) {
       if (mounted) {

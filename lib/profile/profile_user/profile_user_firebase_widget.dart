@@ -6,11 +6,17 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/core/app_theme.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/navigation/app_router.dart';
+import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/fairway_background.dart';
+import '/models/vibe_profile.dart';
 import '/providers/chat_provider.dart';
+import '/services/vibe_matcher.dart';
+import '/services/vibe_repository.dart';
 
 class ProfileUserFirebaseWidget extends StatefulWidget {
   const ProfileUserFirebaseWidget({
@@ -28,6 +34,13 @@ class ProfileUserFirebaseWidget extends StatefulWidget {
 class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget> {
   final formKey = GlobalKey<FormState>();
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  final VibeRepository _vibeRepository = VibeRepository();
+
+  VibeMatchResult? _vibeMatchResult;
+  VibeProfile? _myVibes;
+  VibeProfile? _theirVibes;
+  bool _isVibeMatchLoading = false;
+  String? _vibeMatchUserId;
 
   DocumentReference? _currentUserRef() {
     final user = FirebaseAuth.instance.currentUser;
@@ -73,6 +86,337 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget> {
     );
   }
 
+  void _ensureVibeMatch(DocumentSnapshot snapshot) {
+    if (_isVibeMatchLoading) {
+      return;
+    }
+    if (_vibeMatchResult != null && _vibeMatchUserId == snapshot.id) {
+      return;
+    }
+    _vibeMatchUserId = snapshot.id;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _loadVibeMatch(snapshot);
+    });
+  }
+
+  Future<void> _loadVibeMatch(DocumentSnapshot snapshot) async {
+    setState(() {
+      _isVibeMatchLoading = true;
+      _vibeMatchResult = null;
+    });
+    try {
+      final myVibes = await _vibeRepository.getMyVibesCached();
+      final theirVibes = _vibeRepository.profileFromSnapshot(snapshot);
+      final result = VibeMatcher.score(myVibes, theirVibes);
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _myVibes = myVibes;
+        _theirVibes = theirVibes;
+        _vibeMatchResult = result;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _vibeMatchResult = null;
+      });
+    } finally {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isVibeMatchLoading = false;
+      });
+    }
+  }
+
+  void _openVibeMatchSheet() {
+    final result = _vibeMatchResult;
+    final myVibes = _myVibes;
+    final theirVibes = _theirVibes;
+    if (result == null || myVibes == null || theirVibes == null) {
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: true,
+      enableDrag: true,
+      useRootNavigator: true,
+      builder: (context) {
+        final displayScore =
+            (result.cappedScore ?? result.totalScore).round();
+        final isCapped = result.cappedScore != null;
+        final sheetNavigator = Navigator.of(context, rootNavigator: true);
+        void closeSheet() => sheetNavigator.maybePop();
+        return SafeArea(
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.pure,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
+            ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.xxl,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Vibe Match',
+                            style: AppTypography.titleMedium.copyWith(
+                              color: AppColors.onyx,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: closeSheet,
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppSpacing.xs),
+                            child: Icon(
+                              Icons.close_rounded,
+                              color: AppColors.stone,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Center(
+                    child: Container(
+                      width: 48,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.cloud,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    '$displayScore%',
+                    style: AppTypography.displayMedium.copyWith(
+                      color: AppColors.fairwayDark,
+                    ),
+                  ),
+                  if (isCapped || !result.isRecommended) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Not recommended',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.error,
+                        fontWeight: AppTypography.semiBold,
+                      ),
+                    ),
+                  ],
+                  if (result.confidence == VibeConfidence.low) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Vibe score: $displayScore% (low confidence)',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.stone,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: AppSpacing.lg),
+                  if (result.conflicts.isNotEmpty) ...[
+                    Text(
+                      'Potential conflicts',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: AppColors.onyx,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    ...result.conflicts.map(
+                      (conflict) => Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                        child: Text(
+                          _conflictSummary(conflict),
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.stone,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
+                  Text(
+                    'Top differences',
+                    style: AppTypography.titleSmall.copyWith(
+                      color: AppColors.onyx,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Wrap(
+                    spacing: AppSpacing.xs,
+                    runSpacing: AppSpacing.xs,
+                    children: result.topDifferences.map((difference) {
+                      return Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.sand,
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: AppColors.cloud,
+                          ),
+                        ),
+                        child: Text(
+                          '${VibeLabels.titleFor(difference.category)} • gap ${difference.distance}',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: AppColors.slate,
+                            letterSpacing: AppTypography.letterSpacingNormal,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'You vs Them',
+                    style: AppTypography.titleSmall.copyWith(
+                      color: AppColors.onyx,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  ...VibeCategory.values.map((category) {
+                    return _buildVibeComparisonRow(
+                      category,
+                      myVibes.preferenceFor(category),
+                      theirVibes.preferenceFor(category),
+                    );
+                  }),
+                  const SizedBox(height: AppSpacing.lg),
+                  AppButtonEnhanced(
+                    text: 'Close',
+                    variant: AppButtonVariant.secondary,
+                    size: AppButtonSize.medium,
+                    fullWidth: true,
+                    onPressed: closeSheet,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildVibeComparisonRow(
+    VibeCategory category,
+    VibePreference mine,
+    VibePreference theirs,
+  ) {
+    final myLabel =
+        VibeLabels.labelFor(category, mine.value) ?? mine.value.toString();
+    final theirLabel =
+        VibeLabels.labelFor(category, theirs.value) ?? theirs.value.toString();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            VibeLabels.titleFor(category),
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.onyx,
+              fontWeight: AppTypography.semiBold,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Row(
+            children: [
+              Expanded(
+                child: _buildVibeValueChip('You', mine.value, myLabel),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _buildVibeValueChip('Them', theirs.value, theirLabel),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVibeValueChip(String label, int value, String meaning) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.sand,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.cloud),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: AppTypography.labelSmall.copyWith(
+              color: AppColors.stone,
+              letterSpacing: AppTypography.letterSpacingNormal,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xxs),
+          Text(
+            '$value • $meaning',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.slate,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _conflictSummary(VibeConflict conflict) {
+    final title = VibeLabels.titleFor(conflict.category);
+    final owner = _dealbreakerOwnerLabel(conflict.whoHasDealbreaker);
+    return '$title: you ${conflict.myValue} vs them ${conflict.theirValue} '
+        '($owner, threshold ${conflict.threshold})';
+  }
+
+  String _dealbreakerOwnerLabel(VibeDealbreakerOwner owner) {
+    switch (owner) {
+      case VibeDealbreakerOwner.me:
+        return 'your dealbreaker';
+      case VibeDealbreakerOwner.them:
+        return 'their dealbreaker';
+      case VibeDealbreakerOwner.both:
+        return 'both dealbreakers';
+    }
+  }
+
   String _stringValue(
     Map<String, dynamic> data,
     String key,
@@ -100,6 +444,79 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget> {
     return fallback;
   }
 
+  Widget _buildVibeMatchRow() {
+    final result = _vibeMatchResult;
+    final displayScore = result == null
+        ? '--'
+        : '${(result.cappedScore ?? result.totalScore).round()}%';
+    final label = 'Vibe Match $displayScore';
+    final canOpenSheet = result != null;
+
+    return Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(
+        0.0,
+        0.0,
+        0.0,
+        AppSpacing.md,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xs,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.fairway.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: AppColors.fairway.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  label,
+                  style: AppTypography.labelMedium.copyWith(
+                    color: AppColors.fairwayDark,
+                    letterSpacing: AppTypography.letterSpacingNormal,
+                  ),
+                ),
+                if (_isVibeMatchLoading) ...[
+                  const SizedBox(width: AppSpacing.xs),
+                  SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(
+                        AppColors.fairway,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          InkWell(
+            onTap: canOpenSheet ? _openVibeMatchSheet : null,
+            child: Text(
+              'Why?',
+              style: AppTypography.bodySmall.copyWith(
+                color: canOpenSheet
+                    ? AppColors.fairwayDark
+                    : AppColors.stone,
+                fontWeight: AppTypography.semiBold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -123,6 +540,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget> {
           final data =
               (snapshot.data!.data() as Map<String, dynamic>?) ??
                   <String, dynamic>{};
+          _ensureVibeMatch(snapshot.data!);
           final photoUrl = _stringValue(
             data,
             'photo_url',
@@ -135,10 +553,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget> {
           final email = _stringValue(data, 'email', '@gmail.com');
           final homeCourse = _stringValue(data, 'home_course', 'TWLV');
           final handicap = _numValue(data, 'handicap', '6');
-          final drinks = _numValue(data, 'drinks', '0');
-          final music = _numValue(data, 'music', '5');
-          final playForMoney = _numValue(data, 'play_for_money', '5');
-          final paceOfPlay = _numValue(data, 'pace_of_play', '5');
+          final golfCanadaNumber =
+              _stringValue(data, 'golf_canada_number', '-');
 
           return Scaffold(
             key: scaffoldKey,
@@ -369,6 +785,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget> {
                             ],
                           ),
                         ),
+                        _buildVibeMatchRow(),
                         Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
                             0.0,
@@ -759,7 +1176,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget> {
                                                   AppSpacing.xs,
                                                 ),
                                                 child: Icon(
-                                                  Icons.local_drink,
+                                                  Icons.verified_rounded,
                                                   color:
                                                       AppTheme.of(context)
                                                           .secondaryText,
@@ -777,7 +1194,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget> {
                                                     0.0,
                                                   ),
                                                   child: Text(
-                                                    'Drinks',
+                                                    'Golf Canada #',
                                                     textAlign:
                                                         TextAlign.start,
                                                     style: AppTheme.of(
@@ -823,379 +1240,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget> {
                                                       0.0,
                                                     ),
                                                     child: Text(
-                                                      drinks,
-                                                      textAlign:
-                                                          TextAlign.start,
-                                                      style: AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font:
-                                                                GoogleFonts
-                                                                    .outfit(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                            fontSize: 18.0,
-                                                            letterSpacing:
-                                                                0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                            0.0,
-                                            0.0,
-                                            0.0,
-                                            AppSpacing.xs,
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    EdgeInsetsDirectional
-                                                        .fromSTEB(
-                                                  0.0,
-                                                  AppSpacing.xs,
-                                                  AppSpacing.md,
-                                                  AppSpacing.xs,
-                                                ),
-                                                child: FaIcon(
-                                                  FontAwesomeIcons.music,
-                                                  color:
-                                                      AppTheme.of(context)
-                                                          .secondaryText,
-                                                  size: AppSpacing.xl,
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Padding(
-                                                  padding:
-                                                      EdgeInsetsDirectional
-                                                          .fromSTEB(
-                                                    0.0,
-                                                    0.0,
-                                                    AppSpacing.sm,
-                                                    0.0,
-                                                  ),
-                                                  child: Text(
-                                                    'Music',
-                                                    textAlign:
-                                                        TextAlign.start,
-                                                    style: AppTheme.of(
-                                                            context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          font:
-                                                              GoogleFonts
-                                                                  .outfit(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w500,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Align(
-                                                  alignment:
-                                                      const AlignmentDirectional(
-                                                          0.0, 0.0),
-                                                  child: Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                      0.0,
-                                                      0.0,
-                                                      AppSpacing.sm,
-                                                      0.0,
-                                                    ),
-                                                    child: Text(
-                                                      music,
-                                                      textAlign:
-                                                          TextAlign.start,
-                                                      style: AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font:
-                                                                GoogleFonts
-                                                                    .outfit(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                            fontSize: 18.0,
-                                                            letterSpacing:
-                                                                0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                            0.0,
-                                            0.0,
-                                            0.0,
-                                            AppSpacing.xs,
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    EdgeInsetsDirectional
-                                                        .fromSTEB(
-                                                  0.0,
-                                                  AppSpacing.xs,
-                                                  AppSpacing.md,
-                                                  AppSpacing.xs,
-                                                ),
-                                                child: FaIcon(
-                                                  FontAwesomeIcons.moneyBillAlt,
-                                                  color:
-                                                      AppTheme.of(context)
-                                                          .secondaryText,
-                                                  size: AppSpacing.xl,
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Padding(
-                                                  padding:
-                                                      EdgeInsetsDirectional
-                                                          .fromSTEB(
-                                                    0.0,
-                                                    0.0,
-                                                    AppSpacing.sm,
-                                                    0.0,
-                                                  ),
-                                                  child: Text(
-                                                    'Play for Money',
-                                                    textAlign:
-                                                        TextAlign.start,
-                                                    style: AppTheme.of(
-                                                            context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          font:
-                                                              GoogleFonts
-                                                                  .outfit(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w500,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Align(
-                                                  alignment:
-                                                      const AlignmentDirectional(
-                                                          0.0, 0.0),
-                                                  child: Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                      0.0,
-                                                      0.0,
-                                                      AppSpacing.sm,
-                                                      0.0,
-                                                    ),
-                                                    child: Text(
-                                                      playForMoney,
-                                                      textAlign:
-                                                          TextAlign.start,
-                                                      style: AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font:
-                                                                GoogleFonts
-                                                                    .outfit(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                            fontSize: 18.0,
-                                                            letterSpacing:
-                                                                0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                            0.0,
-                                            0.0,
-                                            0.0,
-                                            AppSpacing.xs,
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    EdgeInsetsDirectional
-                                                        .fromSTEB(
-                                                  0.0,
-                                                  AppSpacing.xs,
-                                                  AppSpacing.md,
-                                                  AppSpacing.xs,
-                                                ),
-                                                child: FaIcon(
-                                                  FontAwesomeIcons.clock,
-                                                  color:
-                                                      AppTheme.of(context)
-                                                          .secondaryText,
-                                                  size: AppSpacing.xl,
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Padding(
-                                                  padding:
-                                                      EdgeInsetsDirectional
-                                                          .fromSTEB(
-                                                    0.0,
-                                                    0.0,
-                                                    AppSpacing.sm,
-                                                    0.0,
-                                                  ),
-                                                  child: Text(
-                                                    'Pace of Play',
-                                                    textAlign:
-                                                        TextAlign.start,
-                                                    style: AppTheme.of(
-                                                            context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          font:
-                                                              GoogleFonts
-                                                                  .outfit(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w500,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Align(
-                                                  alignment:
-                                                      const AlignmentDirectional(
-                                                          0.0, 0.0),
-                                                  child: Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                      0.0,
-                                                      0.0,
-                                                      AppSpacing.sm,
-                                                      0.0,
-                                                    ),
-                                                    child: Text(
-                                                      paceOfPlay,
+                                                      golfCanadaNumber,
                                                       textAlign:
                                                           TextAlign.start,
                                                       style: AppTheme.of(

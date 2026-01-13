@@ -83,7 +83,9 @@ service cloud.firestore {
         'notify_member_discount',
         'notify_off',
         'pace_of_play',
-        'play_for_money'
+        'play_for_money',
+        'vibe_profile',
+        'golf_canada_number'
       ];
       let changed = request.resource.data.diff(resource.data).changedKeys();
       return changed.hasOnly(allowedFields);

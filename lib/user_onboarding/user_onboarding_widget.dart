@@ -7,7 +7,8 @@ import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
-import '/profile/main_profile/main_profile_widget.dart';
+import '/main_function/games_list/games_list_widget.dart';
+import '/profile/create_profile/create_profile_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -47,6 +48,11 @@ class _UserOnboardingWidgetState extends State<UserOnboardingWidget> {
     }
 
     final nextRoute = GoRouterState.of(context).uri.queryParameters['next'];
+    final nextAfterVibes = nextRoute == null ||
+            nextRoute.isEmpty ||
+            nextRoute == CreateProfileWidget.routeName
+        ? GamesListWidget.routeName
+        : nextRoute;
     final recordReady = await _ensureUserRecord();
     if (!recordReady) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -59,11 +65,12 @@ class _UserOnboardingWidgetState extends State<UserOnboardingWidget> {
       );
       return;
     }
-    if (nextRoute != null && nextRoute.isNotEmpty) {
-      context.goNamed(nextRoute);
-    } else {
-      context.goNamed(MainProfileWidget.routeName);
-    }
+    context.goNamed(
+      CreateProfileWidget.routeName,
+      queryParameters: {
+        'next': nextAfterVibes,
+      },
+    );
   }
 
   @override

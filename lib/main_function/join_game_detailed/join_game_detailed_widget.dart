@@ -5,12 +5,18 @@ import '/core/widgets/branded_golf_header.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/app_card.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/models/game.dart';
+import '/models/vibe_profile.dart';
 import '/profile/profile_user/profile_user_firebase_widget.dart';
 import '/providers/provider_extensions.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
+import '/services/vibe_group_matcher.dart';
+import '/services/vibe_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +42,11 @@ class JoinGameDetailedWidget extends StatefulWidget {
 
 class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  final VibeRepository _vibeRepository = VibeRepository();
+  GroupVibeMatchResult? _groupVibeMatch;
+  Map<String, GroupVibeMemberResult> _memberMatchesById = {};
+  bool _isGroupVibeLoading = false;
+  String _groupVibeKey = '';
 
   @override
   void initState() {
@@ -50,6 +61,354 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  void _ensureGroupVibeMatch(
+    Game gameRecord,
+    DocumentReference? currentUserRef,
+  ) {
+    if (currentUserRef == null) {
+      return;
+    }
+    final groupRefs = _groupMemberRefs(gameRecord);
+    final otherIds = groupRefs
+        .where((ref) => ref.id != currentUserRef.id)
+        .map((ref) => ref.id)
+        .toList()
+      ..sort();
+    final nextKey = '${currentUserRef.id}:${otherIds.join(',')}';
+    if (_isGroupVibeLoading || _groupVibeKey == nextKey) {
+      return;
+    }
+    _groupVibeKey = nextKey;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _loadGroupVibeMatch(gameRecord, currentUserRef, groupRefs);
+    });
+  }
+
+  List<DocumentReference> _groupMemberRefs(Game gameRecord) {
+    final groupRefs = gameRecord.joinedPlayers.toList();
+    final owner = gameRecord.userRef;
+    if (owner != null && !groupRefs.contains(owner)) {
+      groupRefs.insert(0, owner);
+    }
+    return groupRefs;
+  }
+
+  Future<void> _loadGroupVibeMatch(
+    Game gameRecord,
+    DocumentReference currentUserRef,
+    List<DocumentReference> groupRefs,
+  ) async {
+    setState(() {
+      _isGroupVibeLoading = true;
+    });
+    try {
+      final myVibes = await _vibeRepository.getMyVibesCached();
+      final members = <GroupVibeMember>[];
+      for (final ref in groupRefs) {
+        if (ref.id == currentUserRef.id) {
+          continue;
+        }
+        final snapshot = await ref.get();
+        final data =
+            (snapshot.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
+        final displayName = _stringValue(data, 'display_name', 'Player');
+        members.add(
+          GroupVibeMember(
+            id: ref.id,
+            name: displayName,
+            profile: _vibeRepository.profileFromSnapshot(snapshot),
+          ),
+        );
+      }
+
+      final result = GroupVibeMatcher.scoreGroup(
+        mine: myVibes,
+        others: members,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _groupVibeMatch = result;
+        _memberMatchesById = {
+          for (final memberResult in result.memberResults)
+            memberResult.member.id: memberResult,
+        };
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _groupVibeMatch = null;
+        _memberMatchesById = {};
+      });
+    } finally {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isGroupVibeLoading = false;
+      });
+    }
+  }
+
+  String _stringValue(
+    Map<String, dynamic> data,
+    String key,
+    String fallback,
+  ) {
+    final value = data[key];
+    if (value is String && value.trim().isNotEmpty) {
+      return value;
+    }
+    return fallback;
+  }
+
+  Widget _buildGroupVibeSummary() {
+    final result = _groupVibeMatch;
+    final groupScore = result == null
+        ? '--'
+        : '${result.groupFitScore.round()}%';
+    final lowestMatch = result?.lowestMatch;
+    final lowestScore = lowestMatch == null
+        ? '--'
+        : '${lowestMatch.displayScore.round()}%';
+    final lowestCategory = lowestMatch?.matchResult.topDifferences.isNotEmpty ==
+            true
+        ? VibeLabels.titleFor(
+            lowestMatch!.matchResult.topDifferences.first.category,
+          )
+        : null;
+    final lowestLine = lowestMatch == null || lowestCategory == null
+        ? 'Lowest match: --'
+        : 'Lowest match: $lowestScore ($lowestCategory with ${lowestMatch.member.name})';
+
+    return AppCard(
+      variant: AppCardVariant.outlined,
+      padding: EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Your fit with this group: $groupScore',
+            style: AppTypography.titleMedium.copyWith(
+              color: AppColors.onyx,
+            ),
+          ),
+          SizedBox(height: AppSpacing.xs),
+          Text(
+            lowestLine,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.stone,
+            ),
+          ),
+          SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Expanded(
+                child: AppButtonEnhanced(
+                  text: 'View breakdown',
+                  variant: AppButtonVariant.secondary,
+                  size: AppButtonSize.small,
+                  fullWidth: true,
+                  onPressed: result == null ? null : _openGroupVibeBreakdown,
+                ),
+              ),
+              if (_isGroupVibeLoading) ...[
+                SizedBox(width: AppSpacing.sm),
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppTheme.of(context).primary,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openGroupVibeBreakdown() {
+    final result = _groupVibeMatch;
+    if (result == null) {
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return SafeArea(
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.pure,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
+            ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.xxl,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 48,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.cloud,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'Group Fit',
+                    style: AppTypography.headlineMedium.copyWith(
+                      color: AppColors.onyx,
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.md),
+                  Text(
+                    '${result.groupFitScore.round()}%',
+                    style: AppTypography.displayMedium.copyWith(
+                      color: AppColors.fairwayDark,
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.lg),
+                  if (result.conflicts.isNotEmpty) ...[
+                    Text(
+                      'Potential conflicts',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: AppColors.onyx,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.sm),
+                    ...result.conflicts.map(
+                      (conflict) => Padding(
+                        padding: EdgeInsets.only(bottom: AppSpacing.xs),
+                        child: Text(
+                          '${VibeLabels.titleFor(conflict.category)} with ${conflict.memberName}',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.stone,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.lg),
+                  ],
+                  Text(
+                    'Top differences vs group avg',
+                    style: AppTypography.titleSmall.copyWith(
+                      color: AppColors.onyx,
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.sm),
+                  Wrap(
+                    spacing: AppSpacing.xs,
+                    runSpacing: AppSpacing.xs,
+                    children: result.topDifferences.map((difference) {
+                      return Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.sand,
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: AppColors.cloud,
+                          ),
+                        ),
+                        child: Text(
+                          '${VibeLabels.titleFor(difference.category)} • gap ${difference.distance.toStringAsFixed(1)}',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: AppColors.slate,
+                            letterSpacing: AppTypography.letterSpacingNormal,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'Player matches',
+                    style: AppTypography.titleSmall.copyWith(
+                      color: AppColors.onyx,
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.sm),
+                  ..._sortedMemberResults(result).map((memberResult) {
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: _buildGroupMatchRow(memberResult),
+                    );
+                  }).toList(),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGroupMatchRow(GroupVibeMemberResult memberResult) {
+    final matchScore = memberResult.displayScore.round();
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.sand,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.cloud),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              memberResult.member.name,
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.onyx,
+                fontWeight: AppTypography.semiBold,
+              ),
+            ),
+          ),
+          Text(
+            '$matchScore%',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.fairwayDark,
+              fontWeight: AppTypography.semiBold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<GroupVibeMemberResult> _sortedMemberResults(
+    GroupVibeMatchResult result,
+  ) {
+    final sorted = result.memberResults.toList()
+      ..sort((a, b) => a.displayScore.compareTo(b.displayScore));
+    return sorted;
   }
 
   @override
@@ -90,6 +449,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
         }
 
         final joinGameDetailedGamesRecord = Game.fromDoc(snapshot.data!);
+        _ensureGroupVibeMatch(joinGameDetailedGamesRecord, currentUserRef);
 
         return Scaffold(
           key: scaffoldKey,
@@ -159,6 +519,11 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                           courseName: joinGameDetailedGamesRecord.coursePlay,
                         ),
                       ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                        child: _buildGroupVibeSummary(),
+                      ),
+                      SizedBox(height: AppSpacing.md),
                       Padding(
                         padding: EdgeInsetsDirectional.fromSTEB(
                             16.0, 0.0, 16.0, 0.0),

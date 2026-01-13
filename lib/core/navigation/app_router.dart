@@ -33,6 +33,7 @@ import '/notifications/notification_page/notification_page_widget.dart';
 import '/notifications/notifications_list/notifications_list_widget.dart';
 import '/profile/create_profile/create_profile_widget.dart';
 import '/profile/edit_profile/edit_profile_widget.dart';
+import '/profile/edit_vibes/edit_vibes_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 import '/user_auth/recover_password/recover_password_widget.dart';
@@ -40,6 +41,7 @@ import '/user_auth/sign_in/sign_in_widget.dart';
 import '/user_auth/sign_up_account/sign_up_account_widget.dart';
 import '/user_onboarding/progressive_onboarding_widget.dart';
 import '/user_onboarding/user_onboarding_widget.dart';
+import '/user_onboarding/vibe_onboarding_widget.dart';
 
 export 'package:go_router/go_router.dart';
 export '/utils/serialization_util.dart';
@@ -262,6 +264,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         GoRoute(
+          name: VibeOnboardingWidget.routeName,
+          path: VibeOnboardingWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            VibeOnboardingWidget(),
+          ),
+        ),
+        GoRoute(
           name: RecoverPasswordWidget.routeName,
           path: RecoverPasswordWidget.routePath,
           redirect: _buildRedirect(appStateNotifier),
@@ -292,6 +305,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             state,
             appStateNotifier,
             EditProfileWidget(),
+          ),
+        ),
+        GoRoute(
+          name: EditVibesWidget.routeName,
+          path: EditVibesWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            EditVibesWidget(),
           ),
         ),
         GoRoute(

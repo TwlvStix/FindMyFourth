@@ -46,6 +46,11 @@ class UsersRecord extends FirestoreRecord {
   int get handicap => _handicap ?? 0;
   bool hasHandicap() => _handicap != null;
 
+  // "golf_canada_number" field.
+  String? _golfCanadaNumber;
+  String get golfCanadaNumber => _golfCanadaNumber ?? '';
+  bool hasGolfCanadaNumber() => _golfCanadaNumber != null;
+
   // "home_course" field.
   String? _homeCourse;
   String get homeCourse => _homeCourse ?? '';
@@ -156,6 +161,11 @@ class UsersRecord extends FirestoreRecord {
   int get playForMoney => _playForMoney ?? 0;
   bool hasPlayForMoney() => _playForMoney != null;
 
+  // "vibe_profile" field.
+  Map<String, dynamic>? _vibeProfile;
+  Map<String, dynamic> get vibeProfile => _vibeProfile ?? const {};
+  bool hasVibeProfile() => _vibeProfile != null;
+
   // "onboarding_completed" field.
   bool? _onboardingCompleted;
   bool get onboardingCompleted => _onboardingCompleted ?? false;
@@ -168,6 +178,7 @@ class UsersRecord extends FirestoreRecord {
     _phoneNumber = snapshotData['phone_number'] as String?;
     _lastActiveTime = snapshotData['last_active_time'] as DateTime?;
     _handicap = castToType<int>(snapshotData['handicap']);
+    _golfCanadaNumber = snapshotData['golf_canada_number'] as String?;
     _homeCourse = snapshotData['home_course'] as String?;
     _music = castToType<int>(snapshotData['music']);
     _drinks = castToType<int>(snapshotData['drinks']);
@@ -206,6 +217,10 @@ class UsersRecord extends FirestoreRecord {
     _notifyOff = snapshotData['notify_off'] as bool?;
     _paceOfPlay = castToType<int>(snapshotData['pace_of_play']);
     _playForMoney = castToType<int>(snapshotData['play_for_money']);
+    final vibeProfileRaw = snapshotData['vibe_profile'];
+    if (vibeProfileRaw is Map) {
+      _vibeProfile = Map<String, dynamic>.from(vibeProfileRaw);
+    }
     _onboardingCompleted = snapshotData['onboarding_completed'] as bool?;
   }
 
@@ -249,6 +264,7 @@ Map<String, dynamic> createUsersRecordData({
   String? phoneNumber,
   DateTime? lastActiveTime,
   int? handicap,
+  String? golfCanadaNumber,
   String? homeCourse,
   int? music,
   int? drinks,
@@ -269,6 +285,7 @@ Map<String, dynamic> createUsersRecordData({
   bool? notifyOff,
   int? paceOfPlay,
   int? playForMoney,
+  Map<String, dynamic>? vibeProfile,
   bool? onboardingCompleted,
 }) {
   final firestoreData = mapToFirestore(
@@ -279,6 +296,7 @@ Map<String, dynamic> createUsersRecordData({
       'phone_number': phoneNumber,
       'last_active_time': lastActiveTime,
       'handicap': handicap,
+      'golf_canada_number': golfCanadaNumber,
       'home_course': homeCourse,
       'music': music,
       'drinks': drinks,
@@ -299,6 +317,7 @@ Map<String, dynamic> createUsersRecordData({
       'notify_off': notifyOff,
       'pace_of_play': paceOfPlay,
       'play_for_money': playForMoney,
+      'vibe_profile': vibeProfile,
       'onboarding_completed': onboardingCompleted,
     }.withoutNulls,
   );
@@ -312,12 +331,14 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
   @override
   bool equals(UsersRecord? e1, UsersRecord? e2) {
     const listEquality = ListEquality();
+    const mapEquality = DeepCollectionEquality();
     return e1?.email == e2?.email &&
         e1?.photoUrl == e2?.photoUrl &&
         e1?.createdTime == e2?.createdTime &&
         e1?.phoneNumber == e2?.phoneNumber &&
         e1?.lastActiveTime == e2?.lastActiveTime &&
         e1?.handicap == e2?.handicap &&
+        e1?.golfCanadaNumber == e2?.golfCanadaNumber &&
         e1?.homeCourse == e2?.homeCourse &&
         e1?.music == e2?.music &&
         e1?.drinks == e2?.drinks &&
@@ -340,6 +361,7 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e1?.notifyOff == e2?.notifyOff &&
         e1?.paceOfPlay == e2?.paceOfPlay &&
         e1?.playForMoney == e2?.playForMoney &&
+        mapEquality.equals(e1?.vibeProfile, e2?.vibeProfile) &&
         e1?.onboardingCompleted == e2?.onboardingCompleted;
   }
 
@@ -373,6 +395,7 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.notifyOff,
         e?.paceOfPlay,
         e?.playForMoney,
+        const DeepCollectionEquality().hash(e?.vibeProfile),
         e?.onboardingCompleted
       ]);
 

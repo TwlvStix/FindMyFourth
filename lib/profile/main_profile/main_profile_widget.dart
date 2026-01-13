@@ -6,6 +6,8 @@ import '/utils/app_util.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/notifications/notification_page/notification_page_widget.dart';
 import '/profile/edit_profile/edit_profile_widget.dart';
+import '/profile/edit_vibes/edit_vibes_widget.dart';
+import '/models/vibe_profile.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import '/core/design_tokens/spacing.dart';
 import 'package:flutter/material.dart';
@@ -276,7 +278,96 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                             mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Padding(
+                              
+                              AuthUserStreamWidget(
+                                builder: (context) {
+                                  final profile = VibeProfile.fromFirestore(
+                                    Map<String, dynamic>.from(
+                                      currentUserDocument?.vibeProfile ??
+                                          const <String, dynamic>{},
+                                    ),
+                                  );
+                                  if (profile.isComplete) {
+                                    return SizedBox.shrink();
+                                  }
+                                  return Padding(
+                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                      0.0,
+                                      0.0,
+                                      0.0,
+                                      AppSpacing.md,
+                                    ),
+                                    child: InkWell(
+                                      splashColor: Colors.transparent,
+                                      focusColor: Colors.transparent,
+                                      hoverColor: Colors.transparent,
+                                      highlightColor: Colors.transparent,
+                                      onTap: () {
+                                        context.pushNamed(
+                                          EditVibesWidget.routeName,
+                                          extra: <String, dynamic>{
+                                            kTransitionInfoKey: TransitionInfo(
+                                              hasTransition: true,
+                                              transitionType:
+                                                  PageTransitionType.fade,
+                                              duration:
+                                                  Duration(milliseconds: 200),
+                                            ),
+                                          },
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: EdgeInsets.all(AppSpacing.md),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.of(context)
+                                              .accent1
+                                              .withValues(alpha: 0.18),
+                                          borderRadius:
+                                              BorderRadius.circular(12.0),
+                                          border: Border.all(
+                                            color: AppTheme.of(context)
+                                                .accent1
+                                                .withValues(alpha: 0.5),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                'Finish your vibe settings',
+                                                style: AppTheme.of(context)
+                                                    .bodyMedium
+                                                    .override(
+                                                      font:
+                                                          GoogleFonts.outfit(
+                                                        fontWeight:
+                                                            AppTheme.of(context)
+                                                                .bodyMedium
+                                                                .fontWeight,
+                                                        fontStyle:
+                                                            AppTheme.of(context)
+                                                                .bodyMedium
+                                                                .fontStyle,
+                                                      ),
+                                                      color: AppTheme.of(context)
+                                                          .primaryText,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                              ),
+                                            ),
+                                            Icon(
+                                              Icons.chevron_right_rounded,
+                                              color: AppTheme.of(context)
+                                                  .primary,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, AppSpacing.lg, 0.0, AppSpacing.xs),
                                 child: Row(
@@ -450,6 +541,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                   ],
                                 ),
                               ),
+                              
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, AppSpacing.lg, AppSpacing.xs),
@@ -461,7 +553,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                           0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
                                       child: Icon(
-                                        Icons.local_drink,
+                                        Icons.verified_rounded,
                                         color: AppTheme.of(context)
                                             .secondaryText,
                                         size: 24.0,
@@ -472,7 +564,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             0.0, 0.0, AppSpacing.sm, 0.0),
                                         child: Text(
-                                          'Drinks',
+                                          'Golf Canada #',
                                           textAlign: TextAlign.start,
                                           style: AppTheme.of(context)
                                               .bodyMedium
@@ -505,8 +597,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                     AuthUserStreamWidget(
                                       builder: (context) => Text(
                                         valueOrDefault(
-                                                currentUserDocument?.drinks, 0)
-                                            .toString(),
+                                                currentUserDocument
+                                                    ?.golfCanadaNumber,
+                                                '-'),
                                         style: AppTheme.of(context)
                                             .bodyMedium
                                             .override(
@@ -535,284 +628,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                   ],
                                 ),
                               ),
-                              Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, AppSpacing.xs),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
-                                      child: FaIcon(
-                                        FontAwesomeIcons.music,
-                                        color: AppTheme.of(context)
-                                            .secondaryText,
-                                        size: 24.0,
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, AppSpacing.sm, 0.0),
-                                        child: Text(
-                                          'Music',
-                                          textAlign: TextAlign.start,
-                                          style: AppTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.outfit(
-                                                  fontWeight:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, AppSpacing.lg, 0.0),
-                                      child: AuthUserStreamWidget(
-                                        builder: (context) => Text(
-                                          valueOrDefault(
-                                                  currentUserDocument?.music, 0)
-                                              .toString(),
-                                          style: AppTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.outfit(
-                                                  fontWeight:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, AppSpacing.xs),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
-                                      child: FaIcon(
-                                        FontAwesomeIcons.music,
-                                        color: AppTheme.of(context)
-                                            .secondaryText,
-                                        size: 24.0,
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, AppSpacing.sm, 0.0),
-                                        child: Text(
-                                          'Play for Money',
-                                          textAlign: TextAlign.start,
-                                          style: AppTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.outfit(
-                                                  fontWeight:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, AppSpacing.lg, 0.0),
-                                      child: AuthUserStreamWidget(
-                                        builder: (context) => Text(
-                                          valueOrDefault(
-                                                  currentUserDocument
-                                                      ?.playForMoney,
-                                                  0)
-                                              .toString(),
-                                          style: AppTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.outfit(
-                                                  fontWeight:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, AppSpacing.xs),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
-                                      child: FaIcon(
-                                        FontAwesomeIcons.music,
-                                        color: AppTheme.of(context)
-                                            .secondaryText,
-                                        size: 24.0,
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, AppSpacing.sm, 0.0),
-                                        child: Text(
-                                          'Pace of Play',
-                                          textAlign: TextAlign.start,
-                                          style: AppTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.outfit(
-                                                  fontWeight:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, AppSpacing.lg, 0.0),
-                                      child: AuthUserStreamWidget(
-                                        builder: (context) => Text(
-                                          valueOrDefault(
-                                                  currentUserDocument
-                                                      ?.paceOfPlay,
-                                                  0)
-                                              .toString(),
-                                          style: AppTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.outfit(
-                                                  fontWeight:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
+Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 0.0, AppSpacing.xs),
                                 child: Row(
@@ -1015,13 +831,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                               .override(
                                                 font: GoogleFonts.outfit(
                                                   fontWeight:
-                                                      AppTheme.of(
-                                                              context)
+                                                      AppTheme.of(context)
                                                           .bodyMedium
                                                           .fontWeight,
                                                   fontStyle:
-                                                      AppTheme.of(
-                                                              context)
+                                                      AppTheme.of(context)
                                                           .bodyMedium
                                                           .fontStyle,
                                                 ),
@@ -1069,13 +883,119 @@ class _MainProfileWidgetState extends State<MainProfileWidget> {
                                               .override(
                                                 font: GoogleFonts.outfit(
                                                   fontWeight:
-                                                      AppTheme.of(
-                                                              context)
+                                                      AppTheme.of(context)
                                                           .bodyMedium
                                                           .fontWeight,
                                                   fontStyle:
-                                                      AppTheme.of(
-                                                              context)
+                                                      AppTheme.of(context)
+                                                          .bodyMedium
+                                                          .fontStyle,
+                                                ),
+                                                color:
+                                                    AppTheme.of(context)
+                                                        .primary,
+                                                letterSpacing: 0.0,
+                                                fontWeight:
+                                                    AppTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontWeight,
+                                                fontStyle:
+                                                    AppTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontStyle,
+                                              ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 0.0, 0.0, AppSpacing.xs),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          0.0, AppSpacing.xs, AppSpacing.md, AppSpacing.xs),
+                                      child: Icon(
+                                        Icons.tune,
+                                        color: AppTheme.of(context)
+                                            .secondaryText,
+                                        size: 24.0,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 0.0, AppSpacing.sm, 0.0),
+                                        child: Text(
+                                          'Vibe Settings',
+                                          textAlign: TextAlign.start,
+                                          style: AppTheme.of(context)
+                                              .bodyMedium
+                                              .override(
+                                                font: GoogleFonts.outfit(
+                                                  fontWeight:
+                                                      AppTheme.of(context)
+                                                          .bodyMedium
+                                                          .fontWeight,
+                                                  fontStyle:
+                                                      AppTheme.of(context)
+                                                          .bodyMedium
+                                                          .fontStyle,
+                                                ),
+                                                letterSpacing: 0.0,
+                                                fontWeight:
+                                                    AppTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontWeight,
+                                                fontStyle:
+                                                    AppTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontStyle,
+                                              ),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          0.0, 0.0, AppSpacing.lg, 0.0),
+                                      child: InkWell(
+                                        splashColor: Colors.transparent,
+                                        focusColor: Colors.transparent,
+                                        hoverColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        onTap: () async {
+                                          context.pushNamed(
+                                            EditVibesWidget.routeName,
+                                            extra: <String, dynamic>{
+                                              kTransitionInfoKey:
+                                                  TransitionInfo(
+                                                hasTransition: true,
+                                                transitionType:
+                                                    PageTransitionType.fade,
+                                                duration:
+                                                    Duration(milliseconds: 200),
+                                              ),
+                                            },
+                                          );
+                                        },
+                                        child: Text(
+                                          'Edit Vibes',
+                                          textAlign: TextAlign.center,
+                                          style: AppTheme.of(context)
+                                              .bodyMedium
+                                              .override(
+                                                font: GoogleFonts.outfit(
+                                                  fontWeight:
+                                                      AppTheme.of(context)
+                                                          .bodyMedium
+                                                          .fontWeight,
+                                                  fontStyle:
+                                                      AppTheme.of(context)
                                                           .bodyMedium
                                                           .fontStyle,
                                                 ),
