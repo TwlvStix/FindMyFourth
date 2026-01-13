@@ -169,6 +169,10 @@ class ChatService {
           'type': 'direct',
           'gameId': null,
           'last_message': '',
+          'isReadOnly': false,
+          'pinnedMessage': '',
+          'pinnedAt': null,
+          'archivedAt': null,
           'lastMessageAt': FieldValue.serverTimestamp(),
           'lastMessageSenderId': currentUid,
           'unreadCountByUser': {
@@ -202,6 +206,10 @@ class ChatService {
       'type': 'game',
       'gameId': gameId,
       'last_message': '',
+      'isReadOnly': false,
+      'pinnedMessage': '',
+      'pinnedAt': null,
+      'archivedAt': null,
       'lastMessageAt': FieldValue.serverTimestamp(),
       'lastMessageSenderId': createdByUid,
       'unreadCountByUser': {
@@ -253,6 +261,13 @@ class ChatService {
       final chatSnapshot = await transaction.get(chatRef);
       final data =
           chatSnapshot.data() as Map<String, dynamic>? ?? <String, dynamic>{};
+      final isReadOnly = data['isReadOnly'] == true;
+      final archivedAt =
+          (data['archivedAt'] as Timestamp?)?.toDate();
+      if (isReadOnly ||
+          (archivedAt != null && archivedAt.isBefore(DateTime.now()))) {
+        throw Exception('Chat is read-only');
+      }
       final memberIds =
           (data['memberIds'] as List<dynamic>?)?.whereType<String>().toList() ??
               <String>[];

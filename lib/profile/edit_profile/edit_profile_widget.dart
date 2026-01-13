@@ -139,16 +139,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     super.dispose();
   }
 
-  String? _validateUsername(BuildContext context, String? val) {
-    if (val == null || val.isEmpty) {
-      return 'Username is required';
-    }
-    if (!RegExp(kTextValidatorUsernameRegex).hasMatch(val)) {
-      return 'Must start with a letter and contain only letters, digits, -, or _';
-    }
-    return null;
-  }
-
   Future<void> _handleSaveProfile() async {
     if (!formKey.currentState!.validate()) {
       return;
@@ -173,36 +163,10 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       return;
     }
 
-    // Create username
-    AppState().theusernames =
-        functions.usernameCreator(usernameTextController!.text);
-    if (mounted) setState(() {});
-
-    // Check if username changed
-    final desiredUsername = AppState().theusernames;
-    if (desiredUsername.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Username is required',
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 15.0,
-            ),
-          ),
-          duration: Duration(milliseconds: 2000),
-          backgroundColor: AppColors.error,
-        ),
-      );
+    if (currentUserReference == null) {
       return;
     }
-    final normalizedCurrentUsername =
-        functions.usernameCreator(currentUserDisplayName);
-    final usernameChanged = desiredUsername.isNotEmpty &&
-        normalizedCurrentUsername != desiredUsername;
-
-    if (!usernameChanged) {
-      // Username unchanged - save directly
+    try {
       await FirebaseFirestore.instance.runTransaction((transaction) async {
         transaction.update(
           currentUserReference!,
@@ -210,7 +174,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             photoUrl: currentUserPhoto,
             phoneNumber: phoneNumTextController!.text,
             handicap: handicapValue,
-            displayName: AppState().theusernames,
             firstName: firstNameTextController!.text,
             lastName: lastNameTextController!.text,
             drinks: drinksValue,
@@ -223,103 +186,22 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       });
       currentUserDocument =
           await UsersRecord.getDocumentOnce(currentUserReference!);
-
       _showSuccessAndNavigate();
-    } else {
-      final userRef = currentUserReference;
-      if (userRef == null) {
-        return;
-      }
-      final currentUsername = normalizedCurrentUsername;
-      final usernamesCollection =
-          FirebaseFirestore.instance.collection('usernames');
-      final newUsernameRef = usernamesCollection.doc(desiredUsername);
-
-      try {
-        await FirebaseFirestore.instance.runTransaction((transaction) async {
-          final newUsernameSnap = await transaction.get(newUsernameRef);
-          if (newUsernameSnap.exists) {
-            final existingRef =
-                newUsernameSnap.get('uid') as DocumentReference?;
-            if (existingRef != null && existingRef.path != userRef.path) {
-              throw StateError('username_taken');
-            }
-          } else {
-            transaction.set(newUsernameRef, {
-              'uid': userRef,
-              'created_at': FieldValue.serverTimestamp(),
-            });
-          }
-        });
-        await userRef.update(
-          createUsersRecordData(
-            photoUrl: currentUserPhoto,
-            phoneNumber: phoneNumTextController!.text,
-            handicap: handicapValue,
-            displayName: desiredUsername,
-            firstName: firstNameTextController!.text,
-            lastName: lastNameTextController!.text,
-            drinks: drinksValue,
-            music: musicValue,
-            homeCourse: coursesValue,
-            paceOfPlay: paceplayValue,
-            playForMoney: playmoneyValue,
-          ),
-        );
-        if (currentUsername.isNotEmpty &&
-            currentUsername != desiredUsername) {
-          final oldUsernameRef = usernamesCollection.doc(currentUsername);
-          final oldUsernameSnap = await oldUsernameRef.get();
-          if (oldUsernameSnap.exists) {
-            final existingRef =
-                oldUsernameSnap.get('uid') as DocumentReference?;
-            if (existingRef != null && existingRef.path == userRef.path) {
-              await oldUsernameRef.delete();
-            }
-          }
-        }
-        currentUserDocument = await UsersRecord.getDocumentOnce(userRef);
-
-        _showSuccessAndNavigate();
-      } on StateError catch (_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'This username is taken. Please choose another.',
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontSize: 15.0,
-              ),
+    } catch (e) {
+      debugPrint('EditProfile: profile save failed: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Unable to save profile. Please try again.',
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 15.0,
             ),
-            duration: Duration(milliseconds: 2000),
-            backgroundColor: AppColors.error,
           ),
-        );
-      } catch (e) {
-        try {
-          final newUsernameSnap = await newUsernameRef.get();
-          final existingRef =
-              newUsernameSnap.get('uid') as DocumentReference?;
-          if (newUsernameSnap.exists &&
-              existingRef != null &&
-              existingRef.path == userRef.path) {
-            await newUsernameRef.delete();
-          }
-        } catch (_) {}
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Unable to save profile. Please try again.',
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontSize: 15.0,
-              ),
-            ),
-            duration: Duration(milliseconds: 2000),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
+          duration: Duration(milliseconds: 2000),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
 
     if (mounted) setState(() {});
@@ -537,7 +419,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                                     controller: usernameTextController!,
                                     focusNode: usernameFocusNode!,
                                     label: 'Display Name',
-                                    validator: _validateUsername,
+                                    readOnly: true,
                                   ),
                                 ),
                                 SizedBox(width: AppSpacing.md),

@@ -461,6 +461,15 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
             );
           }
 
+          final isArchived = chat.archivedAt != null &&
+              chat.archivedAt!.isBefore(DateTime.now());
+          final canSend = !chat.isReadOnly && !isArchived;
+          final bannerText = chat.pinnedMessage.isNotEmpty
+              ? chat.pinnedMessage
+              : chat.isReadOnly
+                  ? 'This chat is read-only.'
+                  : '';
+
           return Scaffold(
             backgroundColor: AppTheme.of(context).secondaryBackground,
             appBar: AppBar(
@@ -515,6 +524,70 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
             body: FairwayBackgroundDark(
               child: Column(
                 children: [
+                  if (bannerText.isNotEmpty || isArchived)
+                    Container(
+                      width: double.infinity,
+                      margin: EdgeInsets.fromLTRB(
+                        AppSpacing.md,
+                        AppSpacing.md,
+                        AppSpacing.md,
+                        0,
+                      ),
+                      padding: EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: AppTheme.of(context).primaryBackground,
+                        borderRadius: BorderRadius.circular(12.0),
+                        border: Border.all(
+                          color: AppTheme.of(context)
+                              .primary
+                              .withValues(alpha: 0.2),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            color: AppTheme.of(context).primary,
+                            size: 20.0,
+                          ),
+                          SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  bannerText.isNotEmpty
+                                      ? bannerText
+                                      : 'This chat is archived.',
+                                  style: AppTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.outfit(),
+                                        letterSpacing: 0.0,
+                                      ),
+                                ),
+                                if (isArchived)
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                      top: AppSpacing.xs,
+                                    ),
+                                    child: Text(
+                                      'Messages are disabled.',
+                                      style: AppTheme.of(context)
+                                          .labelMedium
+                                          .override(
+                                            font: GoogleFonts.outfit(),
+                                            letterSpacing: 0.0,
+                                          ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   Expanded(
                     child: StreamBuilder<QuerySnapshot>(
                       stream: context.read<ChatProvider>().messagesSnapshotStream(
@@ -661,9 +734,12 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                             controller: _messageController,
                             focusNode: _messageFocusNode,
                             textInputAction: TextInputAction.send,
-                            onSubmitted: (_) => _sendMessage(),
+                            onSubmitted: canSend ? (_) => _sendMessage() : null,
+                            enabled: canSend,
                             decoration: InputDecoration(
-                              hintText: 'Message...',
+                              hintText: canSend
+                                  ? 'Message...'
+                                  : 'Chat closed',
                               filled: true,
                               fillColor:
                                   AppTheme.of(context).secondaryBackground,
@@ -680,7 +756,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                             Icons.send,
                             color: AppTheme.of(context).primary,
                           ),
-                          onPressed: _sendMessage,
+                          onPressed: canSend ? _sendMessage : null,
                         ),
                       ],
                     ),

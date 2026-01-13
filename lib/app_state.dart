@@ -36,6 +36,20 @@ class AppState extends ChangeNotifier {
         }
       }
     });
+    _safeInit(() {
+      final stored = prefs.getString('cancelledGameHideAtByPath');
+      if (stored != null && stored.isNotEmpty) {
+        final decoded = jsonDecode(stored);
+        if (decoded is Map<String, dynamic>) {
+          _cancelledGameHideAtByPath = decoded.map(
+            (key, value) => MapEntry(
+              key,
+              value is int ? value : int.tryParse(value.toString()) ?? 0,
+            ),
+          )..removeWhere((key, value) => value == 0);
+        }
+      }
+    });
   }
 
   void update(VoidCallback callback) {
@@ -67,6 +81,23 @@ class AppState extends ChangeNotifier {
     prefs.setString(
       'cancelledGameHandlingByPath',
       jsonEncode(_cancelledGameHandlingByPath),
+    );
+  }
+
+  Map<String, int> _cancelledGameHideAtByPath = {};
+  DateTime? getCancelledGameHideAt(String gamePath) {
+    final millis = _cancelledGameHideAtByPath[gamePath];
+    if (millis == null) {
+      return null;
+    }
+    return DateTime.fromMillisecondsSinceEpoch(millis);
+  }
+
+  void setCancelledGameHideAt(String gamePath, DateTime hideAt) {
+    _cancelledGameHideAtByPath[gamePath] = hideAt.millisecondsSinceEpoch;
+    prefs.setString(
+      'cancelledGameHideAtByPath',
+      jsonEncode(_cancelledGameHideAtByPath),
     );
   }
 

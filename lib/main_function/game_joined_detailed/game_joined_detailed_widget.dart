@@ -21,6 +21,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
+
+enum _CancelListingHandling {
+  removeNow,
+  hideAfter7Days,
+}
+
+const int _cancelledChatArchiveDays = 3;
 class GameJoinedDetailedWidget extends StatefulWidget {
   const GameJoinedDetailedWidget({
     super.key,
@@ -753,30 +760,94 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             );
                             return;
                           }
-                          var confirmDialogResponse = await showDialog<bool>(
+                          final confirmDialogResponse = await showDialog<bool>(
                                 context: context,
                                 builder: (alertDialogContext) {
                                   return AlertDialog(
-                                    title: Text('Are  you sure?'),
+                                    title: Text('Cancel this game?'),
                                     content:
-                                        Text('Do you really cancel the game?'),
+                                        Text(
+                                          'This will end the game for everyone.',
+                                        ),
                                     actions: [
                                       TextButton(
                                         onPressed: () => Navigator.pop(
                                             alertDialogContext, false),
-                                        child: Text('No'),
+                                        child: Text('Keep game'),
                                       ),
                                       TextButton(
                                         onPressed: () => Navigator.pop(
                                             alertDialogContext, true),
-                                        child: Text('Yes'),
+                                        child: Text('Cancel game'),
                                       ),
                                     ],
                                   );
                                 },
                               ) ??
                               false;
-                          if (confirmDialogResponse) {
+                          if (!confirmDialogResponse) {
+                            return;
+                          }
+
+                          final visibilityChoice =
+                              await showDialog<_CancelListingHandling>(
+                            context: context,
+                            builder: (alertDialogContext) {
+                              return AlertDialog(
+                                title: Text('Remove game listing?'),
+                                content: Text(
+                                  'Choose when to remove this game from your list.',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(
+                                      alertDialogContext,
+                                      _CancelListingHandling.hideAfter7Days,
+                                    ),
+                                    child: Text('Hide after 7 days'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(
+                                      alertDialogContext,
+                                      _CancelListingHandling.removeNow,
+                                    ),
+                                    child: Text('Remove now'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(
+                                      alertDialogContext,
+                                      null,
+                                    ),
+                                    child: Text('Back'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                          if (visibilityChoice == null) {
+                            return;
+                          }
+
+                          if (widget.gameRef != null) {
+                            if (visibilityChoice ==
+                                _CancelListingHandling.removeNow) {
+                              AppState().setCancelledGameHandling(
+                                widget.gameRef!.path,
+                                'removeNow',
+                              );
+                            } else {
+                              AppState().setCancelledGameHandling(
+                                widget.gameRef!.path,
+                                'removeAfter7Days',
+                              );
+                              AppState().setCancelledGameHideAt(
+                                widget.gameRef!.path,
+                                getCurrentTimestamp.add(Duration(days: 7)),
+                              );
+                            }
+                          }
+
+                          {
                             try {
                               debugPrint(
                                 'CancelGame: updating ${widget.gameRef?.path}',
@@ -811,6 +882,16 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                       senderId: currentUserId,
                                       text: cancelMessage,
                                     );
+                                await chatRef.update({
+                                  'isReadOnly': true,
+                                  'pinnedMessage': cancelMessage,
+                                  'pinnedAt': FieldValue.serverTimestamp(),
+                                  'archivedAt': Timestamp.fromDate(
+                                    getCurrentTimestamp.add(
+                                      Duration(days: _cancelledChatArchiveDays),
+                                    ),
+                                  ),
+                                });
                               }
                             } catch (error, stackTrace) {
                               debugPrint('CancelGame: failed $error');
@@ -838,8 +919,6 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
 
                             // Navigate to Schedule tab (My Games)
                             context.goNamed(GamesJoinedWidget.routeName);
-                          } else {
-                            Navigator.pop(context);
                           }
                         },
                       ),

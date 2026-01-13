@@ -600,3 +600,54 @@ exports.monitorUsernameChanges = functions
       console.error("monitorUsernameChanges failed", error);
     }
   });
+
+exports.syncUsernameIndex = functions
+  .region("us-west2")
+  .firestore.document("users/{uid}")
+  .onWrite(async (change, context) => {
+    const before = change.before.data() || {};
+    const after = change.after.data() || {};
+    const beforeDisplayName = before.display_name || "";
+    const afterDisplayName = after.display_name || "";
+
+    if (beforeDisplayName === afterDisplayName) {
+      return;
+    }
+    if (!afterDisplayName) {
+      return;
+    }
+
+    const firestore = admin.firestore();
+    const userRef = change.after.ref;
+    const usernames = firestore.collection("usernames");
+    const newUsernameRef = usernames.doc(afterDisplayName);
+
+    try {
+      const newUsernameDoc = await newUsernameRef.get();
+      if (
+        !newUsernameDoc.exists ||
+        newUsernameDoc.data()?.uid?.path !== userRef.path
+      ) {
+        await newUsernameRef.set(
+          {
+            uid: userRef,
+            created_at: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
+      }
+
+      if (beforeDisplayName) {
+        const oldUsernameRef = usernames.doc(beforeDisplayName);
+        const oldUsernameDoc = await oldUsernameRef.get();
+        if (
+          oldUsernameDoc.exists &&
+          oldUsernameDoc.data()?.uid?.path === userRef.path
+        ) {
+          await oldUsernameRef.delete();
+        }
+      }
+    } catch (error) {
+      console.error("syncUsernameIndex failed", error);
+    }
+  });

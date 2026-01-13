@@ -13,6 +13,10 @@ class Chat {
     required this.unreadCountByUser,
     required this.createdAt,
     required this.updatedAt,
+    required this.isReadOnly,
+    required this.pinnedMessage,
+    required this.pinnedAt,
+    required this.archivedAt,
   });
 
   final String id;
@@ -26,6 +30,10 @@ class Chat {
   final Map<String, int> unreadCountByUser;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final bool isReadOnly;
+  final String pinnedMessage;
+  final DateTime? pinnedAt;
+  final DateTime? archivedAt;
 
   static Chat fromDoc(DocumentSnapshot doc) {
     final data = (doc.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
@@ -51,6 +59,10 @@ class Chat {
           <String, int>{},
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      isReadOnly: (data['isReadOnly'] as bool?) ?? false,
+      pinnedMessage: (data['pinnedMessage'] as String?) ?? '',
+      pinnedAt: (data['pinnedAt'] as Timestamp?)?.toDate(),
+      archivedAt: (data['archivedAt'] as Timestamp?)?.toDate(),
     );
   }
 }

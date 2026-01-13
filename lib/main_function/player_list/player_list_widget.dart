@@ -54,10 +54,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       playersJoinedUID[index] = updateFn(playersJoinedUID[index]);
 
   final formKey = GlobalKey<FormState>();
-  String? dropDownValue1;
-  FormFieldController<String>? dropDownValueController1;
-  String? dropDownValue2;
-  FormFieldController<String>? dropDownValueController2;
+  final List<String?> _dropDownValues = [];
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -126,12 +123,20 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 .collection('users')
                 .doc(currentUser.uid);
 
-        // Calculate number of existing friends to add
-        // Formula: 4 (total) - numPlayers (randoms needed) - 1 (creator)
-        final numExistingFriends = 4 - game.numPlayers - 1;
+        final currentPlayerCount =
+            game.joinedPlayers.length + game.guestPlayers.length;
+        final remainingSlots =
+            (game.maxPlayers - currentPlayerCount).clamp(0, game.maxPlayers);
+
+        while (_dropDownValues.length < remainingSlots) {
+          _dropDownValues.add(null);
+        }
+        if (_dropDownValues.length > remainingSlots) {
+          _dropDownValues.removeRange(remainingSlots, _dropDownValues.length);
+        }
 
         debugPrint(
-            'PlayerList: numPlayers=${game.numPlayers}, existingFriends=$numExistingFriends');
+            'PlayerList: current=$currentPlayerCount/${game.maxPlayers}, remaining=$remainingSlots');
 
         return GestureDetector(
           onTap: () {
@@ -402,7 +407,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                             ),
                                             SizedBox(height: AppSpacing.lg),
                                             // Player dropdowns section
-                                            if (numExistingFriends >= 1) ...[
+                                            if (remainingSlots > 0) ...[
                                               Text(
                                                 'Add Friends',
                                                 style: GoogleFonts.outfit(
@@ -413,15 +418,15 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                               ),
                                               SizedBox(height: AppSpacing.sm),
                                             ],
-                                            // Show dropdown 1 if we need at least 1 existing friend
-                                            // numExistingFriends >= 1 means numPlayers <= 2
-                                            if (numExistingFriends >= 1)
+                                            for (var i = 0;
+                                                i < remainingSlots;
+                                                i++) ...[
                                               Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    'Player 2',
+                                                    'Player ${currentPlayerCount + i + 1}',
                                                     style: GoogleFonts.outfit(
                                                       fontSize: 14.0,
                                                       fontWeight:
@@ -433,10 +438,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                       height: AppSpacing.xs),
                                                   AppDropDown<String>(
                                                     controller:
-                                                        dropDownValueController1 ??=
-                                                            FormFieldController<
-                                                                String>(
-                                                      dropDownValue1 ??= '',
+                                                        FormFieldController<
+                                                            String>(
+                                                      _dropDownValues[i] ?? '',
                                                     ),
                                                     options: List<String>.from(
                                                         playerOptions),
@@ -444,8 +448,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                     onChanged: (val) {
                                                       if (mounted) {
                                                         setState(() =>
-                                                            dropDownValue1 =
-                                                                val);
+                                                            _dropDownValues[
+                                                                i] = val);
                                                       }
                                                     },
                                                     width: 300.0,
@@ -529,7 +533,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                                   .fontStyle,
                                                             ),
                                                     hintText:
-                                                        'Find Player 2....',
+                                                        'Find Player ${currentPlayerCount + i + 1}....',
                                                     searchHintText:
                                                         'Search Players....',
                                                     icon: Icon(
@@ -556,107 +560,25 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                     ),
                                                     hidesUnderline: true,
                                                     isOverButton: true,
-                                                    isSearchable: true,
+                                                    isSearchable: i == 0,
                                                     isMultiSelect: false,
                                                   ),
                                                 ],
                                               ),
-                                            if (numExistingFriends >= 1)
+                                              if (i < remainingSlots - 1)
+                                                SizedBox(
+                                                    height: AppSpacing.md),
+                                            ],
+                                            if (remainingSlots == 0) ...[
+                                              Text(
+                                                'This game is already full.',
+                                                style: GoogleFonts.outfit(
+                                                  fontSize: 14.0,
+                                                  color: Color(0xFF718096),
+                                                ),
+                                              ),
                                               SizedBox(height: AppSpacing.md),
-                                            // Show dropdown 2 if we need at least 2 existing friends
-                                            // numExistingFriends >= 2 means numPlayers <= 1
-                                            if (numExistingFriends >= 2)
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    'Player 3',
-                                                    style: GoogleFonts.outfit(
-                                                      fontSize: 14.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color: Color(0xFF718096),
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                      height: AppSpacing.xs),
-                                                  AppDropDown<String>(
-                                                    controller:
-                                                        dropDownValueController2 ??=
-                                                            FormFieldController<
-                                                                String>(
-                                                      dropDownValue2 ??= '',
-                                                    ),
-                                                    options: List<String>.from(
-                                                        playerOptions),
-                                                    optionLabels: playerLabels,
-                                                    onChanged: (val) {
-                                                      if (mounted) {
-                                                        setState(() =>
-                                                            dropDownValue2 =
-                                                                val);
-                                                      }
-                                                    },
-                                                    width: 300.0,
-                                                    height: 50.0,
-                                                    textStyle:
-                                                        AppTheme.of(context)
-                                                            .bodyMedium
-                                                            .override(
-                                                              font: GoogleFonts
-                                                                  .outfit(
-                                                                fontWeight: AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                                fontStyle: AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                              letterSpacing:
-                                                                  0.0,
-                                                              fontWeight: AppTheme
-                                                                      .of(context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                              fontStyle: AppTheme
-                                                                      .of(context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                            ),
-                                                    hintText:
-                                                        'Find Player 3....',
-                                                    icon: Icon(
-                                                      Icons
-                                                          .keyboard_arrow_down_rounded,
-                                                      color:
-                                                          AppTheme.of(context)
-                                                              .secondaryText,
-                                                      size: 24.0,
-                                                    ),
-                                                    fillColor: AppTheme.of(
-                                                            context)
-                                                        .secondaryBackground,
-                                                    elevation: 2.0,
-                                                    borderColor:
-                                                        AppTheme.of(context)
-                                                            .alternate,
-                                                    borderWidth: 2.0,
-                                                    borderRadius: 8.0,
-                                                    margin:
-                                                        AppSpacing.symmetric(
-                                                      horizontal: AppSpacing.md,
-                                                      vertical: AppSpacing.xxs,
-                                                    ),
-                                                    hidesUnderline: true,
-                                                    isOverButton: true,
-                                                    isSearchable: false,
-                                                    isMultiSelect: false,
-                                                  ),
-                                                ],
-                                              ),
+                                            ],
                                             SizedBox(height: AppSpacing.xl),
                                             // Submit button
                                             SizedBox(
@@ -697,12 +619,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                     return;
                                                   }
 
-                                                  final selections = <String?>[
-                                                    if (numExistingFriends >= 1)
-                                                      dropDownValue1,
-                                                    if (numExistingFriends >= 2)
-                                                      dropDownValue2,
-                                                  ];
+                                                  final selections =
+                                                      List<String?>.from(
+                                                          _dropDownValues);
                                                   final joinedPlayersToAdd =
                                                       <DocumentReference>[];
                                                   final guestPlayersToAdd =
@@ -858,7 +777,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                     SizedBox(height: AppSpacing.xs),
                                     _buildInfoRow(
                                       Icons.people,
-                                      '${numExistingFriends + 1} confirmed, ${game.numPlayers} ${game.numPlayers == 1 ? 'spot' : 'spots'} open',
+                                      '$currentPlayerCount confirmed, $remainingSlots ${remainingSlots == 1 ? 'spot' : 'spots'} open',
                                     ),
                                     if (game.gameType.isNotEmpty) ...[
                                       SizedBox(height: AppSpacing.xs),

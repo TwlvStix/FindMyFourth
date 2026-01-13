@@ -19,6 +19,7 @@ import 'package:google_fonts/google_fonts.dart';
 enum CancelledGameHandling {
   removeNow,
   removeEndOfDay,
+  removeAfter7Days,
   keepInList,
 }
 
@@ -41,6 +42,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       _cancelledHandlingStorageMap = {
     CancelledGameHandling.removeNow: 'removeNow',
     CancelledGameHandling.removeEndOfDay: 'removeEndOfDay',
+    CancelledGameHandling.removeAfter7Days: 'removeAfter7Days',
     CancelledGameHandling.keepInList: 'keepInList',
   };
   String? get choiceChipsValue =>
@@ -121,6 +123,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       );
       return getCurrentTimestamp.isAfter(endOfDay);
     }
+    if (handling == CancelledGameHandling.removeAfter7Days) {
+      final hideAt =
+          AppState().getCancelledGameHideAt(game.reference.path);
+      if (hideAt == null) {
+        return false;
+      }
+      return getCurrentTimestamp.isAfter(hideAt);
+    }
     return false;
   }
 
@@ -178,9 +188,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
             TextButton(
               onPressed: () => Navigator.pop(
                 alertDialogContext,
-                CancelledGameHandling.removeEndOfDay,
+                CancelledGameHandling.removeAfter7Days,
               ),
-              child: Text('Remove after today'),
+              child: Text('Hide after 7 days'),
             ),
             TextButton(
               onPressed: () => Navigator.pop(
@@ -206,6 +216,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       game.reference.path,
       _cancelledHandlingStorageMap[selection]!,
     );
+    if (selection == CancelledGameHandling.removeAfter7Days) {
+      AppState().setCancelledGameHideAt(
+        game.reference.path,
+        getCurrentTimestamp.add(Duration(days: 7)),
+      );
+    }
   }
 
   @override
