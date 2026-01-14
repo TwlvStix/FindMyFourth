@@ -1,13 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
-import '/utils/app_util.dart';
-import '/core/widgets/app_button_enhanced.dart';
-import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
+import '/core/form_field_controller.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/app_choice_chips.dart';
+import '/core/widgets/app_icon_button.dart';
+import '/core/widgets/fairway_background.dart';
+import '/models/notification_preferences.dart';
+import '/services/notification_permission_service.dart';
+import '/utils/app_util.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class NotificationPageWidget extends StatefulWidget {
@@ -17,72 +24,153 @@ class NotificationPageWidget extends StatefulWidget {
   static String routePath = '/notificationPage';
 
   @override
-  State<NotificationPageWidget> createState() => _NotificationPageWidgetState();
+  State<NotificationPageWidget> createState() =>
+      _NotificationPageWidgetState();
 }
 
 class _NotificationPageWidgetState extends State<NotificationPageWidget> {
-  bool notifyAll = false;
-  bool notifyMoneyGame = false;
-  bool notifyVegasGame = false;
-  bool notifyCompetitiveGame = false;
-  bool notifyForFun = false;
-  bool notifyOnlyFromFriends = false;
-  bool notifyMemberDiscount = false;
-  bool notifyOff = false;
-  bool switchListTileValue1 = false;
-  bool switchValue = false;
-  bool switchListTileValue2 = false;
-  bool switchListTileValue3 = false;
-  bool switchListTileValue4 = false;
-  bool switchListTileValue5 = false;
-  bool switchListTileValue6 = false;
-  bool switchListTileValue7 = false;
-  bool switchListTileValue8 = false;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  final NotificationPermissionService _notificationPermissionService =
+      NotificationPermissionService();
 
-  @override
-  void initState() {
-    super.initState();
-    // On page load action.
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      notifyAll =
-          valueOrDefault<bool>(currentUserDocument?.notifyAll, false);
-      notifyMoneyGame =
-          valueOrDefault<bool>(currentUserDocument?.notifyMoneyGame, false);
-      notifyVegasGame =
-          valueOrDefault<bool>(currentUserDocument?.notifyVegasGame, false);
-      notifyCompetitiveGame = valueOrDefault<bool>(
-          currentUserDocument?.notifyCompetitiveGame, false);
-      notifyForFun =
-          valueOrDefault<bool>(currentUserDocument?.notifyForFun, false);
-      notifyOnlyFromFriends = valueOrDefault<bool>(
-          currentUserDocument?.notifyOnlyFromFriends, false);
-      notifyMemberDiscount = valueOrDefault<bool>(
-          currentUserDocument?.notifyMemberDiscount, false);
-      notifyOff = valueOrDefault<bool>(currentUserDocument?.notifyOff, false);
-      switchListTileValue1 = notifyAll;
-      switchListTileValue2 = notifyMoneyGame;
-      switchListTileValue3 = notifyVegasGame;
-      switchListTileValue4 = notifyCompetitiveGame;
-      switchListTileValue5 = notifyForFun;
-      switchListTileValue6 = notifyOnlyFromFriends;
-      switchListTileValue7 = notifyMemberDiscount;
-      switchListTileValue8 = notifyOff;
-      switchValue = switchListTileValue1;
-      if (mounted) setState(() {});
-    });
+  NotificationPreferences _prefs = NotificationPreferences.defaults();
+  bool _permissionDenied = false;
+  bool _initialized = false;
+  FormFieldController<List<String>>? _gameStyleController;
+  FormFieldController<List<String>>? _digestController;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+  static const List<_ChoiceOption> _gameStyleOptions = [
+    _ChoiceOption(value: 'money', label: 'Money'),
+    _ChoiceOption(value: 'vegas', label: 'Vegas'),
+    _ChoiceOption(value: 'competitive', label: 'Competitive'),
+    _ChoiceOption(value: 'for_fun', label: 'For Fun'),
+    _ChoiceOption(value: 'friends', label: 'Friends'),
+    _ChoiceOption(value: 'member_discount', label: 'Member Discount'),
+  ];
+
+  static const List<_ChoiceOption> _digestOptions = [
+    _ChoiceOption(value: 'instant', label: 'Instant'),
+    _ChoiceOption(value: 'hourly', label: 'Hourly'),
+    _ChoiceOption(value: 'daily', label: 'Daily'),
+    _ChoiceOption(value: 'off', label: 'Off'),
+  ];
+
+  Future<bool> _ensureNotificationPermission() async {
+    final status =
+        await _notificationPermissionService.requestPermissionAndRegister();
+    if (status == NotificationPermissionStatus.granted) {
       if (mounted) {
-        setState(() {});
+        setState(() => _permissionDenied = false);
       }
+      return true;
+    }
+    if (status == NotificationPermissionStatus.denied && mounted) {
+      setState(() => _permissionDenied = true);
+    }
+    if (status != NotificationPermissionStatus.denied && mounted) {
+      setState(() => _permissionDenied = false);
+    }
+    return false;
+  }
+
+  void _ensureControllers() {
+    _gameStyleController ??= FormFieldController<List<String>>(
+      _labelsForValues(
+        _gameStyleOptions,
+        _prefs.gameAlerts.styles,
+      ),
+    );
+    _digestController ??= FormFieldController<List<String>>([
+      _labelForValue(_digestOptions, _prefs.digestMode),
+    ]);
+  }
+
+  Future<void> _savePreferences() async {
+    if (currentUserReference == null) {
+      return;
+    }
+    final data = <String, dynamic>{
+      'notification_prefs': _prefs.toFirestore(),
+    };
+    data.addAll(_legacyNotificationFields(_prefs));
+    try {
+      await currentUserReference!.set(
+        data,
+        SetOptions(merge: true),
+      );
+      if (mounted) {
+        context.pop();
+      }
+    } on FirebaseException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Unable to save notification settings (${error.code}).',
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Map<String, dynamic> _legacyNotificationFields(
+    NotificationPreferences prefs,
+  ) {
+    final pushEnabled = prefs.pushEnabled;
+    final gameEnabled = pushEnabled && prefs.gameAlerts.enabled;
+    final styles = prefs.gameAlerts.styles.toSet();
+    return {
+      'notify_off': !pushEnabled,
+      'notify_all': pushEnabled,
+      'notify_money_game': gameEnabled && styles.contains('money'),
+      'notify_vegas_game': gameEnabled && styles.contains('vegas'),
+      'notify_competitive_game': gameEnabled && styles.contains('competitive'),
+      'notify_for_fun': gameEnabled && styles.contains('for_fun'),
+      'notify_only_from_friends': gameEnabled && styles.contains('friends'),
+      'notify_member_discount': gameEnabled && styles.contains('member_discount'),
+    };
+  }
+
+  Future<void> _pickTime({required bool isStart}) async {
+    final initialValue =
+        isStart ? _prefs.quietHours.start : _prefs.quietHours.end;
+    final initialTime = _parseTime(initialValue) ?? TimeOfDay(hour: 22, minute: 0);
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+    );
+    if (picked == null) {
+      return;
+    }
+    final formatted = _formatTime(picked);
+    setState(() {
+      _prefs = _prefs.copyWith(
+        quietHours: _prefs.quietHours.copyWith(
+          start: isStart ? formatted : _prefs.quietHours.start,
+          end: isStart ? _prefs.quietHours.end : formatted,
+        ),
+      );
     });
   }
 
-  @override
-  void dispose() {
-    super.dispose();
+  String _formatTime(TimeOfDay time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
+  TimeOfDay? _parseTime(String value) {
+    final parts = value.split(':');
+    if (parts.length != 2) {
+      return null;
+    }
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) {
+      return null;
+    }
+    return TimeOfDay(hour: hour, minute: minute);
   }
 
   @override
@@ -107,7 +195,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
           },
         ),
         title: Text(
-          'Settings Page',
+          'Notification Settings',
           style: AppTheme.of(context).headlineSmall.override(
                 font: GoogleFonts.outfit(
                   fontWeight:
@@ -118,7 +206,8 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 letterSpacing: 0.0,
                 fontWeight:
                     AppTheme.of(context).headlineSmall.fontWeight,
-                fontStyle: AppTheme.of(context).headlineSmall.fontStyle,
+                fontStyle:
+                    AppTheme.of(context).headlineSmall.fontStyle,
               ),
         ),
         actions: [],
@@ -126,67 +215,149 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
         elevation: 0.0,
       ),
       body: FairwayBackgroundLight(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-            Padding(
-              padding: AppSpacing.horizontalLg,
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Choose what notifcations you want to recieve below and we will update the settings.',
-                      style: AppTheme.of(context).labelMedium.override(
-                            font: GoogleFonts.outfit(
-                              fontWeight: AppTheme.of(context)
-                                  .labelMedium
-                                  .fontWeight,
-                              fontStyle: AppTheme.of(context)
-                                  .labelMedium
-                                  .fontStyle,
-                            ),
-                            letterSpacing: 0.0,
+        child: StreamBuilder<UsersRecord>(
+          stream: currentUserReference == null
+              ? null
+              : UsersRecord.getDocument(currentUserReference!),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            final data = snapshot.data!;
+            if (!_initialized) {
+              final prefsMap = data.snapshotData['notification_prefs'];
+              _prefs = NotificationPreferences.fromMap(
+                prefsMap is Map ? Map<String, dynamic>.from(prefsMap) : null,
+              );
+              _ensureControllers();
+              _initialized = true;
+            }
+
+            return ListView(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.md,
+                AppSpacing.lg,
+                AppSpacing.xxxl,
+              ),
+              children: [
+                Text(
+                  'Manage push alerts and in-app notifications.',
+                  style: AppTheme.of(context).labelMedium.override(
+                        font: GoogleFonts.outfit(
+                          fontWeight: AppTheme.of(context)
+                              .labelMedium
+                              .fontWeight,
+                          fontStyle: AppTheme.of(context)
+                              .labelMedium
+                              .fontStyle,
+                        ),
+                        letterSpacing: 0.0,
+                        fontWeight: AppTheme.of(context)
+                            .labelMedium
+                            .fontWeight,
+                        fontStyle: AppTheme.of(context)
+                            .labelMedium
+                            .fontStyle,
+                      ),
+                ),
+                SizedBox(height: AppSpacing.md),
+                SwitchListTile.adaptive(
+                  value: _prefs.pushEnabled,
+                  onChanged: (value) async {
+                    if (value) {
+                      final granted = await _ensureNotificationPermission();
+                      if (!granted) {
+                        return;
+                      }
+                    }
+                    setState(() {
+                      _prefs = _prefs.copyWith(pushEnabled: value);
+                      if (!value) {
+                        _permissionDenied = false;
+                      }
+                    });
+                  },
+                  title: Text(
+                    'Push notifications',
+                    style: AppTheme.of(context).bodyLarge.override(
+                          font: GoogleFonts.outfit(
                             fontWeight: AppTheme.of(context)
-                                .labelMedium
+                                .bodyLarge
                                 .fontWeight,
                             fontStyle: AppTheme.of(context)
-                                .labelMedium
+                                .bodyLarge
                                 .fontStyle,
                           ),
+                          letterSpacing: 0.0,
+                          fontWeight:
+                              AppTheme.of(context).bodyLarge.fontWeight,
+                          fontStyle:
+                              AppTheme.of(context).bodyLarge.fontStyle,
+                        ),
+                  ),
+                  subtitle: Text(
+                    'Allow alerts for games and chats.',
+                    style: AppTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.outfit(
+                            fontWeight: AppTheme.of(context)
+                                .bodyMedium
+                                .fontWeight,
+                            fontStyle: AppTheme.of(context)
+                                .bodyMedium
+                                .fontStyle,
+                          ),
+                          color: const Color(0xFF8B97A2),
+                          letterSpacing: 0.0,
+                          fontWeight: AppTheme.of(context)
+                              .bodyMedium
+                              .fontWeight,
+                          fontStyle:
+                              AppTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                  ),
+                  tileColor: AppTheme.of(context).secondaryBackground,
+                  activeColor: AppTheme.of(context).primary,
+                  activeTrackColor: AppTheme.of(context).accent1,
+                  contentPadding: AppSpacing.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                ),
+                if (_permissionDenied) ...[
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: AppSpacing.sm,
+                      top: AppSpacing.xs,
+                    ),
+                    child: Text(
+                      'Push permissions are off in system settings.',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.error,
+                      ),
                     ),
                   ),
                 ],
-              ),
-            ),
-            Padding(
-              padding: AppSpacing.only(top: AppSpacing.sm),
-              child: Material(
-                color: Colors.transparent,
-                child: SwitchListTile.adaptive(
-                  value: switchListTileValue1,
-                  onChanged: (newValue) async {
-                    if (mounted) {
-                      setState(() => switchListTileValue1 = newValue);
-                    }
-                    if (newValue) {
-                      notifyAll = true;
-                      notifyMoneyGame = true;
-                      notifyVegasGame = true;
-                      notifyCompetitiveGame = true;
-                      notifyForFun = true;
-                      notifyOnlyFromFriends = true;
-                      notifyMemberDiscount = true;
-                      notifyOff = false;
-                      if (mounted) setState(() {});
-                    } else {
-                      notifyAll = false;
-                      if (mounted) setState(() {});
-                    }
+                SizedBox(height: AppSpacing.lg),
+                Text(
+                  'Game alerts',
+                  style: AppTypography.titleSmall.copyWith(
+                    color: AppColors.onyx,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.xs),
+                SwitchListTile.adaptive(
+                  value: _prefs.gameAlerts.enabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _prefs = _prefs.copyWith(
+                        gameAlerts: _prefs.gameAlerts.copyWith(enabled: value),
+                      );
+                    });
                   },
                   title: Text(
-                    'All Push Notifications',
+                    'Enable game alerts',
                     style: AppTheme.of(context).bodyLarge.override(
                           font: GoogleFonts.outfit(
                             fontWeight: AppTheme.of(context)
@@ -201,97 +372,74 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                               AppTheme.of(context).bodyLarge.fontWeight,
                           fontStyle:
                               AppTheme.of(context).bodyLarge.fontStyle,
-                          lineHeight: 2.0,
-                        ),
-                  ),
-                  subtitle: Text(
-                    'Receive Push notifications for any time of game created.',
-                    style: AppTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyMedium
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyMedium
-                                .fontStyle,
-                          ),
-                          color: Color(0xFF8B97A2),
-                          letterSpacing: 0.0,
-                          fontWeight: AppTheme.of(context)
-                              .bodyMedium
-                              .fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyMedium.fontStyle,
                         ),
                   ),
                   tileColor: AppTheme.of(context).secondaryBackground,
                   activeColor: AppTheme.of(context).primary,
                   activeTrackColor: AppTheme.of(context).accent1,
-                  dense: false,
-                  controlAffinity: ListTileControlAffinity.trailing,
-                  contentPadding:
-                      AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
+                  contentPadding: AppSpacing.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
                 ),
-              ),
-            ),
-            Switch.adaptive(
-              value: switchValue,
-              onChanged: (newValue) async {
-                if (mounted) setState(() => switchValue = newValue);
-              },
-              activeColor: AppTheme.of(context).primary,
-              activeTrackColor: AppTheme.of(context).accent1,
-              inactiveTrackColor: AppTheme.of(context).alternate,
-              inactiveThumbColor: AppTheme.of(context).secondaryText,
-            ),
-            IconButton(
-              onPressed: () async {
-                if (mounted) {
-                  setState(() => notifyMoneyGame = !notifyMoneyGame);
-                }
-              },
-              icon: notifyMoneyGame
-                  ? Icon(
-                      Icons.check_box,
-                      color: AppTheme.of(context).primary,
-                      size: 25.0,
-                    )
-                  : Icon(
-                      Icons.check_box_outline_blank,
-                      color: AppTheme.of(context).secondaryText,
-                      size: 25.0,
+                SizedBox(height: AppSpacing.sm),
+                AppChoiceChips(
+                  options: _gameStyleOptions
+                      .map((option) => ChipData(option.label))
+                      .toList(),
+                  onChanged: (labels) {
+                    final values =
+                        _valuesForLabels(_gameStyleOptions, labels ?? []);
+                    setState(() {
+                      _prefs = _prefs.copyWith(
+                        gameAlerts:
+                            _prefs.gameAlerts.copyWith(styles: values),
+                      );
+                    });
+                  },
+                  controller: _gameStyleController!,
+                  selectedChipStyle: ChipStyle(
+                    backgroundColor: AppTheme.of(context).primary,
+                    textStyle: AppTypography.labelSmall.copyWith(
+                      color: AppColors.pure,
+                      letterSpacing: AppTypography.letterSpacingNormal,
                     ),
-              style: ButtonStyle(
-                backgroundColor:
-                    WidgetStateProperty.all(Colors.transparent),
-                shape: WidgetStateProperty.resolveWith<OutlinedBorder>(
-                  (states) => const RoundedRectangleBorder(
-                    side: BorderSide.none,
+                    borderColor: AppTheme.of(context).primary,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  unselectedChipStyle: ChipStyle(
+                    backgroundColor: AppTheme.of(context).secondaryBackground,
+                    textStyle: AppTypography.labelSmall.copyWith(
+                      color: AppColors.stone,
+                      letterSpacing: AppTypography.letterSpacingNormal,
+                    ),
+                    borderColor: AppTheme.of(context).alternate,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  chipSpacing: AppSpacing.sm,
+                  rowSpacing: AppSpacing.xs,
+                  multiselect: true,
+                ),
+                SizedBox(height: AppSpacing.lg),
+                Text(
+                  'Chat alerts',
+                  style: AppTypography.titleSmall.copyWith(
+                    color: AppColors.onyx,
                   ),
                 ),
-              ),
-            ),
-            Padding(
-              padding: AppSpacing.only(top: AppSpacing.sm),
-              child: Material(
-                color: Colors.transparent,
-                child: SwitchListTile.adaptive(
-                  value: switchListTileValue2,
-                  onChanged: (newValue) async {
-                    if (mounted) {
-                      setState(() => switchListTileValue2 = newValue);
-                    }
-                    if (newValue) {
-                      notifyMoneyGame = true;
-                      if (mounted) setState(() {});
-                    } else {
-                      notifyAll = false;
-                      notifyMoneyGame = false;
-                      if (mounted) setState(() {});
-                    }
+                SizedBox(height: AppSpacing.xs),
+                SwitchListTile.adaptive(
+                  value: _prefs.chatAlerts.enabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _prefs = _prefs.copyWith(
+                        chatAlerts:
+                            _prefs.chatAlerts.copyWith(enabled: value),
+                      );
+                    });
                   },
                   title: Text(
-                    'Money Game Notifications',
+                    'Enable chat alerts',
                     style: AppTheme.of(context).bodyLarge.override(
                           font: GoogleFonts.outfit(
                             fontWeight: AppTheme.of(context)
@@ -306,11 +454,27 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                               AppTheme.of(context).bodyLarge.fontWeight,
                           fontStyle:
                               AppTheme.of(context).bodyLarge.fontStyle,
-                          lineHeight: 2.0,
                         ),
                   ),
-                  subtitle: Text(
-                    'Receive Push notifications for games that have money on the line. ',
+                  tileColor: AppTheme.of(context).secondaryBackground,
+                  activeColor: AppTheme.of(context).primary,
+                  activeTrackColor: AppTheme.of(context).accent1,
+                  contentPadding: AppSpacing.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                ),
+                SwitchListTile.adaptive(
+                  value: _prefs.chatAlerts.direct,
+                  onChanged: (value) {
+                    setState(() {
+                      _prefs = _prefs.copyWith(
+                        chatAlerts: _prefs.chatAlerts.copyWith(direct: value),
+                      );
+                    });
+                  },
+                  title: Text(
+                    'Direct messages',
                     style: AppTheme.of(context).bodyMedium.override(
                           font: GoogleFonts.outfit(
                             fontWeight: AppTheme.of(context)
@@ -320,11 +484,9 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                 .bodyMedium
                                 .fontStyle,
                           ),
-                          color: Color(0xFF8B97A2),
                           letterSpacing: 0.0,
-                          fontWeight: AppTheme.of(context)
-                              .bodyMedium
-                              .fontWeight,
+                          fontWeight:
+                              AppTheme.of(context).bodyMedium.fontWeight,
                           fontStyle:
                               AppTheme.of(context).bodyMedium.fontStyle,
                         ),
@@ -332,34 +494,66 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   tileColor: AppTheme.of(context).secondaryBackground,
                   activeColor: AppTheme.of(context).primary,
                   activeTrackColor: AppTheme.of(context).accent1,
-                  dense: false,
-                  controlAffinity: ListTileControlAffinity.trailing,
-                  contentPadding:
-                      AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
+                  contentPadding: AppSpacing.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.xs,
+                  ),
                 ),
-              ),
-            ),
-            Padding(
-              padding: AppSpacing.only(top: AppSpacing.sm),
-              child: Material(
-                color: Colors.transparent,
-                child: SwitchListTile.adaptive(
-                  value: switchListTileValue3,
-                  onChanged: (newValue) async {
-                    if (mounted) {
-                      setState(() => switchListTileValue3 = newValue);
-                    }
-                    if (newValue) {
-                      notifyVegasGame = true;
-                      if (mounted) setState(() {});
-                    } else {
-                      notifyAll = false;
-                      notifyVegasGame = false;
-                      if (mounted) setState(() {});
-                    }
+                SwitchListTile.adaptive(
+                  value: _prefs.chatAlerts.group,
+                  onChanged: (value) {
+                    setState(() {
+                      _prefs = _prefs.copyWith(
+                        chatAlerts: _prefs.chatAlerts.copyWith(group: value),
+                      );
+                    });
                   },
                   title: Text(
-                    'Vegas Game Notifications',
+                    'Group chats',
+                    style: AppTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.outfit(
+                            fontWeight: AppTheme.of(context)
+                                .bodyMedium
+                                .fontWeight,
+                            fontStyle: AppTheme.of(context)
+                                .bodyMedium
+                                .fontStyle,
+                          ),
+                          letterSpacing: 0.0,
+                          fontWeight:
+                              AppTheme.of(context).bodyMedium.fontWeight,
+                          fontStyle:
+                              AppTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                  ),
+                  tileColor: AppTheme.of(context).secondaryBackground,
+                  activeColor: AppTheme.of(context).primary,
+                  activeTrackColor: AppTheme.of(context).accent1,
+                  contentPadding: AppSpacing.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.xs,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.lg),
+                Text(
+                  'Quiet hours',
+                  style: AppTypography.titleSmall.copyWith(
+                    color: AppColors.onyx,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.xs),
+                SwitchListTile.adaptive(
+                  value: _prefs.quietHours.enabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _prefs = _prefs.copyWith(
+                        quietHours:
+                            _prefs.quietHours.copyWith(enabled: value),
+                      );
+                    });
+                  },
+                  title: Text(
+                    'Enable quiet hours',
                     style: AppTheme.of(context).bodyLarge.override(
                           font: GoogleFonts.outfit(
                             fontWeight: AppTheme.of(context)
@@ -374,11 +568,19 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                               AppTheme.of(context).bodyLarge.fontWeight,
                           fontStyle:
                               AppTheme.of(context).bodyLarge.fontStyle,
-                          lineHeight: 2.0,
                         ),
                   ),
-                  subtitle: Text(
-                    'Receive Push notifications for when a Vegas game is created.',
+                  tileColor: AppTheme.of(context).secondaryBackground,
+                  activeColor: AppTheme.of(context).primary,
+                  activeTrackColor: AppTheme.of(context).accent1,
+                  contentPadding: AppSpacing.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                ),
+                ListTile(
+                  title: Text(
+                    'Start',
                     style: AppTheme.of(context).bodyMedium.override(
                           font: GoogleFonts.outfit(
                             fontWeight: AppTheme.of(context)
@@ -388,46 +590,105 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                 .bodyMedium
                                 .fontStyle,
                           ),
-                          color: Color(0xFF8B97A2),
                           letterSpacing: 0.0,
-                          fontWeight: AppTheme.of(context)
-                              .bodyMedium
-                              .fontWeight,
+                          fontWeight:
+                              AppTheme.of(context).bodyMedium.fontWeight,
                           fontStyle:
                               AppTheme.of(context).bodyMedium.fontStyle,
                         ),
                   ),
-                  tileColor: AppTheme.of(context).secondaryBackground,
-                  activeColor: AppTheme.of(context).primary,
-                  activeTrackColor: AppTheme.of(context).accent1,
-                  dense: false,
-                  controlAffinity: ListTileControlAffinity.trailing,
-                  contentPadding:
-                      AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
+                  trailing: Text(
+                    _prefs.quietHours.start,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.stone,
+                    ),
+                  ),
+                  onTap: () => _pickTime(isStart: true),
+                  contentPadding: AppSpacing.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.xs,
+                  ),
                 ),
-              ),
-            ),
-            Padding(
-              padding: AppSpacing.only(top: AppSpacing.sm),
-              child: Material(
-                color: Colors.transparent,
-                child: SwitchListTile.adaptive(
-                  value: switchListTileValue4,
-                  onChanged: (newValue) async {
-                    if (mounted) {
-                      setState(() => switchListTileValue4 = newValue);
-                    }
-                    if (newValue) {
-                      notifyCompetitiveGame = true;
-                      if (mounted) setState(() {});
-                    } else {
-                      notifyAll = false;
-                      notifyCompetitiveGame = false;
-                      if (mounted) setState(() {});
-                    }
-                  },
+                ListTile(
                   title: Text(
-                    'Competitive Game Notifications',
+                    'End',
+                    style: AppTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.outfit(
+                            fontWeight: AppTheme.of(context)
+                                .bodyMedium
+                                .fontWeight,
+                            fontStyle: AppTheme.of(context)
+                                .bodyMedium
+                                .fontStyle,
+                          ),
+                          letterSpacing: 0.0,
+                          fontWeight:
+                              AppTheme.of(context).bodyMedium.fontWeight,
+                          fontStyle:
+                              AppTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                  ),
+                  trailing: Text(
+                    _prefs.quietHours.end,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.stone,
+                    ),
+                  ),
+                  onTap: () => _pickTime(isStart: false),
+                  contentPadding: AppSpacing.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.xs,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.lg),
+                Text(
+                  'Digest mode',
+                  style: AppTypography.titleSmall.copyWith(
+                    color: AppColors.onyx,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.xs),
+                AppChoiceChips(
+                  options: _digestOptions
+                      .map((option) => ChipData(option.label))
+                      .toList(),
+                  onChanged: (labels) {
+                    final label =
+                        labels != null && labels.isNotEmpty
+                            ? labels.first
+                            : 'Instant';
+                    final value = _valueForLabel(_digestOptions, label);
+                    setState(() {
+                      _prefs = _prefs.copyWith(digestMode: value);
+                    });
+                  },
+                  controller: _digestController!,
+                  selectedChipStyle: ChipStyle(
+                    backgroundColor: AppTheme.of(context).primary,
+                    textStyle: AppTypography.labelSmall.copyWith(
+                      color: AppColors.pure,
+                      letterSpacing: AppTypography.letterSpacingNormal,
+                    ),
+                    borderColor: AppTheme.of(context).primary,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  unselectedChipStyle: ChipStyle(
+                    backgroundColor: AppTheme.of(context).secondaryBackground,
+                    textStyle: AppTypography.labelSmall.copyWith(
+                      color: AppColors.stone,
+                      letterSpacing: AppTypography.letterSpacingNormal,
+                    ),
+                    borderColor: AppTheme.of(context).alternate,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  chipSpacing: AppSpacing.sm,
+                  rowSpacing: AppSpacing.xs,
+                  multiselect: false,
+                ),
+                SizedBox(height: AppSpacing.lg),
+                ListTile(
+                  title: Text(
+                    'Muted threads',
                     style: AppTheme.of(context).bodyLarge.override(
                           font: GoogleFonts.outfit(
                             fontWeight: AppTheme.of(context)
@@ -442,325 +703,81 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                               AppTheme.of(context).bodyLarge.fontWeight,
                           fontStyle:
                               AppTheme.of(context).bodyLarge.fontStyle,
-                          lineHeight: 2.0,
                         ),
                   ),
                   subtitle: Text(
-                    'Receive Push notifications for games that are all about the pressure and you play by the rule book.',
-                    style: AppTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyMedium
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyMedium
-                                .fontStyle,
-                          ),
-                          color: Color(0xFF8B97A2),
-                          letterSpacing: 0.0,
-                          fontWeight: AppTheme.of(context)
-                              .bodyMedium
-                              .fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyMedium.fontStyle,
-                        ),
+                    '${_prefs.mutedThreads.length} muted',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.stone,
+                    ),
                   ),
-                  tileColor: AppTheme.of(context).secondaryBackground,
-                  activeColor: AppTheme.of(context).primary,
-                  activeTrackColor: AppTheme.of(context).accent1,
-                  dense: false,
-                  controlAffinity: ListTileControlAffinity.trailing,
-                  contentPadding:
-                      AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
-                ),
-              ),
-            ),
-            Padding(
-              padding: AppSpacing.only(top: AppSpacing.sm),
-              child: Material(
-                color: Colors.transparent,
-                child: SwitchListTile.adaptive(
-                  value: switchListTileValue5,
-                  onChanged: (newValue) async {
-                    if (mounted) {
-                      setState(() => switchListTileValue5 = newValue);
-                    }
-                    if (newValue) {
-                      notifyForFun = true;
-                      if (mounted) setState(() {});
-                    } else {
-                      notifyAll = false;
-                      notifyForFun = false;
-                      if (mounted) setState(() {});
-                    }
-                  },
-                  title: Text(
-                    'For Fun',
-                    style: AppTheme.of(context).bodyLarge.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyLarge
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyLarge
-                                .fontStyle,
-                          ),
-                          letterSpacing: 0.0,
-                          fontWeight:
-                              AppTheme.of(context).bodyLarge.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyLarge.fontStyle,
-                          lineHeight: 2.0,
-                        ),
+                  trailing: Text(
+                    'Manage',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.stone,
+                    ),
                   ),
-                  subtitle: Text(
-                    'Receive Push notifications for games that are only for fun. You don\'t want anything too serious',
-                    style: AppTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyMedium
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyMedium
-                                .fontStyle,
-                          ),
-                          color: Color(0xFF8B97A2),
-                          letterSpacing: 0.0,
-                          fontWeight: AppTheme.of(context)
-                              .bodyMedium
-                              .fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyMedium.fontStyle,
-                        ),
+                  contentPadding: AppSpacing.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.xs,
                   ),
-                  tileColor: AppTheme.of(context).secondaryBackground,
-                  activeColor: AppTheme.of(context).primary,
-                  activeTrackColor: AppTheme.of(context).accent1,
-                  dense: false,
-                  controlAffinity: ListTileControlAffinity.trailing,
-                  contentPadding:
-                      AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 ),
-              ),
-            ),
-            Padding(
-              padding: AppSpacing.only(top: AppSpacing.sm),
-              child: Material(
-                color: Colors.transparent,
-                child: SwitchListTile.adaptive(
-                  value: switchListTileValue6,
-                  onChanged: (newValue) async {
-                    if (mounted) {
-                      setState(() => switchListTileValue6 = newValue);
-                    }
-                    if (newValue) {
-                      notifyOnlyFromFriends = true;
-                      if (mounted) setState(() {});
-                    } else {
-                      notifyAll = false;
-                      notifyOnlyFromFriends = false;
-                      if (mounted) setState(() {});
-                    }
-                  },
-                  title: Text(
-                    'Only From Your Friends',
-                    style: AppTheme.of(context).bodyLarge.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyLarge
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyLarge
-                                .fontStyle,
-                          ),
-                          letterSpacing: 0.0,
-                          fontWeight:
-                              AppTheme.of(context).bodyLarge.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyLarge.fontStyle,
-                          lineHeight: 2.0,
-                        ),
-                  ),
-                  subtitle: Text(
-                    'Receive Push notifications only when your friends make a friends only game',
-                    style: AppTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyMedium
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyMedium
-                                .fontStyle,
-                          ),
-                          color: Color(0xFF8B97A2),
-                          letterSpacing: 0.0,
-                          fontWeight: AppTheme.of(context)
-                              .bodyMedium
-                              .fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyMedium.fontStyle,
-                        ),
-                  ),
-                  tileColor: AppTheme.of(context).secondaryBackground,
-                  activeColor: AppTheme.of(context).primary,
-                  activeTrackColor: AppTheme.of(context).accent1,
-                  dense: false,
-                  controlAffinity: ListTileControlAffinity.trailing,
-                  contentPadding:
-                      AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
+                SizedBox(height: AppSpacing.xl),
+                AppButtonEnhanced(
+                  text: 'Save settings',
+                  variant: AppButtonVariant.primary,
+                  size: AppButtonSize.large,
+                  onPressed: _savePreferences,
                 ),
-              ),
-            ),
-            Material(
-              color: Colors.transparent,
-              child: SwitchListTile.adaptive(
-              value: switchListTileValue7,
-              onChanged: (newValue) async {
-                if (mounted) {
-                  setState(() => switchListTileValue7 = newValue);
-                }
-                if (newValue) {
-                  notifyMemberDiscount = true;
-                  if (mounted) setState(() {});
-                } else {
-                  notifyAll = false;
-                  notifyMemberDiscount = false;
-                  if (mounted) setState(() {});
-                }
-              },
-                title: Text(
-                  'Member Discount',
-                  style: AppTheme.of(context).bodyLarge.override(
-                        font: GoogleFonts.outfit(
-                          fontWeight:
-                              AppTheme.of(context).bodyLarge.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyLarge.fontStyle,
-                        ),
-                        letterSpacing: 0.0,
-                        fontWeight:
-                            AppTheme.of(context).bodyLarge.fontWeight,
-                        fontStyle:
-                            AppTheme.of(context).bodyLarge.fontStyle,
-                        lineHeight: 2.0,
-                      ),
-                ),
-                subtitle: Text(
-                  'Don\'t miss out on the games that may save you some money on green fees.',
-                  style: AppTheme.of(context).bodyMedium.override(
-                        font: GoogleFonts.outfit(
-                          fontWeight: AppTheme.of(context)
-                              .bodyMedium
-                              .fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyMedium.fontStyle,
-                        ),
-                        color: Color(0xFF8B97A2),
-                        letterSpacing: 0.0,
-                        fontWeight:
-                            AppTheme.of(context).bodyMedium.fontWeight,
-                        fontStyle:
-                            AppTheme.of(context).bodyMedium.fontStyle,
-                      ),
-                ),
-                tileColor: AppTheme.of(context).secondaryBackground,
-                activeColor: AppTheme.of(context).primary,
-                activeTrackColor: AppTheme.of(context).accent1,
-                dense: false,
-                controlAffinity: ListTileControlAffinity.trailing,
-                contentPadding:
-                    AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
-              ),
-            ),
-            Material(
-              color: Colors.transparent,
-              child: SwitchListTile.adaptive(
-                value: switchListTileValue8,
-                onChanged: (newValue) async {
-                  if (mounted) {
-                    setState(() => switchListTileValue8 = newValue);
-                  }
-                  if (newValue) {
-                    notifyAll = false;
-                    notifyMoneyGame = false;
-                    notifyVegasGame = false;
-                    notifyCompetitiveGame = false;
-                    notifyForFun = false;
-                    notifyOnlyFromFriends = false;
-                    notifyMemberDiscount = false;
-                    notifyOff = true;
-                    if (mounted) setState(() {});
-                  }
-                },
-                title: Text(
-                  'Turn all Notifications off',
-                  style: AppTheme.of(context).bodyLarge.override(
-                        font: GoogleFonts.outfit(
-                          fontWeight:
-                              AppTheme.of(context).bodyLarge.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyLarge.fontStyle,
-                        ),
-                        letterSpacing: 0.0,
-                        fontWeight:
-                            AppTheme.of(context).bodyLarge.fontWeight,
-                        fontStyle:
-                            AppTheme.of(context).bodyLarge.fontStyle,
-                        lineHeight: 2.0,
-                      ),
-                ),
-                subtitle: Text(
-                  'You don\'t want to receive any heads up on games as they are created.  You will open the app to see yourself. ',
-                  style: AppTheme.of(context).bodyMedium.override(
-                        font: GoogleFonts.outfit(
-                          fontWeight: AppTheme.of(context)
-                              .bodyMedium
-                              .fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyMedium.fontStyle,
-                        ),
-                        color: Color(0xFF8B97A2),
-                        letterSpacing: 0.0,
-                        fontWeight:
-                            AppTheme.of(context).bodyMedium.fontWeight,
-                        fontStyle:
-                            AppTheme.of(context).bodyMedium.fontStyle,
-                      ),
-                ),
-                tileColor: AppTheme.of(context).secondaryBackground,
-                activeColor: AppTheme.of(context).primary,
-                activeTrackColor: AppTheme.of(context).accent1,
-                dense: false,
-                controlAffinity: ListTileControlAffinity.trailing,
-                contentPadding:
-                    AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
-              ),
-            ),
-            Padding(
-              padding: AppSpacing.verticalXl,
-              child: AppButtonEnhanced(
-                text: 'Save Settings',
-                variant: AppButtonVariant.primary,
-                size: AppButtonSize.large,
-                onPressed: () async {
-                  await currentUserReference!.update(createUsersRecordData(
-                    notifyAll: notifyAll,
-                    notifyMoneyGame: notifyMoneyGame,
-                    notifyVegasGame: notifyVegasGame,
-                    notifyCompetitiveGame: notifyCompetitiveGame,
-                    notifyForFun: notifyForFun,
-                    notifyOnlyFromFriends: notifyOnlyFromFriends,
-                    notifyMemberDiscount: notifyMemberDiscount,
-                    notifyOff: notifyOff,
-                  ));
-                  context.pop();
-                },
-              ),
-            ),
-            ],
-          ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
+}
+
+class _ChoiceOption {
+  const _ChoiceOption({
+    required this.value,
+    required this.label,
+  });
+
+  final String value;
+  final String label;
+}
+
+String _labelForValue(List<_ChoiceOption> options, String value) {
+  return options.firstWhere(
+    (option) => option.value == value,
+    orElse: () => options.first,
+  ).label;
+}
+
+String _valueForLabel(List<_ChoiceOption> options, String label) {
+  return options.firstWhere(
+    (option) => option.label == label,
+    orElse: () => options.first,
+  ).value;
+}
+
+List<String> _labelsForValues(
+  List<_ChoiceOption> options,
+  List<String> values,
+) {
+  return options
+      .where((option) => values.contains(option.value))
+      .map((option) => option.label)
+      .toList();
+}
+
+List<String> _valuesForLabels(
+  List<_ChoiceOption> options,
+  List<String> labels,
+) {
+  return options
+      .where((option) => labels.contains(option.label))
+      .map((option) => option.value)
+      .toList();
 }

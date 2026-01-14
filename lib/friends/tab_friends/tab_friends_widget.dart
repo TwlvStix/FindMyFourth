@@ -10,7 +10,7 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/navigation/app_router.dart';
-import '/profile/profile_user/profile_user_firebase_widget.dart';
+import '/profile/main_profile/main_profile_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:collection/collection.dart';
@@ -812,16 +812,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                     0.0),
                                                         child: AppButtonEnhanced(
                                                           onPressed: () async {
-                                                            Navigator.of(context)
-                                                                .push(
-                                                              MaterialPageRoute(
-                                                                builder: (context) =>
-                                                                    ProfileUserFirebaseWidget(
-                                                                  userRef:
-                                                                      listViewUsersRecord
-                                                                          .reference,
-                                                                ),
-                                                              ),
+                                                            context.pushNamed(
+                                                              'ProfileUser',
+                                                              extra: <String, dynamic>{
+                                                                'userRef': listViewUsersRecord.reference,
+                                                              },
                                                             );
                                                           },
                                                           text: 'View',
@@ -1255,15 +1250,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   AppButtonEnhanced(
                                                                 onPressed:
                                                                     () async {
-                                                                  Navigator.of(context)
-                                                                      .push(
-                                                                    MaterialPageRoute(
-                                                                      builder: (context) =>
-                                                                          ProfileUserFirebaseWidget(
-                                                                        userRef:
-                                                                            userList5UsersRecord.reference,
-                                                                      ),
-                                                                    ),
+                                                                  context.pushNamed(
+                                                                    'ProfileUser',
+                                                                    extra: <String, dynamic>{
+                                                                      'userRef': userList5UsersRecord.reference,
+                                                                    },
                                                                   );
                                                                 },
                                                                 text: 'View',
@@ -1665,15 +1656,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                   AppButtonEnhanced(
                                                                 onPressed:
                                                                     () async {
-                                                                  Navigator.of(context)
-                                                                      .push(
-                                                                    MaterialPageRoute(
-                                                                      builder: (context) =>
-                                                                          ProfileUserFirebaseWidget(
-                                                                        userRef:
-                                                                            userList5UsersRecord.reference,
-                                                                      ),
-                                                                    ),
+                                                                  context.pushNamed(
+                                                                    'ProfileUser',
+                                                                    extra: <String, dynamic>{
+                                                                      'userRef': userList5UsersRecord.reference,
+                                                                    },
                                                                   );
                                                                 },
                                                                 text: 'View',

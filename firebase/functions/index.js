@@ -5,12 +5,206 @@ admin.initializeApp();
 const kFcmTokensCollection = "fcm_tokens";
 const kPushNotificationsCollection = "push_notifications";
 const kUserPushNotificationsCollection = "user_push_notifications";
+const kUserDevicesCollection = "devices";
+const kAlertSubsCollection = "alertSubs";
+const kUserNotificationsCollection = "notifications";
+const kGameAlertCooldownMinutes = 60;
 const firestore = admin.firestore();
 
 const kPushNotificationRuntimeOpts = {
   timeoutSeconds: 540,
   memory: "2GB",
 };
+
+function normalizeStyleToken(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function mapGameStyleToken(value) {
+  const normalized = normalizeStyleToken(value);
+  const map = {
+    money_game: "money",
+    money: "money",
+    all_fun: "for_fun",
+    for_fun: "for_fun",
+    open_to_discuss: "open",
+    open: "open",
+    match_play: "match_play",
+    stroke_play: "stroke_play",
+    stableford: "stableford",
+    vegas: "vegas",
+    skins: "skins",
+    competitive: "competitive",
+    friends: "friends",
+  };
+  return map[normalized] || normalized;
+}
+
+function extractGameStyleTokens(gameData) {
+  const tokens = new Set();
+  const styleGame = gameData.style_game;
+  const gameType = gameData.game_type;
+  const rulesSetting = gameData.rules_setting;
+  const friendGame = gameData.friend_game;
+  const memberDiscount = gameData.member_discount;
+
+  if (styleGame) {
+    tokens.add(mapGameStyleToken(styleGame));
+  }
+  if (gameType) {
+    tokens.add(mapGameStyleToken(gameType));
+  }
+  if (rulesSetting) {
+    tokens.add(mapGameStyleToken(rulesSetting));
+  }
+  if (friendGame && normalizeStyleToken(friendGame) === "friends") {
+    tokens.add("friends");
+  }
+  if (memberDiscount && normalizeStyleToken(memberDiscount) === "yes") {
+    tokens.add("member_discount");
+  }
+
+  return Array.from(tokens).filter((token) => token.length > 0);
+}
+
+function getUserNotificationPrefs(userData) {
+  const prefs = userData.notification_prefs || {};
+  const gameAlerts = prefs.game_alerts || {};
+  const chatAlerts = prefs.chat_alerts || {};
+  const quietHours = prefs.quiet_hours || {};
+  const pushEnabled =
+    typeof prefs.push_enabled === "boolean"
+      ? prefs.push_enabled
+      : userData.notify_off === true
+      ? false
+      : userData.notify_all === true;
+  const gameAlertsEnabled =
+    typeof gameAlerts.enabled === "boolean" ? gameAlerts.enabled : true;
+  const chatAlertsEnabled =
+    typeof chatAlerts.enabled === "boolean" ? chatAlerts.enabled : true;
+  const chatDirectEnabled =
+    typeof chatAlerts.direct === "boolean" ? chatAlerts.direct : true;
+  const chatGroupEnabled =
+    typeof chatAlerts.group === "boolean" ? chatAlerts.group : true;
+  let styles = Array.isArray(gameAlerts.styles)
+    ? gameAlerts.styles.filter((style) => typeof style === "string")
+    : [];
+  if (styles.length === 0) {
+    styles = [];
+    if (userData.notify_money_game) styles.push("money");
+    if (userData.notify_vegas_game) styles.push("vegas");
+    if (userData.notify_competitive_game) styles.push("competitive");
+    if (userData.notify_for_fun) styles.push("for_fun");
+    if (userData.notify_only_from_friends) styles.push("friends");
+    if (userData.notify_member_discount) styles.push("member_discount");
+  }
+  const mutedThreads = Array.isArray(prefs.muted_threads)
+    ? prefs.muted_threads.filter((threadId) => typeof threadId === "string")
+    : [];
+  return {
+    pushEnabled,
+    gameAlertsEnabled,
+    chatAlertsEnabled,
+    chatDirectEnabled,
+    chatGroupEnabled,
+    styles,
+    mutedThreads,
+    quietHoursEnabled: quietHours.enabled === true,
+    quietHoursStart:
+      typeof quietHours.start === "string" ? quietHours.start : "22:00",
+    quietHoursEnd: typeof quietHours.end === "string" ? quietHours.end : "07:00",
+    digestMode:
+      typeof prefs.digest_mode === "string" ? prefs.digest_mode : "instant",
+  };
+}
+
+function isWithinQuietHours(start, end, now) {
+  if (typeof start !== "string" || typeof end !== "string") {
+    return false;
+  }
+  const startParts = start.split(":");
+  const endParts = end.split(":");
+  if (startParts.length !== 2 || endParts.length !== 2) {
+    return false;
+  }
+  const startMinutes = parseInt(startParts[0], 10) * 60 + parseInt(startParts[1], 10);
+  const endMinutes = parseInt(endParts[0], 10) * 60 + parseInt(endParts[1], 10);
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  if (startMinutes === endMinutes) {
+    return false;
+  }
+  if (startMinutes < endMinutes) {
+    return nowMinutes >= startMinutes && nowMinutes < endMinutes;
+  }
+  return nowMinutes >= startMinutes || nowMinutes < endMinutes;
+}
+
+function buildGameNotificationContent(gameData, styleLabel) {
+  const name = gameData.name_game || "New game";
+  const course = gameData.course_play || "";
+  const title = "New game posted";
+  const suffix = styleLabel ? ` • ${styleLabel}` : "";
+  const body = course ? `${name} at ${course}${suffix}` : `${name}${suffix}`;
+  return { title, body };
+}
+
+function styleLabelForToken(token) {
+  const map = {
+    money: "Money game",
+    vegas: "Vegas",
+    skins: "Skins",
+    match_play: "Match play",
+    stroke_play: "Stroke play",
+    stableford: "Stableford",
+    competitive: "Competitive",
+    for_fun: "For fun",
+    friends: "Friends",
+    member_discount: "Member discount",
+    open: "Open to discuss",
+  };
+  return map[token] || token.replace(/_/g, " ");
+}
+
+function getUserDisplayName(userData) {
+  if (!userData) {
+    return "";
+  }
+  const displayName = userData.display_name;
+  if (typeof displayName === "string" && displayName.trim().length > 0) {
+    return displayName.trim();
+  }
+  const firstName =
+    typeof userData.first_name === "string" ? userData.first_name.trim() : "";
+  const lastName =
+    typeof userData.last_name === "string" ? userData.last_name.trim() : "";
+  const combined = `${firstName} ${lastName}`.trim();
+  return combined;
+}
+
+function buildChatMessagePreview(messageData) {
+  const text = typeof messageData.text === "string" ? messageData.text.trim() : "";
+  if (text.length > 0) {
+    return text.length > 160 ? `${text.slice(0, 157)}...` : text;
+  }
+  const imageUrl =
+    typeof messageData.imageUrl === "string" ? messageData.imageUrl.trim() : "";
+  if (imageUrl.length > 0) {
+    return "Sent a photo";
+  }
+  const videoUrl =
+    typeof messageData.videoUrl === "string" ? messageData.videoUrl.trim() : "";
+  if (videoUrl.length > 0) {
+    return "Sent a video";
+  }
+  return "Sent a message";
+}
 
 exports.addFcmToken = functions
   .region("us-west2")
@@ -136,6 +330,329 @@ exports.sendUserPushNotificationsTrigger = functions
     } catch (e) {
       console.log(`Error: ${e}`);
       await snapshot.ref.update({ status: "failed", error: `${e}` });
+    }
+  });
+
+exports.sendGameCreatedNotifications = functions
+  .region("us-west2")
+  .runWith(kPushNotificationRuntimeOpts)
+  .firestore.document("games/{gameId}")
+  .onCreate(async (snapshot, context) => {
+    const gameData = snapshot.data() || {};
+    const gameId = context.params.gameId;
+    const styleTokens = extractGameStyleTokens(gameData);
+    if (styleTokens.length === 0) {
+      return;
+    }
+    const creatorUid = gameData.userRef?.id || gameData.uid || null;
+    const recipients = new Set();
+
+    for (const token of styleTokens) {
+      const subsSnap = await firestore
+        .collection(kAlertSubsCollection)
+        .where("style", "==", token)
+        .where("enabled", "==", true)
+        .get();
+      subsSnap.docs.forEach((doc) => {
+        const uid = doc.data()?.uid;
+        if (typeof uid === "string" && uid.length > 0) {
+          recipients.add(uid);
+        }
+      });
+    }
+
+    if (recipients.size === 0) {
+      return;
+    }
+
+    const now = new Date();
+    for (const uid of recipients) {
+      if (creatorUid && uid === creatorUid) {
+        continue;
+      }
+      const userRef = firestore.collection("users").doc(uid);
+      const userSnap = await userRef.get();
+      if (!userSnap.exists) {
+        continue;
+      }
+      const userData = userSnap.data() || {};
+      const prefs = getUserNotificationPrefs(userData);
+      const styleMatches =
+        prefs.styles.length === 0 ||
+        prefs.styles.some((style) => styleTokens.includes(style));
+      if (!prefs.pushEnabled || !prefs.gameAlertsEnabled || !styleMatches) {
+        continue;
+      }
+      if (prefs.digestMode === "off") {
+        continue;
+      }
+
+      const matchedStyle =
+        prefs.styles.find((style) => styleTokens.includes(style)) ||
+        styleTokens[0];
+      const state = userData.notification_state || {};
+      const styleLast = state.game_style_last || {};
+      const lastStamp = styleLast[matchedStyle];
+      if (lastStamp?.toDate) {
+        const lastDate = lastStamp.toDate();
+        const cooldownMs = kGameAlertCooldownMinutes * 60 * 1000;
+        if (now - lastDate < cooldownMs) {
+          continue;
+        }
+      }
+
+      const dedupeKey = `game_${gameId}_to_${uid}`;
+      const notificationRef = userRef
+        .collection(kUserNotificationsCollection)
+        .doc(dedupeKey);
+      const existing = await notificationRef.get();
+      if (existing.exists) {
+        continue;
+      }
+
+      const styleLabel = styleLabelForToken(matchedStyle);
+      const content = buildGameNotificationContent(gameData, styleLabel);
+      await notificationRef.set({
+        type: "game_created",
+        title: content.title,
+        body: content.body,
+        data: {
+          gameId,
+          style: matchedStyle,
+        },
+        read: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        dedupeKey,
+      });
+
+      await userRef.set(
+        {
+          notification_state: {
+            game_style_last: {
+              [matchedStyle]: admin.firestore.FieldValue.serverTimestamp(),
+            },
+          },
+        },
+        { merge: true },
+      );
+
+      const inQuietHours =
+        prefs.quietHoursEnabled &&
+        isWithinQuietHours(prefs.quietHoursStart, prefs.quietHoursEnd, now);
+      if (prefs.digestMode !== "instant" || inQuietHours) {
+        continue;
+      }
+
+      const deviceSnap = await userRef
+        .collection(kUserDevicesCollection)
+        .get();
+      if (deviceSnap.empty) {
+        continue;
+      }
+      const deviceTokens = [];
+      deviceSnap.docs.forEach((doc) => {
+        const token = doc.data()?.fcmToken;
+        if (typeof token === "string" && token.length > 0) {
+          deviceTokens.push({ token, ref: doc.ref });
+        }
+      });
+      if (deviceTokens.length === 0) {
+        continue;
+      }
+
+      const message = {
+        notification: {
+          title: content.title,
+          body: content.body,
+        },
+        data: {
+          initialPageName: "JoinGameDetailed",
+          parameterData: JSON.stringify({
+            gameRef: `games/${gameId}`,
+          }),
+          type: "game_created",
+          gameId,
+        },
+        tokens: deviceTokens.map((entry) => entry.token),
+      };
+
+      const response = await admin.messaging().sendEachForMulticast(message);
+      const invalidRefs = [];
+      response.responses.forEach((resp, index) => {
+        if (resp.success) {
+          return;
+        }
+        const code = resp.error?.code || "";
+        if (
+          code === "messaging/registration-token-not-registered" ||
+          code === "messaging/invalid-registration-token"
+        ) {
+          invalidRefs.push(deviceTokens[index]?.ref);
+        }
+      });
+      if (invalidRefs.length > 0) {
+        await Promise.all(
+          invalidRefs
+            .filter((ref) => ref)
+            .map((ref) => ref.delete()),
+        );
+      }
+    }
+  });
+
+exports.sendChatMessageNotifications = functions
+  .region("us-west2")
+  .runWith(kPushNotificationRuntimeOpts)
+  .firestore.document("chats/{chatId}/messages/{messageId}")
+  .onCreate(async (snapshot, context) => {
+    const messageData = snapshot.data() || {};
+    const chatId = context.params.chatId;
+    const messageId = context.params.messageId;
+    const senderId =
+      messageData.senderId || messageData.sender_id || messageData.sender;
+    if (typeof senderId !== "string" || senderId.length === 0) {
+      return;
+    }
+
+    const chatSnap = await firestore.collection("chats").doc(chatId).get();
+    if (!chatSnap.exists) {
+      return;
+    }
+    const chatData = chatSnap.data() || {};
+    const memberIds = Array.isArray(chatData.memberIds)
+      ? chatData.memberIds.filter((id) => typeof id === "string")
+      : [];
+    if (memberIds.length === 0) {
+      return;
+    }
+
+    const recipients = memberIds.filter((id) => id !== senderId);
+    if (recipients.length === 0) {
+      return;
+    }
+
+    const senderSnap = await firestore.collection("users").doc(senderId).get();
+    const senderName = senderSnap.exists
+      ? getUserDisplayName(senderSnap.data())
+      : "";
+    const messagePreview = buildChatMessagePreview(messageData);
+    const isDirect = chatData.type === "direct" || memberIds.length === 2;
+    const title = isDirect
+      ? senderName || "New message"
+      : chatData.gameId
+      ? "Game chat"
+      : "Group chat";
+    const body = !isDirect && senderName
+      ? `${senderName}: ${messagePreview}`
+      : messagePreview;
+    const now = new Date();
+
+    for (const uid of recipients) {
+      const userRef = firestore.collection("users").doc(uid);
+      const userSnap = await userRef.get();
+      if (!userSnap.exists) {
+        continue;
+      }
+      const prefs = getUserNotificationPrefs(userSnap.data() || {});
+      if (!prefs.pushEnabled || !prefs.chatAlertsEnabled) {
+        continue;
+      }
+      if (prefs.mutedThreads.includes(chatId)) {
+        continue;
+      }
+      if (isDirect && !prefs.chatDirectEnabled) {
+        continue;
+      }
+      if (!isDirect && !prefs.chatGroupEnabled) {
+        continue;
+      }
+      if (prefs.digestMode === "off") {
+        continue;
+      }
+
+      const dedupeKey = `chat_${chatId}_msg_${messageId}_to_${uid}`;
+      const notificationRef = userRef
+        .collection(kUserNotificationsCollection)
+        .doc(dedupeKey);
+      const existing = await notificationRef.get();
+      if (existing.exists) {
+        continue;
+      }
+
+      await notificationRef.set({
+        type: "chat_message",
+        title,
+        body,
+        data: {
+          threadId: chatId,
+          senderId,
+        },
+        read: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        dedupeKey: `chat:${chatId}:msg:${messageId}:to:${uid}`,
+      });
+
+      const inQuietHours =
+        prefs.quietHoursEnabled &&
+        isWithinQuietHours(prefs.quietHoursStart, prefs.quietHoursEnd, now);
+      if (prefs.digestMode !== "instant" || inQuietHours) {
+        continue;
+      }
+
+      const deviceSnap = await userRef
+        .collection(kUserDevicesCollection)
+        .get();
+      if (deviceSnap.empty) {
+        continue;
+      }
+      const deviceTokens = [];
+      deviceSnap.docs.forEach((doc) => {
+        const token = doc.data()?.fcmToken;
+        if (typeof token === "string" && token.length > 0) {
+          deviceTokens.push({ token, ref: doc.ref });
+        }
+      });
+      if (deviceTokens.length === 0) {
+        continue;
+      }
+
+      const message = {
+        notification: {
+          title,
+          body,
+        },
+        data: {
+          initialPageName: "ChatDetails",
+          parameterData: JSON.stringify({
+            chatId,
+          }),
+          type: "chat_message",
+          threadId: chatId,
+        },
+        tokens: deviceTokens.map((entry) => entry.token),
+      };
+
+      const response = await admin.messaging().sendEachForMulticast(message);
+      const invalidRefs = [];
+      response.responses.forEach((resp, index) => {
+        if (resp.success) {
+          return;
+        }
+        const code = resp.error?.code || "";
+        if (
+          code === "messaging/registration-token-not-registered" ||
+          code === "messaging/invalid-registration-token"
+        ) {
+          invalidRefs.push(deviceTokens[index]?.ref);
+        }
+      });
+      if (invalidRefs.length > 0) {
+        await Promise.all(
+          invalidRefs
+            .filter((ref) => ref)
+            .map((ref) => ref.delete()),
+        );
+      }
     }
   });
 

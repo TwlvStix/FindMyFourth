@@ -15,12 +15,13 @@ import '/main_function/games_joined/games_joined_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
 import '/models/game.dart';
 import '/models/vibe_profile.dart';
-import '/profile/profile_user/profile_user_firebase_widget.dart';
+import '/profile/main_profile/main_profile_widget.dart';
 import '/services/vibe_group_matcher.dart';
 import '/services/vibe_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -156,15 +157,90 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     }
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PREMIUM APP BAR
+  // ═══════════════════════════════════════════════════════════════════════════
+  PreferredSizeWidget _buildPremiumAppBar(BuildContext context, String title) {
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      automaticallyImplyLeading: false,
+      leading: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          final router = GoRouter.of(context);
+          router.go('/gamesList');
+        },
+        child: Container(
+          margin: EdgeInsets.only(left: AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: AppColors.fairway.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(12.0),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+            ),
+          ),
+          child: Icon(
+            Icons.chevron_left_rounded,
+            color: Colors.white,
+            size: 28.0,
+          ),
+        ),
+      ),
+      title: Text(
+        title,
+        style: AppTypography.headlineMedium.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      centerTitle: false,
+      elevation: 0.0,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.gameRef == null) {
       return Scaffold(
-        backgroundColor: AppTheme.of(context).secondaryBackground,
-        body: Center(
-          child: Text(
-            'Game details are unavailable.',
-            style: AppTheme.of(context).bodyMedium,
+        extendBodyBehindAppBar: true,
+        appBar: _buildPremiumAppBar(context, 'Game'),
+        body: FairwayBackgroundDark(
+          showOrganic: true,
+          showTexture: true,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.fairway.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.error_outline_rounded,
+                    color: Colors.white.withOpacity(0.5),
+                    size: 40,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.md),
+                Text(
+                  'Game Unavailable',
+                  style: AppTypography.titleSmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.xs),
+                Text(
+                  'This game is no longer available',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: Colors.white.withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -176,17 +252,30 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     return StreamBuilder<DocumentSnapshot>(
       stream: widget.gameRef!.snapshots(),
       builder: (context, snapshot) {
-        // Customize what your widget looks like when it's loading.
+        // Premium loading state
         if (!snapshot.hasData) {
           return Scaffold(
-            backgroundColor: AppTheme.of(context).secondaryBackground,
-            body: Center(
-              child: SizedBox(
-                width: 50.0,
-                height: 50.0,
-                child: SpinKitWanderingCubes(
-                  color: AppTheme.of(context).secondary,
-                  size: 50.0,
+            extendBodyBehindAppBar: true,
+            appBar: _buildPremiumAppBar(context, 'Loading...'),
+            body: FairwayBackgroundDark(
+              showOrganic: true,
+              showTexture: true,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SpinKitWanderingCubes(
+                      color: AppColors.sunsetGold,
+                      size: 50.0,
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    Text(
+                      'Loading game details...',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -198,241 +287,236 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
 
         return Scaffold(
           key: scaffoldKey,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            automaticallyImplyLeading: false,
-            leading: InkWell(
-              splashColor: Colors.transparent,
-              focusColor: Colors.transparent,
-              hoverColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              onTap: () async {
-                debugPrint('🔙 GAME DETAIL: Back button pressed, navigating to Game List');
-                // Always navigate to Game List, not pop() which could go to "Add Your Group"
-                // This ensures clean navigation flow
-                final router = GoRouter.of(context);
-                router.go('/gamesList');
-              },
-              child: Icon(
-                Icons.chevron_left_rounded,
-                color: AppTheme.of(context).primary,
-                size: 32.0,
-              ),
-            ),
-            title: Text(
-              'Game Dashboard',
-              style: AppTheme.of(context).headlineSmall.override(
-                    font: GoogleFonts.outfit(
-                      fontWeight: FontWeight.w500,
-                      fontStyle: AppTheme.of(context).headlineSmall.fontStyle,
-                    ),
-                    color: AppTheme.of(context).primary,
-                    letterSpacing: 0.0,
-                    fontWeight: FontWeight.w500,
-                    fontStyle: AppTheme.of(context).headlineSmall.fontStyle,
-                  ),
-            ),
-            actions: [],
-            centerTitle: false,
-            elevation: 0.0,
-          ),
+          extendBodyBehindAppBar: true,
+          appBar: _buildPremiumAppBar(context, 'Game Dashboard'),
           body: FairwayBackgroundDark(
             showOrganic: true,
             showTexture: true,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Branded header with abstract golf pattern
-                  Padding(
-                    padding: EdgeInsets.all(AppSpacing.md),
-                    child: BrandedGolfHeader(
-                      username: gameJoinedDetailedGamesRecord.nameGame,
-                      courseName: gameJoinedDetailedGamesRecord.coursePlay,
-                    ),
-                  ),
+            child: SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                physics: BouncingScrollPhysics(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top padding for AppBar
+                    SizedBox(height: MediaQuery.of(context).padding.top + 56),
 
-                  // Message Group Button
-                  if (gameJoinedDetailedGamesRecord.chatRef != null)
+                    // Premium Hero Section
+                    Padding(
+                      padding: EdgeInsets.all(AppSpacing.md),
+                      child: _buildPremiumHeroSection(
+                        context,
+                        gameJoinedDetailedGamesRecord,
+                      ),
+                    ),
+
+                    // Quick Stats Row (Date, Players, Chat)
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      child: AppButtonEnhanced(
-                        text: 'Message Group',
-                        leadingIcon: Icons.chat_bubble_outline,
-                        variant: AppButtonVariant.secondary,
-                        size: AppButtonSize.medium,
-                        fullWidth: true,
-                        onPressed: () {
-                          final chatRef =
-                              gameJoinedDetailedGamesRecord.chatRef;
-                          if (chatRef == null) {
-                            return;
-                          }
-                          context.pushNamed(
-                            'ChatDetails',
-                            pathParameters: {
-                              'chatId': chatRef.id,
-                            },
-                          );
-                        },
-                      ),
+                      child: _buildQuickStatsRow(gameJoinedDetailedGamesRecord),
                     ),
 
-                  SizedBox(height: AppSpacing.md),
+                    SizedBox(height: AppSpacing.md),
 
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                    child: _buildGroupVibeSummary(),
-                  ),
-
-                  SizedBox(height: AppSpacing.md),
-
-                  // Date/Time Card
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                    child: Container(
-                      padding: EdgeInsets.all(AppSpacing.md),
-                      decoration: BoxDecoration(
-                        color: AppColors.fairway.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.fairwayLight.withValues(alpha: 0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            '📅',
-                            style: TextStyle(fontSize: 24.0),
-                          ),
-                          SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: Text(
-                              _formatDateTime(
-                                  gameJoinedDetailedGamesRecord.date),
-                              style: AppTheme.of(context).bodyLarge.override(
-                                    font: GoogleFonts.outfit(
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: AppTheme.of(context)
-                                          .bodyLarge
-                                          .fontStyle,
-                                    ),
+                    // Premium Message Group Button
+                    if (gameJoinedDetailedGamesRecord.chatRef != null)
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                        child: GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            final chatRef = gameJoinedDetailedGamesRecord.chatRef;
+                            if (chatRef == null) return;
+                            context.pushNamed(
+                              'ChatDetails',
+                              pathParameters: {'chatId': chatRef.id},
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.lg,
+                              vertical: AppSpacing.md,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.sunsetGold.withOpacity(0.3),
+                                  blurRadius: 12,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 22),
+                                SizedBox(width: AppSpacing.sm),
+                                Text(
+                                  'Message Group',
+                                  style: AppTypography.titleSmall.copyWith(
                                     color: Colors.white,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: AppTheme.of(context)
-                                        .bodyLarge
-                                        .fontStyle,
+                                    fontWeight: FontWeight.w600,
                                   ),
+                                ),
+                              ],
                             ),
                           ),
+                        ),
+                      ),
+
+                    SizedBox(height: AppSpacing.md),
+
+                    // Group Vibe Summary
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                      child: _buildPremiumGroupVibeSummary(),
+                    ),
+
+                    SizedBox(height: AppSpacing.lg),
+
+                    // Game Details Section
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Section Header with gradient accent
+                          Row(
+                            children: [
+                              Container(
+                                width: 4,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                  ),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              SizedBox(width: AppSpacing.sm),
+                              Text(
+                                'Game Details',
+                                style: AppTypography.titleMedium.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 12),
+
+                          // Premium Info Grid
+                          GridView.count(
+                            crossAxisCount: 2,
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            padding: EdgeInsets.zero,
+                            crossAxisSpacing: AppSpacing.sm,
+                            mainAxisSpacing: AppSpacing.sm,
+                            childAspectRatio: 3.2,
+                            children: [
+                              _buildPremiumInfoCard(
+                                context,
+                                icon: Icons.attach_money_rounded,
+                                iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                label: 'Betting',
+                                value: gameJoinedDetailedGamesRecord.styleGame,
+                              ),
+                              _buildPremiumInfoCard(
+                                context,
+                                icon: Icons.rule_rounded,
+                                iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                label: 'Rule Style',
+                                value: gameJoinedDetailedGamesRecord.rulesSetting,
+                              ),
+                              _buildPremiumInfoCard(
+                                context,
+                                icon: Icons.sports_golf_rounded,
+                                iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                label: 'Game Type',
+                                value: gameJoinedDetailedGamesRecord.gameType,
+                              ),
+                              _buildPremiumInfoCard(
+                                context,
+                                icon: Icons.scoreboard_rounded,
+                                iconColors: [AppColors.sunsetPeach, AppColors.sunsetRose],
+                                label: 'Scoring',
+                                value: gameJoinedDetailedGamesRecord.scoring,
+                              ),
+                              _buildPremiumInfoCard(
+                                context,
+                                icon: Icons.discount_rounded,
+                                iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                label: 'Member Discount',
+                                value: gameJoinedDetailedGamesRecord.memberDiscount,
+                              ),
+                              _buildPremiumInfoCard(
+                                context,
+                                icon: Icons.group_rounded,
+                                iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                label: 'Friends Only',
+                                value: gameJoinedDetailedGamesRecord.friendGame,
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: AppSpacing.lg),
+
+                          // Players Section Header with gradient accent
+                          Row(
+                            children: [
+                              Container(
+                                width: 4,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                  ),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              SizedBox(width: AppSpacing.sm),
+                              Text(
+                                'Players',
+                                style: AppTypography.titleMedium.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(width: AppSpacing.sm),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.sm,
+                                  vertical: AppSpacing.xxs,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.sunsetGold.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '${_getPlayerCount(gameJoinedDetailedGamesRecord)}/4',
+                                  style: AppTypography.labelSmall.copyWith(
+                                    color: AppColors.sunsetGold,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: AppSpacing.md),
                         ],
                       ),
                     ),
-                  ),
-
-                  SizedBox(height: AppSpacing.md),
-
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Game Details Section Header
-                        Text(
-                          'Game Details',
-                          style: AppTheme.of(context).headlineSmall.override(
-                                font: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.w600,
-                                  fontStyle: AppTheme.of(context)
-                                      .headlineSmall
-                                      .fontStyle,
-                                ),
-                                color: Colors.white,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.w600,
-                                fontStyle: AppTheme.of(context)
-                                    .headlineSmall
-                                    .fontStyle,
-                              ),
-                        ),
-                        SizedBox(height: AppSpacing.sm),
-
-                        // 2x3 Grid of Info Cards
-                        GridView.count(
-                          crossAxisCount: 2,
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          crossAxisSpacing: AppSpacing.sm,
-                          mainAxisSpacing: AppSpacing.sm,
-                          childAspectRatio: 2.5,
-                          children: [
-                            _buildInfoCard(
-                              context,
-                              icon: '💰',
-                              label: 'Betting',
-                              value: gameJoinedDetailedGamesRecord.styleGame,
-                            ),
-                            _buildInfoCard(
-                              context,
-                              icon: '📋',
-                              label: 'Rule Style',
-                              value: gameJoinedDetailedGamesRecord.rulesSetting,
-                            ),
-                            _buildInfoCard(
-                              context,
-                              icon: '⛳',
-                              label: 'Game Type',
-                              value: gameJoinedDetailedGamesRecord.gameType,
-                            ),
-                            _buildInfoCard(
-                              context,
-                              icon: '📊',
-                              label: 'Scoring',
-                              value: gameJoinedDetailedGamesRecord.scoring,
-                            ),
-                            _buildInfoCard(
-                              context,
-                              icon: '💬',
-                              label: 'Member Discount',
-                              value:
-                                  gameJoinedDetailedGamesRecord.memberDiscount,
-                            ),
-                            _buildInfoCard(
-                              context,
-                              icon: '👥',
-                              label: 'Friends Only',
-                              value: gameJoinedDetailedGamesRecord.friendGame,
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: AppSpacing.lg),
-
-                        // Players Section Header
-                        Text(
-                          'Players (${_getPlayerCount(gameJoinedDetailedGamesRecord)}/4)',
-                          style: AppTheme.of(context).headlineSmall.override(
-                                font: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.w600,
-                                  fontStyle: AppTheme.of(context)
-                                      .headlineSmall
-                                      .fontStyle,
-                                ),
-                                color: Colors.white,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.w600,
-                                fontStyle: AppTheme.of(context)
-                                    .headlineSmall
-                                    .fontStyle,
-                              ),
-                        ),
-                        SizedBox(height: AppSpacing.sm),
-                      ],
-                    ),
-                  ),
                   // Players horizontal cards
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -484,14 +568,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
 
                                     return InkWell(
                                       onTap: () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                ProfileUserFirebaseWidget(
-                                              userRef:
-                                                  friend1UsersRecord.reference,
-                                            ),
-                                          ),
+                                        context.pushNamed(
+                                          'ProfileUser',
+                                          extra: <String, dynamic>{
+                                            'userRef':
+                                                friend1UsersRecord.reference,
+                                          },
                                         );
                                       },
                                       child: Container(
@@ -1045,6 +1127,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
               ),
             ),
           ),
+        ),
         );
       },
     );
@@ -1604,6 +1687,448 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PREMIUM HERO SECTION
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildPremiumHeroSection(BuildContext context, Game game) {
+    return Container(
+      padding: EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.fairway.withOpacity(0.4),
+            AppColors.fairwayDark.withOpacity(0.6),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppColors.sunsetGold.withOpacity(0.3),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.sunsetGold.withOpacity(0.15),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Status badge
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xxs,
+            ),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.check_circle_rounded, color: Colors.white, size: 14),
+                SizedBox(width: 4),
+                Text(
+                  'Joined',
+                  style: AppTypography.labelSmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: AppSpacing.md),
+          // Course name with golf icon
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.sunsetGold.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.golf_course_rounded,
+                  color: Colors.white,
+                  size: 26,
+                ),
+              ),
+              SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      game.coursePlay ?? 'Course Name',
+                      style: AppTypography.titleLarge.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      game.nameGame ?? 'Game',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.sunsetGold,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // QUICK STATS ROW
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildQuickStatsRow(Game game) {
+    final spotsLeft = game.maxPlayers - (game.joinedPlayers.length + game.guestPlayers.length);
+    final isFull = spotsLeft <= 0;
+
+    return Row(
+      children: [
+        // Date Card
+        Expanded(
+          child: Container(
+            padding: EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.fairway.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.sunsetPeach, AppColors.sunsetRose],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.calendar_today_rounded, color: Colors.white, size: 18),
+                ),
+                SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        dateTimeFormat("MMM d", game.date) ?? '',
+                        style: AppTypography.titleSmall.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        dateTimeFormat("jm", game.date) ?? '',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: Colors.white.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(width: AppSpacing.sm),
+        // Players Card
+        Container(
+          padding: EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: isFull
+                ? AppColors.fairwayLight.withOpacity(0.2)
+                : AppColors.sunsetGold.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isFull
+                  ? AppColors.fairwayLight.withOpacity(0.3)
+                  : AppColors.sunsetGold.withOpacity(0.3),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isFull
+                        ? [AppColors.fairwayLight, AppColors.fairway]
+                        : [AppColors.sunsetGold, AppColors.sunsetPeach],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  isFull ? Icons.groups_rounded : Icons.person_add_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+              SizedBox(width: AppSpacing.sm),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isFull ? 'Full' : '$spotsLeft Spots',
+                    style: AppTypography.titleSmall.copyWith(
+                      color: isFull ? AppColors.fairwayLight : AppColors.sunsetGold,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    '${game.joinedPlayers.length + game.guestPlayers.length}/${game.maxPlayers}',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: Colors.white.withOpacity(0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PREMIUM GROUP VIBE SUMMARY
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildPremiumGroupVibeSummary() {
+    final result = _groupVibeMatch;
+    final groupScore = result?.groupFitScore.round() ?? 0;
+    final hasResult = result != null;
+
+    return Container(
+      padding: EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.fairway.withOpacity(0.4),
+            AppColors.fairwayDark.withOpacity(0.3),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.psychology_rounded, color: Colors.white, size: 22),
+              ),
+              SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Group Vibe Match',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      hasResult ? 'Your fit with this group' : 'Calculating...',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: Colors.white.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Score badge
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  gradient: hasResult
+                      ? LinearGradient(
+                          colors: groupScore >= 70
+                              ? [AppColors.fairwayLight, AppColors.fairway]
+                              : groupScore >= 40
+                                  ? [AppColors.sunsetGold, AppColors.sunsetPeach]
+                                  : [AppColors.sunsetRose, AppColors.error],
+                        )
+                      : null,
+                  color: hasResult ? null : Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: hasResult
+                    ? Text(
+                        '$groupScore%',
+                        style: AppTypography.titleSmall.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      )
+                    : SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.sunsetGold,
+                        ),
+                      ),
+              ),
+            ],
+          ),
+          if (hasResult) ...[
+            SizedBox(height: AppSpacing.md),
+            GestureDetector(
+              onTap: _openGroupVibeBreakdown,
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.insights_rounded,
+                      color: AppColors.sunsetGold,
+                      size: 18,
+                    ),
+                    SizedBox(width: AppSpacing.xs),
+                    Text(
+                      'View Detailed Breakdown',
+                      style: AppTypography.labelMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(width: AppSpacing.xs),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: Colors.white.withOpacity(0.6),
+                      size: 18,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PREMIUM INFO CARD
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildPremiumInfoCard(
+    BuildContext context, {
+    required IconData icon,
+    required List<Color> iconColors,
+    required String label,
+    required String value,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.fairway.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: iconColors),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: iconColors.first.withOpacity(0.3),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: Colors.white, size: 18),
+          ),
+          SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: AppTypography.labelSmall.copyWith(
+                    color: Colors.white.withOpacity(0.6),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 2),
+                Text(
+                  value.isNotEmpty ? value : '--',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

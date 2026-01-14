@@ -1,10 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/navigation/app_router.dart';
 import '/core/utils/formatting_utils.dart';
 import '/core/widgets/app_icon_button.dart';
@@ -14,8 +17,9 @@ import '/models/chat.dart';
 import '/providers/chat_provider.dart';
 
 class ChatWidget extends StatefulWidget {
-  const ChatWidget({super.key});
+  const ChatWidget({super.key, this.isEmbedded = false});
 
+  final bool isEmbedded;
   static String routeName = 'Chat';
   static String routePath = '/chat';
 
@@ -39,6 +43,17 @@ class _ChatWidgetState extends State<ChatWidget> {
     if (currentUserId == null) {
       debugPrint('❌ ChatList: No current user, showing sign-in message');
 
+      if (widget.isEmbedded) {
+        return Center(
+          child: Text(
+            'Please sign in to view chats.',
+            style: AppTypography.bodyMedium.copyWith(
+              color: Colors.white.withOpacity(0.7),
+            ),
+          ),
+        );
+      }
+
       return Scaffold(
         key: scaffoldKey,
         backgroundColor: AppTheme.of(context).secondaryBackground,
@@ -51,6 +66,15 @@ class _ChatWidgetState extends State<ChatWidget> {
       );
     }
 
+    // Build the chat content
+    Widget chatContent = _buildChatContent(currentUserId);
+
+    // If embedded, just return the content
+    if (widget.isEmbedded) {
+      return chatContent;
+    }
+
+    // Otherwise, wrap in a Scaffold
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -58,22 +82,16 @@ class _ChatWidgetState extends State<ChatWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppTheme.of(context).secondaryBackground,
+        extendBodyBehindAppBar: true,
         appBar: AppBar(
-          backgroundColor: AppTheme.of(context).primaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           title: Text(
             'My Chats',
-            style: AppTheme.of(context).headlineSmall.override(
-                  font: GoogleFonts.outfit(
-                    fontWeight: AppTheme.of(context).headlineSmall.fontWeight,
-                    fontStyle: AppTheme.of(context).headlineSmall.fontStyle,
-                  ),
-                  color: AppTheme.of(context).primary,
-                  letterSpacing: 0.0,
-                  fontWeight: AppTheme.of(context).headlineSmall.fontWeight,
-                  fontStyle: AppTheme.of(context).headlineSmall.fontStyle,
-                ),
+            style: AppTypography.headlineMedium.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           actions: [
             Padding(
@@ -83,20 +101,26 @@ class _ChatWidgetState extends State<ChatWidget> {
                 AppSpacing.md,
                 AppSpacing.xs,
               ),
-              child: AppIconButton(
-                borderColor: AppTheme.of(context).primary,
-                borderRadius: 12.0,
-                borderWidth: 1.0,
-                buttonSize: 40.0,
-                fillColor: AppTheme.of(context).primary,
-                icon: Icon(
-                  Icons.add_comment,
-                  color: AppTheme.of(context).primaryBtnText,
-                  size: 24.0,
-                ),
-                onPressed: () {
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
                   context.goNamed(GolfersWidget.routeName);
                 },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.add_comment_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
               ),
             ),
           ],
@@ -104,358 +128,319 @@ class _ChatWidgetState extends State<ChatWidget> {
           elevation: 0.0,
         ),
         body: FairwayBackgroundDark(
+          showOrganic: true,
+          showTexture: true,
           child: SafeArea(
-            top: true,
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding:
-                      EdgeInsetsDirectional.fromSTEB(AppSpacing.md, 0.0, 0.0, 0.0),
-                  child: Text(
-                    'Below are your chats and group chats',
-                    style: AppTheme.of(context).labelMedium.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .labelMedium
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .labelMedium
-                                .fontStyle,
-                          ),
-                          letterSpacing: 0.0,
-                          fontWeight:
-                              AppTheme.of(context).labelMedium.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).labelMedium.fontStyle,
-                        ),
-                  ),
-                ),
-                Expanded(
-                  child: StreamBuilder<List<Chat>>(
-                    stream: context.read<ChatProvider>().chatListStream(
-                          uid: currentUserId,
-                        ),
-                    builder: (context, snapshot) {
-                      debugPrint('💬 ChatList: StreamBuilder called');
-                      debugPrint('💬 ChatList: connectionState = ${snapshot.connectionState}');
-                      debugPrint('💬 ChatList: hasError = ${snapshot.hasError}');
-                      debugPrint('💬 ChatList: hasData = ${snapshot.hasData}');
-
-                      if (snapshot.hasError) {
-                        debugPrint('❌ ChatList: ERROR - ${snapshot.error}');
-                        debugPrint('❌ ChatList: Error type: ${snapshot.error.runtimeType}');
-                        return Center(
-                          child: Text(
-                            'Failed to load chats.',
-                            style: AppTheme.of(context).bodyMedium,
-                          ),
-                        );
-                      }
-                      if (!snapshot.hasData) {
-                        debugPrint('💬 ChatList: No data yet, showing loading...');
-                        return Center(
-                          child: SizedBox(
-                            width: 50.0,
-                            height: 50.0,
-                            child: CircularProgressIndicator(
-                              color: AppTheme.of(context).secondary,
-                            ),
-                          ),
-                        );
-                      }
-
-                      final chats = snapshot.data ?? <Chat>[];
-                      debugPrint('💬 ChatList: Received ${chats.length} chat(s)');
-
-                      if (chats.isNotEmpty) {
-                        debugPrint('💬 ChatList: First chat ID: ${chats.first.id}');
-                        debugPrint('💬 ChatList: First chat memberIds: ${chats.first.memberIds}');
-                      }
-
-                      if (chats.isEmpty) {
-                        debugPrint('💬 ChatList: Chats array is empty, showing empty state');
-
-                        return Center(
-                          child: Container(
-                            width: MediaQuery.sizeOf(context).width * 0.9,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.mark_chat_unread_outlined,
-                                  color: AppTheme.of(context).primary,
-                                  size: 90.0,
-                                ),
-                                SizedBox(height: AppSpacing.sm),
-                                Text(
-                                  'No Chats',
-                                  style: AppTheme.of(context)
-                                      .headlineSmall
-                                      .override(
-                                        font: GoogleFonts.outfit(
-                                          fontWeight: AppTheme.of(context)
-                                              .headlineSmall
-                                              .fontWeight,
-                                          fontStyle: AppTheme.of(context)
-                                              .headlineSmall
-                                              .fontStyle,
-                                        ),
-                                        letterSpacing: 0.0,
-                                        fontWeight: AppTheme.of(context)
-                                            .headlineSmall
-                                            .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .headlineSmall
-                                            .fontStyle,
-                                      ),
-                                ),
-                                SizedBox(height: AppSpacing.xs),
-                                Text(
-                                  'Start a chat by tapping the button in the top right.',
-                                  textAlign: TextAlign.center,
-                                  style: AppTheme.of(context)
-                                      .labelMedium
-                                      .override(
-                                        font: GoogleFonts.outfit(
-                                          fontWeight: AppTheme.of(context)
-                                              .labelMedium
-                                              .fontWeight,
-                                          fontStyle: AppTheme.of(context)
-                                              .labelMedium
-                                              .fontStyle,
-                                        ),
-                                        letterSpacing: 0.0,
-                                        fontWeight: AppTheme.of(context)
-                                            .labelMedium
-                                            .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .labelMedium
-                                            .fontStyle,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-
-                      return ListView.builder(
-                        padding: EdgeInsets.zero,
-                        itemCount: chats.length,
-                        itemBuilder: (context, index) {
-                          final chat = chats[index];
-                          final otherUserId = chat.memberIds.firstWhere(
-                            (id) => id != currentUserId,
-                            orElse: () => currentUserId,
-                          );
-                          final lastMessage = chat.lastMessage;
-                          final lastMessageAt = chat.lastMessageAt;
-                          final unreadCount =
-                              chat.unreadCountByUser[currentUserId] ?? 0;
-
-                          return FutureBuilder<Map<String, dynamic>>(
-                            future: context
-                                .read<ChatProvider>()
-                                .getUserProfile(otherUserId),
-                            builder: (context, userSnapshot) {
-                              final userData =
-                                  userSnapshot.data ?? <String, dynamic>{};
-                              final displayName =
-                                  valueOrDefault<String>(
-                                      userData['display_name'] as String?, 'Golfer');
-                              final photoUrl =
-                                  (userData['photo_url'] as String?) ?? '';
-
-                                  return InkWell(
-                                onTap: () {
-                                  context.pushNamed(
-                                    'ChatDetails',
-                                    pathParameters: {
-                                      'chatId': chat.id,
-                                    },
-                                  );
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.of(context)
-                                        .secondaryBackground,
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: AppTheme.of(context).alternate,
-                                        width: 1.0,
-                                      ),
-                                    ),
-                                  ),
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                    AppSpacing.md,
-                                    AppSpacing.sm,
-                                    AppSpacing.md,
-                                    AppSpacing.sm,
-                                  ),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        width: 44.0,
-                                        height: 44.0,
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.of(context).accent1,
-                                          borderRadius:
-                                              BorderRadius.circular(12.0),
-                                          border: Border.all(
-                                            color: AppTheme.of(context).primary,
-                                            width: 2.0,
-                                          ),
-                                        ),
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(10.0),
-                                          child: photoUrl.isNotEmpty
-                                              ? Image.network(
-                                                  photoUrl,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error,
-                                                          stackTrace) =>
-                                                      Image.asset(
-                                                    'assets/images/error_image.png',
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                )
-                                              : Image.asset(
-                                                  'assets/images/error_image.png',
-                                                  fit: BoxFit.cover,
-                                                ),
-                                        ),
-                                      ),
-                                      SizedBox(width: AppSpacing.sm),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    displayName,
-                                                    style: AppTheme.of(context)
-                                                        .bodyLarge
-                                                        .override(
-                                                          font:
-                                                              GoogleFonts.outfit(
-                                                            fontWeight:
-                                                                AppTheme.of(context)
-                                                                    .bodyLarge
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(context)
-                                                                    .bodyLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              AppTheme.of(context)
-                                                                  .bodyLarge
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(context)
-                                                                  .bodyLarge
-                                                                  .fontStyle,
-                                                        ),
-                                                  ),
-                                                ),
-                                                if (unreadCount > 0)
-                                                  Container(
-                                                    width: 12.0,
-                                                    height: 12.0,
-                                                    decoration: BoxDecoration(
-                                                      color: AppTheme.of(context)
-                                                          .primary,
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                  ),
-                                              ],
-                                            ),
-                                            SizedBox(height: AppSpacing.xxs),
-                                            Text(
-                                              lastMessage.isNotEmpty
-                                                  ? lastMessage
-                                                  : 'No messages yet.',
-                                              style: AppTheme.of(context)
-                                                  .labelMedium
-                                                  .override(
-                                                    font: GoogleFonts.outfit(
-                                                      fontWeight: AppTheme.of(context)
-                                                          .labelMedium
-                                                          .fontWeight,
-                                                      fontStyle: AppTheme.of(context)
-                                                          .labelMedium
-                                                          .fontStyle,
-                                                    ),
-                                                    letterSpacing: 0.0,
-                                                    fontWeight: AppTheme.of(context)
-                                                        .labelMedium
-                                                        .fontWeight,
-                                                    fontStyle: AppTheme.of(context)
-                                                        .labelMedium
-                                                        .fontStyle,
-                                                  ),
-                                            ),
-                                            if (lastMessageAt != null)
-                                              Padding(
-                                                padding:
-                                                    EdgeInsets.only(top: 4.0),
-                                                child: Text(
-                                                  dateTimeFormat(
-                                                    'relative',
-                                                    lastMessageAt,
-                                                  ),
-                                                  style: AppTheme.of(context)
-                                                      .labelSmall
-                                                      .override(
-                                                        font: GoogleFonts.outfit(
-                                                          fontWeight:
-                                                              AppTheme.of(context)
-                                                                  .labelSmall
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(context)
-                                                                  .labelSmall
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            AppTheme.of(context)
-                                                                .labelSmall
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTheme.of(context)
-                                                                .labelSmall
-                                                                .fontStyle,
-                                                      ),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top + 56,
+              ),
+              child: chatContent,
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildChatContent(String currentUserId) {
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // New Chat button for embedded mode
+        if (widget.isEmbedded)
+          Padding(
+            padding: EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                context.goNamed(GolfersWidget.routeName);
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.sunsetGold.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add_comment_rounded, color: Colors.white, size: 18),
+                    SizedBox(width: AppSpacing.xs),
+                    Text(
+                      'Start New Chat',
+                      style: AppTypography.labelMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        Expanded(
+          child: StreamBuilder<List<Chat>>(
+            stream: context.read<ChatProvider>().chatListStream(
+                  uid: currentUserId,
+                ),
+            builder: (context, snapshot) {
+              debugPrint('💬 ChatList: StreamBuilder called');
+              debugPrint('💬 ChatList: connectionState = ${snapshot.connectionState}');
+              debugPrint('💬 ChatList: hasError = ${snapshot.hasError}');
+              debugPrint('💬 ChatList: hasData = ${snapshot.hasData}');
+
+              if (snapshot.hasError) {
+                debugPrint('❌ ChatList: ERROR - ${snapshot.error}');
+                debugPrint('❌ ChatList: Error type: ${snapshot.error.runtimeType}');
+                return Center(
+                  child: Text(
+                    'Failed to load chats.',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                  ),
+                );
+              }
+              if (!snapshot.hasData) {
+                debugPrint('💬 ChatList: No data yet, showing loading...');
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(
+                        color: AppColors.sunsetGold,
+                      ),
+                      SizedBox(height: AppSpacing.md),
+                      Text(
+                        'Loading chats...',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: Colors.white.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              final chats = snapshot.data ?? <Chat>[];
+              debugPrint('💬 ChatList: Received ${chats.length} chat(s)');
+
+              if (chats.isNotEmpty) {
+                debugPrint('💬 ChatList: First chat ID: ${chats.first.id}');
+                debugPrint('💬 ChatList: First chat memberIds: ${chats.first.memberIds}');
+              }
+
+              if (chats.isEmpty) {
+                debugPrint('💬 ChatList: Chats array is empty, showing empty state');
+
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: AppColors.fairway.withOpacity(0.3),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.mark_chat_unread_outlined,
+                          color: Colors.white.withOpacity(0.5),
+                          size: 40,
+                        ),
+                      ),
+                      SizedBox(height: AppSpacing.md),
+                      Text(
+                        'No Chats Yet',
+                        style: AppTypography.titleSmall.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Start a conversation with other golfers',
+                        textAlign: TextAlign.center,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: Colors.white.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return ListView.separated(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                itemCount: chats.length,
+                separatorBuilder: (_, __) => SizedBox(height: AppSpacing.sm),
+                itemBuilder: (context, index) {
+                  final chat = chats[index];
+                  final otherUserId = chat.memberIds.firstWhere(
+                    (id) => id != currentUserId,
+                    orElse: () => currentUserId,
+                  );
+                  final lastMessage = chat.lastMessage;
+                  final lastMessageAt = chat.lastMessageAt;
+                  final unreadCount =
+                      chat.unreadCountByUser[currentUserId] ?? 0;
+
+                  return FutureBuilder<Map<String, dynamic>>(
+                    future: context
+                        .read<ChatProvider>()
+                        .getUserProfile(otherUserId),
+                    builder: (context, userSnapshot) {
+                      final userData =
+                          userSnapshot.data ?? <String, dynamic>{};
+                      final displayName =
+                          valueOrDefault<String>(
+                              userData['display_name'] as String?, 'Golfer');
+                      final photoUrl =
+                          (userData['photo_url'] as String?) ?? '';
+
+                      return GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          context.pushNamed(
+                            'ChatDetails',
+                            pathParameters: {
+                              'chatId': chat.id,
+                            },
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.fairway.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: unreadCount > 0
+                                  ? AppColors.sunsetGold.withOpacity(0.4)
+                                  : Colors.white.withOpacity(0.1),
+                              width: unreadCount > 0 ? 2 : 1,
+                            ),
+                          ),
+                          padding: EdgeInsets.all(AppSpacing.md),
+                          child: Row(
+                            children: [
+                              // Avatar
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [AppColors.fairwayLight, AppColors.fairway],
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.2),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: photoUrl.isNotEmpty
+                                      ? Image.network(
+                                          photoUrl,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              Icon(
+                                            Icons.person_rounded,
+                                            color: Colors.white,
+                                            size: 28,
+                                          ),
+                                        )
+                                      : Icon(
+                                          Icons.person_rounded,
+                                          color: Colors.white,
+                                          size: 28,
+                                        ),
+                                ),
+                              ),
+                              SizedBox(width: AppSpacing.sm),
+                              // Content
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            displayName,
+                                            style: AppTypography.titleSmall.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                        if (unreadCount > 0)
+                                          Container(
+                                            width: 10,
+                                            height: 10,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.sunsetGold,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      lastMessage.isNotEmpty
+                                          ? lastMessage
+                                          : 'No messages yet.',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTypography.bodySmall.copyWith(
+                                        color: Colors.white.withOpacity(0.7),
+                                      ),
+                                    ),
+                                    if (lastMessageAt != null) ...[
+                                      SizedBox(height: 4),
+                                      Text(
+                                        dateTimeFormat('relative', lastMessageAt),
+                                        style: AppTypography.labelSmall.copyWith(
+                                          color: Colors.white.withOpacity(0.5),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              // Arrow
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                color: Colors.white.withOpacity(0.5),
+                                size: 24,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

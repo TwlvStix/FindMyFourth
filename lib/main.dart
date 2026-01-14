@@ -9,7 +9,6 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'auth/firebase_auth/firebase_user_provider.dart';
 import 'auth/firebase_auth/auth_util.dart';
 
-import 'backend/push_notifications/push_notifications_util.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/typography.dart';
@@ -85,7 +84,6 @@ class _MyAppState extends State<MyApp> {
   bool _initialAuthHandled = false;
 
   final authUserSub = authenticatedUserStream.listen((_) {});
-  final fcmTokenSub = fcmTokenUserStream.listen((_) {});
   late StreamSubscription<BaseAuthUser> _userStreamSub;
   late StreamSubscription<dynamic> _jwtTokenSub;
 
@@ -109,7 +107,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     authUserSub.cancel();
-    fcmTokenSub.cancel();
     _userStreamSub.cancel();
     _jwtTokenSub.cancel();
     super.dispose();
@@ -242,7 +239,7 @@ class _NavBarPageState extends State<NavBarPage> {
           size: 28.0,
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       bottomNavigationBar: GNav(
         selectedIndex: currentIndex,
         onTabChange: (i) {

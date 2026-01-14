@@ -9,11 +9,13 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/navigation/app_router.dart';
-import '/profile/profile_user/profile_user_firebase_widget.dart';
+import '/profile/main_profile/main_profile_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -137,342 +139,432 @@ class _GolfersWidgetState extends State<GolfersWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppTheme.of(context).primaryBackground,
+        extendBodyBehindAppBar: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           title: Text(
             'Golfers',
-            style: AppTheme.of(context).headlineLarge.override(
-                  font: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w500,
-                    fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
-                  ),
-                  color: AppTheme.of(context).primary,
-                  fontSize: 24.0,
-                  letterSpacing: 0.0,
-                  fontWeight: FontWeight.w500,
-                  fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
-                ),
+            style: AppTypography.headlineMedium.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           actions: [],
           centerTitle: false,
           elevation: 0.0,
         ),
-        body: Column(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header section with dark background
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF1A4D2E),
-                    Color(0xFF2A5F3E),
-                  ],
+        body: FairwayBackgroundDark(
+          showOrganic: true,
+          showTexture: true,
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: MediaQuery.of(context).padding.top + 56),
+                // Header section with subtle glass effect
+                Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  padding: EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.fairway.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.1),
+                    ),
+                  ),
+                  child: Text(
+                    'Find golfers, manage connections, and build your network',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
                 ),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                child: Text(
-                  'Find golfers, manage connections, and build your network',
-                  style: AppTheme.of(context).labelMedium.override(
-                        font: GoogleFonts.outfit(
-                          fontWeight:
-                              AppTheme.of(context).labelMedium.fontWeight,
-                          fontStyle: AppTheme.of(context).labelMedium.fontStyle,
-                        ),
-                        color: Colors.white,
-                        letterSpacing: 0.0,
-                        fontWeight: AppTheme.of(context).labelMedium.fontWeight,
-                        fontStyle: AppTheme.of(context).labelMedium.fontStyle,
+                SizedBox(height: AppSpacing.md),
+                // Tabs with glass morphism style
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.fairway.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.1),
                       ),
-                ),
-              ),
-            ),
-            // Tabs with light background
-            Container(
-              color: Color(0xFFF5F5F5),
-              child: Align(
-                alignment: Alignment(-1.0, 0),
-                child: AppButtonTabBar(
-                  useToggleButtonStyle: false,
-                  labelStyle: AppTheme.of(context).titleMedium.override(
-                        font: GoogleFonts.outfit(
-                          fontWeight:
-                              AppTheme.of(context).titleMedium.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).titleMedium.fontStyle,
-                        ),
-                        fontSize: 16.0,
-                        letterSpacing: 0.0,
-                        fontWeight:
-                            AppTheme.of(context).titleMedium.fontWeight,
-                        fontStyle: AppTheme.of(context).titleMedium.fontStyle,
+                    ),
+                    child: AppButtonTabBar(
+                      useToggleButtonStyle: false,
+                      labelStyle: AppTypography.labelMedium.copyWith(
+                        fontWeight: FontWeight.w600,
                       ),
-                  unselectedLabelStyle: TextStyle(),
-                  labelColor: AppTheme.of(context).primaryBtnText,
-                  unselectedLabelColor: AppTheme.of(context).secondaryText,
-                  backgroundColor: AppTheme.of(context).primary,
-                  unselectedBackgroundColor: AppTheme.of(context).alternate,
-                  borderColor: AppTheme.of(context).primary,
-                  unselectedBorderColor: AppTheme.of(context).alternate,
-                  borderWidth: 2.0,
-                  borderRadius: 8.0,
-                  elevation: 0.0,
-                  labelPadding: EdgeInsetsDirectional.fromSTEB(
-                      AppSpacing.sm, 0.0, AppSpacing.sm, 0.0),
-                  buttonMargin: EdgeInsetsDirectional.fromSTEB(
-                      AppSpacing.xs, 0.0, AppSpacing.xs, 0.0),
-                  padding: AppSpacing.allXxs,
-                  tabs: [
-                    Tab(text: 'Search'),
-                    Tab(text: 'Requests'),
-                    Tab(text: 'Friends'),
-                  ],
-                  controller: _tabBarController,
-                  onTap: (i) async {
-                    [
-                      () async {},
-                      () async {
-                        friendList = [];
-                        if (mounted) setState(() {});
+                      unselectedLabelStyle: AppTypography.labelMedium,
+                      labelColor: Colors.white,
+                      unselectedLabelColor: Colors.white.withOpacity(0.6),
+                      backgroundColor: AppColors.sunsetGold,
+                      unselectedBackgroundColor: Colors.transparent,
+                      borderColor: AppColors.sunsetGold,
+                      unselectedBorderColor: Colors.transparent,
+                      borderWidth: 0,
+                      borderRadius: 10.0,
+                      elevation: 0.0,
+                      labelPadding: EdgeInsetsDirectional.fromSTEB(
+                          AppSpacing.md, 0.0, AppSpacing.md, 0.0),
+                      buttonMargin: EdgeInsetsDirectional.fromSTEB(
+                          AppSpacing.xxs, AppSpacing.xxs, AppSpacing.xxs, AppSpacing.xxs),
+                      padding: AppSpacing.allXxs,
+                      tabs: [
+                        Tab(text: 'Search'),
+                        Tab(text: 'Requests'),
+                        Tab(text: 'Friends'),
+                      ],
+                      controller: _tabBarController,
+                      onTap: (i) async {
+                        [
+                          () async {},
+                          () async {
+                            friendList = [];
+                            if (mounted) setState(() {});
+                          },
+                          () async {
+                            friendList = [];
+                            if (mounted) setState(() {});
+                          }
+                        ][i]();
                       },
-                      () async {
-                        friendList = [];
-                        if (mounted) setState(() {});
-                      }
-                    ][i]();
-                  },
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            // Content area with light background
-            Expanded(
-              child: Container(
-                color: Colors.white,
-                child: TabBarView(
-                  controller: _tabBarController,
-                  children: [
-                    // Search Tab
-                    _buildSearchTab(),
-                    // Requests Tab
-                    _buildRequestsTab(),
-                    // Friends Tab
-                    _buildFriendsTab(),
-                  ],
+                SizedBox(height: AppSpacing.md),
+                // Content area
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabBarController,
+                    children: [
+                      // Search Tab
+                      _buildSearchTab(),
+                      // Requests Tab
+                      _buildRequestsTab(),
+                      // Friends Tab
+                      _buildFriendsTab(),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildSearchTab() {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: Colors.white,
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Search Bar
-            Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(
-                  AppSpacing.md, AppSpacing.xs, AppSpacing.md, AppSpacing.sm),
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(
-                          AppSpacing.xs, 0.0, AppSpacing.xs, 0.0),
-                      child: Autocomplete<String>(
-                        initialValue: TextEditingValue(),
-                        optionsBuilder: (textEditingValue) {
-                          if (textEditingValue.text == '') {
-                            return const Iterable<String>.empty();
-                          }
-                          return ['Option 1'].where((option) {
-                            final lowercaseOption = option.toLowerCase();
-                            return lowercaseOption.contains(
-                                textEditingValue.text.toLowerCase());
-                          });
-                        },
-                        optionsViewBuilder: (context, onSelected, options) {
-                          return AutocompleteOptionsList(
-                            textFieldKey: textFieldKey,
-                            textController: textController!,
-                            options: options.toList(),
-                            onSelected: onSelected,
-                            textStyle: AppTheme.of(context).bodyMedium,
-                            textHighlightStyle: TextStyle(),
-                            elevation: 4.0,
-                            optionBackgroundColor:
-                                AppTheme.of(context).primaryBackground,
-                            optionHighlightColor:
-                                AppTheme.of(context).secondaryBackground,
-                            maxHeight: 200.0,
-                          );
-                        },
-                        onSelected: (String selection) {
+    return SingleChildScrollView(
+      physics: BouncingScrollPhysics(),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Search Bar with glass morphism
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+                AppSpacing.md, AppSpacing.xs, AppSpacing.md, AppSpacing.sm),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Expanded(
+                  child: Autocomplete<String>(
+                    initialValue: TextEditingValue(),
+                    optionsBuilder: (textEditingValue) {
+                      if (textEditingValue.text == '') {
+                        return const Iterable<String>.empty();
+                      }
+                      return ['Option 1'].where((option) {
+                        final lowercaseOption = option.toLowerCase();
+                        return lowercaseOption.contains(
+                            textEditingValue.text.toLowerCase());
+                      });
+                    },
+                    optionsViewBuilder: (context, onSelected, options) {
+                      return AutocompleteOptionsList(
+                        textFieldKey: textFieldKey,
+                        textController: textController!,
+                        options: options.toList(),
+                        onSelected: onSelected,
+                        textStyle: AppTypography.bodyMedium,
+                        textHighlightStyle: TextStyle(),
+                        elevation: 4.0,
+                        optionBackgroundColor: AppColors.fairwayDark,
+                        optionHighlightColor: AppColors.fairway,
+                        maxHeight: 200.0,
+                      );
+                    },
+                    onSelected: (String selection) {
+                      if (mounted) {
+                        setState(() => textFieldSelectedOption = selection);
+                      }
+                      FocusScope.of(context).unfocus();
+                    },
+                    fieldViewBuilder: (
+                      context,
+                      textEditingController,
+                      focusNode,
+                      onEditingComplete,
+                    ) {
+                      textFieldFocusNode = focusNode;
+                      textController = textEditingController;
+                      return TextFormField(
+                        key: textFieldKey,
+                        controller: textEditingController,
+                        focusNode: focusNode,
+                        onChanged: (_) {
                           if (mounted) {
-                            setState(() => textFieldSelectedOption = selection);
+                            setState(() {});
                           }
-                          FocusScope.of(context).unfocus();
                         },
-                        fieldViewBuilder: (
-                          context,
-                          textEditingController,
-                          focusNode,
-                          onEditingComplete,
-                        ) {
-                          textFieldFocusNode = focusNode;
-                          textController = textEditingController;
-                          return TextFormField(
-                            key: textFieldKey,
-                            controller: textEditingController,
-                            focusNode: focusNode,
-                            onChanged: (_) {
-                              if (mounted) {
-                                setState(() {});
-                              }
-                            },
-                            onEditingComplete: onEditingComplete,
-                            autofocus: false,
-                            obscureText: false,
-                            decoration: InputDecoration(
-                              hintText: 'Search golfers...',
-                              labelStyle: AppTheme.of(context).labelMedium,
-                              hintStyle: AppTheme.of(context).labelMedium,
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: AppTheme.of(context).alternate,
-                                  width: 2.0,
-                                ),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: AppTheme.of(context).primary,
-                                  width: 2.0,
-                                ),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: AppTheme.of(context).error,
-                                  width: 2.0,
-                                ),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: AppTheme.of(context).error,
-                                  width: 2.0,
-                                ),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              filled: true,
-                              fillColor: Colors.white,
-                              prefixIcon: Icon(
-                                Icons.search_rounded,
-                                color: AppTheme.of(context).secondaryText,
-                              ),
+                        onEditingComplete: onEditingComplete,
+                        autofocus: false,
+                        obscureText: false,
+                        decoration: InputDecoration(
+                          hintText: 'Search golfers...',
+                          hintStyle: AppTypography.bodyMedium.copyWith(
+                            color: Colors.white.withOpacity(0.5),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.white.withOpacity(0.2),
+                              width: 1.0,
                             ),
-                            style: AppTheme.of(context).bodyMedium,
-                          );
-                        },
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: AppColors.sunsetGold,
+                              width: 2.0,
+                            ),
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: AppColors.error,
+                              width: 1.0,
+                            ),
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: AppColors.error,
+                              width: 2.0,
+                            ),
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          filled: true,
+                          fillColor: AppColors.fairway.withOpacity(0.3),
+                          prefixIcon: Icon(
+                            Icons.search_rounded,
+                            color: Colors.white.withOpacity(0.7),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.md,
+                          ),
+                        ),
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: Colors.white,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(width: AppSpacing.sm),
+                // Clear button with glass style
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    textController?.clear();
+                    FocusScope.of(context).unfocus();
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  },
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.fairway.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.1),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(
-                        AppSpacing.sm, 0.0, 0.0, 0.0),
-                    child: AppIconButton(
-                      borderColor: Colors.transparent,
-                      borderRadius: 30.0,
-                      borderWidth: 1.0,
-                      buttonSize: 44.0,
-                      icon: Icon(
-                        Icons.clear_sharp,
-                        color: AppTheme.of(context).primary,
-                        size: 24.0,
-                      ),
-                      onPressed: () {
-                        textController?.clear();
-                        FocusScope.of(context).unfocus();
-                        if (mounted) {
-                          setState(() {});
-                        }
-                      },
+                    child: Icon(
+                      Icons.close_rounded,
+                      color: Colors.white.withOpacity(0.7),
+                      size: 22,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            // User List
-            StreamBuilder<List<UsersRecord>>(
-              stream: queryUsersRecord(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(
-                    child: SizedBox(
-                      width: 50.0,
-                      height: 50.0,
-                      child: SpinKitWanderingCubes(
-                        color: AppTheme.of(context).secondary,
-                        size: 50.0,
-                      ),
+          ),
+          // User List
+          StreamBuilder<List<UsersRecord>>(
+            stream: queryUsersRecord(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(AppSpacing.xxl),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SpinKitWanderingCubes(
+                          color: AppColors.sunsetGold,
+                          size: 50.0,
+                        ),
+                        SizedBox(height: AppSpacing.md),
+                        Text(
+                          'Finding golfers...',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: Colors.white.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
                     ),
-                  );
+                  ),
+                );
+              }
+              final searchTerm =
+                  textController?.text.trim().toLowerCase() ?? '';
+              List<UsersRecord> filteredUsers = snapshot.data!
+                  .where((u) => u.uid != currentUserUid)
+                  .where((user) {
+                if (searchTerm.isEmpty) {
+                  return true;
                 }
-                final searchTerm =
-                    textController?.text.trim().toLowerCase() ?? '';
-                List<UsersRecord> filteredUsers = snapshot.data!
-                    .where((u) => u.uid != currentUserUid)
-                    .where((user) {
-                  if (searchTerm.isEmpty) {
-                    return true;
-                  }
-                  final displayName = user.displayName.toLowerCase();
-                  final firstName = user.firstName.toLowerCase();
-                  final lastName = user.lastName.toLowerCase();
-                  return displayName.contains(searchTerm) ||
-                      firstName.contains(searchTerm) ||
-                      lastName.contains(searchTerm);
-                }).toList();
+                final displayName = user.displayName.toLowerCase();
+                final firstName = user.firstName.toLowerCase();
+                final lastName = user.lastName.toLowerCase();
+                return displayName.contains(searchTerm) ||
+                    firstName.contains(searchTerm) ||
+                    lastName.contains(searchTerm);
+              }).toList();
 
-                if (filteredUsers.isEmpty) {
+              if (filteredUsers.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(AppSpacing.xxl),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: AppColors.fairway.withOpacity(0.3),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.search_off_rounded,
+                            size: 40,
+                            color: Colors.white.withOpacity(0.5),
+                          ),
+                        ),
+                        SizedBox(height: AppSpacing.md),
+                        Text(
+                          'No golfers found',
+                          style: AppTypography.titleSmall.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: AppSpacing.xs),
+                        Text(
+                          'Try a different search term',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: Colors.white.withOpacity(0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return ListView.separated(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                  AppSpacing.md,
+                  44.0,
+                ),
+                primary: false,
+                shrinkWrap: true,
+                scrollDirection: Axis.vertical,
+                itemCount: filteredUsers.length,
+                separatorBuilder: (_, __) => SizedBox(height: AppSpacing.sm),
+                itemBuilder: (context, index) {
+                  final user = filteredUsers[index];
+                  return _buildUserCard(user);
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRequestsTab() {
+    return SingleChildScrollView(
+      physics: BouncingScrollPhysics(),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AuthUserStreamWidget(
+            builder: (context) => Builder(
+              builder: (context) {
+                final friendRequestList =
+                    (currentUserDocument?.friendRequests.toList() ?? [])
+                        .toList();
+
+                if (friendRequestList.isEmpty) {
                   return Center(
                     child: Padding(
-                      padding: EdgeInsets.all(AppSpacing.xl),
+                      padding: EdgeInsets.all(AppSpacing.xxl),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.search_off,
-                            size: 64.0,
-                            color: Color(0xFF9E9E9E),
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: AppColors.fairway.withOpacity(0.3),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.people_outline_rounded,
+                              size: 40,
+                              color: Colors.white.withOpacity(0.5),
+                            ),
                           ),
                           SizedBox(height: AppSpacing.md),
                           Text(
-                            'No golfers found',
-                            style: AppTheme.of(context).bodyLarge.override(
-                                  font: GoogleFonts.outfit(),
-                                  color: Color(0xFF616161),
-                                ),
+                            'No pending requests',
+                            style: AppTypography.titleSmall.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(height: AppSpacing.xs),
+                          Text(
+                            'Friend requests will appear here',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: Colors.white.withOpacity(0.6),
+                            ),
                           ),
                         ],
                       ),
@@ -483,217 +575,141 @@ class _GolfersWidgetState extends State<GolfersWidget>
                 return ListView.separated(
                   padding: EdgeInsets.fromLTRB(
                     AppSpacing.md,
-                    AppSpacing.sm,
+                    AppSpacing.md,
                     AppSpacing.md,
                     44.0,
                   ),
                   primary: false,
                   shrinkWrap: true,
                   scrollDirection: Axis.vertical,
-                  itemCount: filteredUsers.length,
+                  itemCount: friendRequestList.length,
                   separatorBuilder: (_, __) => SizedBox(height: AppSpacing.sm),
                   itemBuilder: (context, index) {
-                    final user = filteredUsers[index];
-                    return _buildUserCard(user);
+                    final friendRequestItem = friendRequestList[index];
+                    return StreamBuilder<UsersRecord>(
+                      stream: UsersRecord.getDocument(friendRequestItem),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Center(
+                            child: SizedBox(
+                              width: 50.0,
+                              height: 50.0,
+                              child: SpinKitWanderingCubes(
+                                color: AppColors.sunsetGold,
+                                size: 50.0,
+                              ),
+                            ),
+                          );
+                        }
+
+                        final user = snapshot.data!;
+                        return _buildRequestCard(user);
+                      },
+                    );
                   },
                 );
               },
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRequestsTab() {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: Colors.white,
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AuthUserStreamWidget(
-              builder: (context) => Builder(
-                builder: (context) {
-                  final friendRequestList =
-                      (currentUserDocument?.friendRequests.toList() ?? [])
-                          .toList();
-
-                  if (friendRequestList.isEmpty) {
-                    return Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(AppSpacing.xl),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.people_outline,
-                              size: 64.0,
-                              color: Color(0xFF9E9E9E),
-                            ),
-                            SizedBox(height: AppSpacing.md),
-                            Text(
-                              'No pending requests',
-                              style: AppTheme.of(context).bodyLarge.override(
-                                    font: GoogleFonts.outfit(),
-                                    color: Color(0xFF616161),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                            ),
-                            SizedBox(height: AppSpacing.xs),
-                            Text(
-                              'Friend requests will appear here',
-                              style: AppTheme.of(context).bodyMedium.override(
-                                    font: GoogleFonts.outfit(),
-                                    color: Color(0xFF9E9E9E),
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  return ListView.separated(
-                    padding: EdgeInsets.fromLTRB(
-                      AppSpacing.md,
-                      AppSpacing.md,
-                      AppSpacing.md,
-                      44.0,
-                    ),
-                    primary: false,
-                    shrinkWrap: true,
-                    scrollDirection: Axis.vertical,
-                    itemCount: friendRequestList.length,
-                    separatorBuilder: (_, __) => SizedBox(height: AppSpacing.sm),
-                    itemBuilder: (context, index) {
-                      final friendRequestItem = friendRequestList[index];
-                      return StreamBuilder<UsersRecord>(
-                        stream: UsersRecord.getDocument(friendRequestItem),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return Center(
-                              child: SizedBox(
-                                width: 50.0,
-                                height: 50.0,
-                                child: SpinKitWanderingCubes(
-                                  color: AppTheme.of(context).secondary,
-                                  size: 50.0,
-                                ),
-                              ),
-                            );
-                          }
-
-                          final user = snapshot.data!;
-                          return _buildRequestCard(user);
-                        },
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildFriendsTab() {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: Colors.white,
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AuthUserStreamWidget(
-              builder: (context) => Builder(
-                builder: (context) {
-                  final friendsList =
-                      (currentUserDocument?.friends.toList() ?? []).toList();
+    return SingleChildScrollView(
+      physics: BouncingScrollPhysics(),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AuthUserStreamWidget(
+            builder: (context) => Builder(
+              builder: (context) {
+                final friendsList =
+                    (currentUserDocument?.friends.toList() ?? []).toList();
 
-                  if (friendsList.isEmpty) {
-                    return Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(AppSpacing.xl),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.people_outline,
-                              size: 64.0,
-                              color: Color(0xFF9E9E9E),
+                if (friendsList.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(AppSpacing.xxl),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: AppColors.fairway.withOpacity(0.3),
+                              shape: BoxShape.circle,
                             ),
-                            SizedBox(height: AppSpacing.md),
-                            Text(
-                              'No friends yet',
-                              style: AppTheme.of(context).bodyLarge.override(
-                                    font: GoogleFonts.outfit(),
-                                    color: Color(0xFF616161),
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                            child: Icon(
+                              Icons.people_outline_rounded,
+                              size: 40,
+                              color: Colors.white.withOpacity(0.5),
                             ),
-                            SizedBox(height: AppSpacing.xs),
-                            Text(
-                              'Search for golfers to connect with',
-                              style: AppTheme.of(context).bodyMedium.override(
-                                    font: GoogleFonts.outfit(),
-                                    color: Color(0xFF9E9E9E),
-                                  ),
+                          ),
+                          SizedBox(height: AppSpacing.md),
+                          Text(
+                            'No friends yet',
+                            style: AppTypography.titleSmall.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
                             ),
-                          ],
-                        ),
+                          ),
+                          SizedBox(height: AppSpacing.xs),
+                          Text(
+                            'Search for golfers to connect with',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: Colors.white.withOpacity(0.6),
+                            ),
+                          ),
+                        ],
                       ),
-                    );
-                  }
-
-                  return ListView.separated(
-                    padding: EdgeInsets.fromLTRB(
-                      AppSpacing.md,
-                      AppSpacing.md,
-                      AppSpacing.md,
-                      44.0,
                     ),
-                    primary: false,
-                    shrinkWrap: true,
-                    scrollDirection: Axis.vertical,
-                    itemCount: friendsList.length,
-                    separatorBuilder: (_, __) => SizedBox(height: AppSpacing.sm),
-                    itemBuilder: (context, index) {
-                      final friendItem = friendsList[index];
-                      return StreamBuilder<UsersRecord>(
-                        stream: UsersRecord.getDocument(friendItem),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return Center(
-                              child: SizedBox(
-                                width: 50.0,
-                                height: 50.0,
-                                child: SpinKitWanderingCubes(
-                                  color: AppTheme.of(context).secondary,
-                                  size: 50.0,
-                                ),
-                              ),
-                            );
-                          }
-
-                          final user = snapshot.data!;
-                          return _buildFriendCard(user);
-                        },
-                      );
-                    },
                   );
-                },
-              ),
+                }
+
+                return ListView.separated(
+                  padding: EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    44.0,
+                  ),
+                  primary: false,
+                  shrinkWrap: true,
+                  scrollDirection: Axis.vertical,
+                  itemCount: friendsList.length,
+                  separatorBuilder: (_, __) => SizedBox(height: AppSpacing.sm),
+                  itemBuilder: (context, index) {
+                    final friendItem = friendsList[index];
+                    return StreamBuilder<UsersRecord>(
+                      stream: UsersRecord.getDocument(friendItem),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Center(
+                            child: SizedBox(
+                              width: 50.0,
+                              height: 50.0,
+                              child: SpinKitWanderingCubes(
+                                color: AppColors.sunsetGold,
+                                size: 50.0,
+                              ),
+                            ),
+                          );
+                        }
+
+                        final user = snapshot.data!;
+                        return _buildFriendCard(user);
+                      },
+                    );
+                  },
+                );
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -701,257 +717,287 @@ class _GolfersWidgetState extends State<GolfersWidget>
   Widget _buildUserCard(UsersRecord user) {
     return Container(
       width: double.infinity,
+      padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14.0),
-        border: Border(
-          left: BorderSide(
-            color: Color(0xFF1A4D2E),
-            width: 5.0,
-          ),
+        color: AppColors.fairway.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(
+          color: AppColors.fairwayLight.withOpacity(0.3),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 8.0,
-            offset: Offset(0, 2),
+      ),
+      child: Row(
+        children: [
+          // Premium Avatar with gradient ring
+          _buildPremiumAvatar(user.photoUrl, 56),
+          SizedBox(width: AppSpacing.md),
+          // Name, course, and handicap
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  valueOrDefault<String>(user.displayName, 'Golfer'),
+                  style: AppTypography.titleSmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2),
+                if (user.homeCourse.isNotEmpty)
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_rounded,
+                        color: AppColors.sunsetGold,
+                        size: 14,
+                      ),
+                      SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          user.homeCourse,
+                          style: AppTypography.bodySmall.copyWith(
+                            color: Colors.white.withOpacity(0.7),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                if (user.handicap != null && user.handicap > 0)
+                  Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.sunsetGold.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'HC ${user.handicap}',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: AppColors.sunsetGold,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          SizedBox(width: AppSpacing.sm),
+          // Action buttons
+          AuthUserStreamWidget(
+            builder: (context) {
+              final isFriend =
+                  (currentUserDocument?.friends.toList() ?? [])
+                      .contains(user.reference);
+              final hasPending = user.friendRequests.contains(
+                      currentUserReference) ||
+                  (currentUserDocument?.friendRequests.toList() ?? [])
+                      .contains(user.reference);
+
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Primary action button (state-based)
+                  if (isFriend)
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppColors.fairwayLight, AppColors.fairway],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
+                          SizedBox(width: 6),
+                          Text(
+                            'Friends',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else if (hasPending)
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white.withOpacity(0.2)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.schedule_rounded, color: Colors.white.withOpacity(0.7), size: 16),
+                          SizedBox(width: 6),
+                          Text(
+                            'Pending',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: Colors.white.withOpacity(0.7),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    GestureDetector(
+                      onTap: () async {
+                        HapticFeedback.lightImpact();
+                        try {
+                          await context.read<UserProvider>().sendFriendRequest(user.reference);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Friend request sent!', style: AppTypography.bodySmall.copyWith(color: Colors.white)),
+                              duration: Duration(milliseconds: 1500),
+                              backgroundColor: AppColors.fairwayDark,
+                            ),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Unable to send request.', style: AppTypography.bodySmall.copyWith(color: Colors.white)),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.sunsetGold.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.person_add_rounded, color: Colors.white, size: 16),
+                            SizedBox(width: 6),
+                            Text(
+                              'Add',
+                              style: AppTypography.labelSmall.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  SizedBox(width: 8),
+                  // View profile
+                  _buildGlassIconButton(
+                    icon: Icons.person_outline_rounded,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      context.pushNamed(
+                        'ProfileUser',
+                        extra: <String, dynamic>{
+                          'userRef': user.reference,
+                        },
+                      );
+                    },
+                  ),
+                  SizedBox(width: 8),
+                  // Chat
+                  _buildGlassIconButton(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    onTap: () async {
+                      HapticFeedback.lightImpact();
+                      await _openDirectChat(user);
+                    },
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            // Avatar
-            ClipRRect(
-              borderRadius: BorderRadius.circular(28.0),
-              child: Image.network(
-                valueOrDefault<String>(
-                  user.photoUrl,
-                  'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                ),
-                width: 56.0,
-                height: 56.0,
-                fit: BoxFit.cover,
-              ),
-            ),
-            SizedBox(width: 12.0),
-            // Name and course
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    valueOrDefault<String>(user.displayName, 'Golfer'),
-                    style: GoogleFonts.outfit(
-                      fontSize: 17.0,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A4D2E),
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  SizedBox(height: 2.0),
-                  if (user.homeCourse.isNotEmpty)
-                    Text(
-                      user.homeCourse,
-                      style: GoogleFonts.outfit(
-                        fontSize: 13.0,
-                        color: Color(0xFF718096),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
-            ),
-            SizedBox(width: 12.0),
-            // Action buttons
-            AuthUserStreamWidget(
-              builder: (context) {
-                final isFriend =
-                    (currentUserDocument?.friends.toList() ?? [])
-                        .contains(user.reference);
-                final hasPending = user.friendRequests.contains(
-                        currentUserReference) ||
-                    (currentUserDocument?.friendRequests.toList() ?? [])
-                        .contains(user.reference);
+    );
+  }
 
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Primary action button (state-based)
-                    if (isFriend)
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12.0,
-                          vertical: 8.0,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Color(0xFFE8F5E9),
-                          borderRadius: BorderRadius.circular(8.0),
-                          border: Border.all(
-                            color: Color(0xFF1A4D2E),
-                            width: 1.0,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.check_circle,
-                              color: Color(0xFF1A4D2E),
-                              size: 16.0,
-                            ),
-                            SizedBox(width: 6.0),
-                            Text(
-                              'Friends',
-                              style: GoogleFonts.outfit(
-                                fontSize: 14.0,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF1A4D2E),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    else if (hasPending)
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12.0,
-                          vertical: 8.0,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Color(0xFFF5F5F5),
-                          borderRadius: BorderRadius.circular(8.0),
-                          border: Border.all(
-                            color: Color(0xFF9E9E9E),
-                            width: 1.0,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.pending,
-                              color: Color(0xFF718096),
-                              size: 16.0,
-                            ),
-                            SizedBox(width: 6.0),
-                            Text(
-                              'Pending Request',
-                              style: GoogleFonts.outfit(
-                                fontSize: 14.0,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF718096),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    else
-                      ElevatedButton.icon(
-                        onPressed: () async {
-                          try {
-                            await context
-                                .read<UserProvider>()
-                                .sendFriendRequest(user.reference);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Friend request sent!',
-                                  style:
-                                      GoogleFonts.outfit(color: Colors.white),
-                                ),
-                                duration: Duration(milliseconds: 1500),
-                                backgroundColor: Color(0xFF1A4D2E),
-                              ),
-                            );
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Unable to send request. Please try again.',
-                                  style:
-                                      GoogleFonts.outfit(color: Colors.white),
-                                ),
-                                duration: Duration(milliseconds: 2000),
-                                backgroundColor: AppColors.error,
-                              ),
-                            );
-                          }
-                        },
-                        icon: Icon(
-                          Icons.person_add,
-                          size: 16.0,
-                          color: Colors.white,
-                        ),
-                        label: Text(
-                          'Add Friend',
-                          style: GoogleFonts.outfit(
-                            fontSize: 14.0,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF1A4D2E),
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12.0,
-                            vertical: 8.0,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          elevation: 0,
-                        ),
-                      ),
-                    SizedBox(width: 8.0),
-                    // View profile icon button
-                    AppIconButton(
-                      borderColor: Color(0xFFE0E0E0),
-                      borderRadius: 8.0,
-                      borderWidth: 1.0,
-                      buttonSize: 44.0,
-                      fillColor: Colors.white,
-                      icon: Icon(
-                        Icons.visibility_outlined,
-                        color: Color(0xFF1A4D2E),
-                        size: 20.0,
-                      ),
-                      onPressed: () async {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => ProfileUserFirebaseWidget(
-                              userRef: user.reference,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    SizedBox(width: 8.0),
-                    // Chat icon button
-                    AppIconButton(
-                      borderColor: Color(0xFFE0E0E0),
-                      borderRadius: 8.0,
-                      borderWidth: 1.0,
-                      buttonSize: 44.0,
-                      fillColor: Colors.white,
-                      icon: Icon(
-                        Icons.chat_bubble_outline,
-                        color: Color(0xFF1A4D2E),
-                        size: 20.0,
-                      ),
-                      onPressed: () async {
-                        await _openDirectChat(user);
-                      },
-                    ),
-                  ],
-                );
-              },
+  Widget _buildPremiumAvatar(String? photoUrl, double size) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Gradient ring
+        Container(
+          width: size + 8,
+          height: size + 8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: SweepGradient(
+              colors: [
+                AppColors.sunsetGold,
+                AppColors.sunsetPeach,
+                AppColors.sunsetRose,
+                AppColors.fairwayLight,
+                AppColors.sunsetGold,
+              ],
             ),
-          ],
+          ),
         ),
+        // White border
+        Container(
+          width: size + 4,
+          height: size + 4,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.pure,
+          ),
+        ),
+        // Avatar
+        ClipRRect(
+          borderRadius: BorderRadius.circular(size / 2),
+          child: Image.network(
+            valueOrDefault<String>(
+              photoUrl,
+              'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+            ),
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Container(
+              width: size,
+              height: size,
+              color: AppColors.sand,
+              child: Icon(Icons.person_rounded, size: size * 0.5, color: AppColors.stone),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGlassIconButton({required IconData icon, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withOpacity(0.2)),
+        ),
+        child: Icon(icon, color: Colors.white, size: 20),
       ),
     );
   }
@@ -959,116 +1005,126 @@ class _GolfersWidgetState extends State<GolfersWidget>
   Widget _buildRequestCard(UsersRecord user) {
     return Container(
       width: double.infinity,
+      padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14.0),
-        border: Border(
-          left: BorderSide(
-            color: Color(0xFFE65100),
-            width: 5.0,
-          ),
+        gradient: LinearGradient(
+          colors: [
+            AppColors.sunsetPeach.withOpacity(0.15),
+            AppColors.sunsetGold.withOpacity(0.1),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 8.0,
-            offset: Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(
+          color: AppColors.sunsetGold.withOpacity(0.3),
+        ),
       ),
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(26.0),
-              child: Image.network(
-                valueOrDefault<String>(
-                  user.photoUrl,
-                  'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                ),
-                width: 52.0,
-                height: 52.0,
-                fit: BoxFit.cover,
-              ),
-            ),
-            SizedBox(width: 12.0),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    user.displayName,
-                    style: GoogleFonts.outfit(
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A4D2E),
-                    ),
-                  ),
-                  if (user.homeCourse.isNotEmpty)
-                    Text(
-                      user.homeCourse,
-                      style: GoogleFonts.outfit(
-                        fontSize: 13.0,
-                        color: Color(0xFF718096),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Row(
+      child: Row(
+        children: [
+          // Premium Avatar
+          _buildPremiumAvatar(user.photoUrl, 52),
+          SizedBox(width: AppSpacing.md),
+          // Name and course
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppIconButton(
-                  borderColor: Color(0xFF1A4D2E),
-                  borderRadius: 20.0,
-                  borderWidth: 1.0,
-                  buttonSize: 40.0,
-                  fillColor: Color(0xFF1A4D2E),
-                  icon: Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 18.0,
-                  ),
-                  onPressed: () async {
-                    await context
-                        .read<UserProvider>()
-                        .acceptFriendRequest(user.reference);
-                    if (mounted) setState(() {});
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Friend request accepted!',
-                          style: GoogleFonts.outfit(color: Colors.white),
-                        ),
-                        duration: Duration(milliseconds: 1500),
-                        backgroundColor: AppTheme.of(context).primary,
+                Row(
+                  children: [
+                    Text(
+                      'Friend Request',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.sunsetGold,
+                        fontWeight: FontWeight.w600,
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
-                SizedBox(width: 8.0),
-                AppIconButton(
-                  borderColor: Color(0xFFD32F2F),
-                  borderRadius: 20.0,
-                  borderWidth: 1.0,
-                  buttonSize: 40.0,
-                  fillColor: Color(0xFFD32F2F),
-                  icon: Icon(
-                    Icons.close,
+                SizedBox(height: 4),
+                Text(
+                  valueOrDefault<String>(user.displayName, 'Golfer'),
+                  style: AppTypography.titleSmall.copyWith(
                     color: Colors.white,
-                    size: 18.0,
+                    fontWeight: FontWeight.w600,
                   ),
-                  onPressed: () async {
-                    await context
-                        .read<UserProvider>()
-                        .rejectFriendRequest(user.reference);
-                    if (mounted) setState(() {});
-                  },
                 ),
+                if (user.homeCourse.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.only(top: 2),
+                    child: Text(
+                      user.homeCourse,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
               ],
             ),
-          ],
-        ),
+          ),
+          // Accept/Reject buttons
+          Row(
+            children: [
+              // Accept button
+              GestureDetector(
+                onTap: () async {
+                  HapticFeedback.mediumImpact();
+                  await context.read<UserProvider>().acceptFriendRequest(user.reference);
+                  if (mounted) setState(() {});
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Friend request accepted!',
+                        style: AppTypography.bodySmall.copyWith(color: Colors.white),
+                      ),
+                      duration: Duration(milliseconds: 1500),
+                      backgroundColor: AppColors.success,
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.fairwayLight, AppColors.fairway],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.fairway.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(Icons.check_rounded, color: Colors.white, size: 22),
+                ),
+              ),
+              SizedBox(width: 8),
+              // Reject button
+              GestureDetector(
+                onTap: () async {
+                  HapticFeedback.lightImpact();
+                  await context.read<UserProvider>().rejectFriendRequest(user.reference);
+                  if (mounted) setState(() {});
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                  ),
+                  child: Icon(Icons.close_rounded, color: AppColors.error, size: 22),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -1076,163 +1132,213 @@ class _GolfersWidgetState extends State<GolfersWidget>
   Widget _buildFriendCard(UsersRecord user) {
     return Container(
       width: double.infinity,
+      padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14.0),
-        border: Border(
-          left: BorderSide(
-            color: Color(0xFF1A4D2E),
-            width: 5.0,
-          ),
+        color: AppColors.fairway.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(
+          color: AppColors.fairwayLight.withOpacity(0.3),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 8.0,
-            offset: Offset(0, 2),
-          ),
-        ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(26.0),
-              child: Image.network(
-                valueOrDefault<String>(
-                  user.photoUrl,
-                  'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                ),
-                width: 52.0,
-                height: 52.0,
-                fit: BoxFit.cover,
-              ),
-            ),
-            SizedBox(width: 12.0),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    valueOrDefault<String>(user.displayName, 'Friend'),
-                    style: GoogleFonts.outfit(
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A4D2E),
-                    ),
-                  ),
-                  if (user.homeCourse.isNotEmpty)
-                    Text(
-                      user.homeCourse,
-                      style: GoogleFonts.outfit(
-                        fontSize: 13.0,
-                        color: Color(0xFF718096),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Row(
+      child: Row(
+        children: [
+          // Premium Avatar
+          _buildPremiumAvatar(user.photoUrl, 52),
+          SizedBox(width: AppSpacing.md),
+          // Name and course
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppButtonEnhanced(
-                  onPressed: () async {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => ProfileUserFirebaseWidget(
-                          userRef: user.reference,
+                Text(
+                  valueOrDefault<String>(user.displayName, 'Friend'),
+                  style: AppTypography.titleSmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2),
+                if (user.homeCourse.isNotEmpty)
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_rounded,
+                        color: AppColors.sunsetGold,
+                        size: 14,
+                      ),
+                      SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          user.homeCourse,
+                          style: AppTypography.bodySmall.copyWith(
+                            color: Colors.white.withOpacity(0.7),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    );
-                  },
-                  text: 'View',
-                  variant: AppButtonVariant.primary,
-                  size: AppButtonSize.small,
-                ),
-                SizedBox(width: 8.0),
-                AppIconButton(
-                  borderColor: AppTheme.of(context).primary,
-                  borderRadius: 20.0,
-                  borderWidth: 1.0,
-                  buttonSize: 40.0,
-                  fillColor: Color(0xFF1A4D2E),
-                  icon: FaIcon(
-                    FontAwesomeIcons.facebookMessenger,
-                    color: Colors.white,
-                    size: 16.0,
+                    ],
                   ),
-                  onPressed: () async {
-                    await _openDirectChat(user);
-                  },
-                ),
-                SizedBox(width: 8.0),
-                AppIconButton(
-                  borderColor: AppTheme.of(context).error,
-                  borderRadius: 20.0,
-                  borderWidth: 1.0,
-                  buttonSize: 40.0,
-                  fillColor: AppTheme.of(context).error,
-                  icon: Icon(
-                    Icons.person_remove,
-                    color: Colors.white,
-                    size: 18.0,
-                  ),
-                  onPressed: () async {
-                    try {
-                      final confirm = await showDialog<bool>(
-                            context: context,
-                            builder: (alertDialogContext) {
-                              return AlertDialog(
-                                title: Text('Remove friend?'),
-                                content: Text(
-                                  'This will remove you from each other’s friends list.',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(alertDialogContext, false),
-                                    child: Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(alertDialogContext, true),
-                                    child: Text('Remove'),
-                                  ),
-                                ],
-                              );
-                            },
-                          ) ??
-                          false;
-                      if (!confirm) {
-                        return;
-                      }
-                      await context
-                          .read<UserProvider>()
-                          .removeFriend(user.reference);
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Friend removed.',
-                            style: GoogleFonts.outfit(color: Colors.white),
-                          ),
-                          duration: Duration(milliseconds: 1500),
-                          backgroundColor: AppTheme.of(context).error,
+                if (user.handicap != null && user.handicap > 0)
+                  Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.sunsetGold.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'HC ${user.handicap}',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: AppColors.sunsetGold,
+                          fontWeight: FontWeight.w600,
                         ),
-                      );
-                    } catch (_) {
-                      if (!mounted) return;
-                      showSnackbar(
-                        context,
-                        'Unable to remove friend. Please try again.',
-                      );
-                    }
-                  },
-                ),
+                      ),
+                    ),
+                  ),
               ],
             ),
-          ],
-        ),
+          ),
+          // Action buttons
+          Row(
+            children: [
+              // View profile
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  context.pushNamed(
+                    'ProfileUser',
+                    extra: <String, dynamic>{
+                      'userRef': user.reference,
+                    },
+                  );
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.fairwayLight, AppColors.fairway],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'View',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 8),
+              // Chat
+              GestureDetector(
+                onTap: () async {
+                  HapticFeedback.lightImpact();
+                  await _openDirectChat(user);
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.sunsetGold.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 18),
+                ),
+              ),
+              SizedBox(width: 8),
+              // Remove friend
+              GestureDetector(
+                onTap: () async {
+                  HapticFeedback.lightImpact();
+                  try {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (alertDialogContext) {
+                        return AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          title: Text(
+                            'Remove Friend?',
+                            style: AppTypography.titleMedium.copyWith(
+                              color: AppColors.onyx,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          content: Text(
+                            'This will remove you from each other\'s friends list.',
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: AppColors.slate,
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(alertDialogContext, false),
+                              child: Text(
+                                'Cancel',
+                                style: AppTypography.labelLarge.copyWith(
+                                  color: AppColors.stone,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(alertDialogContext, true),
+                              child: Text(
+                                'Remove',
+                                style: AppTypography.labelLarge.copyWith(
+                                  color: AppColors.error,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ) ?? false;
+                    if (!confirm) return;
+                    await context.read<UserProvider>().removeFriend(user.reference);
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Friend removed.',
+                          style: AppTypography.bodySmall.copyWith(color: Colors.white),
+                        ),
+                        duration: Duration(milliseconds: 1500),
+                        backgroundColor: AppColors.error,
+                      ),
+                    );
+                  } catch (_) {
+                    if (!mounted) return;
+                    showSnackbar(context, 'Unable to remove friend. Please try again.');
+                  }
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                  ),
+                  child: Icon(Icons.person_remove_rounded, color: AppColors.error, size: 18),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

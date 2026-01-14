@@ -110,36 +110,39 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                   ),
 
                   // Avatar container
-                  Container(
-                    width: 148,
-                    height: 148,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.pure,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 16,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    padding: EdgeInsets.all(4),
-                    child: ClipOval(
-                      child: Image.network(
-                        widget.photoUrl.isNotEmpty
-                            ? widget.photoUrl
-                            : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                        width: 140,
-                        height: 140,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Container(
-                          color: AppColors.cloud,
-                          child: Icon(
-                            Icons.person,
-                            size: 60,
-                            color: AppColors.stone,
+                  GestureDetector(
+                    onTap: widget.onEditPhoto,
+                    child: Container(
+                      width: 148,
+                      height: 148,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.pure,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 16,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      padding: EdgeInsets.all(4),
+                      child: ClipOval(
+                        child: Image.network(
+                          widget.photoUrl.isNotEmpty
+                              ? widget.photoUrl
+                              : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+                          width: 140,
+                          height: 140,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            color: AppColors.cloud,
+                            child: Icon(
+                              Icons.person,
+                              size: 60,
+                              color: AppColors.stone,
+                            ),
                           ),
                         ),
                       ),

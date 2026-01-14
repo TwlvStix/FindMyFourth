@@ -11,6 +11,16 @@ import 'package:flutter/scheduler.dart';
 
 final _handledMessageIds = <String?>{};
 
+class _PushRoute {
+  const _PushRoute({
+    required this.pageName,
+    required this.parameterData,
+  });
+
+  final String pageName;
+  final Map<String, dynamic> parameterData;
+}
+
 class PushNotificationsHandler extends StatefulWidget {
   const PushNotificationsHandler({Key? key, required this.child})
       : super(key: key);
@@ -24,6 +34,32 @@ class PushNotificationsHandler extends StatefulWidget {
 
 class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   bool _loading = false;
+
+  _PushRoute? _resolveRouteFromType(Map<String, dynamic> data) {
+    final type = data['type'];
+    if (type is! String || type.isEmpty) {
+      return null;
+    }
+    if (type == 'game_created' || type == 'game_alert') {
+      final gameId = data['gameId'] ?? data['game_id'];
+      if (gameId is String && gameId.isNotEmpty) {
+        return _PushRoute(
+          pageName: 'JoinGameDetailed',
+          parameterData: {'gameRef': 'games/$gameId'},
+        );
+      }
+    }
+    if (type == 'chat_message') {
+      final chatId = data['threadId'] ?? data['chatId'];
+      if (chatId is String && chatId.isNotEmpty) {
+        return _PushRoute(
+          pageName: 'ChatDetails',
+          parameterData: {'chatId': chatId},
+        );
+      }
+    }
+    return null;
+  }
 
   Future handleOpenedPushNotification() async {
     if (isWeb) {
@@ -45,8 +81,17 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
 
     if (mounted) setState(() => _loading = true);
     try {
-      final initialPageName = message.data['initialPageName'] as String;
-      final initialParameterData = getInitialParameterData(message.data);
+      final resolvedRoute = _resolveRouteFromType(message.data);
+      final rawPageName = message.data['initialPageName'];
+      final initialPageName = resolvedRoute?.pageName ??
+          (rawPageName is String && rawPageName.isNotEmpty
+              ? rawPageName
+              : null);
+      final initialParameterData = resolvedRoute?.parameterData ??
+          getInitialParameterData(message.data);
+      if (initialPageName == null) {
+        return;
+      }
       final parametersBuilder = parametersBuilderMap[initialPageName];
       if (parametersBuilder != null) {
         final parameterData = await parametersBuilder(initialParameterData);
@@ -132,8 +177,7 @@ final parametersBuilderMap =
   'success_page': ParameterData.none(),
   'ProfileUser': (data) async => ParameterData(
         allParams: {
-          'userRef': await getDocumentParameter<UsersRecord>(
-              data, 'userRef', UsersRecord.fromSnapshot),
+          'userRef': getParameter<DocumentReference>(data, 'userRef'),
         },
       ),
   'success_leave': ParameterData.none(),
@@ -155,6 +199,11 @@ final parametersBuilderMap =
   'GameJoinedDetailed': (data) async => ParameterData(
         allParams: {
           'gameRef': getParameter<DocumentReference>(data, 'gameRef'),
+        },
+      ),
+  'ChatDetails': (data) async => ParameterData(
+        requiredParams: {
+          'chatId': getParameter<String>(data, 'chatId'),
         },
       ),
 };

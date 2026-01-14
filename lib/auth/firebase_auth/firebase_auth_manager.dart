@@ -534,6 +534,29 @@ class FirebaseAuthManager extends AuthManager
         : false;
 
     if (!completedOnboarding || !backendConfirmed) {
+      if (user != null) {
+        try {
+          final userDoc = await UsersRecord.getDocumentOnce(
+            UsersRecord.collection.doc(user.uid),
+          );
+          final hasProfileData =
+              userDoc.displayName.isNotEmpty ||
+              userDoc.firstName.isNotEmpty ||
+              userDoc.lastName.isNotEmpty;
+          if (hasProfileData) {
+            await makeCloudCall(
+              'completeOnboarding',
+              {'userDocPath': userDocPath},
+            );
+            if (replaceRoute) {
+              context.goNamed(fallbackRouteName, extra: fallbackExtra);
+            } else {
+              context.pushNamed(fallbackRouteName, extra: fallbackExtra);
+            }
+            return;
+          }
+        } catch (_) {}
+      }
       context.goNamed(
         'UserOnboarding',
         queryParameters: {

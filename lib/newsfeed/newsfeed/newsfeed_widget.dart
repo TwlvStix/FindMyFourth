@@ -8,19 +8,23 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/app_card.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/custom_functions.dart' as functions;
 import '/newsfeed/blog_create/blog_create_widget.dart';
 import '/newsfeed/blog_edit/blog_edit_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:text_search/text_search.dart';
 
 class NewsfeedWidget extends StatefulWidget {
-  const NewsfeedWidget({super.key});
+  const NewsfeedWidget({super.key, this.isEmbedded = false});
 
+  final bool isEmbedded;
   static String routeName = 'Newsfeed';
   static String routePath = '/newsfeed';
 
@@ -133,6 +137,26 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
       builder: (context, snapshot) {
         // Customize what your widget looks like when it's loading.
         if (!snapshot.hasData) {
+          if (widget.isEmbedded) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SpinKitWanderingCubes(
+                    color: AppColors.sunsetGold,
+                    size: 50.0,
+                  ),
+                  SizedBox(height: AppSpacing.md),
+                  Text(
+                    'Loading news...',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
           return Scaffold(
             backgroundColor: AppTheme.of(context).primaryBackground,
             body: Center(
@@ -155,6 +179,14 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
             )
             .toList();
 
+        // Build the content
+        Widget content = _buildNewsContent(posts, newsfeedPostsRecordList);
+
+        // If embedded, just return the content
+        if (widget.isEmbedded) {
+          return content;
+        }
+
         return GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
@@ -162,21 +194,13 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
           },
           child: Scaffold(
             key: scaffoldKey,
-            backgroundColor: AppTheme.of(context).primaryBackground,
+            extendBodyBehindAppBar: true,
             appBar: AppBar(
-              backgroundColor: AppTheme.of(context).primaryBackground,
+              backgroundColor: Colors.transparent,
               automaticallyImplyLeading: false,
-              leading: AppIconButton(
-                borderColor: Colors.transparent,
-                borderRadius: 30.0,
-                borderWidth: 1.0,
-                buttonSize: 55.0,
-                icon: Icon(
-                  Icons.arrow_back_sharp,
-                  color: AppTheme.of(context).primary,
-                  size: 25.0,
-                ),
-                onPressed: () async {
+              leading: GestureDetector(
+                onTap: () async {
+                  HapticFeedback.lightImpact();
                   final router = GoRouter.of(context);
                   if (router.canPop()) {
                     router.pop();
@@ -184,454 +208,42 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
                     router.go('/');
                   }
                 },
+                child: Container(
+                  margin: EdgeInsets.only(left: AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color: AppColors.fairway.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12.0),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.1),
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.chevron_left_rounded,
+                    color: Colors.white,
+                    size: 28.0,
+                  ),
+                ),
               ),
               title: Text(
                 'Twlv Stix News',
-                style: AppTheme.of(context).headlineMedium.override(
-                      font: GoogleFonts.outfit(
-                        fontWeight: AppTheme.of(context)
-                            .headlineMedium
-                            .fontWeight,
-                        fontStyle: AppTheme.of(context)
-                            .headlineMedium
-                            .fontStyle,
-                      ),
-                      color: AppTheme.of(context).primary,
-                      fontSize: 22.0,
-                      letterSpacing: 0.0,
-                      fontWeight: AppTheme.of(context)
-                          .headlineMedium
-                          .fontWeight,
-                      fontStyle:
-                          AppTheme.of(context).headlineMedium.fontStyle,
-                    ),
+                style: AppTypography.headlineMedium.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               centerTitle: false,
-              elevation: 10.0,
+              elevation: 0.0,
             ),
             body: FairwayBackgroundDark(
+              showOrganic: true,
+              showTexture: true,
               child: SafeArea(
-                top: true,
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            AppSpacing.xl, 0.0, AppSpacing.md, 0.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, AppSpacing.sm, AppSpacing.xs, 0.0),
-                                child: TextFormField(
-                                  controller: inputSearchTextController,
-                                  focusNode: inputSearchFocusNode,
-                                  autofocus: true,
-                                  obscureText: false,
-                                  decoration: InputDecoration(
-                                    hintText: 'Search…',
-                                    hintStyle: AppTheme.of(context)
-                                        .bodySmall
-                                        .override(
-                                          font: GoogleFonts.outfit(
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .bodySmall
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .bodySmall
-                                                    .fontStyle,
-                                          ),
-                                          letterSpacing: 0.0,
-                                          fontWeight: AppTheme.of(context)
-                                              .bodySmall
-                                              .fontWeight,
-                                          fontStyle: AppTheme.of(context)
-                                              .bodySmall
-                                              .fontStyle,
-                                        ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color:
-                                            AppTheme.of(context).primary,
-                                        width: 1.0,
-                                      ),
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(4.0),
-                                        topRight: Radius.circular(4.0),
-                                      ),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Color(0x00000000),
-                                        width: 1.0,
-                                      ),
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(4.0),
-                                        topRight: Radius.circular(4.0),
-                                      ),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Color(0x00000000),
-                                        width: 1.0,
-                                      ),
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(4.0),
-                                        topRight: Radius.circular(4.0),
-                                      ),
-                                    ),
-                                    focusedErrorBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Color(0x00000000),
-                                        width: 1.0,
-                                      ),
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(4.0),
-                                        topRight: Radius.circular(4.0),
-                                      ),
-                                    ),
-                                  ),
-                                  style: AppTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        font: GoogleFonts.outfit(
-                                          fontWeight: AppTheme.of(context)
-                                              .bodyMedium
-                                              .fontWeight,
-                                          fontStyle: AppTheme.of(context)
-                                              .bodyMedium
-                                              .fontStyle,
-                                        ),
-                                        letterSpacing: 0.0,
-                                        fontWeight: AppTheme.of(context)
-                                            .bodyMedium
-                                            .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
-                                      ),
-                                  validator:
-                                      inputSearchTextControllerValidator
-                                          .asValidator(context),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, AppSpacing.sm, AppSpacing.xs, 0.0),
-                              child: AppButtonEnhanced(
-                                text: 'SEARCH',
-                                variant: AppButtonVariant.primary,
-                                size: AppButtonSize.medium,
-                                onPressed: () async {
-                                  if (mounted) setState(() {
-                                    simpleSearchResults = TextSearch(
-                                      newsfeedPostsRecordList
-                                          .map(
-                                            (record) =>
-                                                TextSearchItem.fromTerms(
-                                                    record,
-                                                    [
-                                                      record.title,
-                                                      record.content
-                                                    ]),
-                                          )
-                                          .toList(),
-                                    )
-                                        .search(
-                                            inputSearchTextController.text)
-                                        .map((r) => r.object)
-                                        .toList();
-                                  });
-                                  if (simpleSearchResults.length == 0) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'NO RESULTS!',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 20.0,
-                                          ),
-                                        ),
-                                        duration:
-                                            Duration(milliseconds: 4000),
-                                        backgroundColor: Color(0xFFFF0000),
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
-                            ),
-                            if (valueOrDefault<bool>(
-                              valueOrDefault(
-                                      currentUserDocument?.role, '') ==
-                                  'admin',
-                              false,
-                            ))
-                              Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, AppSpacing.sm, 0.0, 0.0),
-                                child: AuthUserStreamWidget(
-                                  builder: (context) => AppIconButton(
-                                    borderColor:
-                                        AppTheme.of(context).primary,
-                                    borderRadius: 20.0,
-                                    borderWidth: 1.0,
-                                    buttonSize: 40.0,
-                                    fillColor:
-                                        AppTheme.of(context).primary,
-                                    icon: Icon(
-                                      Icons.add,
-                                      color: AppTheme.of(context)
-                                          .primaryBtnText,
-                                      size: 24.0,
-                                    ),
-                                    onPressed: () async {
-                                      context.pushNamed(
-                                        BlogCreateWidget.routeName,
-                                        extra: <String, dynamic>{
-                                          kTransitionInfoKey: TransitionInfo(
-                                            hasTransition: true,
-                                            transitionType: PageTransitionType
-                                                .bottomToTop,
-                                            duration:
-                                                Duration(milliseconds: 220),
-                                          ),
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SliverPadding(
-                      padding: EdgeInsetsDirectional.fromSTEB(
-                          0.0, AppSpacing.sm, 0.0, AppSpacing.xxxl),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, postsIndex) {
-                            final postsItem = posts[postsIndex];
-                            return Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  AppSpacing.md,
-                                  0.0,
-                                  AppSpacing.md,
-                                  AppSpacing.md),
-                              child: AppCard(
-                                variant: AppCardVariant.standard,
-                                padding: EdgeInsets.zero,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Stack(
-                                      children: [
-                                        Align(
-                                          alignment: AlignmentDirectional(
-                                              0.0, 0.0),
-                                          child: InkWell(
-                                            splashColor: Colors.transparent,
-                                            focusColor: Colors.transparent,
-                                            hoverColor: Colors.transparent,
-                                            highlightColor:
-                                                Colors.transparent,
-                                            onTap: () async {
-                                              if (valueOrDefault(
-                                                      currentUserDocument
-                                                          ?.role,
-                                                      '') ==
-                                                  'admin') {
-                                                context.pushNamed(
-                                                  BlogEditWidget.routeName,
-                                                  queryParameters: {
-                                                    'postRef': serializeParam(
-                                                      postsItem.reference,
-                                                      ParamType
-                                                          .DocumentReference,
-                                                    ),
-                                                  }.withoutNulls,
-                                                  extra: <String, dynamic>{
-                                                    kTransitionInfoKey:
-                                                        TransitionInfo(
-                                                      hasTransition: true,
-                                                      transitionType:
-                                                          PageTransitionType
-                                                              .bottomToTop,
-                                                      duration: Duration(
-                                                          milliseconds: 220),
-                                                    ),
-                                                  },
-                                                );
-                                              }
-                                            },
-                                            child: Hero(
-                                              tag: valueOrDefault<String>(
-                                                postsItem.mainImage,
-                                                'https://wiki.tripwireinteractive.com/TWIimages/4/47/Placeholder.png' +
-                                                    '$postsIndex',
-                                              ),
-                                              transitionOnUserGestures: true,
-                                              child: CachedNetworkImage(
-                                                imageUrl:
-                                                    valueOrDefault<String>(
-                                                  postsItem.mainImage,
-                                                  'https://wiki.tripwireinteractive.com/TWIimages/4/47/Placeholder.png',
-                                                ),
-                                                width: double.infinity,
-                                                height: 200.0,
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        if (valueOrDefault<bool>(
-                                          valueOrDefault(
-                                                  currentUserDocument?.role,
-                                                  '') ==
-                                              'admin',
-                                          false,
-                                        ))
-                                          Align(
-                                            alignment: AlignmentDirectional(
-                                                1.0, 1.0),
-                                            child: AuthUserStreamWidget(
-                                              builder: (context) =>
-                                                  AppIconButton(
-                                                borderColor:
-                                                    Colors.transparent,
-                                                borderRadius: 30.0,
-                                                borderWidth: 1.0,
-                                                buttonSize: 60.0,
-                                                icon: Icon(
-                                                  Icons.delete,
-                                                  color: AppTheme.of(
-                                                          context)
-                                                      .secondary,
-                                                  size: 30.0,
-                                                ),
-                                                onPressed: () async {
-                                                  await postsItem.reference
-                                                      .delete();
-
-                                                  if (mounted) {
-                                                    setState(() {});
-                                                  }
-                                                },
-                                              ),
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                    Padding(
-                                      padding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              AppSpacing.md,
-                                              AppSpacing.lg,
-                                              AppSpacing.md,
-                                              0.0),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            postsItem.title,
-                                            style:
-                                                AppTheme.of(context)
-                                                    .headlineMedium
-                                                    .override(
-                                                      font: GoogleFonts.outfit(
-                                                        fontWeight:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .headlineMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .headlineMedium
-                                                                .fontStyle,
-                                                      ),
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          AppTheme.of(context)
-                                                              .headlineMedium
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          AppTheme.of(context)
-                                                              .headlineMedium
-                                                              .fontStyle,
-                                                    ),
-                                          ),
-                                        ],
-                                      ).animateOnPageLoad(animationsMap[
-                                          'rowOnPageLoadAnimation1']!),
-                                    ),
-                                    Padding(
-                                      padding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              AppSpacing.md,
-                                              0.0,
-                                              AppSpacing.md,
-                                              AppSpacing.md),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Text(
-                                            postsItem.content
-                                                .maybeHandleOverflow(
-                                              maxChars: 30,
-                                              replacement: '…',
-                                            ),
-                                            style:
-                                                AppTheme.of(context)
-                                                    .bodySmall
-                                                    .override(
-                                                      font: GoogleFonts.outfit(
-                                                        fontWeight:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .bodySmall
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .bodySmall
-                                                                .fontStyle,
-                                                      ),
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          AppTheme.of(context)
-                                                              .bodySmall
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          AppTheme.of(context)
-                                                              .bodySmall
-                                                              .fontStyle,
-                                                    ),
-                                          ),
-                                        ],
-                                      ).animateOnPageLoad(animationsMap[
-                                          'rowOnPageLoadAnimation2']!),
-                                    ),
-                                  ],
-                                ),
-                              ).animateOnPageLoad(animationsMap[
-                                  'containerOnPageLoadAnimation']!),
-                            );
-                          },
-                          childCount: posts.length,
-                        ),
-                      ),
-                    ),
-                  ],
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top + 56,
+                  ),
+                  child: content,
                 ),
               ),
             ),
@@ -639,5 +251,316 @@ class _NewsfeedWidgetState extends State<NewsfeedWidget>
         );
       },
     );
+  }
+
+  Widget _buildNewsContent(List<PostsRecord> posts, List<PostsRecord> newsfeedPostsRecordList) {
+    return CustomScrollView(
+      physics: BouncingScrollPhysics(),
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, 0),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.fairway.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.1),
+                      ),
+                    ),
+                    child: TextFormField(
+                      controller: inputSearchTextController,
+                      focusNode: inputSearchFocusNode,
+                      autofocus: false,
+                      obscureText: false,
+                      decoration: InputDecoration(
+                        hintText: 'Search news...',
+                        hintStyle: AppTypography.bodyMedium.copyWith(
+                          color: Colors.white.withOpacity(0.5),
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.sm,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          color: Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: Colors.white,
+                      ),
+                      validator: inputSearchTextControllerValidator.asValidator(context),
+                    ),
+                  ),
+                ),
+                SizedBox(width: AppSpacing.sm),
+                GestureDetector(
+                  onTap: () async {
+                    HapticFeedback.lightImpact();
+                    if (mounted) setState(() {
+                      simpleSearchResults = TextSearch(
+                        newsfeedPostsRecordList
+                            .map(
+                              (record) => TextSearchItem.fromTerms(
+                                  record, [record.title, record.content]),
+                            )
+                            .toList(),
+                      )
+                          .search(inputSearchTextController!.text)
+                          .map((r) => r.object)
+                          .toList();
+                    });
+                    if (simpleSearchResults.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'No results found',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          duration: Duration(milliseconds: 2000),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                    }
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Search',
+                      style: AppTypography.labelMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                if (valueOrDefault<bool>(
+                  valueOrDefault(currentUserDocument?.role, '') == 'admin',
+                  false,
+                )) ...[
+                  SizedBox(width: AppSpacing.xs),
+                  AuthUserStreamWidget(
+                    builder: (context) => GestureDetector(
+                      onTap: () async {
+                        HapticFeedback.lightImpact();
+                        context.pushNamed(
+                          BlogCreateWidget.routeName,
+                          extra: <String, dynamic>{
+                            kTransitionInfoKey: TransitionInfo(
+                              hasTransition: true,
+                              transitionType: PageTransitionType.bottomToTop,
+                              duration: Duration(milliseconds: 220),
+                            ),
+                          },
+                        );
+                      },
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [AppColors.fairwayLight, AppColors.fairway],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(Icons.add_rounded, color: Colors.white, size: 24),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+        if (posts.isEmpty)
+          SliverFillRemaining(
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: AppColors.fairway.withOpacity(0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.article_outlined,
+                      color: Colors.white.withOpacity(0.5),
+                      size: 40,
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.md),
+                  Text(
+                    'No News Yet',
+                    style: AppTypography.titleSmall.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Check back later for updates',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: Colors.white.withOpacity(0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+                AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.xxxl),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, postsIndex) {
+                  final postsItem = posts[postsIndex];
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: AppSpacing.md),
+                    child: _buildPremiumNewsCard(postsItem),
+                  );
+                },
+                childCount: posts.length,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildPremiumNewsCard(PostsRecord post) {
+    final isAdmin = valueOrDefault(currentUserDocument?.role, '') == 'admin';
+
+    return GestureDetector(
+      onTap: isAdmin
+          ? () {
+              HapticFeedback.lightImpact();
+              context.pushNamed(
+                BlogEditWidget.routeName,
+                queryParameters: {
+                  'postRef': serializeParam(
+                    post.reference,
+                    ParamType.DocumentReference,
+                  ),
+                }.withoutNulls,
+                extra: <String, dynamic>{
+                  kTransitionInfoKey: TransitionInfo(
+                    hasTransition: true,
+                    transitionType: PageTransitionType.bottomToTop,
+                    duration: Duration(milliseconds: 220),
+                  ),
+                },
+              );
+            }
+          : null,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.fairway.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.1),
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image
+            Stack(
+              children: [
+                Hero(
+                  tag: valueOrDefault<String>(
+                    post.mainImage,
+                    'https://wiki.tripwireinteractive.com/TWIimages/4/47/Placeholder.png${post.reference.id}',
+                  ),
+                  transitionOnUserGestures: true,
+                  child: CachedNetworkImage(
+                    imageUrl: valueOrDefault<String>(
+                      post.mainImage,
+                      'https://wiki.tripwireinteractive.com/TWIimages/4/47/Placeholder.png',
+                    ),
+                    width: double.infinity,
+                    height: 180,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                // Delete button for admin
+                if (isAdmin)
+                  Positioned(
+                    top: AppSpacing.sm,
+                    right: AppSpacing.sm,
+                    child: AuthUserStreamWidget(
+                      builder: (context) => GestureDetector(
+                        onTap: () async {
+                          HapticFeedback.lightImpact();
+                          await post.reference.delete();
+                          if (mounted) setState(() {});
+                        },
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.delete_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            // Content
+            Padding(
+              padding: EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    post.title,
+                    style: AppTypography.titleSmall.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.xs),
+                  Text(
+                    post.content.maybeHandleOverflow(
+                      maxChars: 100,
+                      replacement: '…',
+                    ),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ).animateOnPageLoad(animationsMap['containerOnPageLoadAnimation']!);
   }
 }

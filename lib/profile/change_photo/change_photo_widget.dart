@@ -171,7 +171,17 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                             shape: BoxShape.circle,
                                           ),
                                           child: Image.network(
-                                            currentUserPhoto,
+                                            valueOrDefault<String>(
+                                              currentUserPhoto,
+                                              'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+                                            ),
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    Image.asset(
+                                              'assets/images/error_image.png',
+                                              fit: BoxFit.cover,
+                                            ),
                                           ),
                                         ),
                                       ),

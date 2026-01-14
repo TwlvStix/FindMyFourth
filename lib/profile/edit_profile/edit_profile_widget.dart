@@ -2,25 +2,20 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/widgets/app_count_controller.dart';
 import '/core/widgets/app_drop_down.dart';
-import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
-import '/core/widgets/profile_hero_section.dart';
-import '/core/widgets/profile_card_section.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/form_field_controller.dart';
 import '/profile/change_photo/change_photo_widget.dart';
-import '/core/custom_functions.dart' as functions;
 import '/profile/main_profile/main_profile_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
-import '/backend/cloud_functions/cloud_functions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -57,17 +52,21 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
   String? coursesValue;
   FormFieldController<String>? coursesValueController;
   int? handicapValue;
-  UsersRecord? displaynameQuery;
 
-  // Animation
-  late AnimationController _fadeController;
-  late List<Animation<double>> _fadeAnimations;
+  // Animation Controllers
+  late AnimationController _ringController;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize ring animation
+    _ringController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 8),
+    )..repeat();
 
     // Initialize controllers with current user data
     firstNameTextController = TextEditingController(
@@ -100,35 +99,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     );
     golfCanadaFocusNode = FocusNode();
 
-    // Setup staggered fade-in animations
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _fadeAnimations = List.generate(
-      3,
-      (index) => Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(
-          parent: _fadeController,
-          curve: Interval(
-            index * 0.1,
-            0.4 + (index * 0.1),
-            curve: Curves.easeOut,
-          ),
-        ),
-      ),
-    );
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fadeController.forward();
       if (mounted) setState(() {});
     });
   }
 
   @override
   void dispose() {
-    _fadeController.dispose();
+    _ringController.dispose();
     firstNameFocusNode?.dispose();
     firstNameTextController?.dispose();
     lastNameFocusNode?.dispose();
@@ -145,6 +123,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
   }
 
   Future<void> _handleSaveProfile() async {
+    HapticFeedback.mediumImpact();
+
     if (!formKey.currentState!.validate()) {
       return;
     }
@@ -155,14 +135,11 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Please update your Firebase Auth email before saving your profile.',
-            style: GoogleFonts.outfit(
-              color: AppTheme.of(context).secondaryBackground,
-              fontSize: 15.0,
-            ),
+            'Please update your email in account settings first.',
+            style: AppTypography.bodySmall.copyWith(color: Colors.white),
           ),
           duration: Duration(milliseconds: 2000),
-          backgroundColor: AppTheme.of(context).primary,
+          backgroundColor: AppColors.warning,
         ),
       );
       return;
@@ -171,6 +148,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     if (currentUserReference == null) {
       return;
     }
+
     try {
       await FirebaseFirestore.instance.runTransaction((transaction) async {
         transaction.update(
@@ -179,19 +157,17 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             photoUrl: currentUserPhoto,
             phoneNumber: phoneNumTextController!.text,
             handicap: handicapValue,
-          golfCanadaNumber: () {
-            final golfCanadaRaw =
-                golfCanadaTextController?.text.trim() ?? '';
-            return golfCanadaRaw.isEmpty ? null : golfCanadaRaw;
-          }(),
+            golfCanadaNumber: () {
+              final golfCanadaRaw = golfCanadaTextController?.text.trim() ?? '';
+              return golfCanadaRaw.isEmpty ? null : golfCanadaRaw;
+            }(),
             firstName: firstNameTextController!.text,
             lastName: lastNameTextController!.text,
             homeCourse: coursesValue,
           ),
         );
       });
-      currentUserDocument =
-          await UsersRecord.getDocumentOnce(currentUserReference!);
+      currentUserDocument = await UsersRecord.getDocumentOnce(currentUserReference!);
       _showSuccessAndNavigate();
     } catch (e) {
       debugPrint('EditProfile: profile save failed: $e');
@@ -199,10 +175,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
         SnackBar(
           content: Text(
             'Unable to save profile. Please try again.',
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 15.0,
-            ),
+            style: AppTypography.bodySmall.copyWith(color: Colors.white),
           ),
           duration: Duration(milliseconds: 2000),
           backgroundColor: AppColors.error,
@@ -214,14 +187,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
   }
 
   void _showSuccessAndNavigate() {
-    // Show success message
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           'Profile updated successfully!',
-          style: GoogleFonts.outfit(
+          style: AppTypography.bodyMedium.copyWith(
             color: Colors.white,
-            fontSize: 16.0,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -230,7 +201,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       ),
     );
 
-    // Navigate to profile
     context.pushNamed(
       MainProfileWidget.routeName,
       extra: <String, dynamic>{
@@ -240,71 +210,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           duration: Duration(milliseconds: 300),
         ),
       },
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required FocusNode focusNode,
-    required String label,
-    TextInputAction? textInputAction,
-    String? Function(BuildContext, String?)? validator,
-    bool readOnly = false,
-  }) {
-    return TextFormField(
-      controller: controller,
-      focusNode: focusNode,
-      textInputAction: textInputAction ?? TextInputAction.next,
-      readOnly: readOnly,
-      style: GoogleFonts.outfit(
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
-        color: AppColors.onyx,
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: GoogleFonts.outfit(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: AppColors.stone,
-        ),
-        filled: true,
-        fillColor: Colors.white,
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: AppColors.cloud,
-            width: 1.5,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: AppColors.fairway,
-            width: 2.0,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: AppColors.error,
-            width: 1.5,
-          ),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: AppColors.error,
-            width: 2.0,
-          ),
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.md,
-        ),
-      ),
-      validator:
-          validator != null ? (val) => validator(context, val) : null,
     );
   }
 
@@ -319,353 +224,752 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppTheme.of(context).secondaryBackground,
+        extendBodyBehindAppBar: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           elevation: 0,
-          leading: AppIconButton(
-            borderColor: Colors.transparent,
-            borderRadius: 30.0,
-            borderWidth: 1.0,
-            buttonSize: 60.0,
-            icon: Icon(
-              Icons.arrow_back_rounded,
-              color: AppTheme.of(context).primary,
-              size: 30.0,
-            ),
-            onPressed: () async {
+          leading: InkWell(
+            splashColor: Colors.transparent,
+            focusColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            onTap: () {
+              HapticFeedback.lightImpact();
               context.pop();
             },
+            child: Icon(
+              Icons.chevron_left_rounded,
+              color: Colors.white,
+              size: 32.0,
+            ),
           ),
           title: Text(
             'Edit Profile',
-            style: GoogleFonts.outfit(
-              fontSize: 22,
+            style: AppTypography.headlineSmall.copyWith(
+              color: Colors.white,
               fontWeight: FontWeight.w600,
-              color: AppTheme.of(context).primary,
             ),
           ),
         ),
         body: FairwayBackgroundDark(
           showOrganic: true,
+          showTexture: true,
           child: Form(
             key: formKey,
             autovalidateMode: AutovalidateMode.disabled,
             child: SingleChildScrollView(
+              physics: BouncingScrollPhysics(),
               child: Column(
                 children: [
-                  // Hero Section with Avatar
-                  AuthUserStreamWidget(
-                    builder: (context) => ProfileHeroSection(
-                      photoUrl: currentUserPhoto,
-                      displayName: usernameTextController?.text ?? '',
-                      onEditPhoto: () async {
-                        await showModalBottomSheet(
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          enableDrag: false,
-                          context: context,
-                          builder: (context) {
-                            return GestureDetector(
-                              onTap: () {
-                                FocusScope.of(context).unfocus();
-                                FocusManager.instance.primaryFocus?.unfocus();
-                              },
-                              child: Padding(
-                                padding: MediaQuery.viewInsetsOf(context),
-                                child: ChangePhotoWidget(),
-                              ),
-                            );
-                          },
-                        ).then((value) {
-                          if (mounted) setState(() {});
-                        });
-                      },
-                    ),
-                  ),
+                  SizedBox(height: MediaQuery.of(context).padding.top + 60),
 
-                  SizedBox(height: AppSpacing.lg),
-
-                  // Personal Information Card
-                  FadeTransition(
-                    opacity: _fadeAnimations[0],
-                    child: ProfileCardSection(
-                      title: 'Personal Information',
-                      child: AuthUserStreamWidget(
-                        builder: (context) => Column(
-                          children: [
-                            // First & Last Name Row
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildTextField(
-                                    controller: firstNameTextController!,
-                                    focusNode: firstNameFocusNode!,
-                                    label: 'First Name',
-                                  ),
-                                ),
-                                SizedBox(width: AppSpacing.md),
-                                Expanded(
-                                  child: _buildTextField(
-                                    controller: lastNameTextController!,
-                                    focusNode: lastNameFocusNode!,
-                                    label: 'Last Name',
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: AppSpacing.md),
-
-                            // Display Name & Phone Row
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildTextField(
-                                    controller: usernameTextController!,
-                                    focusNode: usernameFocusNode!,
-                                    label: 'Display Name',
-                                    readOnly: true,
-                                  ),
-                                ),
-                                SizedBox(width: AppSpacing.md),
-                                Expanded(
-                                  child: _buildTextField(
-                                    controller: phoneNumTextController!,
-                                    focusNode: phoneNumFocusNode!,
-                                    label: 'Phone',
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: AppSpacing.md),
-
-                            // Email
-                            _buildTextField(
-                              controller: emailTextController!,
-                              focusNode: emailFocusNode!,
-                              label: 'Email',
-                              readOnly: true,
-                            ),
-                            SizedBox(height: AppSpacing.md),
-
-                            // Home Course Dropdown
-                            StreamBuilder<List<CourseRecord>>(
-                              stream: queryCourseRecord(),
-                              builder: (context, snapshot) {
-                                if (!snapshot.hasData) {
-                                  return Container(
-                                    height: 56,
-                                    alignment: Alignment.center,
-                                    child: CircularProgressIndicator(
-                                      color: AppColors.fairway,
-                                    ),
-                                  );
-                                }
-
-                                List<CourseRecord> courses = snapshot.data!;
-
-                                // Set initial value from current user
-                                if (coursesValue == null && mounted) {
-                                  coursesValue = valueOrDefault(
-                                    currentUserDocument?.homeCourse,
-                                    '',
-                                  );
-                                }
-
-                                return AppDropDown<String>(
-                                  controller: coursesValueController ??=
-                                      FormFieldController<String>(coursesValue),
-                                  options: courses
-                                      .map((c) => c.name)
-                                      .toList(),
-                                  onChanged: (val) =>
-                                      setState(() => coursesValue = val),
-                                  width: double.infinity,
-                                  height: 56,
-                                  textStyle: GoogleFonts.outfit(
-                                    fontSize: 16,
-                                    color: AppColors.onyx,
-                                  ),
-                                  hintText: 'Select Home Course',
-                                  icon: Icon(
-                                    Icons.golf_course_rounded,
-                                    color: AppColors.fairway,
-                                    size: 24,
-                                  ),
-                                  fillColor: Colors.white,
-                                  elevation: 2,
-                                  borderColor: AppColors.cloud,
-                                  borderWidth: 1.5,
-                                  borderRadius: 12,
-                                  margin: EdgeInsetsDirectional.zero,
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: AppSpacing.md),
-
-                  // Golf Profile Card
-                  FadeTransition(
-                    opacity: _fadeAnimations[1],
-                    child: ProfileCardSection(
-                      title: 'Golf Profile',
-                      child: AuthUserStreamWidget(
-                        builder: (context) => Column(
-                          children: [
-                            ProfilePreferenceItem(
-                              icon: FontAwesomeIcons.flagCheckered,
-                              label: 'Handicap',
-                              iconColor: AppColors.fairway,
-                              valueWidget: AppCountController(
-                                decrementIconBuilder: (enabled) => Icon(
-                                  Icons.remove_rounded,
-                                  color: enabled
-                                      ? AppColors.fairway
-                                      : AppColors.cloud,
-                                  size: 20,
-                                ),
-                                incrementIconBuilder: (enabled) => Icon(
-                                  Icons.add_rounded,
-                                  color: enabled
-                                      ? AppColors.fairway
-                                      : AppColors.cloud,
-                                  size: 20,
-                                ),
-                                countBuilder: (count) => Text(
-                                  count.toString(),
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.onyx,
-                                  ),
-                                ),
-                                count: handicapValue ??
-                                    valueOrDefault(
-                                      currentUserDocument?.handicap,
-                                      0,
-                                    ),
-                                updateCount: (count) =>
-                                    setState(() => handicapValue = count),
-                                stepSize: 1,
-                                minimum: 0,
-                                maximum: 54,
-                              ),
-                            ),
-                            SizedBox(height: AppSpacing.lg),
-                            _buildTextField(
-                              controller: golfCanadaTextController!,
-                              focusNode: golfCanadaFocusNode!,
-                              label: 'Golf Canada #',
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  // ═══════════════════════════════════════════════════════════
+                  // HERO SECTION - Animated Avatar
+                  // ═══════════════════════════════════════════════════════════
+                  _buildHeroSection(context),
 
                   SizedBox(height: AppSpacing.xl),
 
-                  // Save Button
-                  FadeTransition(
-                    opacity: _fadeAnimations[2],
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
+                  // ═══════════════════════════════════════════════════════════
+                  // MAIN CONTENT CARD
+                  // ═══════════════════════════════════════════════════════════
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.pure,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(32.0),
+                        topRight: Radius.circular(32.0),
                       ),
-                      child: AppButtonEnhanced(
-                        text: 'Save Changes',
-                        leadingIcon: Icons.check_circle_rounded,
-                        variant: AppButtonVariant.primary,
-                        size: AppButtonSize.large,
-                        fullWidth: true,
-                        onPressed: _handleSaveProfile,
-                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 30,
+                          offset: Offset(0, -10),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        // Drag handle
+                        Container(
+                          margin: EdgeInsets.only(top: AppSpacing.sm),
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: AppColors.cloud,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+
+                        SizedBox(height: AppSpacing.lg),
+
+                        // Personal Information Section
+                        _buildPersonalInfoSection(context),
+
+                        // Golf Profile Section
+                        _buildGolfProfileSection(context),
+
+                        // Save Button
+                        _buildSaveButton(context),
+
+                        // Delete Account
+                        _buildDeleteAccountButton(context),
+
+                        SizedBox(height: AppSpacing.xxxl),
+                      ],
                     ),
                   ),
-
-                  SizedBox(height: AppSpacing.lg),
-
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                    ),
-                    child: AppButtonEnhanced(
-                      text: 'Delete Account',
-                      variant: AppButtonVariant.secondary,
-                      size: AppButtonSize.large,
-                      fullWidth: true,
-                      onPressed: () async {
-                        final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (alertDialogContext) => AlertDialog(
-                                title: Text('Delete account?'),
-                                content: Text(
-                                  'This permanently deletes your account and data.',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(alertDialogContext, false),
-                                    child: Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(alertDialogContext, true),
-                                    child: Text('Delete'),
-                                  ),
-                                ],
-                              ),
-                            ) ??
-                            false;
-                        if (!confirm) {
-                          return;
-                        }
-                        try {
-                          final user = FirebaseAuth.instance.currentUser;
-                          if (user == null) {
-                            throw StateError('no_user');
-                          }
-                          await user.delete();
-                          await authManager.signOut();
-                          if (!mounted) {
-                            return;
-                          }
-                          context.goNamed(SignInWidget.routeName);
-                        } on FirebaseAuthException catch (e) {
-                          debugPrint(
-                            'Delete account failed (auth): ${e.code} ${e.message}',
-                          );
-                          if (!mounted) {
-                            return;
-                          }
-                          final message = e.code == 'requires-recent-login'
-                              ? 'Please sign in again before deleting your account.'
-                              : 'Unable to delete account. Please try again.';
-                          showSnackbar(context, message);
-                        } catch (e) {
-                          debugPrint('Delete account failed: $e');
-                          if (!mounted) {
-                            return;
-                          }
-                          showSnackbar(
-                            context,
-                            'Unable to delete account. Please try again.',
-                          );
-                        }
-                      },
-                    ),
-                  ),
-
-                  SizedBox(height: AppSpacing.xxl),
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // HERO SECTION
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildHeroSection(BuildContext context) {
+    return Column(
+      children: [
+        // Animated Avatar with Rotating Gradient Ring
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            // Outer glow
+            Container(
+              width: 160,
+              height: 160,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.sunsetGold.withOpacity(0.3),
+                    blurRadius: 40,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+            ),
+
+            // Rotating gradient ring
+            AnimatedBuilder(
+              animation: _ringController,
+              builder: (context, child) {
+                return Transform.rotate(
+                  angle: _ringController.value * 2 * 3.14159,
+                  child: Container(
+                    width: 148,
+                    height: 148,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: SweepGradient(
+                        colors: [
+                          AppColors.sunsetGold,
+                          AppColors.sunsetPeach,
+                          AppColors.sunsetRose,
+                          AppColors.fairwayLight,
+                          AppColors.sunsetGold,
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            // White border
+            Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.pure,
+              ),
+            ),
+
+            // Profile photo
+            AuthUserStreamWidget(
+              builder: (context) => Container(
+                width: 132,
+                height: 132,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(shape: BoxShape.circle),
+                child: Image.network(
+                  valueOrDefault<String>(
+                    currentUserPhoto,
+                    'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+                  ),
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: AppColors.sand,
+                    child: Icon(Icons.person_rounded, size: 60, color: AppColors.stone),
+                  ),
+                ),
+              ),
+            ),
+
+            // Edit photo button
+            Positioned(
+              bottom: 4,
+              right: 4,
+              child: GestureDetector(
+                onTap: () async {
+                  HapticFeedback.lightImpact();
+                  await showModalBottomSheet(
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    enableDrag: false,
+                    context: context,
+                    builder: (context) {
+                      return GestureDetector(
+                        onTap: () {
+                          FocusScope.of(context).unfocus();
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
+                        child: Padding(
+                          padding: MediaQuery.viewInsetsOf(context),
+                          child: ChangePhotoWidget(),
+                        ),
+                      );
+                    },
+                  ).then((value) {
+                    if (mounted) setState(() {});
+                  });
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.sunsetGold.withOpacity(0.4),
+                        blurRadius: 12,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(Icons.camera_alt_rounded, color: Colors.white, size: 22),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        SizedBox(height: AppSpacing.md),
+
+        // Change Photo text
+        GestureDetector(
+          onTap: () async {
+            HapticFeedback.lightImpact();
+            await showModalBottomSheet(
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              enableDrag: false,
+              context: context,
+              builder: (context) => Padding(
+                padding: MediaQuery.viewInsetsOf(context),
+                child: ChangePhotoWidget(),
+              ),
+            ).then((value) {
+              if (mounted) setState(() {});
+            });
+          },
+          child: Text(
+            'Change Photo',
+            style: AppTypography.labelMedium.copyWith(
+              color: AppColors.sunsetGold,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PERSONAL INFO SECTION
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildPersonalInfoSection(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Personal Information',
+            style: AppTypography.titleMedium.copyWith(
+              color: AppColors.onyx,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: AppSpacing.md),
+
+          AuthUserStreamWidget(
+            builder: (context) => Column(
+              children: [
+                // First & Last Name Row
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildTextField(
+                        controller: firstNameTextController!,
+                        focusNode: firstNameFocusNode!,
+                        label: 'First Name',
+                        icon: Icons.person_outline_rounded,
+                      ),
+                    ),
+                    SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: _buildTextField(
+                        controller: lastNameTextController!,
+                        focusNode: lastNameFocusNode!,
+                        label: 'Last Name',
+                        icon: Icons.person_outline_rounded,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: AppSpacing.md),
+
+                // Display Name
+                _buildTextField(
+                  controller: usernameTextController!,
+                  focusNode: usernameFocusNode!,
+                  label: 'Display Name',
+                  icon: Icons.alternate_email_rounded,
+                  readOnly: true,
+                ),
+                SizedBox(height: AppSpacing.md),
+
+                // Phone
+                _buildTextField(
+                  controller: phoneNumTextController!,
+                  focusNode: phoneNumFocusNode!,
+                  label: 'Phone',
+                  icon: Icons.phone_outlined,
+                ),
+                SizedBox(height: AppSpacing.md),
+
+                // Email
+                _buildTextField(
+                  controller: emailTextController!,
+                  focusNode: emailFocusNode!,
+                  label: 'Email',
+                  icon: Icons.email_outlined,
+                  readOnly: true,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // GOLF PROFILE SECTION
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildGolfProfileSection(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Golf Profile',
+            style: AppTypography.titleMedium.copyWith(
+              color: AppColors.onyx,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: AppSpacing.md),
+
+          AuthUserStreamWidget(
+            builder: (context) => Column(
+              children: [
+                // Home Course Dropdown
+                StreamBuilder<List<CourseRecord>>(
+                  stream: queryCourseRecord(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Container(
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: AppColors.sand,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.cloud),
+                        ),
+                        alignment: Alignment.center,
+                        child: CircularProgressIndicator(
+                          color: AppColors.fairway,
+                          strokeWidth: 2,
+                        ),
+                      );
+                    }
+
+                    List<CourseRecord> courses = snapshot.data!;
+
+                    if (coursesValue == null && mounted) {
+                      coursesValue = valueOrDefault(
+                        currentUserDocument?.homeCourse,
+                        '',
+                      );
+                    }
+
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.sand,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.cloud),
+                      ),
+                      child: AppDropDown<String>(
+                        controller: coursesValueController ??=
+                            FormFieldController<String>(coursesValue),
+                        options: courses.map((c) => c.name).toList(),
+                        onChanged: (val) => setState(() => coursesValue = val),
+                        width: double.infinity,
+                        height: 56,
+                        textStyle: AppTypography.bodyMedium.copyWith(
+                          color: AppColors.onyx,
+                        ),
+                        hintText: 'Select Home Course',
+                        icon: Icon(
+                          Icons.golf_course_rounded,
+                          color: AppColors.fairway,
+                          size: 22,
+                        ),
+                        fillColor: AppColors.sand,
+                        elevation: 0,
+                        borderColor: Colors.transparent,
+                        borderWidth: 0,
+                        borderRadius: 12,
+                        margin: EdgeInsetsDirectional.zero,
+                      ),
+                    );
+                  },
+                ),
+                SizedBox(height: AppSpacing.md),
+
+                // Handicap
+                Container(
+                  padding: EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.sand,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.cloud),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: AppColors.sunsetGold.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          FontAwesomeIcons.flagCheckered,
+                          color: AppColors.sunsetGold,
+                          size: 18,
+                        ),
+                      ),
+                      SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Handicap',
+                              style: AppTypography.labelSmall.copyWith(
+                                color: AppColors.stone,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Your official handicap index',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.slate,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      AppCountController(
+                        decrementIconBuilder: (enabled) => Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: enabled
+                                ? AppColors.fairway.withOpacity(0.1)
+                                : AppColors.cloud.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.remove_rounded,
+                            color: enabled ? AppColors.fairway : AppColors.stone,
+                            size: 18,
+                          ),
+                        ),
+                        incrementIconBuilder: (enabled) => Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: enabled
+                                ? AppColors.fairway.withOpacity(0.1)
+                                : AppColors.cloud.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.add_rounded,
+                            color: enabled ? AppColors.fairway : AppColors.stone,
+                            size: 18,
+                          ),
+                        ),
+                        countBuilder: (count) => Container(
+                          width: 48,
+                          alignment: Alignment.center,
+                          child: Text(
+                            count.toString(),
+                            style: AppTypography.monoLarge.copyWith(
+                              color: AppColors.onyx,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        count: handicapValue ??
+                            valueOrDefault(currentUserDocument?.handicap, 0),
+                        updateCount: (count) => setState(() => handicapValue = count),
+                        stepSize: 1,
+                        minimum: 0,
+                        maximum: 54,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: AppSpacing.md),
+
+                // Golf Canada #
+                _buildTextField(
+                  controller: golfCanadaTextController!,
+                  focusNode: golfCanadaFocusNode!,
+                  label: 'Golf Canada #',
+                  icon: Icons.verified_rounded,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SAVE BUTTON
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildSaveButton(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: GestureDetector(
+        onTap: _handleSaveProfile,
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.fairwayLight, AppColors.fairway],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.fairway.withOpacity(0.3),
+                blurRadius: 12,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.check_circle_rounded, color: Colors.white, size: 22),
+              SizedBox(width: AppSpacing.xs),
+              Text(
+                'Save Changes',
+                style: AppTypography.titleSmall.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DELETE ACCOUNT BUTTON
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildDeleteAccountButton(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
+      child: GestureDetector(
+        onTap: () async {
+          HapticFeedback.mediumImpact();
+          final confirm = await showDialog<bool>(
+            context: context,
+            builder: (alertDialogContext) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Text(
+                'Delete Account?',
+                style: AppTypography.titleMedium.copyWith(
+                  color: AppColors.onyx,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              content: Text(
+                'This permanently deletes your account and all associated data. This action cannot be undone.',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.slate,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(alertDialogContext, false),
+                  child: Text(
+                    'Cancel',
+                    style: AppTypography.labelLarge.copyWith(
+                      color: AppColors.stone,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(alertDialogContext, true),
+                  child: Text(
+                    'Delete',
+                    style: AppTypography.labelLarge.copyWith(
+                      color: AppColors.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ) ?? false;
+
+          if (!confirm) return;
+
+          try {
+            final user = FirebaseAuth.instance.currentUser;
+            if (user == null) throw StateError('no_user');
+            await user.delete();
+            await authManager.signOut();
+            if (!mounted) return;
+            context.goNamed(SignInWidget.routeName);
+          } on FirebaseAuthException catch (e) {
+            debugPrint('Delete account failed (auth): ${e.code} ${e.message}');
+            if (!mounted) return;
+            final message = e.code == 'requires-recent-login'
+                ? 'Please sign in again before deleting your account.'
+                : 'Unable to delete account. Please try again.';
+            showSnackbar(context, message);
+          } catch (e) {
+            debugPrint('Delete account failed: $e');
+            if (!mounted) return;
+            showSnackbar(context, 'Unable to delete account. Please try again.');
+          }
+        },
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+          decoration: BoxDecoration(
+            color: AppColors.error.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.error.withOpacity(0.3)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.delete_outline_rounded, color: AppColors.error, size: 22),
+              SizedBox(width: AppSpacing.xs),
+              Text(
+                'Delete Account',
+                style: AppTypography.titleSmall.copyWith(
+                  color: AppColors.error,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TEXT FIELD BUILDER
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required String label,
+    required IconData icon,
+    TextInputAction? textInputAction,
+    bool readOnly = false,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.sand,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.cloud),
+      ),
+      child: TextFormField(
+        controller: controller,
+        focusNode: focusNode,
+        textInputAction: textInputAction ?? TextInputAction.next,
+        readOnly: readOnly,
+        style: AppTypography.bodyMedium.copyWith(
+          color: readOnly ? AppColors.stone : AppColors.onyx,
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: AppTypography.labelMedium.copyWith(
+            color: AppColors.stone,
+          ),
+          prefixIcon: Icon(icon, color: AppColors.fairway, size: 20),
+          filled: true,
+          fillColor: Colors.transparent,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppColors.fairway, width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppColors.error, width: 1.5),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppColors.error, width: 2),
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.md,
           ),
         ),
       ),

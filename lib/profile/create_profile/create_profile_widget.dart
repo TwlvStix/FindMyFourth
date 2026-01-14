@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/widgets/app_count_controller.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/app_theme.dart';
@@ -268,6 +269,27 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
         rethrow;
       }
       currentUserDocument = await UsersRecord.getDocumentOnce(userRef);
+      try {
+        await makeCloudCall(
+          'completeOnboarding',
+          {'userDocPath': userRef.path},
+        );
+      } catch (_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Unable to finish onboarding. Please try again.',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 15.0,
+              ),
+            ),
+            duration: Duration(milliseconds: 2000),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        return;
+      }
     } on StateError catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

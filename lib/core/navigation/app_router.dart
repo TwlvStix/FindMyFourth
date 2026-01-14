@@ -35,7 +35,7 @@ import '/profile/create_profile/create_profile_widget.dart';
 import '/profile/edit_profile/edit_profile_widget.dart';
 import '/profile/edit_vibes/edit_vibes_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
-import '/profile/main_profile/main_profile_widget.dart';
+import '/profile/profile_user/profile_user_firebase_widget.dart';
 import '/user_auth/recover_password/recover_password_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import '/user_auth/sign_up_account/sign_up_account_widget.dart';
@@ -411,6 +411,26 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         GoRoute(
+          name: 'ProfileUser',
+          path: '/profileUser',
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
+          pageBuilder: (context, state) {
+            final userRef = _userRefFromState(state);
+            return _buildPageWithTransition(
+              context,
+              state,
+              appStateNotifier,
+              userRef == null
+                  ? Scaffold(
+                      body: Center(
+                        child: Text('User not found.'),
+                      ),
+                    )
+                  : ProfileUserFirebaseWidget(userRef: userRef),
+            );
+          },
+        ),
+        GoRoute(
           name: NotificationsListWidget.routeName,
           path: NotificationsListWidget.routePath,
           redirect: _buildRedirect(appStateNotifier),
@@ -564,6 +584,26 @@ DocumentReference? _gameRefFromState(GoRouterState state) {
     'gameRef',
     ParamType.DocumentReference,
     collectionNamePath: ['games'],
+  );
+  if (fromQuery is DocumentReference) {
+    return fromQuery;
+  }
+  return null;
+}
+
+DocumentReference? _userRefFromState(GoRouterState state) {
+  final extra = state.extra;
+  if (extra is DocumentReference) {
+    return extra;
+  }
+  if (extra is Map && extra['userRef'] is DocumentReference) {
+    return extra['userRef'] as DocumentReference;
+  }
+  final fromQuery = _deserializeParam(
+    state,
+    'userRef',
+    ParamType.DocumentReference,
+    collectionNamePath: ['users'],
   );
   if (fromQuery is DocumentReference) {
     return fromQuery;
