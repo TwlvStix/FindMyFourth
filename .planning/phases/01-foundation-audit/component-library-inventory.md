@@ -384,6 +384,304 @@ These files appear to be example/showcase files, not production components:
 
 ---
 
+## Usage Patterns Across Key Screens
+
+**Sample Size:** 10 key widget files analyzed across major features
+**Date:** 2026-01-15
+
+### Component Adoption Analysis
+
+#### Most Used Components
+
+| Component | Usage Count | Screen Examples |
+|-----------|-------------|-----------------|
+| **FairwayBackground** | 6/10 files | create_game, game_joined_detailed, main_profile, chat, tab_friends, community |
+| **AppIconButton** | 4/10 files | create_game, game_joined_detailed, main_profile, chat, tab_friends |
+| **AppButtonEnhanced** | 4/10 files | create_game, game_joined_detailed, player_list |
+| **AppSpacing (tokens)** | 10/10 files | All sampled screens |
+| **AppColors (tokens)** | 8/10 files | Most screens |
+| **AppTypography (tokens)** | 5/10 files | game_joined_detailed, main_profile, chat, community |
+| **AppCard** | 1/10 files | game_joined_detailed |
+| **BrandedGolfHeader** | 1/10 files | game_joined_detailed |
+| **AppDropDown** | 2/10 files | create_game, player_list |
+| **AppCountController** | 1/10 files | create_game |
+
+#### Design Token Adoption
+
+**High Adoption (80-100%):**
+- ✅ **AppSpacing**: 10/10 files (100%) - Universal adoption
+- ✅ **AppColors**: 8/10 files (80%) - Very high adoption
+
+**Medium Adoption (50-80%):**
+- ⚠️ **AppTypography**: 5/10 files (50%) - Moderate adoption
+
+**Insight:** Spacing tokens are consistently used, color tokens highly used, but typography tokens only moderately adopted. This suggests typography standardization is the biggest opportunity.
+
+### Custom UI vs Component Usage
+
+#### create_game_widget.dart
+**Component Usage:**
+- ✅ FairwayBackground (background)
+- ✅ AppButtonEnhanced (primary actions)
+- ✅ AppIconButton (icon buttons)
+- ✅ AppDropDown (form dropdowns)
+- ✅ AppCountController (player count)
+- ✅ AppSpacing, AppColors (tokens)
+
+**Custom UI Built:**
+- 🔨 Custom card containers with BoxDecoration (3+ instances)
+  - File:489-504: Gradient card with shadow, borderRadius: 24
+  - File:566-576: Card with borderRadius: 16
+  - File:641-651: Another card with borderRadius: 16
+- 🔨 Custom buttons with BoxDecoration (1+ instances)
+  - File:716-726: Container with borderRadius: 8
+- 🔨 Hardcoded Colors: `Colors.red` (7 instances), `Colors.white` (5 instances), `Colors.transparent` (1 instance)
+- 🔨 Hardcoded gradients: Custom gradient definitions inline
+- 🔨 Hardcoded shadows: BoxShadow with manual opacity/blur values
+
+**Opportunity:** Could use AppCard for custom cards (save 50+ lines), use semantic error color instead of `Colors.red`
+
+---
+
+#### game_joined_detailed_widget.dart
+**Component Usage:**
+- ✅ FairwayBackground (background)
+- ✅ BrandedGolfHeader (header)
+- ✅ AppCard (content cards)
+- ✅ AppButtonEnhanced (primary actions)
+- ✅ AppIconButton (icon buttons)
+- ✅ AppSpacing, AppColors, AppTypography (full token suite)
+
+**Custom UI Built:**
+- 🔨 Custom containers with BoxDecoration (10+ instances)
+  - File:173-177: Container with borderRadius: 12
+  - File:385-396: Container with gradient + shadow, borderRadius: 16
+  - File:441-450: Container with borderRadius: 2
+  - File:524-533: Container with borderRadius: 2
+  - File:545-552: Container with borderRadius: 12
+- 🔨 Small indicator/badge containers (borderRadius: 2px) - could be AppBadge component
+- 🔨 Status indicators with custom styling
+
+**Observation:** **Best component adoption in sample!** Uses modern components, full design tokens, but still builds custom UI for specific patterns (badges, status indicators). These are prime candidates for new components.
+
+---
+
+#### player_list_widget.dart
+**Component Usage:**
+- ✅ AppButtonEnhanced (actions)
+- ✅ AppDropDown (filtering)
+- ✅ AppSpacing (token)
+
+**Custom UI Built:**
+- 🔨 List items with custom layout (likely)
+- 🔨 Avatar displays (likely)
+
+**Observation:** Minimal component usage file, likely builds most UI custom. Would benefit from AppList/AppListTile components.
+
+---
+
+#### main_profile_widget.dart
+**Component Usage:**
+- ✅ FairwayBackground (background)
+- ✅ AppIconButton (actions)
+- ✅ AppSpacing, AppColors, AppTypography (tokens)
+
+**Custom UI Built:**
+- 🔨 Profile layout (avatar, bio, stats)
+- 🔨 Stat cards/sections
+- 🔨 Custom containers and layouts
+
+**Observation:** Does NOT use ProfileHeroSection or ProfileCardSection despite being a profile screen! Either these components are new, or not adopted yet. Big standardization opportunity.
+
+---
+
+#### chat_widget.dart
+**Component Usage:**
+- ✅ FairwayBackground (background)
+- ✅ AppIconButton (actions)
+- ✅ AppSpacing, AppColors, AppTypography (tokens)
+
+**Custom UI Built:**
+- 🔨 Chat message bubbles (custom UI)
+- 🔨 Input field (no AppTextField)
+- 🔨 Message list layout
+
+**Observation:** Chat UI is highly custom (expected), but lacks standardized input component. Could use AppTextField once created.
+
+---
+
+#### tab_friends_widget.dart
+**Component Usage:**
+- ✅ FairwayBackground (background)
+- ✅ AppIconButton (actions)
+- ✅ AppSpacing, AppColors (tokens)
+
+**Custom UI Built:**
+- 🔨 Friend list items (custom)
+- 🔨 Search/filter UI (likely)
+
+**Observation:** Another list-heavy screen without list components. Pattern repeating.
+
+---
+
+#### community_widget.dart
+**Component Usage:**
+- ✅ FairwayBackground (background)
+- ✅ AppSpacing, AppColors, AppTypography (tokens)
+
+**Custom UI Built:**
+- 🔨 Community feed items (custom)
+- 🔨 Post cards (not using AppCard)
+
+**Observation:** Feed/list UI built custom. Could benefit from feed item component.
+
+---
+
+### Patterns That Repeat Across Multiple Files
+
+#### 1. Custom Card Pattern (High Priority)
+**Repeats in:** create_game, game_joined_detailed, community (likely), others
+
+**Pattern:**
+```dart
+Container(
+  margin: EdgeInsets.only(bottom: AppSpacing.md),
+  padding: EdgeInsets.all(AppSpacing.md),
+  decoration: BoxDecoration(
+    color: AppColors.pure,
+    borderRadius: BorderRadius.circular(16), // REPEATED
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.1), // REPEATED
+        blurRadius: 8,
+        offset: Offset(0, 2),
+      ),
+    ],
+  ),
+  child: ...,
+)
+```
+
+**Inconsistencies:**
+- Border radius varies: 8px, 12px, 16px, 24px
+- Shadow opacity varies: 0.1, 0.3, 0.4
+- Shadow blur varies: 8, 12, 16
+- Shadow offset varies: (0, 2), (0, 4), (0, 8)
+
+**Opportunity:** AppCard exists but not consistently adopted. Migration task + deprecation would standardize.
+
+---
+
+#### 2. Hardcoded Colors Pattern (High Priority)
+**Repeats in:** create_game (10+ instances), others
+
+**Common Hardcoded Colors:**
+- `Colors.red` - Used for error states instead of AppColors.error
+- `Colors.white` - Used instead of AppColors.pure
+- `Colors.transparent` - Acceptable, but could be semantic token
+- `Colors.black.withOpacity(0.X)` - Shadow/overlay colors not tokenized
+
+**Opportunity:** Find/replace mission: Search all `Colors.red` → `AppColors.error`, `Colors.white` → `AppColors.pure`. Need opacity tokens for shadows.
+
+---
+
+#### 3. Custom Button Pattern (Medium Priority)
+**Repeats in:** Some older screens
+
+**Pattern:**
+```dart
+Container(
+  decoration: BoxDecoration(
+    color: AppColors.fairway,
+    borderRadius: BorderRadius.circular(8),
+  ),
+  child: InkWell(
+    onTap: ...,
+    child: Padding(
+      padding: EdgeInsets.all(16),
+      child: Text(...),
+    ),
+  ),
+)
+```
+
+**Opportunity:** AppButtonEnhanced adoption is growing (4/10 files use it), but older screens still build custom buttons. Migration task needed.
+
+---
+
+#### 4. List Item Pattern (High Priority - Missing Component)
+**Repeats in:** player_list, tab_friends, community, others (inferred)
+
+**Pattern:** Custom list items with:
+- Avatar on left
+- Title + subtitle in middle
+- Action button/icon on right
+- Dividers between items
+- Tap handling
+
+**Opportunity:** **No AppList or AppListTile component exists!** This is the #1 missing component. Lists are everywhere in this app (players, friends, games, chats, community posts).
+
+---
+
+#### 5. Inline Typography Pattern (Medium Priority)
+**Repeats in:** Multiple files
+
+**Pattern:**
+```dart
+Text(
+  'Some text',
+  style: GoogleFonts.outfit( // Should use AppTypography
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    color: AppColors.slate,
+  ),
+)
+```
+
+**Inconsistencies:**
+- Mix of GoogleFonts.outfit, GoogleFonts.fraunces, GoogleFonts.manrope
+- Inline font sizes: 12, 14, 16, 18, 20, 24, 28, 32 (matches AppTypography scale)
+- Inline font weights: w400, w500, w600, w700
+- Not using AppTypography semantic styles (headlineLarge, bodyMedium, etc.)
+
+**Opportunity:** AppTypography exists and is comprehensive, but adoption is only 50%. Migration task: Find inline GoogleFonts usage → Replace with AppTypography.
+
+---
+
+#### 6. Inline Spacing Pattern (Low Priority - Good Adoption)
+**Repeats in:** All files
+
+**Pattern:**
+```dart
+EdgeInsets.all(AppSpacing.md) // ✅ GOOD
+SizedBox(height: AppSpacing.lg) // ✅ GOOD
+padding: EdgeInsets.symmetric(horizontal: AppSpacing.md) // ✅ GOOD
+```
+
+**Observation:** **This is the success story!** AppSpacing has 100% adoption. Proves that well-designed tokens get adopted.
+
+---
+
+### Component Usage vs Custom UI Ratio
+
+| Screen | Component Usage | Custom UI | Ratio | Grade |
+|--------|----------------|-----------|-------|-------|
+| game_joined_detailed | High | Low | 80/20 | A+ |
+| create_game | Medium | Medium | 50/50 | B |
+| player_list | Low | High | 30/70 | C |
+| main_profile | Low | High | 30/70 | C |
+| chat | Low | High | 30/70 | C |
+| tab_friends | Low | High | 30/70 | C |
+| community | Low | High | 30/70 | C |
+
+**Average:** ~40% component usage, 60% custom UI
+
+**Interpretation:**
+- **game_joined_detailed** is the model screen: Full component adoption, full token adoption
+- Most other screens are 30-40% component usage: Opportunity to standardize
+
+---
+
 ## Component Library Analysis
 
 ### Component Categories
@@ -432,32 +730,32 @@ These files appear to be example/showcase files, not production components:
 
 ### Missing Reusable Components
 
-Based on common UI patterns in Flutter apps, the library is missing:
+Based on common UI patterns in Flutter apps and usage analysis, the library is missing:
 
-#### High Priority
-1. **AppTextField / AppTextInput** - Text input with variants (standard, outlined, filled)
-2. **AppSwitch / AppToggle** - Toggle switches with design token styling
-3. **AppCheckbox** - Checkboxes with brand styling
-4. **AppRadioButton** - Radio buttons with brand styling
-5. **AppDialog / AppModal** - Modal dialogs with variants
-6. **AppBottomSheet** - Bottom sheet component
-7. **AppSnackBar / AppToast** - Notification/feedback components
-8. **AppBadge** - Badge/chip for counts/status
-9. **AppAvatar** - Avatar component with variants (circular, square, sizes)
+#### High Priority (Patterns found in multiple screens)
+1. **AppTextField / AppTextInput** - Text input with variants (standard, outlined, filled) - **URGENT**: Chat input, search bars, form fields everywhere
+2. **AppList / AppListTile** - List item component - **URGENT**: Players, friends, games, chat messages, community posts all need this
+3. **AppAvatar** - Avatar component with variants (circular, square, sizes) - Repeated in profile, players, friends lists
+4. **AppBadge** - Badge/chip for counts/status - Found in game_joined_detailed for status indicators
+5. **AppDialog / AppModal** - Modal dialogs with variants - Confirmations needed across app
+6. **AppEmptyState** - Empty state placeholder with icon + message - Lists need empty states
+
+#### Medium Priority (Common Flutter patterns)
+7. **AppBottomSheet** - Bottom sheet component
+8. **AppSnackBar / AppToast** - Notification/feedback components
+9. **AppLoadingIndicator** - Loading spinners/skeletons with brand styling
 10. **AppDivider** - Divider with design token colors/spacing
-11. **AppLoadingIndicator** - Loading spinners/skeletons with brand styling
-12. **AppEmptyState** - Empty state placeholder with icon + message
+11. **AppTabs** - Tab navigation component
+12. **AppChip** - Single chip component (not just groups)
+13. **AppSwitch / AppToggle** - Toggle switches with design token styling
+14. **AppCheckbox** - Checkboxes with brand styling
+15. **AppRadioButton** - Radio buttons with brand styling
 
-#### Medium Priority
-13. **AppList / AppListTile** - List item component with consistent styling
-14. **AppTabs** - Tab navigation component
-15. **AppChip** - Single chip component (not just groups)
+#### Lower Priority
 16. **AppProgressBar** - Linear/circular progress indicators
 17. **AppStepper** - Step indicator component
 18. **AppSearchBar** - Search input with icon and clear button
 19. **AppTag** - Tag/label component for categories
-
-#### Lower Priority
 20. **AppTooltip** - Tooltip overlay
 21. **AppPopover** - Popover menu component
 22. **AppAccordion** - Collapsible content sections
@@ -494,6 +792,7 @@ Based on common UI patterns in Flutter apps, the library is missing:
 - **Elevation/Shadows:** Box shadows hardcoded inline, not using elevation scale
 - **Icon Sizes:** Components use inline values (16, 20, 24) instead of icon token scale
 - **Animation Durations:** Components use inline Duration(milliseconds: 100/150/200)
+- **Opacity Scale:** Shadow/overlay opacities hardcoded (0.1, 0.3, 0.4)
 
 ---
 
@@ -506,52 +805,74 @@ Based on common UI patterns in Flutter apps, the library is missing:
    - Create migration guide to AppButtonEnhanced
    - Plan removal timeline (e.g., Phase 3)
 
-2. **Standardize Missing Core Components**
-   - Create **AppTextField** (highest priority - forms everywhere)
-   - Create **AppDialog** (second priority - confirmations common)
-   - Create **AppAvatar** (third priority - user profiles everywhere)
-   - Create **AppLoadingIndicator** (fourth priority - async operations)
+2. **Standardize Missing Core Components (Highest ROI)**
+   - Create **AppListTile** (HIGHEST priority - lists everywhere: players, friends, games, community)
+   - Create **AppTextField** (second priority - forms and chat input)
+   - Create **AppAvatar** (third priority - user displays everywhere)
+   - Create **AppBadge** (fourth priority - status indicators found in code)
+   - Create **AppDialog** (fifth priority - confirmations common)
 
-3. **Add Missing Tokens**
-   - Create **border radius scale** (xs: 4px, sm: 8px, md: 12px, lg: 16px, xl: 20px, full: 9999px)
+3. **Add Missing Tokens (Highest ROI)**
+   - Create **border radius scale** (xs: 4px, sm: 8px, md: 12px, lg: 16px, xl: 20px, xxl: 24px, full: 9999px)
    - Create **elevation/shadow scale** (0-5 levels with predefined BoxShadow configs)
+   - Create **opacity scale** (5%, 10%, 20%, 30%, 40%, 60%, 80%, 100%)
    - Create **icon size scale** (xs: 16px, sm: 20px, md: 24px, lg: 32px, xl: 40px)
    - Create **animation duration scale** (fast: 100ms, normal: 200ms, slow: 300ms)
 
-4. **Refactor Partial Token Components**
+4. **Hardcoded Color Migration (Quick Win)**
+   - Find/replace `Colors.red` → `AppColors.error` (7 instances in create_game alone)
+   - Find/replace `Colors.white` → `AppColors.pure` (5 instances in create_game alone)
+   - Create lint rule to prevent hardcoded Colors usage
+
+5. **Typography Migration (Medium Effort, High Impact)**
+   - Find inline GoogleFonts.* usage across codebase
+   - Replace with AppTypography semantic styles
+   - Current adoption: 50%, target: 95%+
+
+6. **AppCard Migration (Medium Effort)**
+   - Identify all custom card patterns (Container + BoxDecoration + shadow)
+   - Replace with AppCard variants
+   - Should save 30-50 lines per screen
+
+### Medium Priority
+
+7. **Component Adoption Campaign**
+   - Use game_joined_detailed_widget.dart as model screen
+   - Create before/after examples for other screens
+   - Show LOC savings and consistency benefits
+
+8. **Refactor Partial Token Components**
    - **ProfileCardSection**: Use AppTypography instead of GoogleFonts.outfit directly
    - **BrandedGolfHeader**: Extract hardcoded sizes to variables, consider generalization
    - **ProfileHeroSection**: Extract hardcoded sizes to constants
 
-### Medium Priority
-
-5. **Generalize Specialized Components**
+9. **Generalize Specialized Components**
    - Extract reusable parts of BrandedGolfHeader → AppHeader base
    - Extract reusable parts of ProfileCardSection → SectionCard (already exists!) or unify
    - Consider if ProfileHeroSection patterns apply to other hero sections
 
-6. **Standardize AppDropDown**
-   - Create simplified **AppSelect** component with common use case (single select, standard styling)
-   - Keep AppDropDown for advanced cases but document as "advanced use only"
-   - Add design token integration to both
+10. **Standardize AppDropDown**
+    - Create simplified **AppSelect** component with common use case (single select, standard styling)
+    - Keep AppDropDown for advanced cases but document as "advanced use only"
+    - Add design token integration to both
 
-7. **Add AppCard Variants**
-   - Semantic variants: `danger`, `warning`, `success`, `info`
-   - Interactive variant: `pressable` with more pronounced press animation
-   - Size variants: `compact`, `standard`, `spacious`
+11. **Add AppCard Variants**
+    - Semantic variants: `danger`, `warning`, `success`, `info`
+    - Interactive variant: `pressable` with more pronounced press animation
+    - Size variants: `compact`, `standard`, `spacious`
 
 ### Future Considerations
 
-8. **Create Component Documentation**
-   - Usage examples for all modern components
-   - Migration guides from legacy components
-   - Design token integration patterns
+12. **Create Component Documentation**
+    - Usage examples for all modern components
+    - Migration guides from legacy components
+    - Design token integration patterns
 
-9. **Component Testing**
-   - Visual regression tests for all variants
-   - Interaction tests for animations/states
-   - Accessibility tests
+13. **Component Testing**
+    - Visual regression tests for all variants
+    - Interaction tests for animations/states
+    - Accessibility tests
 
-10. **Component Versioning**
+14. **Component Versioning**
     - Track breaking changes to component APIs
     - Maintain changelog for component library
