@@ -26,9 +26,6 @@ import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
 import '/main_function/success_leave/success_leave_widget.dart';
 import '/main_function/success_page/success_page_widget.dart';
-import '/newsfeed/blog_create/blog_create_widget.dart';
-import '/newsfeed/blog_edit/blog_edit_widget.dart';
-import '/newsfeed/newsfeed/newsfeed_widget.dart';
 import '/notifications/notification_page/notification_page_widget.dart';
 import '/notifications/notifications_list/notifications_list_widget.dart';
 import '/profile/create_profile/create_profile_widget.dart';
@@ -69,7 +66,11 @@ class AppStateNotifier extends ChangeNotifier {
   /// Otherwise, this will trigger a refresh and interrupt the action(s).
   bool notifyOnAuthChange = true;
 
-  bool get loading => user == null || showSplashImage;
+  bool get loading {
+    final result = !_authStateReady || showSplashImage;
+    print('📊 LOADING GETTER: _authStateReady=$_authStateReady, showSplashImage=$showSplashImage, result=$result');
+    return result;
+  }
   bool get loggedIn => user?.loggedIn ?? false;
   bool get initiallyLoggedIn => initialUser?.loggedIn ?? false;
   bool get shouldRedirect => loggedIn && _redirectLocation != null;
@@ -88,14 +89,18 @@ class AppStateNotifier extends ChangeNotifier {
   void updateNotifyOnAuthChange(bool notify) => notifyOnAuthChange = notify;
 
   void update(BaseAuthUser newUser) {
+    print('📝 NOTIFIER: update() called with uid=${newUser.uid ?? "null"}');
     final shouldUpdate =
         user?.uid == null || newUser.uid == null || user?.uid != newUser.uid;
+    print('📝 NOTIFIER: shouldUpdate=$shouldUpdate, notifyOnAuthChange=$notifyOnAuthChange');
     initialUser ??= newUser;
     user = newUser;
     _authStateReady = true;
+    print('📝 NOTIFIER: Set _authStateReady=true, loading=$loading');
     // Refresh the app on auth change unless explicitly marked otherwise.
     // No need to update unless the user has changed.
     if (notifyOnAuthChange && shouldUpdate) {
+      print('📝 NOTIFIER: Calling notifyListeners() from update()');
       notifyListeners();
     }
     // Once again mark the notifier as needing to update on auth change
@@ -104,8 +109,11 @@ class AppStateNotifier extends ChangeNotifier {
   }
 
   void stopShowingSplashImage() {
+    print('🎬 SPLASH: Setting showSplashImage to false (was: $showSplashImage)');
     showSplashImage = false;
-    notifyListeners();
+    print('🎬 SPLASH: showSplashImage is now false. Next notifyListeners() from update() will trigger rebuild.');
+    // Note: We don't call notifyListeners() here because update() will call it
+    // immediately after, and that single call will reflect the showSplashImage=false state
   }
 }
 
@@ -458,51 +466,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         GoRoute(
-          name: NewsfeedWidget.routeName,
-          path: NewsfeedWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
-          pageBuilder: (context, state) => _buildPageWithTransition(
-            context,
-            state,
-            appStateNotifier,
-            _isEmptyStateParams(state)
-                ? NavBarPage(initialPage: 'Community')
-                : NavBarPage(
-                    initialPage: 'Community',
-                    page: CommunityWidget(),
-                  ),
-          ),
-        ),
-        GoRoute(
-          name: BlogCreateWidget.routeName,
-          path: BlogCreateWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
-          pageBuilder: (context, state) => _buildPageWithTransition(
-            context,
-            state,
-            appStateNotifier,
-            BlogCreateWidget(),
-          ),
-        ),
-        GoRoute(
-          name: BlogEditWidget.routeName,
-          path: BlogEditWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
-          pageBuilder: (context, state) => _buildPageWithTransition(
-            context,
-            state,
-            appStateNotifier,
-            BlogEditWidget(
-              postRef: _deserializeParam(
-                state,
-                'postRef',
-                ParamType.DocumentReference,
-                collectionNamePath: ['posts'],
-              ),
-            ),
-          ),
-        ),
-        GoRoute(
           name: GameJoinedDetailedWidget.routeName,
           path: GameJoinedDetailedWidget.routePath,
           redirect: _buildRedirect(appStateNotifier),
@@ -553,20 +516,28 @@ GoRouterRedirect _buildRedirect(
   bool requireAuth = false,
 }) {
   return (context, state) {
+    print('🔀 REDIRECT: Checking redirect for ${state.uri.path}');
+    print('🔀 REDIRECT: authStateReady=${appStateNotifier.authStateReady}, loggedIn=${appStateNotifier.loggedIn}');
+
     if (!appStateNotifier.authStateReady) {
+      print('🔀 REDIRECT: Auth not ready, returning null');
       return null;
     }
 
     if (appStateNotifier.shouldRedirect) {
       final redirectLocation = appStateNotifier.getRedirectLocation();
       appStateNotifier.clearRedirectLocation();
+      print('🔀 REDIRECT: Redirecting to $redirectLocation');
       return redirectLocation;
     }
 
     if (requireAuth && !appStateNotifier.loggedIn) {
       appStateNotifier.setRedirectLocationIfUnset(state.uri.toString());
+      print('🔀 REDIRECT: Auth required but not logged in, redirecting to /signIn');
       return '/signIn';
     }
+
+    print('🔀 REDIRECT: No redirect needed, returning null');
     return null;
   };
 }
@@ -618,7 +589,10 @@ Page<dynamic> _buildPageWithTransition(
   Widget page,
 ) {
   fixStatusBarOniOS16AndBelow(context);
-  final child = appStateNotifier.loading
+  final isLoading = appStateNotifier.loading;
+  print('🏗️ BUILD PAGE: loading=$isLoading, route=${state.uri.path}, page=${page.runtimeType}');
+
+  final child = isLoading
       ? Container(
           color: AppTheme.of(context).primaryBackground,
           child: Image.asset(
@@ -627,6 +601,8 @@ Page<dynamic> _buildPageWithTransition(
           ),
         )
       : PushNotificationsHandler(child: page);
+
+  print('🏗️ BUILD PAGE: Showing ${isLoading ? "SPLASH" : "REAL PAGE (${page.runtimeType})"}');
 
   final transitionInfo = _transitionInfo(state);
   return transitionInfo.hasTransition

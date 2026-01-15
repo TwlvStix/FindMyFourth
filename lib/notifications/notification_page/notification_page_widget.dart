@@ -177,9 +177,9 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: AppTheme.of(context).secondaryBackground,
+      backgroundColor: AppTheme.of(context).primaryBackground,
       appBar: AppBar(
-        backgroundColor: AppTheme.of(context).secondaryBackground,
+        backgroundColor: AppTheme.of(context).primaryBackground,
         automaticallyImplyLeading: false,
         leading: AppIconButton(
           borderColor: Colors.transparent,
@@ -187,7 +187,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
           buttonSize: 46.0,
           icon: Icon(
             Icons.arrow_back_rounded,
-            color: AppTheme.of(context).primaryText,
+            color: AppTheme.of(context).primaryBtnText,
             size: 25.0,
           ),
           onPressed: () async {
@@ -204,6 +204,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                       AppTheme.of(context).headlineSmall.fontStyle,
                 ),
                 letterSpacing: 0.0,
+                color: AppTheme.of(context).primaryBtnText,
                 fontWeight:
                     AppTheme.of(context).headlineSmall.fontWeight,
                 fontStyle:
@@ -214,7 +215,9 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
         centerTitle: false,
         elevation: 0.0,
       ),
-      body: FairwayBackgroundLight(
+      body: FairwayBackgroundDark(
+        showOrganic: true,
+        showTexture: true,
         child: StreamBuilder<UsersRecord>(
           stream: currentUserReference == null
               ? null

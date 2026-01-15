@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,7 @@ import '/models/chat_message.dart';
 import '/providers/chat_provider.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/utils/formatting_utils.dart';
 import '/core/widgets/fairway_background.dart';
 
 class GameChatDetailsWidget extends StatefulWidget {
@@ -26,6 +29,7 @@ class GameChatDetailsWidget extends StatefulWidget {
 class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _messageFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   static const int _initialPageSize = 40;
   static const int _pageSize = 30;
   final List<ChatMessage> _olderMessages = [];
@@ -34,6 +38,10 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
   DocumentSnapshot? _lastLoadedDoc;
   bool _isLoadingOlder = false;
   bool _hasMoreOlder = true;
+  bool _showScrollToBottom = false;
+  bool _isTyping = false;
+  Timer? _typingTimer;
+  ChatMessage? _replyToMessage;
 
   String? get _currentUserId => FirebaseAuth.instance.currentUser?.uid;
 
@@ -42,14 +50,394 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
     super.initState();
     debugPrint('📨 UI: Chat page loaded for chatId: ${widget.chatId}');
     debugPrint('📨 UI: Current user ID: $_currentUserId');
-    _markChatSeen();
+    _ensureChatMember().whenComplete(_markChatSeen);
+    _messageController.addListener(_onTextChanged);
+    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
+    _typingTimer?.cancel();
     _messageController.dispose();
     _messageFocusNode.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onTextChanged() {
+    final currentUserId = _currentUserId;
+    if (currentUserId == null) return;
+
+    final hasText = _messageController.text.trim().isNotEmpty;
+
+    // Update UI for send button
+    setState(() {});
+
+    // Handle typing indicator
+    if (hasText && !_isTyping) {
+      _isTyping = true;
+      context.read<ChatProvider>().setTypingStatus(
+            chatId: widget.chatId,
+            uid: currentUserId,
+            isTyping: true,
+          );
+    }
+
+    // Reset timer
+    _typingTimer?.cancel();
+    _typingTimer = Timer(Duration(seconds: 2), () {
+      if (_isTyping) {
+        _isTyping = false;
+        context.read<ChatProvider>().setTypingStatus(
+              chatId: widget.chatId,
+              uid: currentUserId,
+              isTyping: false,
+            );
+      }
+    });
+  }
+
+  List<String> _getTypingUserNames(Chat chat) {
+    final currentUserId = _currentUserId;
+    if (currentUserId == null) return [];
+
+    final now = DateTime.now();
+    final typingUserIds = chat.typingUsers.entries
+        .where((entry) =>
+            entry.key != currentUserId &&
+            now.difference(entry.value).inSeconds < 3)
+        .map((entry) => entry.key)
+        .toList();
+
+    return typingUserIds;
+  }
+
+  void _showImageFullscreen(String imageUrl) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.all(10),
+          child: Stack(
+            children: [
+              Center(
+                child: InteractiveViewer(
+                  minScale: 0.5,
+                  maxScale: 4.0,
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.contain,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null,
+                          color: Colors.white,
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: Colors.white,
+                              size: 48,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Failed to load image',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: IconButton(
+                  icon: Icon(Icons.close, color: Colors.white, size: 30),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showReactionPicker(ChatMessage message) {
+    final currentUserId = _currentUserId;
+    if (currentUserId == null) return;
+
+    final quickReactions = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: AppTheme.of(context).primaryBackground,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          padding: EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              SizedBox(height: AppSpacing.md),
+              Text(
+                'React to message',
+                style: AppTheme.of(context).titleMedium.override(
+                      font: GoogleFonts.outfit(),
+                      letterSpacing: 0.0,
+                    ),
+              ),
+              SizedBox(height: AppSpacing.lg),
+              Wrap(
+                spacing: AppSpacing.md,
+                runSpacing: AppSpacing.md,
+                children: quickReactions.map((emoji) {
+                  final hasReacted = message.reactions[emoji]?.contains(currentUserId) ?? false;
+
+                  return GestureDetector(
+                    onTap: () async {
+                      Navigator.pop(context);
+                      if (hasReacted) {
+                        await context.read<ChatProvider>().removeReaction(
+                              chatId: widget.chatId,
+                              messageId: message.id,
+                              emoji: emoji,
+                              uid: currentUserId,
+                            );
+                      } else {
+                        await context.read<ChatProvider>().addReaction(
+                              chatId: widget.chatId,
+                              messageId: message.id,
+                              emoji: emoji,
+                              uid: currentUserId,
+                            );
+                      }
+                    },
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: hasReacted
+                            ? AppTheme.of(context).primary.withOpacity(0.3)
+                            : AppTheme.of(context).secondaryBackground,
+                        borderRadius: BorderRadius.circular(12),
+                        border: hasReacted
+                            ? Border.all(
+                                color: AppTheme.of(context).primary,
+                                width: 2,
+                              )
+                            : null,
+                      ),
+                      child: Center(
+                        child: Text(
+                          emoji,
+                          style: TextStyle(fontSize: 32),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              SizedBox(height: AppSpacing.md),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _onScroll() {
+    // Show FAB when scrolled up more than 200 pixels from bottom
+    final showFab = _scrollController.hasClients &&
+                    _scrollController.offset > 200;
+    if (showFab != _showScrollToBottom) {
+      setState(() {
+        _showScrollToBottom = showFab;
+      });
+    }
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  String _getDateLabel(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(Duration(days: 1));
+    final messageDate = DateTime(date.year, date.month, date.day);
+
+    if (messageDate == today) {
+      return 'Today';
+    } else if (messageDate == yesterday) {
+      return 'Yesterday';
+    } else if (now.difference(messageDate).inDays < 7) {
+      return dateTimeFormat('EEEE', date); // Day of week
+    } else {
+      return dateTimeFormat('MMM d, yyyy', date);
+    }
+  }
+
+  bool _shouldShowDateDivider(int index, List<ChatMessage> messages) {
+    if (index >= messages.length - 1) {
+      return true; // Show date for the oldest message
+    }
+
+    final currentMessage = messages[index];
+    final nextMessage = messages[index + 1];
+
+    if (currentMessage.createdAt == null || nextMessage.createdAt == null) {
+      return false;
+    }
+
+    final currentDate = DateTime(
+      currentMessage.createdAt!.year,
+      currentMessage.createdAt!.month,
+      currentMessage.createdAt!.day,
+    );
+    final nextDate = DateTime(
+      nextMessage.createdAt!.year,
+      nextMessage.createdAt!.month,
+      nextMessage.createdAt!.day,
+    );
+
+    return currentDate != nextDate;
+  }
+
+  bool _isFirstInGroup(int index, List<ChatMessage> messages) {
+    if (index >= messages.length - 1) {
+      return true; // Last (oldest) message is always first in its group
+    }
+
+    final currentMessage = messages[index];
+    final nextMessage = messages[index + 1];
+
+    // Different sender = first in group
+    if (currentMessage.senderId != nextMessage.senderId) {
+      return true;
+    }
+
+    // Check if more than 2 minutes apart
+    if (currentMessage.createdAt != null && nextMessage.createdAt != null) {
+      final timeDiff = currentMessage.createdAt!.difference(nextMessage.createdAt!);
+      if (timeDiff.inMinutes > 2) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool _isLastInGroup(int index, List<ChatMessage> messages) {
+    if (index == 0) {
+      return true; // First (newest) message is always last in its group
+    }
+
+    final currentMessage = messages[index];
+    final previousMessage = messages[index - 1];
+
+    // Different sender = last in group
+    if (currentMessage.senderId != previousMessage.senderId) {
+      return true;
+    }
+
+    // Check if more than 2 minutes apart
+    if (currentMessage.createdAt != null && previousMessage.createdAt != null) {
+      final timeDiff = previousMessage.createdAt!.difference(currentMessage.createdAt!);
+      if (timeDiff.inMinutes > 2) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  Widget _buildDateDivider(DateTime date) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: AppSpacing.md,
+        horizontal: AppSpacing.md,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Divider(
+              color: Colors.white.withOpacity(0.2),
+              thickness: 1,
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+            child: Text(
+              _getDateLabel(date),
+              style: AppTheme.of(context).labelMedium.override(
+                    font: GoogleFonts.outfit(),
+                    color: Colors.white.withOpacity(0.6),
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.0,
+                  ),
+            ),
+          ),
+          Expanded(
+            child: Divider(
+              color: Colors.white.withOpacity(0.2),
+              thickness: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _ensureChatMember() async {
+    final currentUserId = _currentUserId;
+    if (currentUserId == null) {
+      return;
+    }
+    try {
+      await context
+          .read<ChatProvider>()
+          .addMember(chatId: widget.chatId, uid: currentUserId);
+    } catch (error, stackTrace) {
+      context
+          .read<ChatProvider>()
+          .logError('addMember failed', error, stackTrace);
+    }
   }
 
   Future<void> _markChatSeen() async {
@@ -61,6 +449,27 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
       await context
           .read<ChatProvider>()
           .markChatRead(chatId: widget.chatId, uid: currentUserId);
+
+      // Also mark recent messages as read
+      final messagesSnapshot = await FirebaseFirestore.instance
+          .collection('chats')
+          .doc(widget.chatId)
+          .collection('messages')
+          .orderBy('createdAt', descending: true)
+          .limit(20)
+          .get();
+
+      for (final doc in messagesSnapshot.docs) {
+        final data = doc.data();
+        final readBy = (data['readBy'] as List<dynamic>?)?.whereType<String>().toList() ?? [];
+        if (!readBy.contains(currentUserId)) {
+          await context.read<ChatProvider>().markMessageAsRead(
+                chatId: widget.chatId,
+                messageId: doc.id,
+                uid: currentUserId,
+              );
+        }
+      }
     } catch (error, stackTrace) {
       context
           .read<ChatProvider>()
@@ -196,12 +605,18 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
       return;
     }
     _messageController.clear();
+    final replyTo = _replyToMessage;
+    setState(() {
+      _replyToMessage = null;
+    });
     try {
       await context.read<ChatProvider>().sendMessage(
             chatId: widget.chatId,
             senderId: currentUserId,
             text: text,
           );
+      // TODO: In a full implementation, we would store the replyTo message ID
+      // in the message document and display it in the message bubble
     } catch (error, stackTrace) {
       context
           .read<ChatProvider>()
@@ -210,6 +625,9 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
         return;
       }
       _messageController.text = text;
+      setState(() {
+        _replyToMessage = replyTo;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Failed to send message. Please try again.'),
@@ -288,6 +706,15 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
     required bool isMe,
     required String text,
     required String imageUrl,
+    required DateTime? createdAt,
+    required bool isFirstInGroup,
+    required bool isLastInGroup,
+    required String senderId,
+    required String? senderName,
+    required String? senderPhotoUrl,
+    required bool isGroupChat,
+    required ChatMessage message,
+    required int totalMembers,
   }) {
     final bubbleColor = isMe
         ? AppTheme.of(context).primary
@@ -296,47 +723,308 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
         ? AppTheme.of(context).primaryBtnText
         : AppTheme.of(context).primaryText;
 
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: EdgeInsets.symmetric(
-          vertical: AppSpacing.xxs,
-          horizontal: AppSpacing.md,
+    return Dismissible(
+      key: Key('message_${message.id}'),
+      direction: isMe ? DismissDirection.endToStart : DismissDirection.startToEnd,
+      confirmDismiss: (direction) async {
+        setState(() {
+          _replyToMessage = message;
+        });
+        _messageFocusNode.requestFocus();
+        return false; // Don't actually dismiss
+      },
+      background: Container(
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: Icon(
+          Icons.reply_rounded,
+          color: AppTheme.of(context).primary,
+          size: 28,
         ),
-        padding: EdgeInsets.all(AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: bubbleColor,
-          borderRadius: BorderRadius.circular(14.0),
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          top: isLastInGroup ? AppSpacing.xs : 2,
+          bottom: isFirstInGroup ? AppSpacing.xs : 2,
         ),
-        child: Column(
-          crossAxisAlignment:
-              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment:
+              isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           children: [
-            if (imageUrl.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10.0),
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            if (text.isNotEmpty)
-              Text(
-                text,
-                style: AppTheme.of(context).bodyMedium.override(
-                      font: GoogleFonts.outfit(
-                        fontWeight:
-                            AppTheme.of(context).bodyMedium.fontWeight,
-                        fontStyle:
-                            AppTheme.of(context).bodyMedium.fontStyle,
-                      ),
-                      color: textColor,
-                      letterSpacing: 0.0,
-                      fontWeight:
-                          AppTheme.of(context).bodyMedium.fontWeight,
-                      fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
+          // Avatar on left for received messages
+          if (!isMe) ...[
+            SizedBox(width: AppSpacing.md),
+            Container(
+              width: 32,
+              height: 32,
+              margin: EdgeInsets.only(bottom: 4, right: AppSpacing.xs),
+              child: isFirstInGroup
+                  ? CircleAvatar(
+                      radius: 16,
+                      backgroundColor: AppTheme.of(context).primary.withOpacity(0.3),
+                      backgroundImage: senderPhotoUrl != null && senderPhotoUrl.isNotEmpty
+                          ? NetworkImage(senderPhotoUrl)
+                          : null,
+                      child: senderPhotoUrl == null || senderPhotoUrl.isEmpty
+                          ? Icon(
+                              Icons.person,
+                              size: 18,
+                              color: Colors.white.withOpacity(0.7),
+                            )
+                          : null,
+                    )
+                  : SizedBox.shrink(),
+            ),
+          ],
+          // Message bubble
+          Flexible(
+            child: Column(
+              crossAxisAlignment:
+                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              children: [
+                // Sender name for group chats (first message only)
+                if (!isMe && isGroupChat && isFirstInGroup && senderName != null)
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: AppSpacing.xs,
+                      bottom: 4,
                     ),
-              ),
+                    child: Text(
+                      senderName,
+                      style: AppTheme.of(context).labelSmall.override(
+                            font: GoogleFonts.outfit(),
+                            color: Colors.white.withOpacity(0.6),
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.0,
+                          ),
+                    ),
+                  ),
+                // Message content
+                GestureDetector(
+                  onLongPress: () => _showReactionPicker(message),
+                  child: Container(
+                    margin: EdgeInsets.only(
+                      left: isMe ? 40 : 0,
+                      right: isMe ? 0 : 40,
+                    ),
+                    padding: EdgeInsets.all(AppSpacing.sm),
+                    decoration: BoxDecoration(
+                      color: bubbleColor,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(isMe || !isFirstInGroup ? 14.0 : 4.0),
+                        topRight: Radius.circular(!isMe || !isFirstInGroup ? 14.0 : 4.0),
+                        bottomLeft: Radius.circular(14.0),
+                        bottomRight: Radius.circular(14.0),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment:
+                          isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                      children: [
+                      if (imageUrl.isNotEmpty)
+                        Padding(
+                          padding: EdgeInsets.only(bottom: text.isNotEmpty ? AppSpacing.xs : 0),
+                          child: GestureDetector(
+                            onTap: () => _showImageFullscreen(imageUrl),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10.0),
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  maxWidth: 250,
+                                  maxHeight: 300,
+                                ),
+                                child: Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Container(
+                                      height: 200,
+                                      width: 200,
+                                      color: Colors.grey.withOpacity(0.2),
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          value: loadingProgress.expectedTotalBytes != null
+                                              ? loadingProgress.cumulativeBytesLoaded /
+                                                  loadingProgress.expectedTotalBytes!
+                                              : null,
+                                          color: isMe
+                                              ? Colors.white.withOpacity(0.8)
+                                              : AppTheme.of(context).primary,
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      height: 150,
+                                      width: 200,
+                                      color: Colors.grey.withOpacity(0.2),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.broken_image_outlined,
+                                            color: textColor.withOpacity(0.6),
+                                            size: 40,
+                                          ),
+                                          SizedBox(height: 8),
+                                          Text(
+                                            'Failed to load',
+                                            style: AppTheme.of(context).labelSmall.override(
+                                                  font: GoogleFonts.outfit(),
+                                                  color: textColor.withOpacity(0.6),
+                                                  letterSpacing: 0.0,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (text.isNotEmpty)
+                        Text(
+                          text,
+                          style: AppTheme.of(context).bodyMedium.override(
+                                font: GoogleFonts.outfit(
+                                  fontWeight:
+                                      AppTheme.of(context).bodyMedium.fontWeight,
+                                  fontStyle:
+                                      AppTheme.of(context).bodyMedium.fontStyle,
+                                ),
+                                color: textColor,
+                                letterSpacing: 0.0,
+                                fontWeight:
+                                    AppTheme.of(context).bodyMedium.fontWeight,
+                                fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
+                              ),
+                        ),
+                      if (createdAt != null && isLastInGroup) ...[
+                        SizedBox(height: 4),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              dateTimeFormat('jm', createdAt),
+                              style: AppTheme.of(context).labelSmall.override(
+                                    font: GoogleFonts.outfit(),
+                                    color: textColor.withOpacity(0.6),
+                                    fontSize: 10,
+                                    letterSpacing: 0.0,
+                                  ),
+                            ),
+                            // Read receipts for sent messages
+                            if (isMe) ...[
+                              SizedBox(width: 4),
+                              Icon(
+                                message.readBy.length > 1
+                                    ? Icons.done_all
+                                    : Icons.done,
+                                size: 14,
+                                color: message.readBy.length > 1
+                                    ? AppTheme.of(context).tertiary
+                                    : textColor.withOpacity(0.6),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                  ),
+                ),
+                // Reactions
+                if (message.reactions.isNotEmpty) ...[
+                  SizedBox(height: 4),
+                  Container(
+                    margin: EdgeInsets.only(
+                      left: isMe ? 40 : AppSpacing.md + 40,
+                      right: isMe ? AppSpacing.md : 40,
+                    ),
+                    child: Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: message.reactions.entries.map((entry) {
+                        final emoji = entry.key;
+                        final users = entry.value;
+                        final currentUserId = _currentUserId;
+                        final hasReacted = currentUserId != null && users.contains(currentUserId);
+
+                        return GestureDetector(
+                          onTap: () async {
+                            if (currentUserId == null) return;
+                            if (hasReacted) {
+                              await context.read<ChatProvider>().removeReaction(
+                                    chatId: widget.chatId,
+                                    messageId: message.id,
+                                    emoji: emoji,
+                                    uid: currentUserId,
+                                  );
+                            } else {
+                              await context.read<ChatProvider>().addReaction(
+                                    chatId: widget.chatId,
+                                    messageId: message.id,
+                                    emoji: emoji,
+                                    uid: currentUserId,
+                                  );
+                            }
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: hasReacted
+                                  ? AppTheme.of(context).primary.withOpacity(0.3)
+                                  : AppTheme.of(context).secondaryBackground.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(12),
+                              border: hasReacted
+                                  ? Border.all(
+                                      color: AppTheme.of(context).primary,
+                                      width: 1.5,
+                                    )
+                                  : null,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  emoji,
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                if (users.length > 1) ...[
+                                  SizedBox(width: 4),
+                                  Text(
+                                    '${users.length}',
+                                    style: AppTheme.of(context).labelSmall.override(
+                                          font: GoogleFonts.outfit(),
+                                          color: Colors.white.withOpacity(0.8),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          letterSpacing: 0.0,
+                                        ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+            // Spacing on right for sent messages
+            if (isMe) SizedBox(width: AppSpacing.md),
           ],
         ),
       ),
@@ -344,6 +1032,22 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
   }
 
   Widget _buildTitle(Chat chat) {
+    if (chat.type == 'game') {
+      final title =
+          (chat.gameName ?? '').trim().isNotEmpty ? chat.gameName! : 'Group Chat';
+      return Text(
+        title,
+        style: AppTheme.of(context).titleMedium.override(
+              font: GoogleFonts.outfit(
+                fontWeight: AppTheme.of(context).titleMedium.fontWeight,
+                fontStyle: AppTheme.of(context).titleMedium.fontStyle,
+              ),
+              letterSpacing: 0.0,
+              fontWeight: AppTheme.of(context).titleMedium.fontWeight,
+              fontStyle: AppTheme.of(context).titleMedium.fontStyle,
+            ),
+      );
+    }
     final memberIds = chat.memberIds;
     if (memberIds.length <= 1) {
       return Text(
@@ -522,10 +1226,12 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
               ],
             ),
             body: FairwayBackgroundDark(
-              child: Column(
+              child: Stack(
                 children: [
-                  if (bannerText.isNotEmpty || isArchived)
-                    Container(
+                  Column(
+                    children: [
+                      if (bannerText.isNotEmpty || isArchived)
+                        Container(
                       width: double.infinity,
                       margin: EdgeInsets.fromLTRB(
                         AppSpacing.md,
@@ -588,6 +1294,71 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                         ],
                       ),
                     ),
+                  // Typing Indicator
+                  StreamBuilder<Chat?>(
+                    stream: context.read<ChatProvider>().chatStream(widget.chatId),
+                    builder: (context, chatSnapshot) {
+                      if (!chatSnapshot.hasData) return SizedBox.shrink();
+
+                      final typingUserIds = _getTypingUserNames(chatSnapshot.data!);
+                      if (typingUserIds.isEmpty) return SizedBox.shrink();
+
+                      return FutureBuilder<List<Map<String, dynamic>>>(
+                        future: Future.wait(
+                          typingUserIds.map(
+                            (uid) => context.read<ChatProvider>().getUserProfile(uid),
+                          ),
+                        ),
+                        builder: (context, usersSnapshot) {
+                          if (!usersSnapshot.hasData) return SizedBox.shrink();
+
+                          final names = usersSnapshot.data!
+                              .map((user) => (user['display_name'] as String?) ?? 'Someone')
+                              .toList();
+
+                          String typingText;
+                          if (names.length == 1) {
+                            typingText = '${names[0]} is typing...';
+                          } else if (names.length == 2) {
+                            typingText = '${names[0]} and ${names[1]} are typing...';
+                          } else {
+                            typingText = 'Several people are typing...';
+                          }
+
+                          return Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                              vertical: AppSpacing.xs,
+                            ),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white.withOpacity(0.6),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: AppSpacing.sm),
+                                Text(
+                                  typingText,
+                                  style: AppTheme.of(context).bodySmall.override(
+                                        font: GoogleFonts.outfit(),
+                                        color: Colors.white.withOpacity(0.6),
+                                        fontStyle: FontStyle.italic,
+                                        letterSpacing: 0.0,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
                   Expanded(
                     child: StreamBuilder<QuerySnapshot>(
                       stream: context.read<ChatProvider>().messagesSnapshotStream(
@@ -666,6 +1437,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                         }
 
                         return ListView.builder(
+                          controller: _scrollController,
                           padding: EdgeInsets.symmetric(
                             vertical: AppSpacing.md,
                           ),
@@ -700,10 +1472,48 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                             final message = messages[index];
                             final isMe =
                                 message.senderId == _currentUserId;
-                            return _buildMessageBubble(
-                              isMe: isMe,
-                              text: message.text,
-                              imageUrl: message.imageUrl,
+                            final showDateDivider = _shouldShowDateDivider(index, messages);
+                            final isFirstInGroup = _isFirstInGroup(index, messages);
+                            final isLastInGroup = _isLastInGroup(index, messages);
+                            final isGroupChat = chat.type == 'game';
+
+                            return Column(
+                              children: [
+                                FutureBuilder<Map<String, dynamic>>(
+                                  future: isMe
+                                      ? Future.value(<String, dynamic>{})
+                                      : context
+                                          .read<ChatProvider>()
+                                          .getUserProfile(message.senderId),
+                                  builder: (context, userSnapshot) {
+                                    final userData =
+                                        userSnapshot.data ?? <String, dynamic>{};
+                                    final senderName = isMe
+                                        ? null
+                                        : (userData['display_name'] as String?) ?? 'Golfer';
+                                    final senderPhotoUrl = isMe
+                                        ? null
+                                        : (userData['photo_url'] as String?);
+
+                                    return _buildMessageBubble(
+                                      isMe: isMe,
+                                      text: message.text,
+                                      imageUrl: message.imageUrl,
+                                      createdAt: message.createdAt,
+                                      isFirstInGroup: isFirstInGroup,
+                                      isLastInGroup: isLastInGroup,
+                                      senderId: message.senderId,
+                                      senderName: senderName,
+                                      senderPhotoUrl: senderPhotoUrl,
+                                      isGroupChat: isGroupChat,
+                                      message: message,
+                                      totalMembers: chat.memberIds.length,
+                                    );
+                                  },
+                                ),
+                                if (showDateDivider && message.createdAt != null)
+                                  _buildDateDivider(message.createdAt!),
+                              ],
                             );
                           },
                         );
@@ -727,40 +1537,189 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                         ),
                       ],
                     ),
-                    child: Row(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
+                        // Reply preview
+                        if (_replyToMessage != null)
+                          Container(
+                            margin: EdgeInsets.only(bottom: AppSpacing.sm),
+                            padding: EdgeInsets.all(AppSpacing.sm),
+                            decoration: BoxDecoration(
+                              color: AppTheme.of(context).secondaryBackground,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border(
+                                left: BorderSide(
+                                  color: AppTheme.of(context).primary,
+                                  width: 3,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Replying to',
+                                        style: AppTheme.of(context).labelSmall.override(
+                                              font: GoogleFonts.outfit(),
+                                              color: AppTheme.of(context).primary,
+                                              fontWeight: FontWeight.w600,
+                                              letterSpacing: 0.0,
+                                            ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        _replyToMessage!.text.isNotEmpty
+                                            ? _replyToMessage!.text
+                                            : 'Image',
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTheme.of(context).bodySmall.override(
+                                              font: GoogleFonts.outfit(),
+                                              color: Colors.white.withOpacity(0.7),
+                                              letterSpacing: 0.0,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.close,
+                                    size: 20,
+                                    color: Colors.white.withOpacity(0.6),
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _replyToMessage = null;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        Row(
+                          children: [
                         Expanded(
                           child: TextField(
                             controller: _messageController,
                             focusNode: _messageFocusNode,
-                            textInputAction: TextInputAction.send,
-                            onSubmitted: canSend ? (_) => _sendMessage() : null,
+                            textInputAction: TextInputAction.newline,
+                            keyboardType: TextInputType.multiline,
+                            minLines: 1,
+                            maxLines: 5,
                             enabled: canSend,
+                            style: AppTheme.of(context).bodyMedium.override(
+                                  font: GoogleFonts.outfit(),
+                                  letterSpacing: 0.0,
+                                ),
                             decoration: InputDecoration(
                               hintText: canSend
                                   ? 'Message...'
                                   : 'Chat closed',
+                              hintStyle: AppTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    font: GoogleFonts.outfit(),
+                                    color: AppTheme.of(context)
+                                        .secondaryText
+                                        .withOpacity(0.6),
+                                    letterSpacing: 0.0,
+                                  ),
                               filled: true,
                               fillColor:
                                   AppTheme.of(context).secondaryBackground,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: AppSpacing.md,
+                                vertical: AppSpacing.sm,
+                              ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
+                                borderRadius: BorderRadius.circular(20.0),
                                 borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20.0),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20.0),
+                                borderSide: BorderSide(
+                                  color: AppTheme.of(context).primary.withOpacity(0.3),
+                                  width: 1.5,
+                                ),
                               ),
                             ),
                           ),
                         ),
                         SizedBox(width: AppSpacing.sm),
-                        IconButton(
-                          icon: Icon(
-                            Icons.send,
-                            color: AppTheme.of(context).primary,
+                        Container(
+                          decoration: BoxDecoration(
+                            color: canSend && _messageController.text.trim().isNotEmpty
+                                ? AppTheme.of(context).primary
+                                : AppTheme.of(context).secondaryBackground,
+                            shape: BoxShape.circle,
                           ),
-                          onPressed: canSend ? _sendMessage : null,
-                        ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.send_rounded,
+                              color: canSend && _messageController.text.trim().isNotEmpty
+                                  ? Colors.white
+                                  : AppTheme.of(context).secondaryText,
+                            ),
+                            onPressed: canSend ? _sendMessage : null,
+                          ),
+                          ),
+                        ],
+                      ),
                       ],
                     ),
                   ),
+                    ],
+                  ),
+                  // Scroll to Bottom FAB
+                  if (_showScrollToBottom)
+                    Positioned(
+                      bottom: 90,
+                      right: 16,
+                      child: Material(
+                        elevation: 4,
+                        borderRadius: BorderRadius.circular(16),
+                        color: Colors.transparent,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppTheme.of(context).primary,
+                                AppTheme.of(context).primary.withOpacity(0.8),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.of(context).primary.withOpacity(0.4),
+                                blurRadius: 8,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: InkWell(
+                            onTap: _scrollToBottom,
+                            borderRadius: BorderRadius.circular(16),
+                            child: Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                color: Colors.white,
+                                size: 28,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

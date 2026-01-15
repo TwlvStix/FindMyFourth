@@ -528,6 +528,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     required String photoUrl,
     required String name,
     required String handle,
+    required bool showVibeMatch,
   }) {
     return Column(
       children: [
@@ -630,8 +631,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             ),
           ),
         ],
-        SizedBox(height: AppSpacing.sm),
-        _buildVibeMatchRow(),
+        if (showVibeMatch) ...[
+          SizedBox(height: AppSpacing.sm),
+          _buildVibeMatchRow(),
+        ],
       ],
     );
   }
@@ -754,8 +757,9 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
 
   Widget _buildQuickActionsGrid(
     BuildContext context,
-    Map<String, dynamic> data,
-  ) {
+    Map<String, dynamic> data, {
+    required bool showVibeMatch,
+  }) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: AuthUserStreamWidget(
@@ -832,7 +836,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             };
           }
 
-          final result = _vibeMatchResult;
+          final result = showVibeMatch ? _vibeMatchResult : null;
           final vibeScore = result == null
               ? null
               : (result.cappedScore ?? result.totalScore).round();
@@ -840,8 +844,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               vibeScore == null ? 'Vibe Match' : 'Vibe $vibeScore%';
           final canOpenVibe = vibeScore != null;
 
-          return Row(
-            children: [
+          final cards = <Widget>[
+            if (currentUserReference?.path != widget.userRef.path)
               Expanded(
                 child: _buildQuickActionCard(
                   context,
@@ -851,7 +855,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                   onTap: () => _openChatWithUser(widget.userRef),
                 ),
               ),
-              SizedBox(width: AppSpacing.sm),
+            if (showVibeMatch)
               Expanded(
                 child: _buildQuickActionCard(
                   context,
@@ -862,7 +866,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                   isDisabled: !canOpenVibe,
                 ),
               ),
-              SizedBox(width: AppSpacing.sm),
+            if (currentUserReference?.path != widget.userRef.path)
               Expanded(
                 child: _buildQuickActionCard(
                   context,
@@ -873,8 +877,17 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                   isDisabled: friendDisabled,
                 ),
               ),
-            ],
-          );
+          ];
+
+          final spacedCards = <Widget>[];
+          for (var i = 0; i < cards.length; i++) {
+            if (i > 0) {
+              spacedCards.add(SizedBox(width: AppSpacing.sm));
+            }
+            spacedCards.add(cards[i]);
+          }
+
+          return Row(children: spacedCards);
         },
       ),
     );
@@ -1069,7 +1082,11 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           final data =
               (snapshot.data!.data() as Map<String, dynamic>?) ??
                   <String, dynamic>{};
-          _ensureVibeMatch(snapshot.data!);
+          final isSelf =
+              currentUserReference?.path == widget.userRef.path;
+          if (!isSelf) {
+            _ensureVibeMatch(snapshot.data!);
+          }
           final photoUrl = _stringValue(
             data,
             'photo_url',
@@ -1146,6 +1163,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                         photoUrl: photoUrl,
                         name: displayTitle.isNotEmpty ? displayTitle : 'Golfer',
                         handle: handle,
+                        showVibeMatch: !isSelf,
                       ),
                       SizedBox(height: AppSpacing.xl),
                       _buildStatsSection(
@@ -1183,7 +1201,11 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                               ),
                             ),
                             SizedBox(height: AppSpacing.lg),
-                            _buildQuickActionsGrid(context, data),
+                            _buildQuickActionsGrid(
+                              context,
+                              data,
+                              showVibeMatch: !isSelf,
+                            ),
                             SizedBox(height: AppSpacing.md),
                             _buildGolfInfoSection(
                               context,

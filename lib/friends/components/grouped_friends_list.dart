@@ -1,0 +1,210 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import '/backend/backend.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
+import '/friends/components/premium_friend_card.dart';
+import '/friends/components/friend_section_header.dart';
+import '/friends/components/swipeable_friend_card.dart';
+
+/// Grouped friends list that organizes friends into sections
+class GroupedFriendsList extends StatefulWidget {
+  final List<DocumentReference> friendRefs;
+  final Set<String> favoriteFriends;
+  final String? currentUserHomeCourse;
+  final Function(String) onToggleFavorite;
+  final Function(UsersRecord) onViewProfile;
+  final Function(UsersRecord) onMessage;
+  final Function(UsersRecord) onRemove;
+
+  const GroupedFriendsList({
+    super.key,
+    required this.friendRefs,
+    required this.favoriteFriends,
+    this.currentUserHomeCourse,
+    required this.onToggleFavorite,
+    required this.onViewProfile,
+    required this.onMessage,
+    required this.onRemove,
+  });
+
+  @override
+  State<GroupedFriendsList> createState() => _GroupedFriendsListState();
+}
+
+class _GroupedFriendsListState extends State<GroupedFriendsList> {
+  bool clubMembersCollapsed = false;
+  bool allFriendsCollapsed = false;
+  bool favoritesCollapsed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<UsersRecord>>(
+      stream: _getFriendsStream(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Center(
+            child: SpinKitWanderingCubes(
+              color: AppColors.fairway,
+              size: 50.0,
+            ),
+          );
+        }
+
+        final allFriends = snapshot.data!;
+
+        // Group friends
+        final favorites = allFriends
+            .where((u) => widget.favoriteFriends.contains(u.reference.id))
+            .toList();
+
+        final clubMembers = allFriends
+            .where((u) =>
+                !widget.favoriteFriends.contains(u.reference.id) &&
+                widget.currentUserHomeCourse != null &&
+                widget.currentUserHomeCourse!.isNotEmpty &&
+                u.homeCourse.isNotEmpty &&
+                u.homeCourse == widget.currentUserHomeCourse)
+            .toList();
+
+        final otherFriends = allFriends
+            .where((u) =>
+                !widget.favoriteFriends.contains(u.reference.id) &&
+                (widget.currentUserHomeCourse == null ||
+                    widget.currentUserHomeCourse!.isEmpty ||
+                    u.homeCourse.isEmpty ||
+                    u.homeCourse != widget.currentUserHomeCourse))
+            .toList();
+
+        return RefreshIndicator(
+          onRefresh: () async {
+            // Refresh will be triggered automatically by the stream
+            await Future.delayed(Duration(milliseconds: 300));
+          },
+          color: AppColors.fairway,
+          backgroundColor: Colors.white,
+          child: ListView(
+            physics: AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.only(bottom: 44.0),
+            children: [
+            // Favorites Section
+            if (favorites.isNotEmpty) ...[
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                child: FriendSectionHeader(
+                  icon: Icons.star_rounded,
+                  title: 'Favorites',
+                  count: favorites.length,
+                  color: AppColors.sunsetGold,
+                  isCollapsed: favoritesCollapsed,
+                  onTap: () {
+                    setState(() => favoritesCollapsed = !favoritesCollapsed);
+                  },
+                ),
+              ),
+              if (!favoritesCollapsed)
+                ...favorites.map((friend) => _buildFriendCard(friend, true)),
+            ],
+
+            // Club Members Section
+            if (clubMembers.isNotEmpty) ...[
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                child: FriendSectionHeader(
+                  icon: Icons.golf_course_rounded,
+                  title: 'Club Members',
+                  count: clubMembers.length,
+                  color: AppColors.fairway,
+                  isCollapsed: clubMembersCollapsed,
+                  onTap: () {
+                    setState(
+                        () => clubMembersCollapsed = !clubMembersCollapsed);
+                  },
+                ),
+              ),
+              if (!clubMembersCollapsed)
+                ...clubMembers.map((friend) => _buildFriendCard(friend, false)),
+            ],
+
+            // All Friends Section
+            if (otherFriends.isNotEmpty) ...[
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                child: FriendSectionHeader(
+                  icon: Icons.people_rounded,
+                  title: 'All Friends',
+                  count: otherFriends.length,
+                  color: AppColors.sunsetPeach,
+                  isCollapsed: allFriendsCollapsed,
+                  onTap: () {
+                    setState(() => allFriendsCollapsed = !allFriendsCollapsed);
+                  },
+                ),
+              ),
+              if (!allFriendsCollapsed)
+                ...otherFriends.map((friend) => _buildFriendCard(friend, false)),
+            ],
+
+            SizedBox(height: AppSpacing.md),
+          ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFriendCard(UsersRecord friend, bool isFavorite) {
+    return SwipeableFriendCard(
+      key: ValueKey(friend.reference.id),
+      friendId: friend.reference.id,
+      onSwipeRight: () => widget.onMessage(friend),
+      onSwipeLeft: () => widget.onRemove(friend),
+      swipeRightLabel: 'Message',
+      swipeLeftLabel: 'Remove',
+      swipeRightIcon: Icons.message_rounded,
+      swipeLeftIcon: Icons.person_remove_rounded,
+      swipeRightColor: AppColors.fairway,
+      swipeLeftColor: AppColors.stone,
+      child: PremiumFriendCard(
+        user: friend,
+        onViewProfile: () => widget.onViewProfile(friend),
+        onMessage: () => widget.onMessage(friend),
+        onAction: () => widget.onRemove(friend),
+        actionLabel: 'Remove',
+        actionIcon: Icons.person_remove_rounded,
+        actionColor: AppColors.stone,
+        showActionButton: true,
+      ),
+    );
+  }
+
+  Stream<List<UsersRecord>> _getFriendsStream() {
+    if (widget.friendRefs.isEmpty) {
+      return Stream.value([]);
+    }
+
+    // Create streams for each friend reference
+    final streams =
+        widget.friendRefs.map((ref) => UsersRecord.getDocument(ref)).toList();
+
+    // Combine all streams
+    return _combineStreams(streams);
+  }
+
+  Stream<List<UsersRecord>> _combineStreams(
+      List<Stream<UsersRecord>> streams) async* {
+    await for (final _ in Stream.periodic(Duration(milliseconds: 100))) {
+      final results = <UsersRecord>[];
+      for (final stream in streams) {
+        await for (final user in stream.take(1)) {
+          results.add(user);
+          break;
+        }
+      }
+      if (results.length == streams.length) {
+        yield results;
+        return;
+      }
+    }
+  }
+}

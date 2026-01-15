@@ -411,15 +411,6 @@ class FirebaseAuthManager extends AuthManager
       _showAuthError(context, _genericAuthErrorMessage);
       return null;
     }
-    final methods = await _fetchSignInMethods(trimmedEmail, context);
-    if (methods == null) {
-      return null;
-    }
-    debugPrint('🔐 AUTH: email create methods: $methods');
-    if (methods.isNotEmpty) {
-      _showAuthError(context, _genericAuthErrorMessage);
-      return null;
-    }
 
     try {
       debugPrint('🔐 AUTH: Calling createUserWithEmailAndPassword for $trimmedEmail');
@@ -444,27 +435,6 @@ class FirebaseAuthManager extends AuthManager
       debugPrint('❌ AUTH: Error: $e');
       debugPrint('❌ AUTH: Stack trace: $stackTrace');
       _showAuthError(context, 'Error: An unexpected error occurred');
-      return null;
-    }
-  }
-
-  Future<List<String>?> _fetchSignInMethods(
-    String email,
-    BuildContext context,
-  ) async {
-    if (email.isEmpty) {
-      _showAuthError(context, 'Please enter an email address.');
-      return null;
-    }
-
-    try {
-      final methods =
-          await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
-      debugPrint('🔐 AUTH: fetchSignInMethodsForEmail($email) -> $methods');
-      return methods;
-    } on FirebaseAuthException catch (e) {
-      final errorMsg = _firebaseAuthErrorMessage(e);
-      _showAuthError(context, errorMsg);
       return null;
     }
   }

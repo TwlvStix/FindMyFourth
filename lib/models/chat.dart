@@ -7,6 +7,7 @@ class Chat {
     required this.type,
     required this.directKey,
     required this.gameId,
+    required this.gameName,
     required this.lastMessage,
     required this.lastMessageAt,
     required this.lastMessageSenderId,
@@ -17,6 +18,7 @@ class Chat {
     required this.pinnedMessage,
     required this.pinnedAt,
     required this.archivedAt,
+    required this.typingUsers,
   });
 
   final String id;
@@ -24,6 +26,7 @@ class Chat {
   final String type;
   final String? directKey;
   final String? gameId;
+  final String? gameName;
   final String lastMessage;
   final DateTime? lastMessageAt;
   final String? lastMessageSenderId;
@@ -34,6 +37,7 @@ class Chat {
   final String pinnedMessage;
   final DateTime? pinnedAt;
   final DateTime? archivedAt;
+  final Map<String, DateTime> typingUsers;
 
   static Chat fromDoc(DocumentSnapshot doc) {
     final data = (doc.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
@@ -46,6 +50,7 @@ class Chat {
       type: (data['type'] as String?) ?? 'direct',
       directKey: data['directKey'] as String?,
       gameId: data['gameId'] as String?,
+      gameName: data['gameName'] as String?,
       lastMessage: (data['lastMessage'] as String?) ?? '',
       lastMessageAt:
           (data['lastMessageAt'] as Timestamp?)?.toDate(),
@@ -63,6 +68,12 @@ class Chat {
       pinnedMessage: (data['pinnedMessage'] as String?) ?? '',
       pinnedAt: (data['pinnedAt'] as Timestamp?)?.toDate(),
       archivedAt: (data['archivedAt'] as Timestamp?)?.toDate(),
+      typingUsers: (data['typingUsers'] as Map<String, dynamic>?)
+              ?.map(
+                (key, value) =>
+                    MapEntry(key, (value as Timestamp).toDate()),
+              ) ??
+          <String, DateTime>{},
     );
   }
 }

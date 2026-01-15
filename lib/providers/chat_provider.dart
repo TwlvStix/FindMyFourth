@@ -81,10 +81,12 @@ class ChatProvider extends ChangeNotifier {
   Future<DocumentReference> createGameChat({
     required String createdByUid,
     required String gameId,
+    required String gameName,
   }) {
     return _service.createGameChat(
       createdByUid: createdByUid,
       gameId: gameId,
+      gameName: gameName,
     );
   }
 
@@ -148,6 +150,58 @@ class ChatProvider extends ChangeNotifier {
 
   void clearUserCache() {
     _service.clearUserCache();
+  }
+
+  Future<void> setTypingStatus({
+    required String chatId,
+    required String uid,
+    required bool isTyping,
+  }) {
+    return _service.setTypingStatus(
+      chatId: chatId,
+      uid: uid,
+      isTyping: isTyping,
+    );
+  }
+
+  Future<void> addReaction({
+    required String chatId,
+    required String messageId,
+    required String emoji,
+    required String uid,
+  }) {
+    return _service.addReaction(
+      chatId: chatId,
+      messageId: messageId,
+      emoji: emoji,
+      uid: uid,
+    );
+  }
+
+  Future<void> removeReaction({
+    required String chatId,
+    required String messageId,
+    required String emoji,
+    required String uid,
+  }) {
+    return _service.removeReaction(
+      chatId: chatId,
+      messageId: messageId,
+      emoji: emoji,
+      uid: uid,
+    );
+  }
+
+  Future<void> markMessageAsRead({
+    required String chatId,
+    required String messageId,
+    required String uid,
+  }) {
+    return _service.markMessageAsRead(
+      chatId: chatId,
+      messageId: messageId,
+      uid: uid,
+    );
   }
 
   void logError(String message, Object error, StackTrace stackTrace) {

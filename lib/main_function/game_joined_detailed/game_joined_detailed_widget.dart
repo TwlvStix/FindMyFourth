@@ -325,10 +325,58 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                         child: GestureDetector(
-                          onTap: () {
+                          onTap: () async {
                             HapticFeedback.lightImpact();
                             final chatRef = gameJoinedDetailedGamesRecord.chatRef;
-                            if (chatRef == null) return;
+                            if (chatRef == null) {
+                              return;
+                            }
+                            final currentUser = FirebaseAuth.instance.currentUser;
+                            if (currentUser == null) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Please sign in to open the chat.',
+                                    ),
+                                  ),
+                                );
+                              }
+                              return;
+                            }
+                            try {
+                              await context.read<ChatProvider>().addMember(
+                                    chatId: chatRef.id,
+                                    uid: currentUser.uid,
+                                  );
+                            } on FirebaseException catch (error) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      error.code == 'permission-denied'
+                                          ? 'Chat access is not available right now.'
+                                          : 'Unable to open the chat. Please try again.',
+                                    ),
+                                  ),
+                                );
+                              }
+                              return;
+                            } catch (_) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Unable to open the chat. Please try again.',
+                                    ),
+                                  ),
+                                );
+                              }
+                              return;
+                            }
+                            if (!mounted) {
+                              return;
+                            }
                             context.pushNamed(
                               'ChatDetails',
                               pathParameters: {'chatId': chatRef.id},

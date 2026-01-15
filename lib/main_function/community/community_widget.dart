@@ -5,7 +5,6 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/chat_group/chat/chat_widget.dart';
-import '/newsfeed/newsfeed/newsfeed_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -32,7 +31,7 @@ class _CommunityWidgetState extends State<CommunityWidget>
     super.initState();
     _tabBarController = TabController(
       vsync: this,
-      length: 2,
+      length: 1,
       initialIndex: 0,
     )..addListener(() {
         if (mounted) {
@@ -67,7 +66,7 @@ class _CommunityWidgetState extends State<CommunityWidget>
           backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           title: Text(
-            'Community',
+            'Chats',
             style: AppTypography.headlineMedium.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w600,
@@ -100,7 +99,7 @@ class _CommunityWidgetState extends State<CommunityWidget>
                     ),
                   ),
                   child: Text(
-                    'Share updates and connect with your golf community',
+                    'Group chats and DMs with golfers',
                     style: AppTypography.bodyMedium.copyWith(
                       color: Colors.white.withOpacity(0.9),
                     ),
@@ -139,12 +138,11 @@ class _CommunityWidgetState extends State<CommunityWidget>
                           AppSpacing.xxs, AppSpacing.xxs, AppSpacing.xxs, AppSpacing.xxs),
                       padding: AppSpacing.allXxs,
                       tabs: [
-                        Tab(text: 'Feed'),
                         Tab(text: 'Chats'),
                       ],
                       controller: _tabBarController,
                       onTap: (i) async {
-                        [() async {}, () async {}][i]();
+                        [() async {}][i]();
                       },
                     ),
                   ),
@@ -155,10 +153,6 @@ class _CommunityWidgetState extends State<CommunityWidget>
                   child: TabBarView(
                     controller: _tabBarController,
                     children: [
-                      // Feed Tab
-                      KeepAliveWidgetWrapper(
-                        builder: (context) => NewsfeedWidget(isEmbedded: true),
-                      ),
                       // Chats Tab
                       KeepAliveWidgetWrapper(
                         builder: (context) => ChatWidget(isEmbedded: true),

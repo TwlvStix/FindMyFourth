@@ -80,6 +80,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     super.dispose();
   }
 
+  void _pushNamed(
+    String routeName, {
+    Map<String, String> pathParameters = const {},
+    Map<String, dynamic>? extra,
+  }) {
+    final rootContext = appNavigatorKey.currentContext;
+    final targetContext = rootContext ?? context;
+    GoRouter.of(targetContext).pushNamed(
+      routeName,
+      pathParameters: pathParameters,
+      extra: extra,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -130,7 +144,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             ),
                             onPressed: () async {
                               HapticFeedback.lightImpact();
-                              context.pushNamed(
+                              _pushNamed(
                                 NotificationsListWidget.routeName,
                               );
                             },
@@ -491,7 +505,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
                   onTap: () {
                     HapticFeedback.lightImpact();
-                    context.pushNamed(TabFriendsWidget.routeName);
+                    _pushNamed(TabFriendsWidget.routeName);
                   },
                 );
               },
@@ -586,7 +600,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           child: GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
-              context.pushNamed(
+              _pushNamed(
                 EditVibesWidget.routeName,
                 extra: <String, dynamic>{
                   kTransitionInfoKey: TransitionInfo(
@@ -680,7 +694,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               gradient: [AppColors.fairwayLight, AppColors.fairway],
               onTap: () {
                 HapticFeedback.lightImpact();
-                context.pushNamed(
+                _pushNamed(
                   EditProfileWidget.routeName,
                   extra: <String, dynamic>{
                     kTransitionInfoKey: TransitionInfo(
@@ -702,7 +716,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               gradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
               onTap: () {
                 HapticFeedback.lightImpact();
-                context.pushNamed(
+                _pushNamed(
                   EditVibesWidget.routeName,
                   extra: <String, dynamic>{
                     kTransitionInfoKey: TransitionInfo(
@@ -724,7 +738,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
               onTap: () {
                 HapticFeedback.lightImpact();
-                context.pushNamed(
+                _pushNamed(
                   TabFriendsWidget.routeName,
                   extra: <String, dynamic>{
                     kTransitionInfoKey: TransitionInfo(
@@ -937,7 +951,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   label: 'Notifications',
                   onTap: () {
                     HapticFeedback.lightImpact();
-                    context.pushNamed(
+                    _pushNamed(
                       NotificationPageWidget.routeName,
                       extra: <String, dynamic>{
                         kTransitionInfoKey: TransitionInfo(

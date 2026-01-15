@@ -34,6 +34,7 @@ class PushNotificationsHandler extends StatefulWidget {
 
 class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   bool _loading = false;
+  Timer? _loadingTimeout;
 
   _PushRoute? _resolveRouteFromType(Map<String, dynamic> data) {
     final type = data['type'];
@@ -79,7 +80,15 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
     }
     _handledMessageIds.add(message.messageId);
 
-    if (mounted) setState(() => _loading = true);
+    if (mounted) {
+      setState(() => _loading = true);
+      _loadingTimeout?.cancel();
+      _loadingTimeout = Timer(const Duration(seconds: 3), () {
+        if (mounted && _loading) {
+          setState(() => _loading = false);
+        }
+      });
+    }
     try {
       final resolvedRoute = _resolveRouteFromType(message.data);
       final rawPageName = message.data['initialPageName'];
@@ -112,6 +121,7 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
     } catch (e) {
       print('Error: $e');
     } finally {
+      _loadingTimeout?.cancel();
       if (mounted) setState(() => _loading = false);
     }
   }
@@ -122,6 +132,12 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       handleOpenedPushNotification();
     });
+  }
+
+  @override
+  void dispose() {
+    _loadingTimeout?.cancel();
+    super.dispose();
   }
 
   @override
@@ -189,13 +205,6 @@ final parametersBuilderMap =
       ),
   'NotificationsList': ParameterData.none(),
   'Tab_Friends': ParameterData.none(),
-  'Newsfeed': ParameterData.none(),
-  'blog_create': ParameterData.none(),
-  'blog_edit': (data) async => ParameterData(
-        allParams: {
-          'postRef': getParameter<DocumentReference>(data, 'postRef'),
-        },
-      ),
   'GameJoinedDetailed': (data) async => ParameterData(
         allParams: {
           'gameRef': getParameter<DocumentReference>(data, 'gameRef'),

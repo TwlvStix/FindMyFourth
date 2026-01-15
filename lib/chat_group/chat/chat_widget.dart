@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,6 +33,15 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   String? _currentUserId() {
     return FirebaseAuth.instance.currentUser?.uid;
+  }
+
+  String? _chatListLabel(Chat chat) {
+    if (chat.type == 'game') {
+      return (chat.gameName ?? '').trim().isNotEmpty
+          ? chat.gameName
+          : 'Game Chat';
+    }
+    return null;
   }
 
   @override
@@ -292,15 +302,172 @@ class _ChatWidgetState extends State<ChatWidget> {
                 separatorBuilder: (_, __) => SizedBox(height: AppSpacing.sm),
                 itemBuilder: (context, index) {
                   final chat = chats[index];
-                  final otherUserId = chat.memberIds.firstWhere(
-                    (id) => id != currentUserId,
-                    orElse: () => currentUserId,
-                  );
                   final lastMessage = chat.lastMessage;
                   final lastMessageAt = chat.lastMessageAt;
                   final unreadCount =
                       chat.unreadCountByUser[currentUserId] ?? 0;
 
+                  Widget buildRow(String displayName, String photoUrl) {
+                    return GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        context.pushNamed(
+                          'ChatDetails',
+                          pathParameters: {
+                            'chatId': chat.id,
+                          },
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.fairway.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: unreadCount > 0
+                                ? AppColors.sunsetGold.withOpacity(0.4)
+                                : Colors.white.withOpacity(0.1),
+                            width: unreadCount > 0 ? 2 : 1,
+                          ),
+                        ),
+                        padding: EdgeInsets.all(AppSpacing.md),
+                        child: Row(
+                          children: [
+                            // Avatar
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.fairwayLight,
+                                    AppColors.fairway,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.2),
+                                  width: 2,
+                                ),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: photoUrl.isNotEmpty
+                                    ? Image.network(
+                                        photoUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Icon(
+                                          Icons.person_rounded,
+                                          color: Colors.white,
+                                          size: 28,
+                                        ),
+                                      )
+                                    : Icon(
+                                        Icons.person_rounded,
+                                        color: Colors.white,
+                                        size: 28,
+                                      ),
+                              ),
+                            ),
+                            SizedBox(width: AppSpacing.sm),
+                            // Content
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          displayName,
+                                          style:
+                                              AppTypography.titleSmall.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                      if (unreadCount > 0)
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: unreadCount > 9 ? 6 : 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                AppColors.sunsetGold,
+                                                AppColors.sunsetPeach,
+                                              ],
+                                            ),
+                                            borderRadius: BorderRadius.circular(12),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: AppColors.sunsetGold.withOpacity(0.4),
+                                                blurRadius: 4,
+                                                offset: Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          constraints: BoxConstraints(minWidth: 24),
+                                          child: Text(
+                                            unreadCount > 99 ? '99+' : '$unreadCount',
+                                            textAlign: TextAlign.center,
+                                            style: AppTypography.labelSmall.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    lastMessage.isNotEmpty
+                                        ? lastMessage
+                                        : 'No messages yet.',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: Colors.white.withOpacity(0.7),
+                                    ),
+                                  ),
+                                  if (lastMessageAt != null) ...[
+                                    SizedBox(height: 4),
+                                    Text(
+                                      dateTimeFormat('relative', lastMessageAt),
+                                      style:
+                                          AppTypography.labelSmall.copyWith(
+                                        color: Colors.white.withOpacity(0.5),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            // Arrow
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              color: Colors.white.withOpacity(0.5),
+                              size: 24,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (chat.type == 'game') {
+                    final displayName = _chatListLabel(chat) ?? 'Game Chat';
+                    return buildRow(displayName, '');
+                  }
+
+                  final otherUserId = chat.memberIds.firstWhere(
+                    (id) => id != currentUserId,
+                    orElse: () => currentUserId,
+                  );
                   return FutureBuilder<Map<String, dynamic>>(
                     future: context
                         .read<ChatProvider>()
@@ -314,125 +481,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                       final photoUrl =
                           (userData['photo_url'] as String?) ?? '';
 
-                      return GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          context.pushNamed(
-                            'ChatDetails',
-                            pathParameters: {
-                              'chatId': chat.id,
-                            },
-                          );
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.fairway.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: unreadCount > 0
-                                  ? AppColors.sunsetGold.withOpacity(0.4)
-                                  : Colors.white.withOpacity(0.1),
-                              width: unreadCount > 0 ? 2 : 1,
-                            ),
-                          ),
-                          padding: EdgeInsets.all(AppSpacing.md),
-                          child: Row(
-                            children: [
-                              // Avatar
-                              Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [AppColors.fairwayLight, AppColors.fairway],
-                                  ),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.2),
-                                    width: 2,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: photoUrl.isNotEmpty
-                                      ? Image.network(
-                                          photoUrl,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) =>
-                                              Icon(
-                                            Icons.person_rounded,
-                                            color: Colors.white,
-                                            size: 28,
-                                          ),
-                                        )
-                                      : Icon(
-                                          Icons.person_rounded,
-                                          color: Colors.white,
-                                          size: 28,
-                                        ),
-                                ),
-                              ),
-                              SizedBox(width: AppSpacing.sm),
-                              // Content
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            displayName,
-                                            style: AppTypography.titleSmall.copyWith(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                        if (unreadCount > 0)
-                                          Container(
-                                            width: 10,
-                                            height: 10,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.sunsetGold,
-                                              shape: BoxShape.circle,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      lastMessage.isNotEmpty
-                                          ? lastMessage
-                                          : 'No messages yet.',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppTypography.bodySmall.copyWith(
-                                        color: Colors.white.withOpacity(0.7),
-                                      ),
-                                    ),
-                                    if (lastMessageAt != null) ...[
-                                      SizedBox(height: 4),
-                                      Text(
-                                        dateTimeFormat('relative', lastMessageAt),
-                                        style: AppTypography.labelSmall.copyWith(
-                                          color: Colors.white.withOpacity(0.5),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                              // Arrow
-                              Icon(
-                                Icons.chevron_right_rounded,
-                                color: Colors.white.withOpacity(0.5),
-                                size: 24,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
+                      return buildRow(displayName, photoUrl);
                     },
                   );
                 },

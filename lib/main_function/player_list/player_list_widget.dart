@@ -54,7 +54,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       playersJoinedUID[index] = updateFn(playersJoinedUID[index]);
 
   final formKey = GlobalKey<FormState>();
-  final List<String?> _dropDownValues = [];
+  final List<FormFieldController<String>> _dropDownControllers = [];
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -73,6 +73,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
 
   @override
   void dispose() {
+    for (final controller in _dropDownControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -128,11 +131,12 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         final remainingSlots =
             (game.maxPlayers - currentPlayerCount).clamp(0, game.maxPlayers);
 
-        while (_dropDownValues.length < remainingSlots) {
-          _dropDownValues.add(null);
+        while (_dropDownControllers.length < remainingSlots) {
+          _dropDownControllers.add(FormFieldController<String>(null));
         }
-        if (_dropDownValues.length > remainingSlots) {
-          _dropDownValues.removeRange(remainingSlots, _dropDownValues.length);
+        if (_dropDownControllers.length > remainingSlots) {
+          _dropDownControllers.removeRange(
+              remainingSlots, _dropDownControllers.length);
         }
 
         debugPrint(
@@ -438,18 +442,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                       height: AppSpacing.xs),
                                                   AppDropDown<String>(
                                                     controller:
-                                                        FormFieldController<
-                                                            String>(
-                                                      _dropDownValues[i] ?? '',
-                                                    ),
+                                                        _dropDownControllers[i],
                                                     options: List<String>.from(
                                                         playerOptions),
                                                     optionLabels: playerLabels,
                                                     onChanged: (val) {
                                                       if (mounted) {
-                                                        setState(() =>
-                                                            _dropDownValues[
-                                                                i] = val);
+                                                        setState(() {});
                                                       }
                                                     },
                                                     width: 300.0,
@@ -619,9 +618,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                     return;
                                                   }
 
-                                                  final selections =
-                                                      List<String?>.from(
-                                                          _dropDownValues);
+                                                  final selections = _dropDownControllers
+                                                      .map((controller) => controller.value)
+                                                      .toList();
                                                   final joinedPlayersToAdd =
                                                       <DocumentReference>[];
                                                   final guestPlayersToAdd =

@@ -20,12 +20,11 @@ class ChatService {
   }) {
     debugPrint('💬 ChatService: getChatListStream called');
     debugPrint('💬 ChatService: uid=$uid, limit=$limit');
-    debugPrint('💬 ChatService: Query: chats where memberIds contains $uid AND type=direct');
+    debugPrint('💬 ChatService: Query: chats where memberIds contains $uid');
 
     final query = _firestore
         .collection('chats')
         .where('memberIds', arrayContains: uid)
-        .where('type', isEqualTo: 'direct')
         .orderBy('lastMessageAt', descending: true)
         .limit(limit);
 
@@ -198,6 +197,7 @@ class ChatService {
   Future<DocumentReference> createGameChat({
     required String createdByUid,
     required String gameId,
+    required String gameName,
   }) async {
     final chatRef = _firestore.collection('chats').doc();
     await chatRef.set({
@@ -205,6 +205,7 @@ class ChatService {
       'users': [_firestore.collection('users').doc(createdByUid)],
       'type': 'game',
       'gameId': gameId,
+      'gameName': gameName,
       'last_message': '',
       'isReadOnly': false,
       'pinnedMessage': '',
@@ -293,6 +294,8 @@ class ChatService {
         'imageUrl': imageUrl,
         'videoUrl': videoUrl,
         'createdAt': FieldValue.serverTimestamp(),
+        'reactions': <String, List<String>>{},
+        'readBy': [senderId],
       });
       transaction.update(chatRef, updates);
     });
@@ -385,6 +388,105 @@ class ChatService {
 
   void clearUserCache() {
     _userCache.clear();
+  }
+
+  Future<void> setTypingStatus({
+    required String chatId,
+    required String uid,
+    required bool isTyping,
+  }) async {
+    try {
+      if (isTyping) {
+        await _firestore.collection('chats').doc(chatId).update({
+          'typingUsers.$uid': FieldValue.serverTimestamp(),
+        });
+      } else {
+        await _firestore.collection('chats').doc(chatId).update({
+          'typingUsers.$uid': FieldValue.delete(),
+        });
+      }
+    } catch (e) {
+      debugPrint('ChatService: Error updating typing status: $e');
+    }
+  }
+
+  Future<void> addReaction({
+    required String chatId,
+    required String messageId,
+    required String emoji,
+    required String uid,
+  }) async {
+    final messageRef = _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId);
+
+    await _firestore.runTransaction((transaction) async {
+      final messageDoc = await transaction.get(messageRef);
+      final data = messageDoc.data() ?? <String, dynamic>{};
+      final reactions = Map<String, dynamic>.from(data['reactions'] as Map<String, dynamic>? ?? {});
+
+      if (reactions.containsKey(emoji)) {
+        final users = List<String>.from(reactions[emoji] as List<dynamic>? ?? []);
+        if (!users.contains(uid)) {
+          users.add(uid);
+          reactions[emoji] = users;
+        }
+      } else {
+        reactions[emoji] = [uid];
+      }
+
+      transaction.update(messageRef, {'reactions': reactions});
+    });
+  }
+
+  Future<void> removeReaction({
+    required String chatId,
+    required String messageId,
+    required String emoji,
+    required String uid,
+  }) async {
+    final messageRef = _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId);
+
+    await _firestore.runTransaction((transaction) async {
+      final messageDoc = await transaction.get(messageRef);
+      final data = messageDoc.data() ?? <String, dynamic>{};
+      final reactions = Map<String, dynamic>.from(data['reactions'] as Map<String, dynamic>? ?? {});
+
+      if (reactions.containsKey(emoji)) {
+        final users = List<String>.from(reactions[emoji] as List<dynamic>? ?? []);
+        users.remove(uid);
+
+        if (users.isEmpty) {
+          reactions.remove(emoji);
+        } else {
+          reactions[emoji] = users;
+        }
+
+        transaction.update(messageRef, {'reactions': reactions});
+      }
+    });
+  }
+
+  Future<void> markMessageAsRead({
+    required String chatId,
+    required String messageId,
+    required String uid,
+  }) async {
+    final messageRef = _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId);
+
+    await messageRef.update({
+      'readBy': FieldValue.arrayUnion([uid]),
+    });
   }
 
   void logError(String message, Object error, StackTrace stackTrace) {

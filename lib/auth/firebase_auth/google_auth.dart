@@ -2,7 +2,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-final _googleSignIn = GoogleSignIn(scopes: ['profile', 'email']);
+final _googleSignIn = GoogleSignIn.instance;
+bool _googleSignInInitialized = false;
+
+Future<void> _ensureGoogleSignInInitialized() async {
+  if (_googleSignInInitialized) {
+    return;
+  }
+  await _googleSignIn.initialize();
+  _googleSignInInitialized = true;
+}
 
 Future<UserCredential?> googleSignInFunc() async {
   if (kIsWeb) {
@@ -10,13 +19,18 @@ Future<UserCredential?> googleSignInFunc() async {
     return await FirebaseAuth.instance.signInWithPopup(GoogleAuthProvider());
   }
 
+  await _ensureGoogleSignInInitialized();
   await signOutWithGoogle().catchError((_) => null);
-  final auth = await (await _googleSignIn.signIn())?.authentication;
-  if (auth == null) {
+  GoogleSignInAccount account;
+  try {
+    account = await _googleSignIn.authenticate(
+      scopeHint: const ['profile', 'email'],
+    );
+  } catch (_) {
     return null;
   }
-  final credential = GoogleAuthProvider.credential(
-      idToken: auth.idToken, accessToken: auth.accessToken);
+  final auth = account.authentication;
+  final credential = GoogleAuthProvider.credential(idToken: auth.idToken);
   return FirebaseAuth.instance.signInWithCredential(credential);
 }
 

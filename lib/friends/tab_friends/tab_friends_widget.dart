@@ -5,23 +5,22 @@ import '/core/button_tabbar.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/widgets/app_button.dart';
-import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
-import '/core/navigation/app_router.dart';
-import '/profile/main_profile/main_profile_widget.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '/core/design_tokens/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
 import '/providers/user_provider.dart';
+import '/friends/components/premium_friend_card.dart';
+import '/friends/components/empty_state.dart';
+import '/friends/components/friend_section_header.dart';
+import '/friends/components/grouped_friends_list.dart';
+import '/friends/components/friend_filter_bottom_sheet.dart';
 
 class TabFriendsWidget extends StatefulWidget {
   const TabFriendsWidget({super.key});
@@ -53,6 +52,80 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
   void updateFriendListAtIndex(
           int index, Function(DocumentReference) updateFn) =>
       friendList[index] = updateFn(friendList[index]);
+
+  // Favorite friends tracking
+  Set<String> favoriteFriends = {};
+  void toggleFavorite(String friendId) {
+    if (mounted) {
+      setState(() {
+        if (favoriteFriends.contains(friendId)) {
+          favoriteFriends.remove(friendId);
+        } else {
+          favoriteFriends.add(friendId);
+        }
+      });
+    }
+  }
+
+  // Section collapse tracking
+  bool clubMembersCollapsed = false;
+  bool allFriendsCollapsed = false;
+
+  // Refresh tracking
+  bool isRefreshing = false;
+
+  // Filter tracking
+  FriendFilters friendFilters = FriendFilters();
+
+  Future<void> _showFilterBottomSheet() async {
+    final result = await showModalBottomSheet<FriendFilters>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => FriendFilterBottomSheet(
+        currentFilters: friendFilters,
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        friendFilters = result;
+      });
+    }
+  }
+
+  Future<void> _refreshSearchTab() async {
+    if (mounted) {
+      setState(() => isRefreshing = true);
+    }
+    // Wait a bit to simulate refresh
+    await Future.delayed(Duration(milliseconds: 500));
+    if (mounted) {
+      setState(() => isRefreshing = false);
+    }
+  }
+
+  Future<void> _refreshRequestsTab() async {
+    if (mounted) {
+      setState(() => isRefreshing = true);
+    }
+    // Force refresh of auth user stream
+    await Future.delayed(Duration(milliseconds: 500));
+    if (mounted) {
+      setState(() => isRefreshing = false);
+    }
+  }
+
+  Future<void> _refreshFriendsTab() async {
+    if (mounted) {
+      setState(() => isRefreshing = true);
+    }
+    // Force refresh of auth user stream
+    await Future.delayed(Duration(milliseconds: 500));
+    if (mounted) {
+      setState(() => isRefreshing = false);
+    }
+  }
 
   TabController? tabBarController;
   int get tabBarCurrentIndex => tabBarController != null
@@ -274,15 +347,20 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                   ).image,
                                 ),
                               ),
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.max,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          AppSpacing.md, AppSpacing.xs, AppSpacing.md, AppSpacing.sm),
-                                      child: Row(
+                              child: RefreshIndicator(
+                                onRefresh: _refreshSearchTab,
+                                color: AppColors.fairway,
+                                backgroundColor: Colors.white,
+                                child: SingleChildScrollView(
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.max,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            AppSpacing.md, AppSpacing.xs, AppSpacing.md, AppSpacing.sm),
+                                        child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
                                           Expanded(
@@ -558,6 +636,30 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                 EdgeInsetsDirectional.fromSTEB(
                                                     AppSpacing.sm, 0.0, 0.0, 0.0),
                                             child: AppIconButton(
+                                              borderColor: friendFilters.hasActiveFilters
+                                                  ? AppColors.fairway.withOpacity(0.2)
+                                                  : Colors.transparent,
+                                              borderRadius: 30.0,
+                                              borderWidth: friendFilters.hasActiveFilters ? 2.0 : 1.0,
+                                              buttonSize: 44.0,
+                                              fillColor: friendFilters.hasActiveFilters
+                                                  ? AppColors.fairway.withOpacity(0.1)
+                                                  : Colors.transparent,
+                                              icon: Icon(
+                                                Icons.tune_rounded,
+                                                color: friendFilters.hasActiveFilters
+                                                    ? AppColors.fairway
+                                                    : AppTheme.of(context).primaryBtnText,
+                                                size: 24.0,
+                                              ),
+                                              onPressed: _showFilterBottomSheet,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    AppSpacing.sm, 0.0, 0.0, 0.0),
+                                            child: AppIconButton(
                                               borderColor: Colors.transparent,
                                               borderRadius: 30.0,
                                               borderWidth: 1.0,
@@ -669,7 +771,26 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                   .contains(searchTerm) ||
                                               firstName.contains(searchTerm) ||
                                               lastName.contains(searchTerm);
-                                        }).toList();
+                                        })
+                                                .where((user) =>
+                                                    friendFilters.matchesUser(user))
+                                                .toList();
+
+                                        // Show empty state if no results and user has searched
+                                        if (listViewUsersRecordList.isEmpty &&
+                                            searchTerm.isNotEmpty) {
+                                          return FriendsEmptyState(
+                                            type: FriendsEmptyStateType
+                                                .noSearchResults,
+                                            onActionPressed: () {
+                                              textController?.clear();
+                                              FocusScope.of(context).unfocus();
+                                              if (mounted) {
+                                                setState(() {});
+                                              }
+                                            },
+                                          );
+                                        }
 
                                         return ListView.separated(
                                           padding: EdgeInsets.fromLTRB(
@@ -684,365 +805,142 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                           itemCount:
                                               listViewUsersRecordList.length,
                                           separatorBuilder: (_, __) =>
-                                              SizedBox(height: AppSpacing.sm),
+                                              SizedBox(height: 4),
                                           itemBuilder:
                                               (context, listViewIndex) {
                                             final listViewUsersRecord =
                                                 listViewUsersRecordList[
                                                     listViewIndex];
-                                            return Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      12.0, 0.0, 12.0, 0.0),
-                                              child: Container(
-                                                width: double.infinity,
-                                                height: 60.0,
-                                                decoration: BoxDecoration(
-                                                  color: AppTheme.of(
-                                                          context)
-                                                      .primaryBtnText,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      blurRadius: 4.0,
-                                                      color: Color(0x32000000),
-                                                      offset: Offset(
-                                                        0.0,
-                                                        2.0,
-                                                      ),
-                                                    )
-                                                  ],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                child: Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          8.0, 0.0, 8.0, 0.0),
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceAround,
-                                                    children: [
-                                                      ClipRRect(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(26.0),
-                                                        child: Image.network(
-                                                          valueOrDefault<
-                                                              String>(
+                                            return AuthUserStreamWidget(
+                                              builder: (context) {
+                                                final isFriend =
+                                                    (currentUserDocument
+                                                                ?.friends
+                                                                .toList() ??
+                                                            [])
+                                                        .contains(
+                                                  listViewUsersRecord.reference,
+                                                );
+                                                final hasPending =
+                                                    listViewUsersRecord
+                                                        .friendRequests
+                                                        .contains(
+                                                            currentUserReference) ||
+                                                        (currentUserDocument
+                                                                ?.friendRequests
+                                                                .toList() ??
+                                                            [])
+                                                            .contains(
+                                                  listViewUsersRecord.reference,
+                                                );
+
+                                                String actionLabel;
+                                                IconData actionIcon;
+                                                bool showActionButton;
+
+                                                if (isFriend) {
+                                                  actionLabel = 'Friends';
+                                                  actionIcon = Icons.people_rounded;
+                                                  showActionButton = true;
+                                                } else if (hasPending) {
+                                                  actionLabel = 'Pending';
+                                                  actionIcon = Icons.pending_rounded;
+                                                  showActionButton = true;
+                                                } else {
+                                                  actionLabel = 'Add';
+                                                  actionIcon = Icons.person_add_rounded;
+                                                  showActionButton = true;
+                                                }
+
+                                                return PremiumFriendCard(
+                                                  user: listViewUsersRecord,
+                                                  onViewProfile: () {
+                                                    context.pushNamed(
+                                                      'ProfileUser',
+                                                      extra: <String, dynamic>{
+                                                        'userRef':
                                                             listViewUsersRecord
-                                                                .photoUrl,
-                                                            'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                                                          ),
-                                                          width: 36.0,
-                                                          height: 36.0,
-                                                          fit: BoxFit.cover,
-                                                        ),
-                                                      ),
-                                                      Expanded(
-                                                        child: Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      12.0,
-                                                                      0.0,
-                                                                      0.0,
-                                                                      0.0),
-                                                          child: Column(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .center,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Align(
-                                                                alignment:
-                                                                    AlignmentDirectional(
-                                                                        -1.0,
-                                                                        0.0),
-                                                                child: Text(
-                                                                  valueOrDefault<
-                                                                      String>(
-                                                                    listViewUsersRecord
-                                                                        .displayName,
-                                                                    'name',
-                                                                  ),
-                                                                  style: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .outfit(
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          fontStyle: AppTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .fontStyle,
-                                                                        ),
-                                                                        fontSize:
-                                                                            16.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight:
-                                                                            FontWeight.w500,
+                                                                .reference,
+                                                      },
+                                                    );
+                                                  },
+                                                  onMessage: () async {
+                                                    await _openDirectChat(
+                                                        listViewUsersRecord);
+                                                  },
+                                                  onAction: isFriend || hasPending
+                                                      ? null
+                                                      : () async {
+                                                          await context
+                                                              .read<
+                                                                  UserProvider>()
+                                                              .sendFriendRequest(
+                                                                listViewUsersRecord
+                                                                    .reference,
+                                                              );
+                                                          addToReqUserList(
+                                                              valueOrDefault<
+                                                                  String>(
+                                                            listViewUsersRecord
+                                                                .uid,
+                                                            '007',
+                                                          ));
+                                                          if (mounted) {
+                                                            setState(() {});
+                                                          }
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .clearSnackBars();
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                            SnackBar(
+                                                              content: Text(
+                                                                'Friend request sent!',
+                                                                style: AppTheme.of(
+                                                                        context)
+                                                                    .titleMedium
+                                                                    .override(
+                                                                      font: GoogleFonts
+                                                                          .outfit(
+                                                                        fontWeight: AppTheme.of(context)
+                                                                            .titleMedium
+                                                                            .fontWeight,
                                                                         fontStyle: AppTheme.of(context)
-                                                                            .bodyMedium
+                                                                            .titleMedium
                                                                             .fontStyle,
                                                                       ),
-                                                                ),
+                                                                      color: AppTheme.of(
+                                                                              context)
+                                                                          .primaryBtnText,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight: AppTheme.of(
+                                                                              context)
+                                                                          .titleMedium
+                                                                          .fontWeight,
+                                                                      fontStyle: AppTheme.of(
+                                                                              context)
+                                                                          .titleMedium
+                                                                          .fontStyle,
+                                                                    ),
                                                               ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    0.0,
-                                                                    0.0,
-                                                                    AppSpacing.sm,
-                                                                    0.0),
-                                                        child: AppButtonEnhanced(
-                                                          onPressed: () async {
-                                                            context.pushNamed(
-                                                              'ProfileUser',
-                                                              extra: <String, dynamic>{
-                                                                'userRef': listViewUsersRecord.reference,
-                                                              },
-                                                            );
-                                                          },
-                                                          text: 'View',
-                                                          variant: AppButtonVariant.primary,
-                                                          size: AppButtonSize.small,
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    5.0,
-                                                                    0.0,
-                                                                    5.0,
-                                                                    0.0),
-                                                        child:
-                                                            AppIconButton(
-                                                          borderColor:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .primary,
-                                                          borderRadius: 20.0,
-                                                          borderWidth: 1.0,
-                                                          buttonSize: 40.0,
-                                                          fillColor:
-                                                              AppTheme.of(context).primary,
-                                                          icon: FaIcon(
-                                                            FontAwesomeIcons
-                                                                .facebookMessenger,
-                                                            color: Colors.white,
-                                                            size: 18.0,
-                                                          ),
-                                                          onPressed: () async {
-                                                            await _openDirectChat(
-                                                                listViewUsersRecord);
-                                                          },
-                                                        ),
-                                                      ),
-                                                      Stack(
-                                                        children: [
-                                                          AuthUserStreamWidget(
-                                                            builder: (context) {
-                                                              final isFriend =
-                                                                  (currentUserDocument
-                                                                              ?.friends
-                                                                              .toList() ??
-                                                                          [])
-                                                                      .contains(
-                                                                listViewUsersRecord
-                                                                    .reference,
-                                                              );
-                                                              final hasPending =
-                                                                  listViewUsersRecord
-                                                                      .friendRequests
-                                                                      .contains(
-                                                                          currentUserReference) ||
-                                                                      (currentUserDocument
-                                                                              ?.friendRequests
-                                                                              .toList() ??
-                                                                          [])
-                                                                          .contains(
-                                                                listViewUsersRecord
-                                                                    .reference,
-                                                              );
-                                                              if (isFriend) {
-                                                                return Padding(
-                                                                  padding:
-                                                                      EdgeInsetsDirectional
-                                                                          .fromSTEB(
-                                                                              5.0,
-                                                                              0.0,
-                                                                              5.0,
-                                                                              0.0),
-                                                                  child:
-                                                                      AppIconButton(
-                                                                    borderColor:
-                                                                        AppTheme.of(context)
-                                                                            .primary,
-                                                                    borderRadius:
-                                                                        20.0,
-                                                                    borderWidth:
-                                                                        1.0,
-                                                                    buttonSize:
-                                                                        40.0,
-                                                                    fillColor:
-                                                                        Color(
-                                                                            0xFF253551),
-                                                                    icon: Icon(
-                                                                      Icons.people,
-                                                                      color: Colors
-                                                                          .white,
-                                                                      size: 22.0,
-                                                                    ),
-                                                                    onPressed:
-                                                                        () {
-                                                                      print(
-                                                                          'friends pressed ...');
-                                                                    },
-                                                                  ),
-                                                                );
-                                                              }
-                                                              if (hasPending) {
-                                                                return Padding(
-                                                                  padding:
-                                                                      EdgeInsetsDirectional
-                                                                          .fromSTEB(
-                                                                              5.0,
-                                                                              0.0,
-                                                                              5.0,
-                                                                              0.0),
-                                                                  child:
-                                                                      AppIconButton(
-                                                                    borderColor:
-                                                                        AppTheme.of(context)
-                                                                            .primary,
-                                                                    borderRadius:
-                                                                        20.0,
-                                                                    borderWidth:
-                                                                        1.0,
-                                                                    buttonSize:
-                                                                        40.0,
-                                                                    fillColor:
-                                                                        Color(
-                                                                            0xFF253551),
-                                                                    icon: Icon(
-                                                                      Icons
-                                                                          .pending,
-                                                                      color: Colors
-                                                                          .white,
-                                                                      size: 22.0,
-                                                                    ),
-                                                                    onPressed:
-                                                                        () {
-                                                                      print(
-                                                                          'pending pressed ...');
-                                                                    },
-                                                                  ),
-                                                                );
-                                                              }
-                                                              return Padding(
-                                                                padding:
-                                                                    EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            5.0,
-                                                                            0.0,
-                                                                            5.0,
-                                                                            0.0),
-                                                                child:
-                                                                    AppIconButton(
-                                                                  borderColor:
-                                                                      AppTheme.of(context)
-                                                                          .primary,
-                                                                  borderRadius:
-                                                                      20.0,
-                                                                  borderWidth:
-                                                                      1.0,
-                                                                  buttonSize:
-                                                                      40.0,
-                                                                  fillColor:
-                                                                      Color(
-                                                                          0xFF253551),
-                                                                  icon: Icon(
-                                                                    Icons.add,
-                                                                    color: Colors
-                                                                        .white,
-                                                                    size: 18.0,
-                                                                  ),
-                                                                  onPressed:
-                                                                      () async {
-                                                                    await context
-                                                                        .read<UserProvider>()
-                                                                        .sendFriendRequest(
-                                                                          listViewUsersRecord
-                                                                              .reference,
-                                                                        );
-                                                                    addToReqUserList(
-                                                                        valueOrDefault<
-                                                                            String>(
-                                                                      listViewUsersRecord
-                                                                          .uid,
-                                                                      '007',
-                                                                    ));
-                                                                    if (mounted) {
-                                                                      setState(
-                                                                          () {});
-                                                                    }
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .clearSnackBars();
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .showSnackBar(
-                                                                      SnackBar(
-                                                                        content:
-                                                                            Text(
-                                                                          'A Friend Request Has Been Sent!',
-                                                                          style: AppTheme.of(context)
-                                                                              .titleMedium
-                                                                              .override(
-                                                                                font: GoogleFonts.outfit(
-                                                                                  fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-                                                                                  fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-                                                                                ),
-                                                                                color: AppTheme.of(context).primaryBtnText,
-                                                                                letterSpacing: 0.0,
-                                                                                fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-                                                                                fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-                                                                              ),
-                                                                        ),
-                                                                        duration:
-                                                                            Duration(milliseconds: 1500),
-                                                                        backgroundColor:
-                                                                            AppTheme.of(context).primary,
-                                                                      ),
-                                                                    );
-                                                                  },
-                                                                ),
-                                                              );
-                                                            },
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
+                                                              duration: Duration(
+                                                                  milliseconds:
+                                                                      1500),
+                                                              backgroundColor:
+                                                                  AppTheme.of(
+                                                                          context)
+                                                                      .primary,
+                                                            ),
+                                                          );
+                                                        },
+                                                  actionLabel: actionLabel,
+                                                  actionIcon: actionIcon,
+                                                  showActionButton:
+                                                      showActionButton,
+                                                );
+                                              },
                                             );
                                           },
                                         );
@@ -1050,6 +948,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                     ),
                                   ],
                                 ),
+                              ),
                               ),
                             ),
                           ),
@@ -1071,7 +970,12 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                   ).image,
                                 ),
                               ),
-                              child: SingleChildScrollView(
+                              child: RefreshIndicator(
+                                onRefresh: _refreshRequestsTab,
+                                color: AppColors.fairway,
+                                backgroundColor: Colors.white,
+                                child: SingleChildScrollView(
+                                  physics: AlwaysScrollableScrollPhysics(),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1090,6 +994,17 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                             'Requests tab friend_requests raw: ${currentUserDocument?.snapshotData['friend_requests']}',
                                           );
 
+                                          // Show empty state if no friend requests
+                                          if (friendRequestList.isEmpty) {
+                                            return FriendsEmptyState(
+                                              type: FriendsEmptyStateType
+                                                  .noFriendRequests,
+                                              onActionPressed: () {
+                                                tabBarController?.animateTo(0);
+                                              },
+                                            );
+                                          }
+
                                           return ListView.separated(
                                             padding: EdgeInsets.fromLTRB(
                                               0,
@@ -1102,355 +1017,227 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                             scrollDirection: Axis.vertical,
                                             itemCount: friendRequestList.length,
                                             separatorBuilder: (_, __) =>
-                                                SizedBox(height: AppSpacing.sm),
+                                                SizedBox(height: 4),
                                             itemBuilder: (context,
                                                 friendRequestListIndex) {
                                               final friendRequestListItem =
                                                   friendRequestList[
                                                       friendRequestListIndex];
-                                              return Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
-                                                child:
-                                                    StreamBuilder<UsersRecord>(
-                                                  stream:
-                                                      UsersRecord.getDocument(
-                                                          friendRequestListItem),
-                                                  builder: (context, snapshot) {
-                                                    // Customize what your widget looks like when it's loading.
-                                                    if (!snapshot.hasData) {
-                                                      return Center(
-                                                        child: SizedBox(
-                                                          width: 50.0,
-                                                          height: 50.0,
-                                                          child:
-                                                              SpinKitWanderingCubes(
-                                                            color: Color(
-                                                                0xFF25504F),
-                                                            size: 50.0,
-                                                          ),
-                                                        ),
-                                                      );
-                                                    }
-
-                                                    final userList5UsersRecord =
-                                                        snapshot.data!;
-
-                                                    return Container(
-                                                      width: double.infinity,
-                                                      height: 60.0,
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.white,
-                                                        boxShadow: [
-                                                          BoxShadow(
-                                                            blurRadius: 4.0,
-                                                            color: Color(
-                                                                0x32000000),
-                                                            offset: Offset(
-                                                              0.0,
-                                                              2.0,
-                                                            ),
-                                                          )
-                                                        ],
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(8.0),
-                                                      ),
-                                                      child: Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    8.0,
-                                                                    0.0,
-                                                                    8.0,
-                                                                    0.0),
-                                                        child: Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceAround,
-                                                          children: [
-                                                            ClipRRect(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          26.0),
-                                                              child:
-                                                                  Image.network(
-                                                                valueOrDefault<
-                                                                    String>(
-                                                                  userList5UsersRecord
-                                                                      .photoUrl,
-                                                                  'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                                                                ),
-                                                                width: 36.0,
-                                                                height: 36.0,
-                                                                fit: BoxFit
-                                                                    .cover,
-                                                              ),
-                                                            ),
-                                                            Expanded(
-                                                              child: Padding(
-                                                                padding:
-                                                                    EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            12.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      children: [
-                                                                        Text(
-                                                                          userList5UsersRecord
-                                                                              .displayName,
-                                                                          style: AppTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .override(
-                                                                                font: GoogleFonts.outfit(
-                                                                                  fontWeight: FontWeight.w500,
-                                                                                  fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
-                                                                                ),
-                                                                                fontSize: 16.0,
-                                                                                letterSpacing: 0.0,
-                                                                                fontWeight: FontWeight.w500,
-                                                                                fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
-                                                                              ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          AppSpacing.xs,
-                                                                          0.0),
-                                                              child:
-                                                                  AppButtonEnhanced(
-                                                                onPressed:
-                                                                    () async {
-                                                                  context.pushNamed(
-                                                                    'ProfileUser',
-                                                                    extra: <String, dynamic>{
-                                                                      'userRef': userList5UsersRecord.reference,
-                                                                    },
-                                                                  );
-                                                                },
-                                                                text: 'View',
-                                                                variant: AppButtonVariant.primary,
-                                                                size: AppButtonSize.small,
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0),
-                                                              child:
-                                                                  AppIconButton(
-                                                                borderColor:
-                                                                    AppTheme.of(
-                                                                            context)
-                                                                        .primary,
-                                                                borderRadius:
-                                                                    20.0,
-                                                                borderWidth:
-                                                                    1.0,
-                                                                buttonSize:
-                                                                    40.0,
-                                                                fillColor: Color(
-                                                                    0xFF253551),
-                                                                icon: Icon(
-                                                                  Icons.check,
-                                                                  color: Colors
-                                                                      .white,
-                                                                  size: 18.0,
-                                                                ),
-                                                                onPressed:
-                                                                    () async {
-                                                                  print(
-                                                                    'Accept request: current=${currentUserReference?.path} requester=${userList5UsersRecord.reference.path}',
-                                                                  );
-                                                                  await FirebaseFirestore
-                                                                      .instance
-                                                                      .runTransaction(
-                                                                          (transaction) async {
-                                                                    transaction
-                                                                        .update(
-                                                                      currentUserReference!,
-                                                                      {
-                                                                        ...mapToFirestore(
-                                                                          {
-                                                                            'friends':
-                                                                                FieldValue.arrayUnion([
-                                                                              userList5UsersRecord.reference
-                                                                            ]),
-                                                                            'friend_requests':
-                                                                                FieldValue.arrayRemove([
-                                                                              userList5UsersRecord.reference,
-                                                                              userList5UsersRecord.reference.id
-                                                                            ]),
-                                                                          },
-                                                                        ),
-                                                                      },
-                                                                    );
-                                                                    transaction
-                                                                        .update(
-                                                                      userList5UsersRecord
-                                                                          .reference,
-                                                                      {
-                                                                        ...mapToFirestore(
-                                                                          {
-                                                                            'friends':
-                                                                                FieldValue.arrayUnion([
-                                                                              currentUserReference
-                                                                            ]),
-                                                                          },
-                                                                        ),
-                                                                      },
-                                                                    );
-                                                                  });
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .clearSnackBars();
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(
-                                                                    SnackBar(
-                                                                      content:
-                                                                          Text(
-                                                                        'You  have successfully made a Friend!',
-                                                                        style: AppTheme.of(context)
-                                                                            .titleMedium
-                                                                            .override(
-                                                                              font: GoogleFonts.outfit(
-                                                                                fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-                                                                                fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-                                                                              ),
-                                                                              color: AppTheme.of(context).primaryBtnText,
-                                                                              letterSpacing: 0.0,
-                                                                              fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-                                                                              fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-                                                                            ),
-                                                                      ),
-                                                                      duration: Duration(
-                                                                          milliseconds:
-                                                                              1500),
-                                                                      backgroundColor:
-                                                                          AppTheme.of(context)
-                                                                              .primary,
-                                                                    ),
-                                                                  );
-                                                                },
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0),
-                                                              child:
-                                                                  AppButtonEnhanced(
-                                                                onPressed:
-                                                                    () async {
-                                                                  try {
-                                                                    await currentUserReference!
-                                                                        .update({
-                                                                      ...mapToFirestore(
-                                                                        {
-                                                                          'friend_requests':
-                                                                              FieldValue.arrayRemove([
-                                                                            userList5UsersRecord
-                                                                                .reference,
-                                                                            userList5UsersRecord
-                                                                                .reference
-                                                                                .id
-                                                                          ]),
-                                                                        },
-                                                                      ),
-                                                                    });
-                                                                    if (mounted) {
-                                                                      ScaffoldMessenger.of(
-                                                                              context)
-                                                                          .showSnackBar(
-                                                                        SnackBar(
-                                                                          content: Text(
-                                                                            'Request denied.',
-                                                                            style: AppTheme.of(context)
-                                                                                .titleMedium
-                                                                                .override(
-                                                                                  font: GoogleFonts.outfit(
-                                                                                    fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-                                                                                    fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-                                                                                  ),
-                                                                                  color: AppTheme.of(context).primaryBtnText,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-                                                                                  fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-                                                                                ),
-                                                                          ),
-                                                                          duration: Duration(
-                                                                              milliseconds:
-                                                                                  1500),
-                                                                          backgroundColor:
-                                                                              AppTheme.of(context)
-                                                                                  .primary,
-                                                                        ),
-                                                                      );
-                                                                    }
-                                                                  } catch (e) {
-                                                                    print(
-                                                                      'Deny request failed: $e',
-                                                                    );
-                                                                    if (mounted) {
-                                                                      showSnackbar(
-                                                                        context,
-                                                                        'Unable to deny request. Please try again.',
-                                                                      );
-                                                                    }
-                                                                  }
-                                                                },
-                                                                text: 'Deny',
-                                                                variant:
-                                                                    AppButtonVariant
-                                                                        .secondary,
-                                                                size: AppButtonSize
-                                                                    .small,
-                                                              ),
-                                                            ),
-                                                          ],
+                                              return StreamBuilder<UsersRecord>(
+                                                stream:
+                                                    UsersRecord.getDocument(
+                                                        friendRequestListItem),
+                                                builder: (context, snapshot) {
+                                                  if (!snapshot.hasData) {
+                                                    return Center(
+                                                      child: SizedBox(
+                                                        width: 50.0,
+                                                        height: 50.0,
+                                                        child:
+                                                            SpinKitWanderingCubes(
+                                                          color: Color(
+                                                              0xFF25504F),
+                                                          size: 50.0,
                                                         ),
                                                       ),
                                                     );
-                                                  },
-                                                ),
+                                                  }
+
+                                                  final userList5UsersRecord =
+                                                      snapshot.data!;
+
+                                                  return PremiumFriendCard(
+                                                    user: userList5UsersRecord,
+                                                    onViewProfile: () {
+                                                      context.pushNamed(
+                                                        'ProfileUser',
+                                                        extra: <String,
+                                                            dynamic>{
+                                                          'userRef':
+                                                              userList5UsersRecord
+                                                                  .reference,
+                                                        },
+                                                      );
+                                                    },
+                                                    onMessage: () async {
+                                                      // Accept button
+                                                      print(
+                                                        'Accept request: current=${currentUserReference?.path} requester=${userList5UsersRecord.reference.path}',
+                                                      );
+                                                      await FirebaseFirestore
+                                                          .instance
+                                                          .runTransaction(
+                                                              (transaction) async {
+                                                        transaction.update(
+                                                          currentUserReference!,
+                                                          {
+                                                            ...mapToFirestore(
+                                                              {
+                                                                'friends':
+                                                                    FieldValue
+                                                                        .arrayUnion([
+                                                                  userList5UsersRecord
+                                                                      .reference
+                                                                ]),
+                                                                'friend_requests':
+                                                                    FieldValue
+                                                                        .arrayRemove([
+                                                                  userList5UsersRecord
+                                                                      .reference,
+                                                                  userList5UsersRecord
+                                                                      .reference
+                                                                      .id
+                                                                ]),
+                                                              },
+                                                            ),
+                                                          },
+                                                        );
+                                                        transaction.update(
+                                                          userList5UsersRecord
+                                                              .reference,
+                                                          {
+                                                            ...mapToFirestore(
+                                                              {
+                                                                'friends':
+                                                                    FieldValue
+                                                                        .arrayUnion([
+                                                                  currentUserReference
+                                                                ]),
+                                                              },
+                                                            ),
+                                                          },
+                                                        );
+                                                      });
+                                                      if (mounted) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          SnackBar(
+                                                            content: Text(
+                                                              'Friend request accepted!',
+                                                              style: AppTheme.of(
+                                                                      context)
+                                                                  .titleMedium
+                                                                  .override(
+                                                                    font: GoogleFonts
+                                                                        .outfit(
+                                                                      fontWeight: AppTheme.of(
+                                                                              context)
+                                                                          .titleMedium
+                                                                          .fontWeight,
+                                                                      fontStyle: AppTheme.of(
+                                                                              context)
+                                                                          .titleMedium
+                                                                          .fontStyle,
+                                                                    ),
+                                                                    color: AppTheme.of(
+                                                                            context)
+                                                                        .primaryBtnText,
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                    fontWeight: AppTheme.of(
+                                                                            context)
+                                                                        .titleMedium
+                                                                        .fontWeight,
+                                                                    fontStyle: AppTheme.of(
+                                                                            context)
+                                                                        .titleMedium
+                                                                        .fontStyle,
+                                                                  ),
+                                                            ),
+                                                            duration: Duration(
+                                                                milliseconds:
+                                                                    1500),
+                                                            backgroundColor:
+                                                                AppTheme.of(
+                                                                        context)
+                                                                    .primary,
+                                                          ),
+                                                        );
+                                                      }
+                                                    },
+                                                    onAction: () async {
+                                                      // Deny button
+                                                      try {
+                                                        await currentUserReference!
+                                                            .update({
+                                                          ...mapToFirestore(
+                                                            {
+                                                              'friend_requests':
+                                                                  FieldValue
+                                                                      .arrayRemove([
+                                                                userList5UsersRecord
+                                                                    .reference,
+                                                                userList5UsersRecord
+                                                                    .reference.id
+                                                              ]),
+                                                            },
+                                                          ),
+                                                        });
+                                                        if (mounted) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                            SnackBar(
+                                                              content: Text(
+                                                                'Request denied.',
+                                                                style: AppTheme.of(
+                                                                        context)
+                                                                    .titleMedium
+                                                                    .override(
+                                                                      font: GoogleFonts
+                                                                          .outfit(
+                                                                        fontWeight: AppTheme.of(context)
+                                                                            .titleMedium
+                                                                            .fontWeight,
+                                                                        fontStyle: AppTheme.of(context)
+                                                                            .titleMedium
+                                                                            .fontStyle,
+                                                                      ),
+                                                                      color: AppTheme.of(
+                                                                              context)
+                                                                          .primaryBtnText,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight: AppTheme.of(
+                                                                              context)
+                                                                          .titleMedium
+                                                                          .fontWeight,
+                                                                      fontStyle: AppTheme.of(
+                                                                              context)
+                                                                          .titleMedium
+                                                                          .fontStyle,
+                                                                    ),
+                                                              ),
+                                                              duration: Duration(
+                                                                  milliseconds:
+                                                                      1500),
+                                                              backgroundColor:
+                                                                  AppTheme.of(
+                                                                          context)
+                                                                      .primary,
+                                                            ),
+                                                          );
+                                                        }
+                                                      } catch (e) {
+                                                        print(
+                                                          'Deny request failed: $e',
+                                                        );
+                                                        if (mounted) {
+                                                          showSnackbar(
+                                                            context,
+                                                            'Unable to deny request. Please try again.',
+                                                          );
+                                                        }
+                                                      }
+                                                    },
+                                                    actionLabel: 'Deny',
+                                                    actionIcon:
+                                                        Icons.close_rounded,
+                                                    actionColor: AppColors.stone,
+                                                    showActionButton: true,
+                                                  );
+                                                },
                                               );
                                             },
                                           );
@@ -1459,6 +1246,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                     ),
                                   ],
                                 ),
+                              ),
                               ),
                             ),
                           ),
@@ -1494,6 +1282,132 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                       [])
                                                   .toList();
 
+                                          // Show empty state if no friends
+                                          if (friendsList.isEmpty) {
+                                            return FriendsEmptyState(
+                                              type:
+                                                  FriendsEmptyStateType.noFriends,
+                                              onActionPressed: () {
+                                                tabBarController?.animateTo(0);
+                                              },
+                                            );
+                                          }
+
+                                          return GroupedFriendsList(
+                                            friendRefs: friendsList,
+                                            favoriteFriends: favoriteFriends,
+                                            currentUserHomeCourse:
+                                                currentUserDocument?.homeCourse,
+                                            onToggleFavorite: toggleFavorite,
+                                            onViewProfile: (user) {
+                                              context.pushNamed(
+                                                'ProfileUser',
+                                                extra: <String, dynamic>{
+                                                  'userRef': user.reference,
+                                                },
+                                              );
+                                            },
+                                            onMessage: _openDirectChat,
+                                            onRemove: (user) async {
+                                              await FirebaseFirestore.instance
+                                                  .runTransaction(
+                                                      (transaction) async {
+                                                transaction.update(
+                                                  currentUserReference!,
+                                                  {
+                                                    ...mapToFirestore(
+                                                      {
+                                                        'friends':
+                                                            FieldValue.arrayRemove([
+                                                          user.reference
+                                                        ]),
+                                                      },
+                                                    ),
+                                                  },
+                                                );
+                                                transaction.update(
+                                                  user.reference,
+                                                  {
+                                                    ...mapToFirestore(
+                                                      {
+                                                        'friends':
+                                                            FieldValue.arrayRemove([
+                                                          currentUserReference
+                                                        ]),
+                                                      },
+                                                    ),
+                                                  },
+                                                );
+                                              });
+                                              if (mounted) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      'Friend removed',
+                                                      style: AppTheme.of(context)
+                                                          .titleMedium
+                                                          .override(
+                                                            font: GoogleFonts.outfit(
+                                                              fontWeight:
+                                                                  AppTheme.of(context)
+                                                                      .titleMedium
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  AppTheme.of(context)
+                                                                      .titleMedium
+                                                                      .fontStyle,
+                                                            ),
+                                                            color:
+                                                                AppTheme.of(context)
+                                                                    .primaryBtnText,
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                AppTheme.of(context)
+                                                                    .titleMedium
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(context)
+                                                                    .titleMedium
+                                                                    .fontStyle,
+                                                          ),
+                                                    ),
+                                                    duration: Duration(
+                                                        milliseconds: 1500),
+                                                    backgroundColor:
+                                                        AppTheme.of(context).primary,
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/*
+
+OLD CODE BELOW - KEEPING FOR REFERENCE
+
                                           return ListView.separated(
                                             padding: EdgeInsets.fromLTRB(
                                               0,
@@ -1506,345 +1420,142 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                             scrollDirection: Axis.vertical,
                                             itemCount: friendsList.length,
                                             separatorBuilder: (_, __) =>
-                                                SizedBox(height: AppSpacing.sm),
+                                                SizedBox(height: 4),
                                             itemBuilder:
                                                 (context, friendsListIndex) {
                                               final friendsListItem =
                                                   friendsList[friendsListIndex];
-                                              return Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
-                                                child:
-                                                    StreamBuilder<UsersRecord>(
-                                                  stream:
-                                                      UsersRecord.getDocument(
-                                                          friendsListItem),
-                                                  builder: (context, snapshot) {
-                                                    // Customize what your widget looks like when it's loading.
-                                                    if (!snapshot.hasData) {
-                                                      return Center(
-                                                        child: SizedBox(
-                                                          width: 50.0,
-                                                          height: 50.0,
-                                                          child:
-                                                              SpinKitWanderingCubes(
-                                                            color: Color(
-                                                                0xFF25504F),
-                                                            size: 50.0,
-                                                          ),
-                                                        ),
-                                                      );
-                                                    }
-
-                                                    final userList5UsersRecord =
-                                                        snapshot.data!;
-
-                                                    return Container(
-                                                      width: double.infinity,
-                                                      height: 60.0,
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.white,
-                                                        boxShadow: [
-                                                          BoxShadow(
-                                                            blurRadius: 4.0,
-                                                            color: Color(
-                                                                0x32000000),
-                                                            offset: Offset(
-                                                              0.0,
-                                                              2.0,
-                                                            ),
-                                                          )
-                                                        ],
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(8.0),
-                                                      ),
-                                                      child: Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    8.0,
-                                                                    0.0,
-                                                                    8.0,
-                                                                    0.0),
-                                                        child: Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceAround,
-                                                          children: [
-                                                            ClipRRect(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          26.0),
-                                                              child:
-                                                                  Image.network(
-                                                                valueOrDefault<
-                                                                    String>(
-                                                                  userList5UsersRecord
-                                                                      .photoUrl,
-                                                                  'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                                                                ),
-                                                                width: 36.0,
-                                                                height: 36.0,
-                                                                fit: BoxFit
-                                                                    .cover,
-                                                              ),
-                                                            ),
-                                                            Expanded(
-                                                              child: Padding(
-                                                                padding:
-                                                                    EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            12.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      children: [
-                                                                        Text(
-                                                                          valueOrDefault<
-                                                                              String>(
-                                                                            userList5UsersRecord.displayName,
-                                                                            'name',
-                                                                          ),
-                                                                          style: AppTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .override(
-                                                                                font: GoogleFonts.outfit(
-                                                                                  fontWeight: FontWeight.w500,
-                                                                                  fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
-                                                                                ),
-                                                                                fontSize: 16.0,
-                                                                                letterSpacing: 0.0,
-                                                                                fontWeight: FontWeight.w500,
-                                                                                fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
-                                                                              ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          AppSpacing.xs,
-                                                                          0.0),
-                                                              child:
-                                                                  AppButtonEnhanced(
-                                                                onPressed:
-                                                                    () async {
-                                                                  context.pushNamed(
-                                                                    'ProfileUser',
-                                                                    extra: <String, dynamic>{
-                                                                      'userRef': userList5UsersRecord.reference,
-                                                                    },
-                                                                  );
-                                                                },
-                                                                text: 'View',
-                                                                variant: AppButtonVariant.primary,
-                                                                size: AppButtonSize.small,
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0),
-                                                              child:
-                                                                  AppIconButton(
-                                                                borderColor:
-                                                                    AppTheme.of(
-                                                                            context)
-                                                                        .primary,
-                                                                borderRadius:
-                                                                    20.0,
-                                                                borderWidth:
-                                                                    1.0,
-                                                                buttonSize:
-                                                                    40.0,
-                                                                fillColor: Color(
-                                                                    0xFF253551),
-                                                                icon: FaIcon(
-                                                                  FontAwesomeIcons
-                                                                      .minus,
-                                                                  color: Colors
-                                                                      .white,
-                                                                  size: 18.0,
-                                                                ),
-                                                                onPressed:
-                                                                    () async {
-                                                                  await FirebaseFirestore
-                                                                      .instance
-                                                                      .runTransaction(
-                                                                          (transaction) async {
-                                                                    transaction
-                                                                        .update(
-                                                                      currentUserReference!,
-                                                                      {
-                                                                        ...mapToFirestore(
-                                                                          {
-                                                                            'friends':
-                                                                                FieldValue.arrayRemove([
-                                                                              userList5UsersRecord.reference
-                                                                            ]),
-                                                                          },
-                                                                        ),
-                                                                      },
-                                                                    );
-                                                                    transaction
-                                                                        .update(
-                                                                      userList5UsersRecord
-                                                                          .reference,
-                                                                      {
-                                                                        ...mapToFirestore(
-                                                                          {
-                                                                            'friends':
-                                                                                FieldValue.arrayRemove([
-                                                                              currentUserReference
-                                                                            ]),
-                                                                          },
-                                                                        ),
-                                                                      },
-                                                                    );
-                                                                  });
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .clearSnackBars();
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(
-                                                                    SnackBar(
-                                                                      content:
-                                                                          Text(
-                                                                        'You don\'t like this person and now they know',
-                                                                        style: AppTheme.of(context)
-                                                                            .titleMedium
-                                                                            .override(
-                                                                              font: GoogleFonts.outfit(
-                                                                                fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-                                                                                fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-                                                                              ),
-                                                                              color: AppTheme.of(context).primaryBtnText,
-                                                                              letterSpacing: 0.0,
-                                                                              fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-                                                                              fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-                                                                            ),
-                                                                      ),
-                                                                      duration: Duration(
-                                                                          milliseconds:
-                                                                              1500),
-                                                                      backgroundColor:
-                                                                          AppTheme.of(context)
-                                                                              .primary,
-                                                                    ),
-                                                                  );
-                                                                },
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0),
-                                                              child: InkWell(
-                                                                splashColor: Colors
-                                                                    .transparent,
-                                                                focusColor: Colors
-                                                                    .transparent,
-                                                                hoverColor: Colors
-                                                                    .transparent,
-                                                                highlightColor:
-                                                                    Colors
-                                                                        .transparent,
-                                                                onDoubleTap:
-                                                                    () async {
-                                                                  await showDialog(
-                                                                    context:
-                                                                        context,
-                                                                    builder:
-                                                                        (alertDialogContext) {
-                                                                      return AlertDialog(
-                                                                        title: Text(
-                                                                            currentUserReference!.id),
-                                                                        content: Text(userList5UsersRecord
-                                                                            .reference
-                                                                            .id),
-                                                                        actions: [
-                                                                          TextButton(
-                                                                            onPressed: () =>
-                                                                                Navigator.pop(alertDialogContext),
-                                                                            child:
-                                                                                Text('Ok'),
-                                                                          ),
-                                                                        ],
-                                                                      );
-                                                                    },
-                                                                  );
-                                                                },
-                                                                child:
-                                                                    AppIconButton(
-                                                                  borderColor:
-                                                                      AppTheme.of(
-                                                                              context)
-                                                                          .primary,
-                                                                  borderRadius:
-                                                                      20.0,
-                                                                  borderWidth:
-                                                                      1.0,
-                                                                  buttonSize:
-                                                                      40.0,
-                                                                  fillColor: Color(
-                                                                      0xFF253551),
-                                                                  icon: FaIcon(
-                                                                    FontAwesomeIcons
-                                                                        .facebookMessenger,
-                                                                    color: Colors
-                                                                        .white,
-                                                                    size: 18.0,
-                                                                  ),
-                                                                  onPressed:
-                                                                      () async {
-                                                                    await _openDirectChat(
-                                                                        userList5UsersRecord);
-                                                                  },
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
+                                              return StreamBuilder<UsersRecord>(
+                                                stream:
+                                                    UsersRecord.getDocument(
+                                                        friendsListItem),
+                                                builder: (context, snapshot) {
+                                                  if (!snapshot.hasData) {
+                                                    return Center(
+                                                      child: SizedBox(
+                                                        width: 50.0,
+                                                        height: 50.0,
+                                                        child:
+                                                            SpinKitWanderingCubes(
+                                                          color: Color(
+                                                              0xFF25504F),
+                                                          size: 50.0,
                                                         ),
                                                       ),
                                                     );
-                                                  },
-                                                ),
+                                                  }
+
+                                                  final userList5UsersRecord =
+                                                      snapshot.data!;
+
+                                                  return PremiumFriendCard(
+                                                    user: userList5UsersRecord,
+                                                    onViewProfile: () {
+                                                      context.pushNamed(
+                                                        'ProfileUser',
+                                                        extra: <String,
+                                                            dynamic>{
+                                                          'userRef':
+                                                              userList5UsersRecord
+                                                                  .reference,
+                                                        },
+                                                      );
+                                                    },
+                                                    onMessage: () async {
+                                                      await _openDirectChat(
+                                                          userList5UsersRecord);
+                                                    },
+                                                    onAction: () async {
+                                                      await FirebaseFirestore
+                                                          .instance
+                                                          .runTransaction(
+                                                              (transaction) async {
+                                                        transaction.update(
+                                                          currentUserReference!,
+                                                          {
+                                                            ...mapToFirestore(
+                                                              {
+                                                                'friends':
+                                                                    FieldValue
+                                                                        .arrayRemove([
+                                                                  userList5UsersRecord
+                                                                      .reference
+                                                                ]),
+                                                              },
+                                                            ),
+                                                          },
+                                                        );
+                                                        transaction.update(
+                                                          userList5UsersRecord
+                                                              .reference,
+                                                          {
+                                                            ...mapToFirestore(
+                                                              {
+                                                                'friends':
+                                                                    FieldValue
+                                                                        .arrayRemove([
+                                                                  currentUserReference
+                                                                ]),
+                                                              },
+                                                            ),
+                                                          },
+                                                        );
+                                                      });
+                                                      if (mounted) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          SnackBar(
+                                                            content: Text(
+                                                              'Friend removed',
+                                                              style: AppTheme.of(
+                                                                      context)
+                                                                  .titleMedium
+                                                                  .override(
+                                                                    font: GoogleFonts
+                                                                        .outfit(
+                                                                      fontWeight: AppTheme.of(
+                                                                              context)
+                                                                          .titleMedium
+                                                                          .fontWeight,
+                                                                      fontStyle: AppTheme.of(
+                                                                              context)
+                                                                          .titleMedium
+                                                                          .fontStyle,
+                                                                    ),
+                                                                    color: AppTheme.of(
+                                                                            context)
+                                                                        .primaryBtnText,
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                    fontWeight: AppTheme.of(
+                                                                            context)
+                                                                        .titleMedium
+                                                                        .fontWeight,
+                                                                    fontStyle: AppTheme.of(
+                                                                            context)
+                                                                        .titleMedium
+                                                                        .fontStyle,
+                                                                  ),
+                                                            ),
+                                                            duration: Duration(
+                                                                milliseconds:
+                                                                    1500),
+                                                            backgroundColor:
+                                                                AppTheme.of(
+                                                                        context)
+                                                                    .primary,
+                                                          ),
+                                                        );
+                                                      }
+                                                    },
+                                                    actionLabel: 'Remove',
+                                                    actionIcon:
+                                                        Icons.person_remove_rounded,
+                                                    actionColor: AppColors.stone,
+                                                    showActionButton: true,
+                                                  );
+                                                },
                                               );
                                             },
                                           );
@@ -1870,3 +1581,4 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
     );
   }
 }
+*/

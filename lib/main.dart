@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -67,8 +68,9 @@ class _MyAppState extends State<MyApp> {
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
-  String getRoute([RouteMatch? routeMatch]) {
-    final RouteMatch lastMatch =
+  Timer? _splashFallbackTimer;
+  String getRoute([RouteMatchBase? routeMatch]) {
+    final RouteMatchBase lastMatch =
         routeMatch ?? _router.routerDelegate.currentConfiguration.last;
     final RouteMatchList matchList = lastMatch is ImperativeRouteMatch
         ? lastMatch.matches
@@ -91,17 +93,86 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
+    debugPrint('🚀 APP: Initializing app state');
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
     userStream = findMyFourthFirebaseUserStream();
+
+    debugPrint('👂 APP: Setting up auth stream listener');
     _userStreamSub = userStream.listen((user) {
+      debugPrint('👤 APP: Auth stream emitted user: ${user.uid ?? "null"}');
+
+      debugPrint('📝 APP: Calling update() first');
       _appStateNotifier.update(user);
-      if (!_initialAuthHandled && _appStateNotifier.authStateReady) {
+      debugPrint('📊 APP: update() completed, authStateReady=${_appStateNotifier.authStateReady}');
+
+      if (!_initialAuthHandled) {
         _initialAuthHandled = true;
+        _splashFallbackTimer?.cancel();
+        debugPrint('✅ APP: Stopping splash screen and forcing navigation');
         _appStateNotifier.stopShowingSplashImage();
+
+        // Force GoRouter to refresh by navigating to the appropriate route
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            debugPrint('🚀 APP: Post-frame callback - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
+            if (_appStateNotifier.loggedIn) {
+              _router.go('/gamesList');
+            } else {
+              _router.go('/signIn');
+            }
+          }
+        });
+      }
+    }, onError: (error, stackTrace) {
+      debugPrint('❌ APP: Auth stream error: $error');
+      if (!_initialAuthHandled) {
+        _initialAuthHandled = true;
+        _splashFallbackTimer?.cancel();
+        _appStateNotifier.update(
+          FindMyFourthFirebaseUser(FirebaseAuth.instance.currentUser),
+        );
+        debugPrint('✅ APP: Stopping splash screen (from error handler)');
+        _appStateNotifier.stopShowingSplashImage();
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            debugPrint('🚀 APP: Error handler - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
+            if (_appStateNotifier.loggedIn) {
+              _router.go('/gamesList');
+            } else {
+              _router.go('/signIn');
+            }
+          }
+        });
       }
     });
+
     _jwtTokenSub = jwtTokenStream.listen((_) {});
+
+    debugPrint('⏱️  APP: Starting 3-second fallback timer');
+    _splashFallbackTimer = Timer(const Duration(seconds: 3), () {
+      debugPrint('⏰ APP: Fallback timer triggered, _initialAuthHandled=$_initialAuthHandled, mounted=$mounted');
+      if (mounted && !_initialAuthHandled) {
+        _initialAuthHandled = true;
+        _appStateNotifier.update(
+          FindMyFourthFirebaseUser(FirebaseAuth.instance.currentUser),
+        );
+        debugPrint('✅ APP: Stopping splash screen (from fallback timer)');
+        _appStateNotifier.stopShowingSplashImage();
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            debugPrint('🚀 APP: Fallback timer - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
+            if (_appStateNotifier.loggedIn) {
+              _router.go('/gamesList');
+            } else {
+              _router.go('/signIn');
+            }
+          }
+        });
+      }
+    });
   }
 
   @override
@@ -109,6 +180,7 @@ class _MyAppState extends State<MyApp> {
     authUserSub.cancel();
     _userStreamSub.cancel();
     _jwtTokenSub.cancel();
+    _splashFallbackTimer?.cancel();
     super.dispose();
   }
 
@@ -280,7 +352,7 @@ class _NavBarPageState extends State<NavBarPage> {
           ),
           GButton(
             icon: Icons.forum_outlined,
-            text: 'Community',
+            text: 'Chats',
             iconSize: 24.0,
           ),
           GButton(

@@ -59,6 +59,25 @@ service cloud.firestore {
         newCounts[request.auth.uid] <= oldCounts.get(request.auth.uid, 0);
     }
 
+    function canSelfJoinGameChat(oldData, newData) {
+      let changedKeys = newData.diff(oldData).changedKeys();
+      return oldData.type == 'game' &&
+        newData.type == oldData.type &&
+        oldData.memberIds is list &&
+        newData.memberIds is list &&
+        !(request.auth.uid in oldData.memberIds) &&
+        request.auth.uid in newData.memberIds &&
+        newData.memberIds.hasAll(oldData.memberIds) &&
+        newData.memberIds.size() == oldData.memberIds.size() + 1 &&
+        changedKeys.hasOnly([
+          'memberIds',
+          'users',
+          'updatedAt',
+          'unreadCountByUser'
+        ]) &&
+        canUpdateUnreadCount(oldData, newData);
+    }
+
     function allowedUserFieldChangesOnly() {
       let allowedFields = [
         'first_name',
@@ -158,18 +177,20 @@ service cloud.firestore {
       );
 
       // Allow update if user is a member and follows update rules
-      allow update: if isSignedIn() &&
-        isChatMember(resource.data) &&
-        request.auth.uid in request.resource.data.memberIds &&
-        canUpdateUnreadCount(resource.data, request.resource.data) &&
-        request.resource.data.type == resource.data.type &&
-        (resource.data.type != 'direct' ||
-          request.resource.data.memberIds == resource.data.memberIds) &&
-        (resource.data.type != 'direct' ||
-          request.resource.data.directKey == resource.data.directKey) &&
-        (resource.data.type == 'direct' ||
-          request.resource.data.memberIds.hasAll(resource.data.memberIds) ||
-          resource.data.memberIds.hasAll(request.resource.data.memberIds));
+      allow update: if isSignedIn() && (
+        (isChatMember(resource.data) &&
+          request.auth.uid in request.resource.data.memberIds &&
+          canUpdateUnreadCount(resource.data, request.resource.data) &&
+          request.resource.data.type == resource.data.type &&
+          (resource.data.type != 'direct' ||
+            request.resource.data.memberIds == resource.data.memberIds) &&
+          (resource.data.type != 'direct' ||
+            request.resource.data.directKey == resource.data.directKey) &&
+          (resource.data.type == 'direct' ||
+            request.resource.data.memberIds.hasAll(resource.data.memberIds) ||
+            resource.data.memberIds.hasAll(request.resource.data.memberIds))) ||
+        canSelfJoinGameChat(resource.data, request.resource.data)
+      );
 
       // Allow delete if user is a member of the chat
       allow delete: if isSignedIn() && isChatMember(resource.data);
