@@ -4,10 +4,10 @@ import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
-import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
+import '/core/widgets/app_text.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class RecoverPasswordWidget extends StatefulWidget {
   const RecoverPasswordWidget({super.key});
@@ -76,24 +76,10 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
             ),
             onPressed: _returnToSignIn,
           ),
-          title: Text(
+          title: AppText.screenTitle(
             'Recover Password',
+            color: AppTheme.of(context).primary,
             textAlign: TextAlign.center,
-            style: AppTheme.of(context).displaySmall.override(
-                  font: GoogleFonts.outfit(
-                    fontWeight:
-                        AppTheme.of(context).displaySmall.fontWeight,
-                    fontStyle:
-                        AppTheme.of(context).displaySmall.fontStyle,
-                  ),
-                  color: AppTheme.of(context).primary,
-                  fontSize: 24.0,
-                  letterSpacing: 0.0,
-                  fontWeight:
-                      AppTheme.of(context).displaySmall.fontWeight,
-                  fontStyle:
-                      AppTheme.of(context).displaySmall.fontStyle,
-                ),
           ),
           actions: [],
           centerTitle: true,
@@ -121,27 +107,8 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
                               AppSpacing.md, AppSpacing.md, AppSpacing.md, 0.0),
-                          child: Text(
+                          child: AppText.body(
                             'We will send you an email with a link to reset your password, please enter the email associated with your account below. ',
-                            style: AppTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  font: GoogleFonts.outfit(
-                                    fontWeight: AppTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: AppTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                                  letterSpacing: 0.0,
-                                  fontWeight: AppTheme.of(context)
-                                      .bodyMedium
-                                      .fontWeight,
-                                  fontStyle: AppTheme.of(context)
-                                      .bodyMedium
-                                      .fontStyle,
-                                ),
                           ),
                         ),
                       ),
@@ -185,47 +152,19 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                               obscureText: false,
                               decoration: InputDecoration(
                                 labelText: 'Enter Email Here',
-                                labelStyle: AppTheme.of(context)
-                                    .titleSmall
-                                    .override(
-                                      font: GoogleFonts.outfit(
-                                        fontWeight: FontWeight.w500,
-                                        fontStyle: AppTheme.of(context)
-                                            .titleSmall
-                                            .fontStyle,
-                                      ),
-                                      color: AppTheme.of(context)
-                                          .primaryBtnText,
-                                      fontSize: 18.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: AppTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
+                                labelStyle: AppTypography.bodyLarge.copyWith(
+                                  color: AppTheme.of(context).primaryBtnText,
+                                  fontWeight: FontWeight.w500,
+                                ),
                                 enabledBorder: InputBorder.none,
                                 focusedBorder: InputBorder.none,
                                 errorBorder: InputBorder.none,
                                 focusedErrorBorder: InputBorder.none,
                               ),
-                              style: AppTheme.of(context)
-                                  .titleMedium
-                                  .override(
-                                    font: GoogleFonts.outfit(
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: AppTheme.of(context)
-                                          .titleMedium
-                                          .fontStyle,
-                                    ),
-                                    color: AppTheme.of(context)
-                                        .primaryBtnText,
-                                    fontSize: 18.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: AppTheme.of(context)
-                                        .titleMedium
-                                        .fontStyle,
-                                  ),
+                              style: AppTypography.bodyLarge.copyWith(
+                                color: AppTheme.of(context).primaryBtnText,
+                                fontWeight: FontWeight.w500,
+                              ),
                               textAlign: TextAlign.start,
                               keyboardType: TextInputType.emailAddress,
                               validator: enterEmailTextControllerValidator
@@ -269,42 +208,19 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                 Padding(
                   padding:
                       EdgeInsetsDirectional.fromSTEB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0.0),
-                  child: Text(
+                  child: AppText.body(
                     'Check your email for the reset link. You can return to sign in once you receive it.',
+                    color: AppTheme.of(context).secondaryText,
                     textAlign: TextAlign.center,
-                    style: AppTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight:
-                                AppTheme.of(context).bodyMedium.fontWeight,
-                            fontStyle:
-                                AppTheme.of(context).bodyMedium.fontStyle,
-                          ),
-                          color: AppTheme.of(context).secondaryText,
-                          letterSpacing: 0.0,
-                          fontWeight:
-                              AppTheme.of(context).bodyMedium.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyMedium.fontStyle,
-                        ),
                   ),
                 ),
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.xs, 0.0, 0.0),
                 child: TextButton(
                   onPressed: _returnToSignIn,
-                  child: Text(
+                  child: AppText.label(
                     'Back to Sign In',
-                    style: AppTheme.of(context).titleSmall.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: FontWeight.bold,
-                            fontStyle:
-                                AppTheme.of(context).titleSmall.fontStyle,
-                          ),
-                          color: AppTheme.of(context).primary,
-                          letterSpacing: 0.0,
-                          fontWeight: FontWeight.bold,
-                          fontStyle: AppTheme.of(context).titleSmall.fontStyle,
-                        ),
+                    color: AppTheme.of(context).primary,
                   ),
                 ),
               ),
