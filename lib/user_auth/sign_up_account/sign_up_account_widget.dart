@@ -6,6 +6,8 @@ import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
+import '/core/widgets/app_text.dart';
 import '/profile/create_profile/create_profile_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
@@ -14,7 +16,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class SignUpAccountWidget extends StatefulWidget {
   const SignUpAccountWidget({super.key});
@@ -116,60 +117,13 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                               mainAxisSize: MainAxisSize.max,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'Create an account',
-                                  style: AppTheme.of(context)
-                                      .displaySmall
-                                      .override(
-                                        font: GoogleFonts.outfit(
-                                          fontWeight:
-                                              AppTheme.of(context)
-                                                  .displaySmall
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .displaySmall
-                                                  .fontStyle,
-                                        ),
-                                        fontSize: 32.0,
-                                        letterSpacing: 0.0,
-                                        fontWeight: AppTheme.of(context)
-                                            .displaySmall
-                                            .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .displaySmall
-                                            .fontStyle,
-                                      ),
-                                ),
+                                AppText.screenTitle('Create an account'),
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, AppSpacing.xs, 0.0, AppSpacing.lg),
-                                  child: Text(
+                                  child: AppText.bodySmall(
                                     'Let\'s get started by filling out the form below.',
-                                    style: AppTheme.of(context)
-                                        .labelMedium
-                                        .override(
-                                          font: GoogleFonts.outfit(
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontStyle,
-                                          ),
-                                          color: AppTheme.of(context).secondaryText,
-                                          letterSpacing: 0.0,
-                                          fontWeight:
-                                              AppTheme.of(context)
-                                                  .labelMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .labelMedium
-                                                  .fontStyle,
-                                        ),
+                                    color: AppTheme.of(context).secondaryText,
                                   ),
                                 ),
                                 Padding(
@@ -195,29 +149,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       obscureText: false,
                                       decoration: InputDecoration(
                                         labelText: 'Email',
-                                        labelStyle: AppTheme.of(context)
-                                            .bodyLarge
-                                            .override(
-                                              font: GoogleFonts.outfit(
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .bodyLarge
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodyLarge
-                                                        .fontStyle,
-                                              ),
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .bodyLarge
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .bodyLarge
-                                                      .fontStyle,
-                                            ),
+                                        labelStyle: AppTypography.labelMedium,
                                         alignLabelWithHint: false,
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
@@ -275,29 +207,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                               )
                                             : null,
                                       ),
-                                      style: AppTheme.of(context)
-                                          .bodyLarge
-                                          .override(
-                                            font: GoogleFonts.outfit(
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .bodyLarge
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .bodyLarge
-                                                      .fontStyle,
-                                            ),
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .bodyLarge
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .bodyLarge
-                                                    .fontStyle,
-                                          ),
+                                      style: AppTypography.bodyMedium,
                                       keyboardType: TextInputType.emailAddress,
                                       cursorColor: AppTheme.of(context)
                                           .primaryText,
@@ -320,29 +230,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       obscureText: !passwordVisibility,
                                       decoration: InputDecoration(
                                         labelText: 'Password',
-                                        labelStyle: AppTheme.of(context)
-                                            .labelLarge
-                                            .override(
-                                              font: GoogleFonts.outfit(
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .labelLarge
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .labelLarge
-                                                        .fontStyle,
-                                              ),
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelLarge
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelLarge
-                                                      .fontStyle,
-                                            ),
+                                        labelStyle: AppTypography.labelMedium,
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                             color: AppTheme.of(context)
@@ -402,29 +290,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                           ),
                                         ),
                                       ),
-                                      style: AppTheme.of(context)
-                                          .bodyLarge
-                                          .override(
-                                            font: GoogleFonts.outfit(
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .bodyLarge
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .bodyLarge
-                                                      .fontStyle,
-                                            ),
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .bodyLarge
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .bodyLarge
-                                                    .fontStyle,
-                                          ),
+                                      style: AppTypography.bodyMedium,
                                       cursorColor: AppTheme.of(context)
                                           .primaryText,
                                       validator: passwordTextControllerValidator
@@ -446,29 +312,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       obscureText: !passwordConfirmVisibility,
                                       decoration: InputDecoration(
                                         labelText: 'Confirm Password',
-                                        labelStyle: AppTheme.of(context)
-                                            .labelLarge
-                                            .override(
-                                              font: GoogleFonts.outfit(
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .labelLarge
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .labelLarge
-                                                        .fontStyle,
-                                              ),
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelLarge
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelLarge
-                                                      .fontStyle,
-                                            ),
+                                        labelStyle: AppTypography.labelMedium,
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                             color: AppTheme.of(context)
@@ -528,29 +372,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                           ),
                                         ),
                                       ),
-                                      style: AppTheme.of(context)
-                                          .bodyLarge
-                                          .override(
-                                            font: GoogleFonts.outfit(
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .bodyLarge
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .bodyLarge
-                                                      .fontStyle,
-                                            ),
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTheme.of(context)
-                                                    .bodyLarge
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTheme.of(context)
-                                                    .bodyLarge
-                                                    .fontStyle,
-                                          ),
+                                      style: AppTypography.bodyMedium,
                                       minLines: 1,
                                       cursorColor: AppTheme.of(context)
                                           .primaryText,
@@ -658,38 +480,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             ),
                                             alignment:
                                                 AlignmentDirectional(0.0, 0.0),
-                                            child: Text(
-                                              'OR',
-                                              style:
-                                                  AppTheme.of(context)
-                                                      .labelLarge
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.outfit(
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .labelLarge
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .labelLarge
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .labelLarge
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .labelLarge
-                                                                .fontStyle,
-                                                      ),
-                                            ),
+                                            child: AppText.label('OR'),
                                           ),
                                         ),
                                       ],
@@ -810,60 +601,21 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                           children: [
                                             TextSpan(
                                               text: 'Already have an account? ',
-                                              style: TextStyle(),
+                                              style: AppTypography.bodyMedium.copyWith(
+                                                color: AppTheme.of(context).secondaryText,
+                                              ),
                                             ),
                                             TextSpan(
                                               text: ' Sign In here',
-                                              style: AppTheme.of(
-                                                      context)
-                                                  .bodyMedium
-                                                  .override(
-                                                    font: GoogleFonts.outfit(
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      fontStyle:
-                                                          AppTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
-                                                    ),
-                                                    color: AppTheme.of(context).primary,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight: FontWeight.w600,
-                                                    fontStyle:
-                                                        AppTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
+                                              style: AppTypography.bodyMedium.copyWith(
+                                                color: AppTheme.of(context).primary,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                             )
                                           ],
-                                          style: AppTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.outfit(
-                                                  fontWeight:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                                color: AppTheme.of(context).secondaryText,
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
+                                          style: AppTypography.bodyMedium.copyWith(
+                                            color: AppTheme.of(context).secondaryText,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -971,38 +723,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                 ),
                                               ),
                                             ),
-                                            Text(
-                                              'UserName',
-                                              style:
-                                                  AppTheme.of(context)
-                                                      .titleMedium
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.outfit(
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .titleMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .titleMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .titleMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .titleMedium
-                                                                .fontStyle,
-                                                      ),
-                                            ),
+                                            AppText.cardTitle('UserName'),
                                           ],
                                         ),
                                         Column(
@@ -1010,38 +731,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.end,
                                           children: [
-                                            Text(
-                                              'Overall',
-                                              style:
-                                                  AppTheme.of(context)
-                                                      .bodySmall
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.outfit(
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodySmall
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodySmall
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .bodySmall
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .bodySmall
-                                                                .fontStyle,
-                                                      ),
-                                            ),
+                                            AppText.bodySmall('Overall'),
                                             Row(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
@@ -1049,38 +739,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                   padding: EdgeInsetsDirectional
                                                       .fromSTEB(
                                                           0.0, 0.0, AppSpacing.xxs, 0.0),
-                                                  child: Text(
-                                                    '5',
-                                                    style: AppTheme.of(
-                                                            context)
-                                                        .headlineMedium
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .outfit(
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .headlineMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .headlineMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .headlineMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .headlineMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                  ),
+                                                  child: AppText.screenTitle('5'),
                                                 ),
                                                 Icon(
                                                   Icons.star_rounded,
@@ -1105,33 +764,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         Expanded(
                                           child: AutoSizeText(
                                             'Nice outdoor courts, solid concrete and good hoops for the neighborhood.',
-                                            style: AppTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  font: GoogleFonts.outfit(
-                                                    fontWeight:
-                                                        AppTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        AppTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
+                                            style: AppTypography.bodyMedium,
                                           ),
                                         ),
                                       ],
