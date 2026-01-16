@@ -2,6 +2,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/widgets/app_count_controller.dart';
 import '/core/widgets/app_drop_down.dart';
+import '/core/widgets/app_text_field.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/fairway_background.dart';
@@ -929,50 +930,13 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     TextInputAction? textInputAction,
     bool readOnly = false,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.sand,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.cloud),
-      ),
-      child: TextFormField(
-        controller: controller,
-        focusNode: focusNode,
-        textInputAction: textInputAction ?? TextInputAction.next,
-        readOnly: readOnly,
-        style: AppTypography.bodyMedium.copyWith(
-          color: readOnly ? AppColors.stone : AppColors.onyx,
-        ),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: AppTypography.labelMedium.copyWith(
-            color: AppColors.stone,
-          ),
-          prefixIcon: Icon(icon, color: AppColors.fairway, size: 20),
-          filled: true,
-          fillColor: Colors.transparent,
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.fairway, width: 2),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.error, width: 1.5),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.error, width: 2),
-          ),
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.md,
-          ),
-        ),
-      ),
+    return AppTextField(
+      label: label,
+      controller: controller,
+      variant: AppTextFieldVariant.filled,
+      prefixIcon: icon,
+      readOnly: readOnly,
+      enabled: !readOnly,
     );
   }
 }
