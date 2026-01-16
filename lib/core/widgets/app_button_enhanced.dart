@@ -16,6 +16,9 @@ enum AppButtonVariant {
 
   /// Gradient-filled button with sunset colors - use for special CTAs
   gradient,
+
+  /// Destructive action button with error color - use for delete, cancel, remove actions
+  destructive,
 }
 
 /// Button size presets with proper touch targets
@@ -283,6 +286,13 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
       case AppButtonVariant.gradient:
         // Gradient handled separately
         return Colors.transparent;
+
+      case AppButtonVariant.destructive:
+        return _isPressed
+            ? const Color(0xFFC03D3D) // Darker error red when pressed
+            : _isHovered
+                ? const Color(0xFFE05555) // Lighter error red on hover
+                : AppColors.error;
     }
   }
 
@@ -294,6 +304,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
     switch (widget.variant) {
       case AppButtonVariant.primary:
       case AppButtonVariant.gradient:
+      case AppButtonVariant.destructive:
         return AppColors.pure;
 
       case AppButtonVariant.secondary:
@@ -339,6 +350,27 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
       return [];
     }
 
+    // Destructive variant gets error-colored shadow
+    if (widget.variant == AppButtonVariant.destructive) {
+      if (_isPressed) {
+        return [
+          BoxShadow(
+            color: AppColors.error.withOpacity(0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ];
+      }
+      return [
+        BoxShadow(
+          color: AppColors.error.withOpacity(0.2),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ];
+    }
+
+    // Default shadow for primary/gradient variants
     if (_isPressed) {
       return [
         BoxShadow(
