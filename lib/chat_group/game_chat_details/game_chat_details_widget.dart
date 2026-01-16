@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/models/chat.dart';
@@ -11,6 +10,8 @@ import '/models/chat_message.dart';
 import '/providers/chat_provider.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
+import '/core/widgets/app_text.dart';
 import '/core/utils/formatting_utils.dart';
 import '/core/widgets/fairway_background.dart';
 
@@ -212,7 +213,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
               Text(
                 'React to message',
                 style: AppTheme.of(context).titleMedium.override(
-                      font: GoogleFonts.outfit(),
                       letterSpacing: 0.0,
                     ),
               ),
@@ -406,7 +406,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
             child: Text(
               _getDateLabel(date),
               style: AppTheme.of(context).labelMedium.override(
-                    font: GoogleFonts.outfit(),
                     color: Colors.white.withOpacity(0.6),
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0.0,
@@ -496,7 +495,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
               child: Text(
                 'Cancel',
                 style: AppTheme.of(context).bodyLarge.override(
-                      font: GoogleFonts.outfit(),
                       color: AppTheme.of(context).primaryText,
                       letterSpacing: 0.0,
                     ),
@@ -507,7 +505,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
               child: Text(
                 'Delete',
                 style: AppTheme.of(context).bodyLarge.override(
-                      font: GoogleFonts.outfit(),
                       color: Colors.red,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.0,
@@ -793,8 +790,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                     child: Text(
                       senderName,
                       style: AppTheme.of(context).labelSmall.override(
-                            font: GoogleFonts.outfit(),
-                            color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withOpacity(0.6),
                             fontWeight: FontWeight.w500,
                             letterSpacing: 0.0,
                           ),
@@ -874,8 +870,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                                           Text(
                                             'Failed to load',
                                             style: AppTheme.of(context).labelSmall.override(
-                                                  font: GoogleFonts.outfit(),
-                                                  color: textColor.withOpacity(0.6),
+                                                                              color: textColor.withOpacity(0.6),
                                                   letterSpacing: 0.0,
                                                 ),
                                           ),
@@ -891,19 +886,9 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                       if (text.isNotEmpty)
                         Text(
                           text,
-                          style: AppTheme.of(context).bodyMedium.override(
-                                font: GoogleFonts.outfit(
-                                  fontWeight:
-                                      AppTheme.of(context).bodyMedium.fontWeight,
-                                  fontStyle:
-                                      AppTheme.of(context).bodyMedium.fontStyle,
-                                ),
-                                color: textColor,
-                                letterSpacing: 0.0,
-                                fontWeight:
-                                    AppTheme.of(context).bodyMedium.fontWeight,
-                                fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
-                              ),
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: textColor,
+                          ),
                         ),
                       if (createdAt != null && isLastInGroup) ...[
                         SizedBox(height: 4),
@@ -912,12 +897,9 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                           children: [
                             Text(
                               dateTimeFormat('jm', createdAt),
-                              style: AppTheme.of(context).labelSmall.override(
-                                    font: GoogleFonts.outfit(),
-                                    color: textColor.withOpacity(0.6),
-                                    fontSize: 10,
-                                    letterSpacing: 0.0,
-                                  ),
+                              style: AppTypography.text10.copyWith(
+                                color: textColor.withOpacity(0.6),
+                              ),
                             ),
                             // Read receipts for sent messages
                             if (isMe) ...[
@@ -997,19 +979,16 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                               children: [
                                 Text(
                                   emoji,
-                                  style: TextStyle(fontSize: 16),
+                                  style: AppTypography.bodyMedium,
                                 ),
                                 if (users.length > 1) ...[
                                   SizedBox(width: 4),
                                   Text(
                                     '${users.length}',
-                                    style: AppTheme.of(context).labelSmall.override(
-                                          font: GoogleFonts.outfit(),
-                                          color: Colors.white.withOpacity(0.8),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.0,
-                                        ),
+                                    style: AppTypography.text11.copyWith(
+                                      color: Colors.white.withOpacity(0.8),
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ],
                               ],
@@ -1035,33 +1014,11 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
     if (chat.type == 'game') {
       final title =
           (chat.gameName ?? '').trim().isNotEmpty ? chat.gameName! : 'Group Chat';
-      return Text(
-        title,
-        style: AppTheme.of(context).titleMedium.override(
-              font: GoogleFonts.outfit(
-                fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-                fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-              ),
-              letterSpacing: 0.0,
-              fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-              fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-            ),
-      );
+      return AppText.cardTitle(title);
     }
     final memberIds = chat.memberIds;
     if (memberIds.length <= 1) {
-      return Text(
-        'Chat',
-        style: AppTheme.of(context).titleMedium.override(
-              font: GoogleFonts.outfit(
-                fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-                fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-              ),
-              letterSpacing: 0.0,
-              fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-              fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-            ),
-      );
+      return AppText.cardTitle('Chat');
     }
 
     if (memberIds.length == 2) {
@@ -1093,39 +1050,14 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                     backgroundImage: NetworkImage(photoUrl),
                   ),
                 ),
-              Text(
-                displayName,
-                style: AppTheme.of(context).titleMedium.override(
-                      font: GoogleFonts.outfit(
-                        fontWeight:
-                            AppTheme.of(context).titleMedium.fontWeight,
-                        fontStyle:
-                            AppTheme.of(context).titleMedium.fontStyle,
-                      ),
-                      letterSpacing: 0.0,
-                      fontWeight:
-                          AppTheme.of(context).titleMedium.fontWeight,
-                      fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-                    ),
-              ),
+              AppText.cardTitle(displayName),
             ],
           );
         },
       );
     }
 
-    return Text(
-      'Group Chat',
-      style: AppTheme.of(context).titleMedium.override(
-            font: GoogleFonts.outfit(
-              fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-              fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-            ),
-            letterSpacing: 0.0,
-            fontWeight: AppTheme.of(context).titleMedium.fontWeight,
-            fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-          ),
-    );
+    return AppText.cardTitle('Group Chat');
   }
 
   @override
@@ -1213,8 +1145,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                           Text(
                             'Delete Chat',
                             style: AppTheme.of(context).bodyMedium.override(
-                                  font: GoogleFonts.outfit(),
-                                  color: Colors.red,
+                                              color: Colors.red,
                                   letterSpacing: 0.0,
                                 ),
                           ),
@@ -1269,8 +1200,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                                   style: AppTheme.of(context)
                                       .bodyMedium
                                       .override(
-                                        font: GoogleFonts.outfit(),
-                                        letterSpacing: 0.0,
+                                                          letterSpacing: 0.0,
                                       ),
                                 ),
                                 if (isArchived)
@@ -1283,8 +1213,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                                       style: AppTheme.of(context)
                                           .labelMedium
                                           .override(
-                                            font: GoogleFonts.outfit(),
-                                            letterSpacing: 0.0,
+                                                                  letterSpacing: 0.0,
                                           ),
                                     ),
                                   ),
@@ -1346,8 +1275,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                                 Text(
                                   typingText,
                                   style: AppTheme.of(context).bodySmall.override(
-                                        font: GoogleFonts.outfit(),
-                                        color: Colors.white.withOpacity(0.6),
+                                                          color: Colors.white.withOpacity(0.6),
                                         fontStyle: FontStyle.italic,
                                         letterSpacing: 0.0,
                                       ),
@@ -1392,29 +1320,9 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                         if (docs.isEmpty) {
                           debugPrint('📨 UI: Docs array is empty - showing "No messages yet"');
                           return Center(
-                            child: Text(
+                            child: AppText.body(
                               'No messages yet.',
-                              style: AppTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    font: GoogleFonts.outfit(
-                                      fontWeight: AppTheme.of(context)
-                                          .bodyMedium
-                                          .fontWeight,
-                                      fontStyle: AppTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    color: AppTheme.of(context)
-                                        .secondaryText,
-                                    letterSpacing: 0.0,
-                                    fontWeight: AppTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: AppTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
+                              color: AppTheme.of(context).secondaryText,
                             ),
                           );
                         }
@@ -1564,8 +1472,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                                       Text(
                                         'Replying to',
                                         style: AppTheme.of(context).labelSmall.override(
-                                              font: GoogleFonts.outfit(),
-                                              color: AppTheme.of(context).primary,
+                                                                      color: AppTheme.of(context).primary,
                                               fontWeight: FontWeight.w600,
                                               letterSpacing: 0.0,
                                             ),
@@ -1578,8 +1485,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                         style: AppTheme.of(context).bodySmall.override(
-                                              font: GoogleFonts.outfit(),
-                                              color: Colors.white.withOpacity(0.7),
+                                                                      color: Colors.white.withOpacity(0.7),
                                               letterSpacing: 0.0,
                                             ),
                                       ),
@@ -1613,8 +1519,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                             maxLines: 5,
                             enabled: canSend,
                             style: AppTheme.of(context).bodyMedium.override(
-                                  font: GoogleFonts.outfit(),
-                                  letterSpacing: 0.0,
+                                              letterSpacing: 0.0,
                                 ),
                             decoration: InputDecoration(
                               hintText: canSend
@@ -1623,8 +1528,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                               hintStyle: AppTheme.of(context)
                                   .bodyMedium
                                   .override(
-                                    font: GoogleFonts.outfit(),
-                                    color: AppTheme.of(context)
+                                                  color: AppTheme.of(context)
                                         .secondaryText
                                         .withOpacity(0.6),
                                     letterSpacing: 0.0,
