@@ -11,6 +11,7 @@ import '/core/widgets/profile_hero_section.dart';
 import '/core/widgets/profile_card_section.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/form_field_controller.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/profile/change_photo/change_photo_widget.dart';
@@ -21,7 +22,6 @@ import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class CreateProfileWidget extends StatefulWidget {
@@ -169,9 +169,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
         SnackBar(
           content: Text(
             'Sign-in not ready. Please try again.',
-            style: GoogleFonts.outfit(
+            style: AppTypography.bodySmall.copyWith(
               color: Colors.white,
-              fontSize: 15.0,
             ),
           ),
           duration: Duration(milliseconds: 2000),
@@ -194,9 +193,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
         SnackBar(
           content: Text(
             'Must start with a letter and contain only letters, digits, -, or _',
-            style: GoogleFonts.outfit(
+            style: AppTypography.bodySmall.copyWith(
               color: Colors.white,
-              fontSize: 15.0,
             ),
           ),
           duration: Duration(milliseconds: 2000),
@@ -213,9 +211,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
         SnackBar(
           content: Text(
             'Please update your Firebase Auth email ($currentUserEmail) before saving your profile.',
-            style: GoogleFonts.outfit(
+            style: AppTypography.bodySmall.copyWith(
               color: AppTheme.of(context).secondaryBackground,
-              fontSize: 15.0,
             ),
           ),
           duration: Duration(milliseconds: 2000),
@@ -279,9 +276,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
           SnackBar(
             content: Text(
               'Unable to finish onboarding. Please try again.',
-              style: GoogleFonts.outfit(
+              style: AppTypography.bodySmall.copyWith(
                 color: Colors.white,
-                fontSize: 15.0,
               ),
             ),
             duration: Duration(milliseconds: 2000),
@@ -295,9 +291,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
         SnackBar(
           content: Text(
             'This username is taken. Please choose another.',
-            style: GoogleFonts.outfit(
+            style: AppTypography.bodySmall.copyWith(
               color: Colors.white,
-              fontSize: 15.0,
             ),
           ),
           duration: Duration(milliseconds: 2000),
@@ -315,9 +310,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
         SnackBar(
           content: Text(
             message,
-            style: GoogleFonts.outfit(
+            style: AppTypography.bodySmall.copyWith(
               color: Colors.white,
-              fontSize: 15.0,
             ),
           ),
           duration: Duration(milliseconds: 2000),
@@ -332,9 +326,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
         SnackBar(
           content: Text(
             'Unable to save profile. Please try again.',
-            style: GoogleFonts.outfit(
+            style: AppTypography.bodySmall.copyWith(
               color: Colors.white,
-              fontSize: 15.0,
             ),
           ),
           duration: Duration(milliseconds: 2000),
@@ -349,9 +342,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       SnackBar(
         content: Text(
           'Profile created successfully!',
-          style: GoogleFonts.outfit(
+          style: AppTypography.bodyMedium.copyWith(
             color: Colors.white,
-            fontSize: 16.0,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -395,16 +387,12 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       focusNode: focusNode,
       textInputAction: textInputAction ?? TextInputAction.next,
       readOnly: readOnly,
-      style: GoogleFonts.outfit(
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
+      style: AppTypography.bodyMedium.copyWith(
         color: AppColors.onyx,
       ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: GoogleFonts.outfit(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
+        labelStyle: AppTypography.labelMedium.copyWith(
           color: AppColors.stone,
         ),
         filled: true,
@@ -587,8 +575,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                     setState(() => coursesValue = val),
                                 width: double.infinity,
                                 height: 56,
-                                textStyle: GoogleFonts.outfit(
-                                  fontSize: 16,
+                                textStyle: AppTypography.bodyMedium.copyWith(
                                   color: AppColors.onyx,
                                 ),
                                 hintText: 'Select Home Course',
@@ -639,9 +626,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                               ),
                               countBuilder: (count) => Text(
                                 count.toString(),
-                                style: GoogleFonts.outfit(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w600,
+                                style: AppTypography.headlineMedium.copyWith(
                                   color: AppColors.onyx,
                                 ),
                               ),
