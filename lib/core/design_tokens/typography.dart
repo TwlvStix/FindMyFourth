@@ -334,6 +334,109 @@ class AppTypography {
       );
 
   // ============================================================================
+  // SEMANTIC STYLES
+  // ============================================================================
+  //
+  // These semantic getters provide meaningful names for common UI patterns.
+  // Always prefer semantic styles over raw sizes for better code clarity.
+  //
+  // Examples:
+  //   ✓ AppTypography.screenTitle instead of headlineMedium
+  //   ✓ AppTypography.cardSubtitle instead of bodySmall
+  //   ✓ AppTypography.errorText instead of caption with color override
+  //
+  // Migration helpers (size10-size22) exist for gradual migration but are
+  // deprecated for new code. Use semantic styles instead.
+  //
+  // ============================================================================
+
+  // Screen-level semantics
+
+  /// Screen title - Standard for all screen page headers (24px Fraunces semibold)
+  /// Usage: Top-level screen titles like "Create Game", "Game List"
+  static TextStyle get screenTitle => headlineMedium;
+
+  /// Section header - For content section headers (20px Manrope semibold)
+  /// Usage: Dividing screen sections like "Game Details", "Player Stats"
+  static TextStyle get sectionHeader => titleLarge;
+
+  // Card semantics
+
+  /// Card title - For card headers (18px Manrope semibold)
+  /// Usage: Title text in cards, list items
+  static TextStyle get cardTitle => titleMedium;
+
+  /// Card subtitle - For card secondary text (14px Manrope regular, secondary color)
+  /// Usage: Subtitle or description text in cards
+  static TextStyle get cardSubtitle => bodySmall;
+
+  // Form/UI semantics
+
+  /// Helper text - Form field helper text (12px Manrope regular, secondary color)
+  /// Usage: Helper text below form fields
+  static TextStyle get helperText => caption;
+
+  /// Error text - Validation error messages (12px Manrope regular, error color)
+  /// Usage: Form field error messages
+  static TextStyle get errorText => caption;
+
+  // Time/metadata semantics
+
+  /// Timestamp - For timestamps and time-based metadata (12px Manrope regular, secondary color)
+  /// Usage: "2 hours ago", "Updated at 3:45 PM"
+  static TextStyle get timestamp => caption;
+
+  // Badge semantics
+
+  /// Badge text - For badge labels (12px Manrope semibold)
+  /// Usage: Status badges, count badges (but prefer AppBadge component)
+  static TextStyle get badge => labelSmall;
+
+  // Button semantics (convenience getters - prefer AppButtonEnhanced component)
+
+  /// Button primary text - Primary button style
+  /// Usage: Primary action buttons (but prefer AppButtonEnhanced)
+  static TextStyle get buttonPrimary => button;
+
+  /// Button secondary text - Secondary button style
+  /// Usage: Secondary action buttons (but prefer AppButtonEnhanced)
+  static TextStyle get buttonSecondary => button;
+
+  // ============================================================================
+  // MIGRATION HELPERS (DEPRECATED)
+  // ============================================================================
+  //
+  // These helpers exist for gradual migration from hardcoded sizes.
+  // DO NOT use in new code - use semantic styles instead.
+  //
+  // Example migration:
+  //   Before: TextStyle(fontSize: 13)
+  //   Transition: AppTypography.text13
+  //   Final: AppTypography.bodySmall or appropriate semantic style
+  //
+  // ============================================================================
+
+  // DEPRECATED - use semantic styles instead
+  // For badges that genuinely need smaller text than caption
+  static TextStyle get text10 => caption.copyWith(fontSize: 10);
+
+  // DEPRECATED - use AppTypography.timestamp instead
+  // For chat timestamps
+  static TextStyle get text11 => caption.copyWith(fontSize: 11);
+
+  // DEPRECATED - use AppTypography.bodySmall or AppTypography.labelSmall instead
+  // Transition helper for 13px text
+  static TextStyle get text13 => labelSmall.copyWith(fontSize: 13);
+
+  // DEPRECATED - use AppTypography.bodySmall instead
+  // Transition helper for 15px text
+  static TextStyle get text15 => bodySmall.copyWith(fontSize: 15);
+
+  // DEPRECATED - use AppTypography.screenTitle instead
+  // Transition helper for 22px text
+  static TextStyle get text22 => headlineMedium.copyWith(fontSize: 22);
+
+  // ============================================================================
   // FLUTTER TEXTTHEME INTEGRATION
   // ============================================================================
 
