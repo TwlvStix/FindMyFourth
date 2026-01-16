@@ -268,36 +268,246 @@ Number input with increment/decrement controls.
 
 ## Migration Guide
 
-### From AppButton to AppButtonEnhanced
+### AppButton → AppButtonEnhanced
 
-**Old Code**:
+**Status:** ⚠️ AppButton is DEPRECATED as of Phase 2. Will be removed in Phase 3.
+
+**Why migrate:**
+- AppButtonEnhanced uses design tokens (AppBorderRadius, AppElevation, AppTypography)
+- Better variant system for different button styles (primary, secondary, ghost, gradient, destructive)
+- Consistent sizing with accessibility standards (48px minimum touch target for medium buttons)
+- Built-in loading states that maintain button size
+- Haptic feedback for better user experience
+- Cleaner API - no complex AppButtonOptions configuration object
+
+---
+
+#### Migration Mapping Tables
+
+**Variant Mapping:**
+
+| Old (AppButton) | New (AppButtonEnhanced) | Notes |
+|----------------|------------------------|-------|
+| Default filled style | `variant: AppButtonVariant.primary` | Filled green button |
+| Outlined style | `variant: AppButtonVariant.secondary` | Green border, transparent bg |
+| Text-only style | `variant: AppButtonVariant.ghost` | No background, just text |
+| Gradient style | `variant: AppButtonVariant.gradient` | Sunset gradient fill |
+| Delete/remove actions | `variant: AppButtonVariant.destructive` | **NEW!** Red button for dangerous actions |
+
+**Size Mapping:**
+
+| Old (AppButtonOptions) | New (AppButtonEnhanced) | Touch Target |
+|----------------------|------------------------|--------------|
+| `height: 36` | `size: AppButtonSize.small` | 36px |
+| `height: 48` (default) | `size: AppButtonSize.medium` | 48px (accessible) |
+| `height: 56` | `size: AppButtonSize.large` | 56px |
+| `height: 64` | `size: AppButtonSize.xlarge` | 64px |
+
+---
+
+#### Migration Examples
+
+**Example 1: Primary filled button**
+
 ```dart
+// OLD (deprecated) ❌
 AppButton(
   text: 'Join Game',
-  onPressed: () => join(),
+  onPressed: () => joinGame(),
   options: AppButtonOptions(
-    color: Color(0xFF253551),
-    textStyle: GoogleFonts.outfit(
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
-    ),
-    elevation: 2.0,
+    color: AppColors.fairwayDark,
+    textStyle: AppTypography.button.copyWith(color: AppColors.pure),
+    height: 48,
+    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
     borderRadius: BorderRadius.circular(8),
   ),
 )
-```
 
-**New Code**:
-```dart
+// NEW (preferred) ✅
 AppButtonEnhanced(
   text: 'Join Game',
   variant: AppButtonVariant.primary,
   size: AppButtonSize.medium,
-  onPressed: () => join(),
+  onPressed: () => joinGame(),
 )
 ```
 
-**Benefits**:
+**Example 2: Outlined secondary button**
+
+```dart
+// OLD (deprecated) ❌
+AppButton(
+  text: 'Cancel',
+  onPressed: () => cancel(),
+  options: AppButtonOptions(
+    color: Colors.transparent,
+    textStyle: AppTypography.button.copyWith(color: AppColors.fairway),
+    height: 48,
+    borderSide: BorderSide(color: AppColors.fairway, width: 2),
+    borderRadius: BorderRadius.circular(8),
+  ),
+)
+
+// NEW (preferred) ✅
+AppButtonEnhanced(
+  text: 'Cancel',
+  variant: AppButtonVariant.secondary,
+  size: AppButtonSize.medium,
+  onPressed: () => cancel(),
+)
+```
+
+**Example 3: Ghost/text-only button**
+
+```dart
+// OLD (deprecated) ❌
+AppButton(
+  text: 'Skip',
+  onPressed: () => skip(),
+  options: AppButtonOptions(
+    color: Colors.transparent,
+    textStyle: AppTypography.button.copyWith(color: AppColors.fairway),
+    elevation: 0,
+    height: 48,
+  ),
+)
+
+// NEW (preferred) ✅
+AppButtonEnhanced(
+  text: 'Skip',
+  variant: AppButtonVariant.ghost,
+  size: AppButtonSize.medium,
+  onPressed: () => skip(),
+)
+```
+
+**Example 4: Button with icon**
+
+```dart
+// OLD (deprecated) ❌
+AppButton(
+  text: 'Add Player',
+  icon: Icon(Icons.add),
+  onPressed: () => addPlayer(),
+  options: AppButtonOptions(
+    color: AppColors.fairwayDark,
+    textStyle: AppTypography.button.copyWith(color: AppColors.pure),
+    iconColor: AppColors.pure,
+    height: 48,
+  ),
+)
+
+// NEW (preferred) ✅
+AppButtonEnhanced(
+  text: 'Add Player',
+  leadingIcon: Icons.add,
+  variant: AppButtonVariant.primary,
+  size: AppButtonSize.medium,
+  onPressed: () => addPlayer(),
+)
+```
+
+**Example 5: Destructive action (NEW!)**
+
+```dart
+// NEW destructive variant - not available in AppButton ✅
+AppButtonEnhanced(
+  text: 'Delete Game',
+  variant: AppButtonVariant.destructive,
+  size: AppButtonSize.medium,
+  leadingIcon: Icons.delete,
+  onPressed: () => deleteGame(),
+)
+```
+
+---
+
+#### Key API Differences
+
+| Feature | AppButton (old) | AppButtonEnhanced (new) |
+|---------|----------------|------------------------|
+| **Configuration** | `AppButtonOptions` object | Direct parameters |
+| **Styling** | Manual color/border/etc | `variant` enum |
+| **Sizing** | Manual `height` | `size` enum |
+| **Icons** | `Widget icon` | `IconData leadingIcon/trailingIcon` |
+| **Design tokens** | Manual (must specify) | Automatic (baked in) |
+| **Loading state** | `showLoadingIndicator` bool | `isLoading` bool (maintains size) |
+| **Haptics** | Not available | Built-in |
+| **Destructive actions** | Not available | `destructive` variant |
+
+---
+
+#### Migration Strategy
+
+Existing AppButton usage will continue to work but will show IDE deprecation warnings. Migrate incrementally:
+
+1. **Start with high-visibility screens** (games list, create game, profile)
+2. **Replace buttons one screen at a time** - test each screen after migration
+3. **Use find/replace carefully** - AppButton parameters don't map 1:1
+4. **Test all states** - normal, loading, disabled, hover (web/desktop)
+5. **Once all migrated** - AppButton will be removed in Phase 3
+
+---
+
+#### Quick Reference
+
+```dart
+// Common patterns with AppButtonEnhanced
+
+// Primary CTA
+AppButtonEnhanced(
+  text: 'Join Game',
+  variant: AppButtonVariant.primary,
+  size: AppButtonSize.large,
+  onPressed: () => join(),
+)
+
+// Cancel/back action
+AppButtonEnhanced(
+  text: 'Cancel',
+  variant: AppButtonVariant.secondary,
+  size: AppButtonSize.medium,
+  onPressed: () => cancel(),
+)
+
+// Tertiary low-priority action
+AppButtonEnhanced(
+  text: 'Skip',
+  variant: AppButtonVariant.ghost,
+  size: AppButtonSize.medium,
+  onPressed: () => skip(),
+)
+
+// Delete/remove action
+AppButtonEnhanced(
+  text: 'Delete',
+  variant: AppButtonVariant.destructive,
+  leadingIcon: Icons.delete,
+  onPressed: () => delete(),
+)
+
+// Full-width button (forms, bottom sheets)
+AppButtonEnhanced(
+  text: 'Submit',
+  variant: AppButtonVariant.primary,
+  fullWidth: true,
+  onPressed: () => submit(),
+)
+
+// With loading state
+AppButtonEnhanced(
+  text: 'Submitting...',
+  variant: AppButtonVariant.primary,
+  isLoading: _isLoading,
+  onPressed: _isLoading ? null : () => submit(),
+)
+```
+
+---
+
+**Need help?** Check the AppButtonEnhanced source code at `lib/core/widgets/app_button_enhanced.dart` for full API documentation.
+
+**Benefits of Migration:**
 ✅ Cleaner API (90% less code)
 ✅ Automatic design token integration
 ✅ Built-in variants and sizes

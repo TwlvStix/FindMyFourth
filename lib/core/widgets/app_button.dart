@@ -50,6 +50,23 @@ class AppButtonOptions {
   final double? hoverElevation;
 }
 
+/// Legacy button component - use AppButtonEnhanced instead
+///
+/// **DEPRECATED:** This component is being phased out in favor of AppButtonEnhanced,
+/// which provides:
+/// - Better variant system (primary, secondary, ghost, gradient, destructive)
+/// - Full integration with design tokens (AppBorderRadius, AppElevation, AppTypography)
+/// - Consistent sizing with accessibility-compliant touch targets
+/// - Built-in loading states and haptic feedback
+/// - Cleaner API with fewer configuration options
+///
+/// See lib/core/widgets/README.md for migration guide.
+///
+/// **Removal timeline:** Will be removed in Phase 3 (after all migrations complete)
+@Deprecated(
+  'Use AppButtonEnhanced instead. AppButton will be removed in Phase 3. '
+  'See lib/core/widgets/README.md for migration guide.',
+)
 class AppButton extends StatefulWidget {
   const AppButton({
     super.key,
