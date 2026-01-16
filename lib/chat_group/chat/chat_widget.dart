@@ -1,8 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/core/app_theme.dart';
@@ -11,7 +9,6 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/navigation/app_router.dart';
 import '/core/utils/formatting_utils.dart';
-import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/fairway_background.dart';
 import '/main_function/golfers/golfers_widget.dart';
 import '/models/chat.dart';
@@ -414,10 +411,9 @@ class _ChatWidgetState extends State<ChatWidget> {
                                           child: Text(
                                             unreadCount > 99 ? '99+' : '$unreadCount',
                                             textAlign: TextAlign.center,
-                                            style: AppTypography.labelSmall.copyWith(
+                                            style: AppTypography.text11.copyWith(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 11,
                                             ),
                                           ),
                                         ),
