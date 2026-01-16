@@ -1,7 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/spacing.dart';
 import '../design_tokens/typography.dart';
+import '../design_tokens/border_radius.dart';
+import '../design_tokens/elevation.dart';
+import '../design_tokens/opacity.dart';
 
 /// Visual variants for AppCard
 enum AppCardVariant {
@@ -16,6 +20,16 @@ enum AppCardVariant {
 
   /// Standard card with gradient accent bar
   gradientAccent,
+
+  /// Premium card with gradient background and gold glow shadow
+  /// Usage: Featured content, premium games, VIP features, special offers
+  /// Golf aesthetic: Like the gleaming trophy case at sunset
+  premium,
+
+  /// Glass-effect card with subtle background and blur (for overlays)
+  /// Usage: Modal overlays, floating panels, translucent surfaces
+  /// Golf aesthetic: Like the modern glass walls of the clubhouse
+  glass,
 }
 
 /// Enhanced card component with variants and micro-interactions
@@ -152,15 +166,50 @@ class _AppCardState extends State<AppCard>
   @override
   Widget build(BuildContext context) {
     final defaultPadding = widget.padding ?? AppSpacing.card;
-    final defaultBorderRadius = widget.borderRadius ?? 16.0;
+    final defaultBorderRadius = widget.borderRadius ?? AppBorderRadius.md;
 
-    Widget cardContent = Container(
-      width: widget.width,
-      height: widget.height,
-      padding: defaultPadding,
-      decoration: _buildDecoration(defaultBorderRadius),
-      child: widget.child,
-    );
+    Widget cardContent;
+
+    // Special handling for glass variant with blur effect
+    if (widget.variant == AppCardVariant.glass) {
+      cardContent = Container(
+        width: widget.width,
+        height: widget.height,
+        decoration: _buildDecoration(defaultBorderRadius),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(defaultBorderRadius),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Padding(
+              padding: defaultPadding,
+              child: widget.child,
+            ),
+          ),
+        ),
+      );
+    } else if (widget.variant == AppCardVariant.premium) {
+      // Special handling for premium variant to ensure ClipRRect for gradient
+      cardContent = Container(
+        width: widget.width,
+        height: widget.height,
+        decoration: _buildDecoration(defaultBorderRadius),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(defaultBorderRadius),
+          child: Padding(
+            padding: defaultPadding,
+            child: widget.child,
+          ),
+        ),
+      );
+    } else {
+      cardContent = Container(
+        width: widget.width,
+        height: widget.height,
+        padding: defaultPadding,
+        decoration: _buildDecoration(defaultBorderRadius),
+        child: widget.child,
+      );
+    }
 
     // Add margin if specified
     if (widget.margin != null) {
@@ -195,37 +244,21 @@ class _AppCardState extends State<AppCard>
       case AppCardVariant.standard:
         return BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(borderRadius),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.fairwayDark.withOpacity(
-                widget.elevation ?? 0.08,
-              ),
-              blurRadius: widget.elevation ?? 20,
-              offset: Offset(0, widget.elevation ?? 8),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+          boxShadow: [AppElevation.sm],
         );
 
       case AppCardVariant.elevated:
         return BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(borderRadius),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.fairwayDark.withOpacity(
-                widget.elevation ?? 0.12,
-              ),
-              blurRadius: widget.elevation ?? 32,
-              offset: Offset(0, widget.elevation ?? 12),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+          boxShadow: [AppElevation.md],
         );
 
       case AppCardVariant.outlined:
         return BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(borderRadius),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
           border: Border.all(
             color: widget.borderColor ?? AppColors.cloud,
             width: widget.borderWidth ?? 1.5,
@@ -235,20 +268,35 @@ class _AppCardState extends State<AppCard>
       case AppCardVariant.gradientAccent:
         return BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(borderRadius),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
           border: Border(
             left: BorderSide(
               color: AppColors.sunsetGold,
               width: widget.borderWidth ?? 4,
             ),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.fairwayDark.withOpacity(0.08),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          boxShadow: [AppElevation.sm],
+        );
+
+      case AppCardVariant.premium:
+        return BoxDecoration(
+          gradient: AppColors.sunsetGradient,
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+          boxShadow: [AppElevation.glowGold],
+          border: Border.all(
+            color: AppColors.sunsetGold.withValues(alpha: AppOpacity.light),
+            width: 1,
+          ),
+        );
+
+      case AppCardVariant.glass:
+        return BoxDecoration(
+          color: AppColors.pure.withValues(alpha: AppOpacity.medium),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+          border: Border.all(
+            color: AppColors.cloud.withValues(alpha: AppOpacity.light),
+            width: 1,
+          ),
         );
     }
   }
