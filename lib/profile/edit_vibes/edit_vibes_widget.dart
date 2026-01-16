@@ -4,13 +4,13 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon_button.dart';
+import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/vibe_slider_card.dart';
 import '/models/vibe_profile.dart';
 import '/services/vibe_repository.dart';
 import '/utils/app_util.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class EditVibesWidget extends StatefulWidget {
@@ -177,13 +177,9 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
             context.pop();
           },
         ),
-        title: Text(
+        title: AppText.sectionHeader(
           'Edit Vibes',
-          style: GoogleFonts.outfit(
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.of(context).primary,
-          ),
+          color: AppTheme.of(context).primary,
         ),
       ),
       body: FairwayBackgroundDark(
