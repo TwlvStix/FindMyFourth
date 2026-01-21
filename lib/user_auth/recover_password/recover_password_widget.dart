@@ -96,8 +96,9 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                   children: [
                     Expanded(
                       child: Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.md, 0.0, 0.0),
+                        padding: EdgeInsets.only(
+                            top: AppSpacing.md,
+                        ),
                       child: Container(
                         width: 100.0,
                         height: 100.0,
@@ -105,8 +106,11 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                           color: AppTheme.of(context).primaryBackground,
                         ),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              AppSpacing.md, AppSpacing.md, AppSpacing.md, 0.0),
+                          padding: EdgeInsets.only(
+                              left: AppSpacing.md,
+                              top: AppSpacing.md,
+                              right: AppSpacing.md,
+                          ),
                           child: AppText.body(
                             'We will send you an email with a link to reset your password, please enter the email associated with your account below. ',
                           ),
@@ -121,8 +125,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(AppSpacing.md, 0.0, AppSpacing.md, 0.0),
+                      padding: AppSpacing.horizontalMd,
                       child: Container(
                         width: 100.0,
                         height: 75.0,
@@ -143,8 +146,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                         child: Align(
                           alignment: AlignmentDirectional(-1.0, 0.0),
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                AppSpacing.md, 0.0, AppSpacing.md, 0.0),
+                            padding: AppSpacing.horizontalMd,
                             child: TextFormField(
                               controller: enterEmailTextController,
                               focusNode: enterEmailFocusNode,
@@ -178,7 +180,9 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                 ],
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.md, 0.0, 0.0),
+                padding: EdgeInsets.only(
+                    top: AppSpacing.md,
+                ),
                 child: AppButtonEnhanced(
                   onPressed: () async {
                     if (enterEmailTextController.text.isEmpty) {
@@ -206,8 +210,11 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
               ),
               if (emailSent)
                 Padding(
-                  padding:
-                      EdgeInsetsDirectional.fromSTEB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0.0),
+                  padding: EdgeInsets.only(
+                      left: AppSpacing.lg,
+                      top: AppSpacing.sm,
+                      right: AppSpacing.lg,
+                  ),
                   child: AppText.body(
                     'Check your email for the reset link. You can return to sign in once you receive it.',
                     color: AppTheme.of(context).secondaryText,
@@ -215,7 +222,9 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                   ),
                 ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, AppSpacing.xs, 0.0, 0.0),
+                padding: EdgeInsets.only(
+                    top: AppSpacing.xs,
+                ),
                 child: TextButton(
                   onPressed: _returnToSignIn,
                   child: AppText.label(
