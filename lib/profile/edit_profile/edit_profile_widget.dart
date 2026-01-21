@@ -201,14 +201,10 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       ),
     );
 
-    context.pushNamed(
+    context.goNamed(
       MainProfileWidget.routeName,
       extra: <String, dynamic>{
-        kTransitionInfoKey: TransitionInfo(
-          hasTransition: true,
-          transitionType: PageTransitionType.bottomToTop,
-          duration: Duration(milliseconds: 300),
-        ),
+        kTransitionInfoKey: TransitionStandards.modalTransition,
       },
     );
   }
@@ -877,7 +873,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             await user.delete();
             await authManager.signOut();
             if (!mounted) return;
-            context.goNamed(SignInWidget.routeName);
+            context.goNamed(
+              SignInWidget.routeName,
+              extra: <String, dynamic>{
+                kTransitionInfoKey: TransitionStandards.modalTransition,
+              },
+            );
           } on FirebaseAuthException catch (e) {
             debugPrint('Delete account failed (auth): ${e.code} ${e.message}');
             if (!mounted) return;
