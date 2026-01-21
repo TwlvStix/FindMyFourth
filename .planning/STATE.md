@@ -5,37 +5,38 @@
 See: .planning/PROJECT.md (updated 2026-01-14)
 
 **Core value:** Component consistency — every button, card, input, and UI element looks and behaves the same way everywhere
-**Current focus:** Phase 3 — Typography System Enhancement
+**Current focus:** Phase 4 — Spacing System Migration
 
 ## Current Position
 
-Phase: 3 of 7 (Typography System Enhancement)
-Plan: 03-02 MOSTLY COMPLETE (2 of 3 in Phase 3)
-Status: 🚀 Phase 3 IN PROGRESS — Screen typography migrations batch 1
-Last activity: 2026-01-16 — Completed 03-02-PLAN.md (4/5 screens migrated to AppTypography)
+Phase: 4 of 7 (Spacing System)
+Plan: 04-01 COMPLETE (1 of 3 in Phase 4)
+Status: ✅ Plan 04-01 COMPLETE — Spacing audit complete, ready for Wave 2 migrations
+Last activity: 2026-01-20 — Completed 04-01 (spacing audit & migration guide)
 
-Progress: ██████████████████████░ 67% of Phase 3 COMPLETE
+Progress: ███████░░░░░░░░░░░░░░░ 33% of Phase 4 COMPLETE
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8 (03-02 mostly complete, 4/5 tasks)
-- Average duration: ~45 minutes
-- Total execution time: ~6.4 hours
+- Total plans completed: 11 (03-03 complete, all Phase 3 done)
+- Average duration: ~42 minutes
+- Total execution time: ~7.8 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation-audit | 3/3 ✅ | ~180min | ~60min |
-| 02-component-library-standardization | 3/4 🚀 | ~62min | ~21min |
-| 03-typography-system | 2/3 🚀 | ~102min | ~51min |
+| 02-component-library-standardization | 4/4 ✅ | ~66min | ~17min |
+| 03-typography-system | 3/3 ✅ | ~192min | ~64min |
+| 04-spacing-system | 1/3 🔄 | ~25min | ~25min |
 
 **Recent Trend:**
-- Last 3 plans: ~51min average (02-03: 4min, 03-01: 12min, 03-02: 90min)
-- Plan 03-01 (typography foundation): 12min (ultra fast - semantic styles + widget + docs)
-- Plan 03-02 (screen migrations): 90min (slower - manual refactoring, complex patterns)
-- Trend: Screen migrations take longer than foundation work, especially with anti-patterns
+- Last 3 plans: ~42min average (03-03: 90min, 04-01: 25min, previous ~45min)
+- Phase 4 started: Plan 04-01 (audit) completed in 25min
+- Plan 04-01: Comprehensive spacing audit with migration guide creation
+- Trend: Foundation/audit work fast (~10-25min), screen migrations slower (60-90min)
 
 ## Accumulated Context
 
@@ -147,6 +148,22 @@ Recent decisions affecting current work:
 - Migration helpers (text10, text11, text13, text15, text22) used effectively for transition sizes
 - Timestamps consistently migrated to AppTypography.text10/text11 (10-11px) across chat screens
 
+**From Plan 04-01 (Spacing Audit & Migration Guide):**
+- ✅ Comprehensive spacing audit quantifies 180 anti-patterns across 40+ files
+- Baseline: 1,017 AppSpacing usages (~85% adoption), 69 hardcoded SizedBox heights, 74 EdgeInsetsDirectional.fromSTEB
+- 31 off-grid values (2px, 6px, 10px, 15px) breaking 4px/8px grid system - 100% must be eliminated
+- Target metrics: 95%+ token adoption, <25 anti-patterns, 0 off-grid values
+- Off-grid rounding strategy: Round to nearest grid value, prefer rounding up for better touch targets
+- 2px → 4px migration accepted (+2px increase negligible for grid alignment)
+- Auth screens critical priority: sign_up/sign_in have 13 fromSTEB each with off-grid values (user-facing)
+- create_game highest anti-pattern count: 20 instances (17 fromSTEB + 3 SizedBox)
+- Example files (app_button_examples, fairway_background_examples) can be migrated last (32 anti-patterns but low priority)
+- File-by-file checklists created for Plans 04-02 (game/social, 15 screens) and 04-03 (profile/auth, 12 screens)
+- Screen-by-screen approach proven in Phase 3 typography migrations - atomic commits, visual verification
+- Anti-pattern to avoid: Don't batch-replace without verification (layouts may depend on exact pixels)
+- Success criteria: All off-grid eliminated, 90%+ spacing uses AppSpacing, no new hardcoded values introduced
+- Verification commands documented for tracking progress and confirming targets met
+
 ### Pending Todos
 
 None yet.
@@ -157,20 +174,31 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-16
-Stopped at: ✅ Plan 03-01 COMPLETE — Typography foundation enhanced
+Last session: 2026-01-20
+Stopped at: Plan 04-01 complete, ready for Wave 2
 Resume file: None
 
-**Phase 3 Plan 1 Deliverables:**
-- AppTypography enhanced with 11 semantic styles and 5 migration helpers
-- AppText convenience widget with 19 semantic named constructors
-- Comprehensive migration guide (166 lines) with examples and mapping table
-- Foundation ready for screen-by-screen migrations
+**Phase 3 Complete:**
+- ✅ 03-01: Typography foundation enhanced (semantic styles + AppText widget)
+- ✅ 03-02: Batch 1 screens migrated (4 screens)
+- ✅ 03-03: Batch 2 screens migrated (10 screens)
+- Total: ~500 lines boilerplate removed, 433 AppTypography usages project-wide
+
+**Phase 4 In Progress:**
+- ✅ 04-01: Spacing audit & migration guide (Wave 1) - COMPLETE (25min)
+  - Quantified 180 anti-patterns: 69 SizedBox heights, 37 widths, 74 fromSTEB, 31 off-grid
+  - Created comprehensive migration guide with replacement patterns
+  - File-by-file checklists for Plans 04-02/04-03
+  - Baseline: 85% token adoption → Target: 95%+
+- 📋 04-02: Game & social screens migration (Wave 2, parallel with 04-03)
+  - 15 screens, ~90 anti-patterns
+  - Priority: create_game (20), game_chat_details (6), tab_friends (9)
+- 📋 04-03: Profile & auth screens migration (Wave 2, parallel with 04-02)
+  - 12 screens, ~65 anti-patterns
+  - CRITICAL: Auth screens (sign_up: 13, sign_in: 13, recover_password: 7)
 
 **Next steps:**
-- ✅ Plan 03-01 complete (Typography foundation enhancement)
-- Ready for Plan 03-02: Screen migrations batch 1 (create_profile, sign_up_account, game_chat_details)
-- Remaining Phase 3 plans:
-  - 03-01: Typography foundation (COMPLETE)
-  - 03-02: Screen migrations batch 1 (Next)
-  - 03-03: Screen migrations batch 2
+- Ready for Wave 2 parallel execution (Plans 04-02 and 04-03)
+- Recommend: `/gsd:execute-phase 4` to run Plans 04-02/04-03 in parallel
+- Alternative: Sequential execution with `/gsd:execute-plan .planning/phases/04-spacing-system/04-02-PLAN.md`
+- Target: Eliminate 180 anti-patterns, achieve 95%+ AppSpacing adoption
