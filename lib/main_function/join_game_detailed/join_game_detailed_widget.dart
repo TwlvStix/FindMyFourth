@@ -775,7 +775,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: 12),
+                            SizedBox(height: AppSpacing.sm),
 
                             // Premium Info Grid
                             GridView.count(
@@ -1026,7 +1026,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                         overflow:
                                                             TextOverflow.ellipsis,
                                                       ),
-                                                      SizedBox(height: 2),
+                                                      SizedBox(height: AppSpacing.xxs),
                                                       Text(
                                                         'Ready',
                                                         style: AppTheme.of(context)
@@ -1169,7 +1169,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                   maxLines: 1,
                                                   overflow: TextOverflow.ellipsis,
                                                 ),
-                                                SizedBox(height: 2),
+                                                SizedBox(height: AppSpacing.xxs),
                                                 Text(
                                                   'Guest',
                                                   style: AppTheme.of(context)
@@ -1213,8 +1213,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                         Align(
                           alignment: AlignmentDirectional(0.0, 0.0),
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 0.0, 8.0),
+                            padding: EdgeInsets.only(
+                                bottom: AppSpacing.xs),
                             child: SizedBox(
                               width: 300.0,
                               child: AppButtonEnhanced(
@@ -1856,7 +1856,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 2),
+                SizedBox(height: AppSpacing.xxs),
                 Text(
                   value.isNotEmpty ? value : '--',
                   style: AppTypography.bodySmall.copyWith(
