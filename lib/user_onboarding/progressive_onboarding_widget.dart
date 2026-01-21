@@ -191,7 +191,12 @@ class _ProgressiveOnboardingWidgetState
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pop();
-                        context.goNamed(SignInWidget.routeName);
+                        context.goNamed(
+                          SignInWidget.routeName,
+                          extra: <String, dynamic>{
+                            kTransitionInfoKey: TransitionStandards.modalTransition,
+                          },
+                        );
                       },
                       child: Text('Sign In'),
                     ),
@@ -291,6 +296,9 @@ class _ProgressiveOnboardingWidgetState
           VibeOnboardingWidget.routeName,
           queryParameters: {
             'next': MainProfileWidget.routeName,
+          },
+          extra: <String, dynamic>{
+            kTransitionInfoKey: TransitionStandards.modalTransition,
           },
         );
       }

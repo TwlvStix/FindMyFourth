@@ -203,9 +203,19 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
   void _goToNext() {
     final nextRoute = GoRouterState.of(context).uri.queryParameters['next'];
     if (nextRoute != null && nextRoute.isNotEmpty) {
-      context.goNamed(nextRoute);
+      context.goNamed(
+        nextRoute,
+        extra: <String, dynamic>{
+          kTransitionInfoKey: TransitionStandards.modalTransition,
+        },
+      );
     } else {
-      context.goNamed(MainProfileWidget.routeName);
+      context.goNamed(
+        MainProfileWidget.routeName,
+        extra: <String, dynamic>{
+          kTransitionInfoKey: TransitionStandards.modalTransition,
+        },
+      );
     }
   }
 

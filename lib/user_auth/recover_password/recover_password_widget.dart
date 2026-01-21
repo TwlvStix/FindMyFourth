@@ -32,7 +32,12 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
       Navigator.of(context).pop();
       return;
     }
-    context.goNamed(SignInWidget.routeName);
+    context.goNamed(
+      SignInWidget.routeName,
+      extra: <String, dynamic>{
+        kTransitionInfoKey: TransitionStandards.modalTransition,
+      },
+    );
   }
 
   @override
