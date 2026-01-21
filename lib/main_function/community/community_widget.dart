@@ -132,10 +132,9 @@ class _CommunityWidgetState extends State<CommunityWidget>
                       borderWidth: 0,
                       borderRadius: 10.0,
                       elevation: 0.0,
-                      labelPadding: EdgeInsetsDirectional.fromSTEB(
-                          AppSpacing.md, 0.0, AppSpacing.md, 0.0),
-                      buttonMargin: EdgeInsetsDirectional.fromSTEB(
-                          AppSpacing.xxs, AppSpacing.xxs, AppSpacing.xxs, AppSpacing.xxs),
+                      labelPadding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md),
+                      buttonMargin: EdgeInsets.all(AppSpacing.xxs),
                       padding: AppSpacing.allXxs,
                       tabs: [
                         Tab(text: 'Chats'),
