@@ -1,10 +1,8 @@
 import '/backend/backend.dart';
 import '/core/widgets/fairway_background.dart';
-import '/core/widgets/branded_golf_header.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
-import '/core/widgets/app_card.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -12,7 +10,6 @@ import '/models/game.dart';
 import '/models/vibe_profile.dart';
 import '/providers/provider_extensions.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
-import '/profile/main_profile/main_profile_widget.dart';
 import '/services/vibe_group_matcher.dart';
 import '/services/vibe_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -166,74 +163,6 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
       return value;
     }
     return fallback;
-  }
-
-  Widget _buildGroupVibeSummary() {
-    final result = _groupVibeMatch;
-    final groupScore = result == null
-        ? '--'
-        : '${result.groupFitScore.round()}%';
-    final lowestMatch = result?.lowestMatch;
-    final lowestScore = lowestMatch == null
-        ? '--'
-        : '${lowestMatch.displayScore.round()}%';
-    final lowestCategory = lowestMatch?.matchResult.topDifferences.isNotEmpty ==
-            true
-        ? VibeLabels.titleFor(
-            lowestMatch!.matchResult.topDifferences.first.category,
-          )
-        : null;
-    final lowestLine = lowestMatch == null || lowestCategory == null
-        ? 'Lowest match: --'
-        : 'Lowest match: $lowestScore ($lowestCategory with ${lowestMatch.member.name})';
-
-    return AppCard(
-      variant: AppCardVariant.outlined,
-      padding: EdgeInsets.all(AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Your fit with this group: $groupScore',
-            style: AppTypography.titleMedium.copyWith(
-              color: AppColors.onyx,
-            ),
-          ),
-          SizedBox(height: AppSpacing.xs),
-          Text(
-            lowestLine,
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.stone,
-            ),
-          ),
-          SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              Expanded(
-                child: AppButtonEnhanced(
-                  text: 'View breakdown',
-                  variant: AppButtonVariant.secondary,
-                  size: AppButtonSize.small,
-                  fullWidth: true,
-                  onPressed: result == null ? null : _openGroupVibeBreakdown,
-                ),
-              ),
-              if (_isGroupVibeLoading) ...[
-                SizedBox(width: AppSpacing.sm),
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppTheme.of(context).primary,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ],
-      ),
-    );
   }
 
   void _openGroupVibeBreakdown() {
@@ -409,13 +338,6 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     return sorted;
   }
 
-  // Helper method to format date/time
-  String _formatDateTime(DateTime? date) {
-    if (date == null) return 'Date not set';
-    final formatter = DateFormat('EEEE, MMMM d • HH:mm');
-    return formatter.format(date);
-  }
-
   // Helper method to get player count
   int _getPlayerCount(Game gameRecord) {
     final joinedCount = gameRecord.joinedPlayers.length;
@@ -469,74 +391,6 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     );
   }
 
-  // Helper method to build info card
-  Widget _buildInfoCard(
-    BuildContext context, {
-    required String icon,
-    required String label,
-    required String value,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: AppColors.fairway.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.fairwayLight.withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                icon,
-                style: TextStyle(fontSize: 16.0),
-              ),
-              SizedBox(width: AppSpacing.xxs),
-              Expanded(
-                child: Text(
-                  label,
-                  style: AppTheme.of(context).labelSmall.override(
-                        font: GoogleFonts.outfit(
-                          fontWeight: FontWeight.w500,
-                          fontStyle: AppTheme.of(context).labelSmall.fontStyle,
-                        ),
-                        color: Colors.white.withValues(alpha: 0.7),
-                        letterSpacing: 0.0,
-                        fontWeight: FontWeight.w500,
-                        fontStyle: AppTheme.of(context).labelSmall.fontStyle,
-                      ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: AppSpacing.xxs),
-          Text(
-            value,
-            style: AppTheme.of(context).bodyMedium.override(
-                  font: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w600,
-                    fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
-                  ),
-                  color: Colors.white,
-                  letterSpacing: 0.0,
-                  fontWeight: FontWeight.w600,
-                  fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
-                ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
   // ═══════════════════════════════════════════════════════════════════════════
   // PREMIUM APP BAR
   // ═══════════════════════════════════════════════════════════════════════════
@@ -553,10 +407,10 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
         child: Container(
           margin: EdgeInsets.only(left: AppSpacing.sm),
           decoration: BoxDecoration(
-            color: AppColors.fairway.withOpacity(0.3),
+            color: AppColors.fairway.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(12.0),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
             ),
           ),
           child: Icon(
@@ -595,12 +449,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppColors.fairway.withOpacity(0.3),
+                    color: AppColors.fairway.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.error_outline_rounded,
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                     size: 40,
                   ),
                 ),
@@ -616,7 +470,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                 Text(
                   'This game is no longer available',
                   style: AppTypography.bodySmall.copyWith(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -652,7 +506,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                     Text(
                       'Loading game details...',
                       style: AppTypography.bodySmall.copyWith(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -707,7 +561,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                               return Container(
                                 height: 200,
                                 decoration: BoxDecoration(
-                                  color: AppColors.fairway.withOpacity(0.3),
+                                  color: AppColors.fairway.withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(24),
                                 ),
                                 child: Center(
@@ -863,7 +717,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                     vertical: AppSpacing.xxs,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.sunsetGold.withOpacity(0.2),
+                                    color: AppColors.sunsetGold.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
@@ -942,6 +796,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                               extra: <String, dynamic>{
                                                 'userRef':
                                                     friend1UsersRecord.reference,
+                                                kTransitionInfoKey: TransitionStandards.detailTransition,
                                               },
                                             );
                                           },
@@ -1364,18 +1219,18 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.fairway.withOpacity(0.4),
-            AppColors.fairwayDark.withOpacity(0.6),
+            AppColors.fairway.withValues(alpha: 0.4),
+            AppColors.fairwayDark.withValues(alpha: 0.6),
           ],
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.fairwayDark.withOpacity(0.3),
+            color: AppColors.fairwayDark.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: Offset(0, 10),
           ),
@@ -1397,7 +1252,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.sunsetGold.withOpacity(0.3),
+                      color: AppColors.sunsetGold.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: Offset(0, 2),
                     ),
@@ -1415,7 +1270,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      game.coursePlay ?? 'Course Name',
+                      game.coursePlay,
                       style: AppTypography.titleMedium.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -1424,7 +1279,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      game.nameGame ?? 'Game',
+                      game.nameGame,
                       style: AppTypography.bodySmall.copyWith(
                         color: AppColors.sunsetGold,
                         fontWeight: FontWeight.w500,
@@ -1442,7 +1297,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
           Container(
             padding: EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -1485,7 +1340,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                       Text(
                         'Hosted by',
                         style: AppTypography.labelSmall.copyWith(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                         ),
                       ),
                       Text(
@@ -1508,6 +1363,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                       'ProfileUser',
                       extra: <String, dynamic>{
                         'userRef': hostUser.reference,
+                        kTransitionInfoKey: TransitionStandards.detailTransition,
                       },
                     );
                   },
@@ -1517,7 +1373,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                       vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -1526,13 +1382,13 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                         Text(
                           'View',
                           style: AppTypography.labelSmall.copyWith(
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                           ),
                         ),
                         SizedBox(width: 4),
                         Icon(
                           Icons.chevron_right_rounded,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           size: 16,
                         ),
                       ],
@@ -1561,9 +1417,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
           child: Container(
             padding: EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: AppColors.fairway.withOpacity(0.3),
+              color: AppColors.fairway.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
             child: Row(
               children: [
@@ -1584,16 +1440,16 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        dateTimeFormat("MMM d", game.date) ?? '',
+                        dateTimeFormat("MMM d", game.date),
                         style: AppTypography.titleSmall.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
-                        dateTimeFormat("jm", game.date) ?? '',
+                        dateTimeFormat("jm", game.date),
                         style: AppTypography.labelSmall.copyWith(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -1609,13 +1465,13 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
           padding: EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             color: isFull
-                ? AppColors.sunsetRose.withOpacity(0.2)
-                : AppColors.sunsetGold.withOpacity(0.2),
+                ? AppColors.sunsetRose.withValues(alpha: 0.2)
+                : AppColors.sunsetGold.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isFull
-                  ? AppColors.sunsetRose.withOpacity(0.3)
-                  : AppColors.sunsetGold.withOpacity(0.3),
+                  ? AppColors.sunsetRose.withValues(alpha: 0.3)
+                  : AppColors.sunsetGold.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -1651,7 +1507,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   Text(
                     '${game.joinedPlayers.length + game.guestPlayers.length}/${game.maxPlayers}',
                     style: AppTypography.labelSmall.copyWith(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -1678,12 +1534,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.fairway.withOpacity(0.4),
-            AppColors.fairwayDark.withOpacity(0.3),
+            AppColors.fairway.withValues(alpha: 0.4),
+            AppColors.fairwayDark.withValues(alpha: 0.3),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1716,7 +1572,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                     Text(
                       hasResult ? 'Based on your preferences' : 'Calculating...',
                       style: AppTypography.labelSmall.copyWith(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -1738,7 +1594,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                   : [AppColors.sunsetRose, AppColors.error],
                         )
                       : null,
-                  color: hasResult ? null : Colors.white.withOpacity(0.1),
+                  color: hasResult ? null : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: hasResult
@@ -1770,7 +1626,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   vertical: AppSpacing.sm,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -1792,7 +1648,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                     SizedBox(width: AppSpacing.xs),
                     Icon(
                       Icons.chevron_right_rounded,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       size: 18,
                     ),
                   ],
@@ -1818,10 +1674,10 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.fairway.withOpacity(0.3),
+        color: AppColors.fairway.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Row(
@@ -1834,7 +1690,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                  color: iconColors.first.withOpacity(0.3),
+                  color: iconColors.first.withValues(alpha: 0.3),
                   blurRadius: 6,
                   offset: Offset(0, 2),
                 ),
@@ -1851,7 +1707,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                 Text(
                   label,
                   style: AppTypography.labelSmall.copyWith(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
