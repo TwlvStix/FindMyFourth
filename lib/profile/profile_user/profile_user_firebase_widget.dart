@@ -76,6 +76,9 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
       pathParameters: {
         'chatId': chatId,
       },
+      extra: <String, dynamic>{
+        kTransitionInfoKey: TransitionStandards.detailTransition,
+      },
     );
   }
 

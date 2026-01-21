@@ -444,6 +444,9 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                               pathParameters: {
                                 'chatId': game.chatRef!.id,
                               },
+                              extra: <String, dynamic>{
+                                kTransitionInfoKey: TransitionStandards.detailTransition,
+                              },
                             );
                           },
                           child: Container(
@@ -597,10 +600,9 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           SizedBox(width: 4),
                           Text(
                             'Discount',
-                            style: AppTypography.labelSmall.copyWith(
+                            style: AppTypography.text10.copyWith(
                               color: AppColors.fairwayLight,
                               fontWeight: FontWeight.w500,
-                              fontSize: 10,
                             ),
                           ),
                         ],

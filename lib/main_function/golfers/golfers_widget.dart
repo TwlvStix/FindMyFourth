@@ -80,6 +80,9 @@ class _GolfersWidgetState extends State<GolfersWidget>
         pathParameters: {
           'chatId': chatRef.id,
         },
+        extra: <String, dynamic>{
+          kTransitionInfoKey: TransitionStandards.detailTransition,
+        },
       );
     } catch (error, stackTrace) {
       debugPrint('❌ CHAT CREATION FAILED!');

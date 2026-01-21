@@ -67,7 +67,9 @@ class _ChatWidgetState extends State<ChatWidget> {
         body: Center(
           child: Text(
             'Please sign in to view chats.',
-            style: AppTheme.of(context).bodyMedium,
+            style: AppTypography.bodyMedium.copyWith(
+              color: Colors.white.withOpacity(0.7),
+            ),
           ),
         ),
       );
@@ -312,6 +314,9 @@ class _ChatWidgetState extends State<ChatWidget> {
                           'ChatDetails',
                           pathParameters: {
                             'chatId': chat.id,
+                          },
+                          extra: <String, dynamic>{
+                            kTransitionInfoKey: TransitionStandards.detailTransition,
                           },
                         );
                       },
