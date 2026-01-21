@@ -111,24 +111,30 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                         child: Align(
                           alignment: AlignmentDirectional(0.0, 0.0),
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                AppSpacing.lg, 90.0, AppSpacing.lg, 0.0),
+                            padding: EdgeInsets.only(
+                                left: AppSpacing.lg,
+                                top: 90.0,
+                                right: AppSpacing.lg,
+                            ),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 AppText.screenTitle('Create an account'),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, AppSpacing.xs, 0.0, AppSpacing.lg),
+                                  padding: EdgeInsets.only(
+                                      top: AppSpacing.xs,
+                                      bottom: AppSpacing.lg,
+                                  ),
                                   child: AppText.bodySmall(
                                     'Let\'s get started by filling out the form below.',
                                     color: AppTheme.of(context).secondaryText,
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, AppSpacing.md),
+                                  padding: EdgeInsets.only(
+                                      bottom: AppSpacing.md,
+                                  ),
                                   child: Container(
                                     width: double.infinity,
                                     child: TextFormField(
@@ -217,8 +223,9 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, AppSpacing.md),
+                                  padding: EdgeInsets.only(
+                                      bottom: AppSpacing.md,
+                                  ),
                                   child: Container(
                                     width: double.infinity,
                                     child: TextFormField(
@@ -299,8 +306,9 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, AppSpacing.md),
+                                  padding: EdgeInsets.only(
+                                      bottom: AppSpacing.md,
+                                  ),
                                   child: Container(
                                     width: double.infinity,
                                     child: TextFormField(
@@ -383,8 +391,9 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, AppSpacing.md),
+                                  padding: EdgeInsets.only(
+                                      bottom: AppSpacing.md,
+                                  ),
                                   child: AppButtonEnhanced(
                                     onPressed: () async {
                                       GoRouter.of(context).prepareAuthEvent();
@@ -442,8 +451,9 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, AppSpacing.lg),
+                                  padding: EdgeInsets.only(
+                                      bottom: AppSpacing.lg,
+                                  ),
                                   child: Container(
                                     width: double.infinity,
                                     child: Stack(
@@ -453,9 +463,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                           alignment:
                                               AlignmentDirectional(0.0, 0.0),
                                           child: Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, AppSpacing.xs, 0.0, AppSpacing.xs),
+                                            padding: AppSpacing.verticalXs,
                                             child: Container(
                                               width: double.infinity,
                                               height: 2.0,
@@ -488,8 +496,9 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, AppSpacing.md),
+                                  padding: EdgeInsets.only(
+                                      bottom: AppSpacing.md,
+                                  ),
                                   child: AppButtonEnhanced(
                                     onPressed: () async {
                                       GoRouter.of(context).prepareAuthEvent();
@@ -529,8 +538,9 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                 isAndroid
                                     ? Container()
                                     : Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 0.0, AppSpacing.md),
+                                        padding: EdgeInsets.only(
+                                            bottom: AppSpacing.md,
+                                        ),
                                         child: AppButtonEnhanced(
                                           onPressed: () async {
                                             GoRouter.of(context)
@@ -573,8 +583,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                 Align(
                                   alignment: AlignmentDirectional(0.0, 0.0),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, AppSpacing.xs, 0.0, AppSpacing.xs),
+                                    padding: AppSpacing.verticalXs,
                                     child: InkWell(
                                       splashColor: Colors.transparent,
                                       focusColor: Colors.transparent,
@@ -692,8 +701,12 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        AppSpacing.xs, AppSpacing.xs, AppSpacing.xs, AppSpacing.xxs),
+                                    padding: EdgeInsets.only(
+                                        left: AppSpacing.xs,
+                                        top: AppSpacing.xs,
+                                        right: AppSpacing.xs,
+                                        bottom: AppSpacing.xxs,
+                                    ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       mainAxisAlignment:
@@ -705,8 +718,9 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
                                             Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(0.0, 0.0, AppSpacing.xxs, 0.0),
+                                              padding: EdgeInsets.only(
+                                                  right: AppSpacing.xxs,
+                                              ),
                                               child: Container(
                                                 width: 40.0,
                                                 height: 40.0,
@@ -736,9 +750,9 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          0.0, 0.0, AppSpacing.xxs, 0.0),
+                                                  padding: EdgeInsets.only(
+                                                      right: AppSpacing.xxs,
+                                                  ),
                                                   child: AppText.screenTitle('5'),
                                                 ),
                                                 Icon(
@@ -756,8 +770,11 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        AppSpacing.xs, 0.0, AppSpacing.xs, AppSpacing.xxs),
+                                    padding: EdgeInsets.only(
+                                        left: AppSpacing.xs,
+                                        right: AppSpacing.xs,
+                                        bottom: AppSpacing.xxs,
+                                    ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       children: [
