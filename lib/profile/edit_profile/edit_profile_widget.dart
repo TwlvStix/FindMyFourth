@@ -695,7 +695,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                                 color: AppColors.stone,
                               ),
                             ),
-                            SizedBox(height: 2),
+                            SizedBox(height: AppSpacing.xxs),
                             Text(
                               'Your official handicap index',
                               style: AppTypography.bodySmall.copyWith(
