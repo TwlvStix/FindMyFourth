@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/navigation/app_router.dart';
 import '/core/widgets/fairway_background.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/utils/app_util.dart';
@@ -131,7 +132,10 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
       if (gameRef != null) {
         context.pushNamed(
           JoinGameDetailedWidget.routeName,
-          extra: <String, dynamic>{'gameRef': gameRef},
+          extra: <String, dynamic>{
+            'gameRef': gameRef,
+            kTransitionInfoKey: TransitionStandards.detailTransition,
+          },
         );
       }
       return;
@@ -142,6 +146,9 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
         context.pushNamed(
           'ChatDetails',
           pathParameters: {'chatId': chatId},
+          extra: <String, dynamic>{
+            kTransitionInfoKey: TransitionStandards.detailTransition,
+          },
         );
       }
     }
