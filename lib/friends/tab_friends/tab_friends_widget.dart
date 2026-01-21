@@ -8,6 +8,8 @@ import '/utils/app_util.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
+import '/core/widgets/app_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -172,6 +174,32 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
     }
   }
 
+  Future<void> _removeFriend(UsersRecord user) async {
+    try {
+      await context.read<UserProvider>().removeFriend(user.reference);
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Friend removed',
+            style: AppTypography.titleMedium.copyWith(
+              color: AppTheme.of(context).primaryBtnText,
+            ),
+          ),
+          duration: Duration(milliseconds: 1500),
+          backgroundColor: AppTheme.of(context).primary,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      showSnackbar(context, 'Unable to remove friend. Please try again.');
+    }
+  }
+
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -233,20 +261,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
           ),
           title: Text(
             'Golfers',
-            style: AppTheme.of(context).headlineSmall.override(
-                  font: GoogleFonts.outfit(
-                    fontWeight:
-                        AppTheme.of(context).headlineSmall.fontWeight,
-                    fontStyle:
-                        AppTheme.of(context).headlineSmall.fontStyle,
-                  ),
-                  color: AppTheme.of(context).primary,
-                  letterSpacing: 0.0,
-                  fontWeight:
-                      AppTheme.of(context).headlineSmall.fontWeight,
-                  fontStyle:
-                      AppTheme.of(context).headlineSmall.fontStyle,
-                ),
+            style: AppTypography.headlineSmall.copyWith(
+              color: AppTheme.of(context).primary,
+            ),
           ),
           actions: [],
           centerTitle: false,
@@ -265,25 +282,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                       alignment: Alignment(-1.0, 0),
                       child: AppButtonTabBar(
                         useToggleButtonStyle: false,
-                        labelStyle:
-                            AppTheme.of(context).titleMedium.override(
-                                  font: GoogleFonts.outfit(
-                                    fontWeight: AppTheme.of(context)
-                                        .titleMedium
-                                        .fontWeight,
-                                    fontStyle: AppTheme.of(context)
-                                        .titleMedium
-                                        .fontStyle,
-                                  ),
-                                  fontSize: 18.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: AppTheme.of(context)
-                                      .titleMedium
-                                      .fontWeight,
-                                  fontStyle: AppTheme.of(context)
-                                      .titleMedium
-                                      .fontStyle,
-                                ),
+                        labelStyle: AppTypography.labelLarge,
                         unselectedLabelStyle: TextStyle(),
                         labelColor: AppTheme.of(context).primaryBtnText,
                         unselectedLabelColor:
@@ -297,10 +296,10 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                         borderWidth: 2.0,
                         borderRadius: 8.0,
                         elevation: 0.0,
-                        labelPadding: EdgeInsetsDirectional.fromSTEB(
-                            AppSpacing.sm, 0.0, AppSpacing.sm, 0.0),
+                        labelPadding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm),
                         buttonMargin:
-                            EdgeInsetsDirectional.fromSTEB(AppSpacing.xs, 0.0, AppSpacing.xs, 0.0),
+                            EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                         padding: AppSpacing.allXxs,
                         tabs: [
                           Tab(
@@ -358,15 +357,18 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            AppSpacing.md, AppSpacing.xs, AppSpacing.md, AppSpacing.sm),
+                                        padding: EdgeInsets.only(
+                                            left: AppSpacing.md,
+                                            top: AppSpacing.xs,
+                                            right: AppSpacing.md,
+                                            bottom: AppSpacing.sm),
                                         child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
                                           Expanded(
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(AppSpacing.xs, 0.0, AppSpacing.xs, 0.0),
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: AppSpacing.xs),
                                               child: Autocomplete<String>(
                                                 initialValue:
                                                     TextEditingValue(),
@@ -633,8 +635,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                           ),
                                           Padding(
                                             padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    AppSpacing.sm, 0.0, 0.0, 0.0),
+                                                EdgeInsets.only(
+                                                    left: AppSpacing.sm),
                                             child: AppIconButton(
                                               borderColor: friendFilters.hasActiveFilters
                                                   ? AppColors.fairway.withOpacity(0.2)
@@ -657,8 +659,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                           ),
                                           Padding(
                                             padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    AppSpacing.sm, 0.0, 0.0, 0.0),
+                                                EdgeInsets.only(
+                                                    left: AppSpacing.sm),
                                             child: AppIconButton(
                                               borderColor: Colors.transparent,
                                               borderRadius: 30.0,
@@ -685,36 +687,13 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          AppSpacing.xl, 0.0, 0.0, 0.0),
+                                      padding: EdgeInsets.only(
+                                          left: AppSpacing.xl),
                                       child: Text(
                                         'Add a Friend Request',
-                                        style: AppTheme.of(context)
-                                            .labelMedium
-                                            .override(
-                                              font: GoogleFonts.outfit(
-                                                fontWeight:
-                                                    AppTheme.of(context)
-                                                        .labelMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTheme.of(context)
-                                                        .labelMedium
-                                                        .fontStyle,
-                                              ),
-                                              color:
-                                                  AppTheme.of(context)
-                                                      .primaryBtnText,
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
-                                            ),
+                                        style: AppTypography.labelMedium.copyWith(
+                                          color: AppTheme.of(context).primaryBtnText,
+                                        ),
                                       ),
                                     ),
                                     StreamBuilder<List<UsersRecord>>(
@@ -805,7 +784,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                           itemCount:
                                               listViewUsersRecordList.length,
                                           separatorBuilder: (_, __) =>
-                                              SizedBox(height: 4),
+                                              SizedBox(height: AppSpacing.xxs),
                                           itemBuilder:
                                               (context, listViewIndex) {
                                             final listViewUsersRecord =
@@ -1017,7 +996,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                             scrollDirection: Axis.vertical,
                                             itemCount: friendRequestList.length,
                                             separatorBuilder: (_, __) =>
-                                                SizedBox(height: 4),
+                                                SizedBox(height: AppSpacing.xxs),
                                             itemBuilder: (context,
                                                 friendRequestListIndex) {
                                               final friendRequestListItem =
@@ -1159,21 +1138,12 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                     onAction: () async {
                                                       // Deny button
                                                       try {
-                                                        await currentUserReference!
-                                                            .update({
-                                                          ...mapToFirestore(
-                                                            {
-                                                              'friend_requests':
-                                                                  FieldValue
-                                                                      .arrayRemove([
-                                                                userList5UsersRecord
-                                                                    .reference,
-                                                                userList5UsersRecord
-                                                                    .reference.id
-                                                              ]),
-                                                            },
-                                                          ),
-                                                        });
+                                                        await context
+                                                            .read<UserProvider>()
+                                                            .rejectFriendRequest(
+                                                              userList5UsersRecord
+                                                                  .reference,
+                                                            );
                                                         if (mounted) {
                                                           ScaffoldMessenger.of(
                                                                   context)
@@ -1309,76 +1279,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                             },
                                             onMessage: _openDirectChat,
                                             onRemove: (user) async {
-                                              await FirebaseFirestore.instance
-                                                  .runTransaction(
-                                                      (transaction) async {
-                                                transaction.update(
-                                                  currentUserReference!,
-                                                  {
-                                                    ...mapToFirestore(
-                                                      {
-                                                        'friends':
-                                                            FieldValue.arrayRemove([
-                                                          user.reference
-                                                        ]),
-                                                      },
-                                                    ),
-                                                  },
-                                                );
-                                                transaction.update(
-                                                  user.reference,
-                                                  {
-                                                    ...mapToFirestore(
-                                                      {
-                                                        'friends':
-                                                            FieldValue.arrayRemove([
-                                                          currentUserReference
-                                                        ]),
-                                                      },
-                                                    ),
-                                                  },
-                                                );
-                                              });
-                                              if (mounted) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                      'Friend removed',
-                                                      style: AppTheme.of(context)
-                                                          .titleMedium
-                                                          .override(
-                                                            font: GoogleFonts.outfit(
-                                                              fontWeight:
-                                                                  AppTheme.of(context)
-                                                                      .titleMedium
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  AppTheme.of(context)
-                                                                      .titleMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                            color:
-                                                                AppTheme.of(context)
-                                                                    .primaryBtnText,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                AppTheme.of(context)
-                                                                    .titleMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(context)
-                                                                    .titleMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                    ),
-                                                    duration: Duration(
-                                                        milliseconds: 1500),
-                                                    backgroundColor:
-                                                        AppTheme.of(context).primary,
-                                                  ),
-                                                );
-                                              }
+                                              await _removeFriend(user);
                                             },
                                           );
                                         },
@@ -1420,7 +1321,7 @@ OLD CODE BELOW - KEEPING FOR REFERENCE
                                             scrollDirection: Axis.vertical,
                                             itemCount: friendsList.length,
                                             separatorBuilder: (_, __) =>
-                                                SizedBox(height: 4),
+                                                SizedBox(height: AppSpacing.xxs),
                                             itemBuilder:
                                                 (context, friendsListIndex) {
                                               final friendsListItem =
@@ -1466,88 +1367,9 @@ OLD CODE BELOW - KEEPING FOR REFERENCE
                                                           userList5UsersRecord);
                                                     },
                                                     onAction: () async {
-                                                      await FirebaseFirestore
-                                                          .instance
-                                                          .runTransaction(
-                                                              (transaction) async {
-                                                        transaction.update(
-                                                          currentUserReference!,
-                                                          {
-                                                            ...mapToFirestore(
-                                                              {
-                                                                'friends':
-                                                                    FieldValue
-                                                                        .arrayRemove([
-                                                                  userList5UsersRecord
-                                                                      .reference
-                                                                ]),
-                                                              },
-                                                            ),
-                                                          },
-                                                        );
-                                                        transaction.update(
-                                                          userList5UsersRecord
-                                                              .reference,
-                                                          {
-                                                            ...mapToFirestore(
-                                                              {
-                                                                'friends':
-                                                                    FieldValue
-                                                                        .arrayRemove([
-                                                                  currentUserReference
-                                                                ]),
-                                                              },
-                                                            ),
-                                                          },
-                                                        );
-                                                      });
-                                                      if (mounted) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                          SnackBar(
-                                                            content: Text(
-                                                              'Friend removed',
-                                                              style: AppTheme.of(
-                                                                      context)
-                                                                  .titleMedium
-                                                                  .override(
-                                                                    font: GoogleFonts
-                                                                        .outfit(
-                                                                      fontWeight: AppTheme.of(
-                                                                              context)
-                                                                          .titleMedium
-                                                                          .fontWeight,
-                                                                      fontStyle: AppTheme.of(
-                                                                              context)
-                                                                          .titleMedium
-                                                                          .fontStyle,
-                                                                    ),
-                                                                    color: AppTheme.of(
-                                                                            context)
-                                                                        .primaryBtnText,
-                                                                    letterSpacing:
-                                                                        0.0,
-                                                                    fontWeight: AppTheme.of(
-                                                                            context)
-                                                                        .titleMedium
-                                                                        .fontWeight,
-                                                                    fontStyle: AppTheme.of(
-                                                                            context)
-                                                                        .titleMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                            ),
-                                                            duration: Duration(
-                                                                milliseconds:
-                                                                    1500),
-                                                            backgroundColor:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .primary,
-                                                          ),
-                                                        );
-                                                      }
+                                                      await _removeFriend(
+                                                        userList5UsersRecord,
+                                                      );
                                                     },
                                                     actionLabel: 'Remove',
                                                     actionIcon:
