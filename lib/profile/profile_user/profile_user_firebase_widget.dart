@@ -461,11 +461,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     final canOpenSheet = result != null;
 
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(
-        0.0,
-        0.0,
-        0.0,
-        AppSpacing.md,
+      padding: EdgeInsets.only(
+        bottom: AppSpacing.md,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -741,7 +738,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            SizedBox(height: 2),
+            SizedBox(height: AppSpacing.xxs),
             Text(
               label,
               style: AppTypography.labelSmall.copyWith(
@@ -1043,7 +1040,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                     color: AppColors.stone,
                   ),
                 ),
-                SizedBox(height: 2),
+                SizedBox(height: AppSpacing.xxs),
                 Text(
                   value,
                   style: AppTypography.bodyMedium.copyWith(
