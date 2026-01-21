@@ -210,10 +210,9 @@ class _GolfersWidgetState extends State<GolfersWidget>
                       borderWidth: 0,
                       borderRadius: 10.0,
                       elevation: 0.0,
-                      labelPadding: EdgeInsetsDirectional.fromSTEB(
-                          AppSpacing.md, 0.0, AppSpacing.md, 0.0),
-                      buttonMargin: EdgeInsetsDirectional.fromSTEB(
-                          AppSpacing.xxs, AppSpacing.xxs, AppSpacing.xxs, AppSpacing.xxs),
+                      labelPadding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md),
+                      buttonMargin: EdgeInsets.all(AppSpacing.xxs),
                       padding: AppSpacing.allXxs,
                       tabs: [
                         Tab(text: 'Search'),
@@ -742,7 +741,7 @@ class _GolfersWidgetState extends State<GolfersWidget>
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 2),
+                SizedBox(height: AppSpacing.xxs),
                 if (user.homeCourse.isNotEmpty)
                   Row(
                     children: [
@@ -1041,7 +1040,7 @@ class _GolfersWidgetState extends State<GolfersWidget>
                     ),
                   ],
                 ),
-                SizedBox(height: 4),
+                SizedBox(height: AppSpacing.xxs),
                 Text(
                   valueOrDefault<String>(user.displayName, 'Golfer'),
                   style: AppTypography.titleSmall.copyWith(
@@ -1157,7 +1156,7 @@ class _GolfersWidgetState extends State<GolfersWidget>
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 2),
+                SizedBox(height: AppSpacing.xxs),
                 if (user.homeCourse.isNotEmpty)
                   Row(
                     children: [
