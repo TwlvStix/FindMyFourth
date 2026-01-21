@@ -1,6 +1,7 @@
 import '/core/widgets/app_count_controller.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/widgets/app_icon_button.dart';
+import '/core/widgets/app_text_field.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -24,6 +25,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'dart:math';
 
 import '/providers/chat_provider.dart';
 
@@ -67,18 +69,70 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   bool _isLoading = true;
   bool _hasDraft = false;
   static const String _draftKey = 'create_game_draft';
+  final TextEditingController _gameNameController = TextEditingController();
 
-  String _buildAutoGameName() {
-    final style = styleGameValue?.trim();
-    final host = currentUserDisplayName.trim();
-    final styleLabel = (style != null && style.isNotEmpty) ? style : 'Game';
-    final hostLabel = host.isNotEmpty ? host : 'Host';
-    return '$styleLabel with $hostLabel';
+  static const List<String> _mastersChampions = [
+    'Nicklaus',
+    'Woods',
+    'Spieth',
+    'Mickelson',
+    'Hogan',
+    'Faldo',
+    'Player',
+    'Watson',
+    'Palmer',
+    'Scheffler',
+  ];
+
+  static const List<String> _fruits = [
+    'Apple',
+    'Banana',
+    'Cherry',
+    'Mango',
+    'Peach',
+    'Pear',
+    'Plum',
+    'Orange',
+    'Kiwi',
+    'Grape',
+  ];
+
+  static const List<String> _traits = [
+    'Bold',
+    'Calm',
+    'Clever',
+    'Daring',
+    'Focused',
+    'Gritty',
+    'Humble',
+    'Loyal',
+    'Steady',
+    'Swift',
+  ];
+
+  String _generateAutoGameName() {
+    final random = Random();
+    final champion =
+        _mastersChampions[random.nextInt(_mastersChampions.length)];
+    final fruit = _fruits[random.nextInt(_fruits.length)];
+    final trait = _traits[random.nextInt(_traits.length)];
+    return '$champion $fruit $trait';
+  }
+
+  String _ensureGameName() {
+    final existing = _gameNameController.text.trim();
+    if (existing.isNotEmpty) {
+      return existing;
+    }
+    final generated = _generateAutoGameName();
+    _gameNameController.text = generated;
+    return generated;
   }
 
   @override
   void initState() {
     super.initState();
+    _gameNameController.text = _generateAutoGameName();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _loadDraft();
@@ -133,6 +187,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           scoringValue = draft['scoring'];
           scoringValueController?.value = draft['scoring'];
         }
+        final draftName = draft['gameName'] as String?;
+        if (draftName != null && draftName.trim().isNotEmpty) {
+          _gameNameController.text = draftName;
+        } else {
+          _ensureGameName();
+        }
 
         _hasDraft = true;
       }
@@ -144,6 +204,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   // Save draft to SharedPreferences
   Future<void> _saveDraft() async {
     try {
+      final gameName = _gameNameController.text.trim();
       final draft = {
         'date': datePicked?.toIso8601String(),
         'friends': friendsValue,
@@ -154,6 +215,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         'styleGame': styleGameValue,
         'gameType': gameTypeValue,
         'scoring': scoringValue,
+        'gameName': gameName.isEmpty ? null : gameName,
       };
 
       final prefs = await SharedPreferences.getInstance();
@@ -179,6 +241,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   // Quick create with defaults - creates game immediately
   Future<void> _quickCreate() async {
     HapticFeedback.mediumImpact();
+    _ensureGameName();
 
     // Validate required step 1 fields first
     if (datePicked == null) {
@@ -311,8 +374,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
 
     debugPrint('✅ CREATE GAME: Date validation passed');
     debugPrint('🎮 CREATE GAME: Starting game creation...');
-    final autoGameName = _buildAutoGameName();
-    debugPrint('🎮 CREATE GAME: Game name: $autoGameName');
+    final gameName = _ensureGameName();
+    debugPrint('🎮 CREATE GAME: Game name: $gameName');
     debugPrint('🎮 CREATE GAME: Course: $courseValue');
     debugPrint('🎮 CREATE GAME: Date: $datePicked');
     debugPrint('🎮 CREATE GAME: Style: $styleGameValue');
@@ -342,7 +405,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           .doc(currentUser.uid);
       final numPlayers = countControllerValue ?? 0;
       final maxPlayers = 4;
-      debugPrint('CreateGame: creating game $autoGameName');
+      debugPrint('CreateGame: creating game $gameName');
       debugPrint('CreateGame: numPlayers=$numPlayers (randoms needed), maxPlayers=$maxPlayers');
 
       final gamesRecordReference =
@@ -358,7 +421,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             .createGameChat(
               createdByUid: currentUser.uid,
               gameId: gamesRecordReference.id,
-              gameName: autoGameName,
+              gameName: gameName,
             );
         chatRef = chatsRecordReference;
         debugPrint('✅ CREATE GAME: Game chat created: ${chatsRecordReference.id}');
@@ -375,7 +438,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
 
       try {
         await gamesRecordReference.set({
-          'name_game': autoGameName,
+          'name_game': gameName,
           'date': datePicked,
           'num_players': numPlayers,
           'style_game': styleGameValue,
@@ -557,7 +620,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
 
   @override
   void dispose() {
-
+    _gameNameController.dispose();
     super.dispose();
   }
 
@@ -609,7 +672,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 2),
+                SizedBox(height: AppSpacing.xxs),
                 Text(
                   'Your draft has been restored',
                   style: GoogleFonts.outfit(
@@ -684,7 +747,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 2),
+                SizedBox(height: AppSpacing.xxs),
                 Text(
                   'Use smart defaults for faster setup',
                   style: GoogleFonts.outfit(
@@ -713,7 +776,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     String? helpText,
   }) {
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0.0, 15.0, 0.0, 5.0),
+      padding: EdgeInsets.only(
+        top: AppSpacing.md,
+        bottom: AppSpacing.xxs,
+      ),
       child: Row(
         children: [
           Container(
@@ -965,7 +1031,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 4),
+                SizedBox(height: AppSpacing.xxs),
                 Text(
                   description,
                   style: GoogleFonts.outfit(
@@ -1138,8 +1204,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                               key: formKey,
                               autovalidateMode: AutovalidateMode.always,
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    AppSpacing.sm, 0.0, AppSpacing.sm, 0.0),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.sm),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.start,
@@ -1148,6 +1214,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                     // Quick Create Banner
                                     _buildQuickCreateBanner(),
 
+                                    _buildSectionHeader(
+                                      '🏷️',
+                                      'Game Name',
+                                      helpText:
+                                          'Auto-generated for you. Edit here if you want a custom name.',
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                          top: AppSpacing.xxs),
+                                      child: AppTextField(
+                                        label: 'Game name',
+                                        hint: 'Auto-generated',
+                                        controller: _gameNameController,
+                                        variant: AppTextFieldVariant.filled,
+                                        prefixIcon: Icons.label_rounded,
+                                        onChanged: (_) => _saveDraft(),
+                                      ),
+                                    ),
+
                               _buildSectionHeader(
                                 '📅',
                                 'Game Day',
@@ -1155,8 +1240,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                               Align(
                                 alignment: AlignmentDirectional(-1.0, 0.0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 5.0, 0.0, 15.0),
+                                  padding: EdgeInsets.only(
+                                      top: AppSpacing.xxs,
+                                      bottom: AppSpacing.md),
                                   child: Container(
                                     width:
                                         MediaQuery.sizeOf(context).width * 1.0,
@@ -1166,18 +1252,15 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                       borderRadius: BorderRadius.circular(10.0),
                                     ),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, AppSpacing.sm, 0.0),
+                                      padding: EdgeInsets.only(
+                                          right: AppSpacing.sm),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
                                           Padding(
                                             padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    AppSpacing.sm,
-                                                    0.0,
-                                                    0.0,
-                                                    0.0),
+                                                EdgeInsets.only(
+                                                    left: AppSpacing.sm),
                                             child: Container(
                                               width: MediaQuery.sizeOf(context)
                                                       .width *
@@ -1393,11 +1476,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           ),
                                           Padding(
                                             padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    AppSpacing.sm,
-                                                    0.0,
-                                                    0.0,
-                                                    0.0),
+                                                EdgeInsets.only(
+                                                    left: AppSpacing.sm),
                                             child: InkWell(
                                               splashColor: Colors.transparent,
                                               focusColor: Colors.transparent,
@@ -1576,7 +1656,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                 helpText: 'Choose whether your game is visible to friends only or everyone in your area.',
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                                padding: EdgeInsets.only(top: AppSpacing.xxs),
                                 child: _buildSegmentedControl(
                                   options: [
                                     {'value': 'Friends', 'label': 'Friends', 'icon': Icons.people_rounded},
@@ -1598,8 +1678,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                               Align(
                                 alignment: AlignmentDirectional(-1.0, 0.0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 5.0, 0.0, 0.0),
+                                  padding: EdgeInsets.only(top: AppSpacing.xxs),
                                   child: StreamBuilder<
                                       QuerySnapshot<Map<String, dynamic>>>(
                                     stream: FirebaseFirestore.instance
@@ -1749,8 +1828,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             AppTheme.of(context).primary,
                                         borderWidth: 1.0,
                                         borderRadius: 10.0,
-                                        margin: EdgeInsetsDirectional.fromSTEB(
-                                            16.0, 4.0, 16.0, 4.0),
+                                        margin: EdgeInsets.symmetric(
+                                            horizontal: AppSpacing.md,
+                                            vertical: AppSpacing.xxs),
                                         hidesUnderline: true,
                                         isOverButton: true,
                                         isSearchable: true,
@@ -1776,8 +1856,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                 },
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 5.0, 0.0, 0.0),
+                                padding: EdgeInsets.only(top: AppSpacing.xxs),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
@@ -1792,8 +1871,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                               Align(
                                 alignment: AlignmentDirectional(-1.0, 0.0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 5.0, 0.0, 0.0),
+                                  padding: EdgeInsets.only(top: AppSpacing.xxs),
                                   child: Container(
                                     width: 160.0,
                                     height: 50.0,
@@ -1866,7 +1944,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                 helpText: 'Strict follows USGA rules precisely. Relaxed allows casual adjustments. Open to Discuss means flexible.',
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                                padding: EdgeInsets.only(top: AppSpacing.xxs),
                                 child: _buildCardGrid(
                                   options: [
                                     {'value': 'Strict', 'label': 'Strict', 'icon': Icons.gavel_rounded, 'emoji': '📏'},
@@ -1889,7 +1967,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                 helpText: 'Are you playing for money, just for fun, or open to discussing stakes?',
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                                padding: EdgeInsets.only(top: AppSpacing.xxs),
                                 child: _buildCardGrid(
                                   options: [
                                     {'value': 'Money Game', 'label': 'Money', 'icon': Icons.attach_money_rounded, 'emoji': '💵'},
@@ -1912,7 +1990,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                 helpText: 'Choose your preferred format: Match Play (hole-by-hole), Stroke Play (total strokes), Stableford (points), etc.',
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                                padding: EdgeInsets.only(top: AppSpacing.xxs),
                                 child: _buildCardGrid(
                                   options: [
                                     {'value': 'Match Play', 'label': 'Match Play', 'icon': Icons.sports_golf_rounded, 'emoji': '🆚'},
@@ -1938,7 +2016,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                 helpText: 'Gross is total strokes. Net adjusts for handicap. Both tracks both scores.',
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                                padding: EdgeInsets.only(top: AppSpacing.xxs),
                                 child: _buildCardGrid(
                                   options: [
                                     {'value': 'Gross', 'label': 'Gross', 'icon': Icons.sports_golf_rounded, 'emoji': '📊'},
@@ -1957,8 +2035,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                 ),
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 30.0, 0.0, 0.0),
+                                padding: EdgeInsets.only(top: AppSpacing.xxl),
                                 child: AppButtonEnhanced(
                                   text: 'Submit Game',
                                   variant: AppButtonVariant.primary,
