@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-14)
 ## Current Position
 
 Phase: 5 of 7 (Screen Flow Polish)
-Plan: 05-01 COMPLETE (1 of 3 in Phase 5)
-Status: ✅ Plan 05-01 COMPLETE — Transition standards foundation created
-Last activity: 2026-01-21 — Completed 05-01 (transition standards module and migration guide)
+Plan: 05-02 COMPLETE (2 of 3 in Phase 5)
+Status: ✅ Plan 05-02 COMPLETE — Game and auth flow transitions standardized
+Last activity: 2026-01-21 — Completed 05-02 (standardized 12 navigation instances across 8 screens)
 
-Progress: ████████░░░░░░░░░░░░░░░░ 33% of Phase 5 (1 of 3 plans complete)
+Progress: ████████████░░░░░░░░░░░░ 67% of Phase 5 (2 of 3 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14 (05-01 complete)
-- Average duration: ~43 minutes
-- Total execution time: ~10 hours
+- Total plans completed: 15 (05-02 complete)
+- Average duration: ~26 minutes
+- Total execution time: ~6.5 hours
 
 **By Phase:**
 
@@ -31,13 +31,13 @@ Progress: ████████░░░░░░░░░░░░░░░�
 | 02-component-library-standardization | 4/4 ✅ | ~66min | ~17min |
 | 03-typography-system | 3/3 ✅ | ~192min | ~64min |
 | 04-spacing-system | 3/3 ✅ | ~115min | ~38min |
-| 05-screen-flow-polish | 1/3 🔄 | ~35min | ~35min |
+| 05-screen-flow-polish | 2/3 🔄 | ~38min | ~19min |
 
 **Recent Trend:**
-- Last 3 plans: ~42min average (04-02: 45min, 04-03: 45min, 05-01: 35min)
-- Phase 5 started: Plan 05-01 (foundation) 35min
-- Plan 05-01: TransitionStandards module, extension methods, 512-line migration guide
-- Trend: Foundation work fast (25-35min), screen migrations moderate (45min for 6-7 screens)
+- Last 3 plans: ~14min average (04-03: 45min, 05-01: 35min, 05-02: 3min)
+- Phase 5 progress: Plan 05-01 (foundation) 35min, Plan 05-02 (migration) 3min
+- Plan 05-02: 8 screens migrated with 12 navigation instances standardized
+- Trend: Screen migrations extremely fast when pattern is clear (3min for 8 screens)
 
 ## Accumulated Context
 
@@ -201,6 +201,16 @@ Recent decisions affecting current work:
 - Pattern established: Semantic constants for consistent transitions (not inline TransitionInfo constructors)
 - Foundation ready for systematic migration across game flows (05-02) and chat/profile flows (05-03)
 
+**From Plan 05-02 (Game & Auth Flow Transitions):**
+- ✅ 12 navigation instances standardized across 8 screens (detailTransition: 6, modalTransition: 6)
+- detailTransition for all game detail navigations (games_list → game details is drilling deeper)
+- modalTransition for create_game return navigation (dismissing modal context)
+- context.goNamed() over router.go() in player_list (standard API, enables future transitions)
+- modalTransition for all auth/onboarding flows (consistency with sign_in/sign_up 220ms pattern)
+- 4 of 8 identified navigation inconsistencies fixed (game flows + auth flows)
+- Pattern proven: Game detail views use detailTransition, modal returns use modalTransition
+- Zero compilation errors, smooth 220ms bottomToTop transitions throughout game and auth flows
+
 ### Pending Todos
 
 None yet.
@@ -212,7 +222,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Phase 5 Plan 05-01 complete, ready for next plan
+Stopped at: Phase 5 Plan 05-02 complete, ready for next plan
 Resume file: None
 
 **Phase 3 Complete:**
@@ -246,8 +256,14 @@ Resume file: None
   - Comprehensive 512-line migration guide with file-by-file checklists for 12 screens
   - Identified 8 navigation inconsistencies (missing transitions, duration variations, anti-patterns)
   - Target: 95%+ transition coverage, 15+ modal usages, 20+ detail usages
+- ✅ 05-02: Game & auth flow transitions (Wave 2) - COMPLETE (3min)
+  - 8 screens migrated: games_list, create_game, player_list, join_game_detailed, game_joined_detailed, recover_password, vibe_onboarding, progressive_onboarding
+  - 12 navigation instances standardized (detailTransition: 6, modalTransition: 6)
+  - 1 direct router.go() call eliminated in favor of context.goNamed()
+  - 4 of 8 navigation inconsistencies fixed (game flows + auth flows)
+  - 0 compilation errors, smooth transitions throughout
 
 **Next steps:**
-- Ready for Plans 05-02 and 05-03 (game flows + chat/profile flows)
-- Recommend: `/gsd:execute-plan .planning/phases/05-screen-flow-polish/05-02-PLAN.md`
-- Target: Migrate 12 screens to TransitionStandards, eliminate all inline TransitionInfo constructors
+- Ready for Plan 05-03 (chat/profile flows)
+- Recommend: `/gsd:execute-plan .planning/phases/05-screen-flow-polish/05-03-PLAN.md`
+- Target: Migrate 4 remaining screens (chat, chat_details, profile tabs, community)
