@@ -308,30 +308,17 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             SizedBox(height: AppSpacing.md),
                             Text(
                               'Unable to load games',
-                              style: AppTheme.of(context).titleMedium.override(
-                                    font: GoogleFonts.outfit(
-                                      fontWeight: FontWeight.w600,
-                                      fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-                                    ),
-                                    color: Colors.white,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w600,
-                                    fontStyle: AppTheme.of(context).titleMedium.fontStyle,
-                                  ),
+                              style: AppTypography.titleMedium.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             SizedBox(height: AppSpacing.xs),
                             Text(
                               'Please check your connection and try again',
-                              style: AppTheme.of(context).bodySmall.override(
-                                    font: GoogleFonts.outfit(
-                                      fontWeight: FontWeight.normal,
-                                      fontStyle: AppTheme.of(context).bodySmall.fontStyle,
-                                    ),
-                                    color: Colors.white.withOpacity(0.7),
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.normal,
-                                    fontStyle: AppTheme.of(context).bodySmall.fontStyle,
-                                  ),
+                              style: AppTypography.bodySmall.copyWith(
+                                color: Colors.white.withOpacity(0.7),
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ],
@@ -358,16 +345,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                           SizedBox(height: AppSpacing.md),
                           Text(
                             'Finding games...',
-                            style: AppTheme.of(context).bodySmall.override(
-                                  font: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.normal,
-                                    fontStyle: AppTheme.of(context).bodySmall.fontStyle,
-                                  ),
-                                  color: Colors.white.withOpacity(0.7),
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.normal,
-                                  fontStyle: AppTheme.of(context).bodySmall.fontStyle,
-                                ),
+                            style: AppTypography.bodySmall.copyWith(
+                              color: Colors.white.withOpacity(0.7),
+                            ),
                           ),
                         ],
                       ),
@@ -551,12 +531,18 @@ class _GamesListWidgetState extends State<GamesListWidget> {
         } else if (isUserGame) {
           context.pushNamed(
             GameJoinedDetailedWidget.routeName,
-            extra: <String, dynamic>{'gameRef': game.reference},
+            extra: <String, dynamic>{
+              'gameRef': game.reference,
+              kTransitionInfoKey: TransitionStandards.detailTransition,
+            },
           );
         } else {
           context.pushNamed(
             JoinGameDetailedWidget.routeName,
-            extra: <String, dynamic>{'gameRef': game.reference},
+            extra: <String, dynamic>{
+              'gameRef': game.reference,
+              kTransitionInfoKey: TransitionStandards.detailTransition,
+            },
           );
         }
       },
@@ -894,10 +880,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             SizedBox(width: 4),
                             Text(
                               'Discount',
-                              style: AppTypography.labelSmall.copyWith(
+                              style: AppTypography.text10.copyWith(
                                 color: AppColors.fairwayLight,
                                 fontWeight: FontWeight.w500,
-                                fontSize: 10,
                               ),
                             ),
                           ],
