@@ -460,7 +460,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 12),
+                          SizedBox(height: AppSpacing.sm),
 
                           // Premium Info Grid
                           GridView.count(
@@ -705,7 +705,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                   ),
-                                                  SizedBox(height: 2),
+                                                  SizedBox(height: AppSpacing.xxs),
                                                   Text(
                                                     'Ready',
                                                     style: AppTheme.of(context)
@@ -867,7 +867,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
-                                            SizedBox(height: 2),
+                                            SizedBox(height: AppSpacing.xxs),
                                             Text(
                                               'Guest',
                                               style: AppTheme.of(context)
@@ -2163,7 +2163,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 2),
+                SizedBox(height: AppSpacing.xxs),
                 Text(
                   value.isNotEmpty ? value : '--',
                   style: AppTypography.bodySmall.copyWith(
