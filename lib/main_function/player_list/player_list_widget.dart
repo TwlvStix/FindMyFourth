@@ -693,15 +693,14 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                       debugPrint('ℹ️ PLAYER LIST: No players selected, proceeding anyway');
                                                     }
 
-                                                    // Use router.go() to navigate to Game List
+                                                    // Navigate to Game List
                                                     // This replaces the current location and prevents back navigation issues
                                                     debugPrint('🚀 PLAYER LIST: Navigating to Game List');
 
                                                     if (!mounted) return;
 
-                                                    // Use go_router to navigate - this maintains consistent navigation state
-                                                    final router = GoRouter.of(context);
-                                                    router.go(GamesListWidget.routePath);
+                                                    // Use context.goNamed for standard API
+                                                    context.goNamed(GamesListWidget.routeName);
                                                   } catch (e) {
                                                     debugPrint('❌ PLAYER LIST: Error adding players: $e');
                                                     ScaffoldMessenger.of(context).showSnackBar(

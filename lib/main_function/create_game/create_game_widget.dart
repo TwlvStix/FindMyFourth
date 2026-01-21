@@ -13,7 +13,6 @@ import '/main_function/games_list/games_list_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
 import '/providers/provider_extensions.dart';
 import '/models/course.dart';
-import '/auth/firebase_auth/auth_util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:collection/collection.dart';
@@ -482,7 +481,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
 
           if (numExistingFriends <= 0) {
             debugPrint('CreateGame: No existing friends, skipping Player List');
-            context.pushNamed(GamesListWidget.routeName);
+            context.pushNamed(
+              GamesListWidget.routeName,
+              extra: <String, dynamic>{
+                kTransitionInfoKey: TransitionStandards.modalTransition,
+              },
+            );
           } else {
             debugPrint('CreateGame: Has $numExistingFriends existing friends, showing Player List');
             context.pushNamed(
@@ -558,7 +562,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: Offset(0, 10),
               ),
@@ -572,7 +576,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -596,7 +600,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 message,
                 style: GoogleFonts.outfit(
                   fontSize: 15,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
@@ -632,13 +636,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.sunsetGold.withOpacity(0.2),
-            AppColors.sunsetPeach.withOpacity(0.15),
+            AppColors.sunsetGold.withValues(alpha: 0.2),
+            AppColors.sunsetPeach.withValues(alpha: 0.15),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.sunsetGold.withOpacity(0.4),
+          color: AppColors.sunsetGold.withValues(alpha: 0.4),
           width: 2,
         ),
       ),
@@ -676,7 +680,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 Text(
                   'Your draft has been restored',
                   style: GoogleFonts.outfit(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 13,
                   ),
                 ),
@@ -707,13 +711,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.fairwayLight.withOpacity(0.2),
-            AppColors.fairway.withOpacity(0.15),
+            AppColors.fairwayLight.withValues(alpha: 0.2),
+            AppColors.fairway.withValues(alpha: 0.15),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.fairwayLight.withOpacity(0.4),
+          color: AppColors.fairwayLight.withValues(alpha: 0.4),
           width: 2,
         ),
       ),
@@ -751,7 +755,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 Text(
                   'Use smart defaults for faster setup',
                   style: GoogleFonts.outfit(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 13,
                   ),
                 ),
@@ -821,7 +825,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 width: 20,
                 height: 20,
                 decoration: BoxDecoration(
-                  color: AppColors.sunsetGold.withOpacity(0.3),
+                  color: AppColors.sunsetGold.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -857,25 +861,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           gradient: isSelected
               ? LinearGradient(
                   colors: [
-                    AppColors.fairway.withOpacity(0.5),
-                    AppColors.fairwayDark.withOpacity(0.7),
+                    AppColors.fairway.withValues(alpha: 0.5),
+                    AppColors.fairwayDark.withValues(alpha: 0.7),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
               : null,
-          color: isSelected ? null : AppColors.fairway.withOpacity(0.2),
+          color: isSelected ? null : AppColors.fairway.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
                 ? AppColors.sunsetGold
-                : Colors.white.withOpacity(0.1),
+                : Colors.white.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.sunsetGold.withOpacity(0.3),
+                    color: AppColors.sunsetGold.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: Offset(0, 4),
                   ),
@@ -894,7 +898,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                         colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
                       )
                     : null,
-                color: isSelected ? null : Colors.white.withOpacity(0.1),
+                color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: emoji != null
@@ -927,10 +931,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.fairway.withOpacity(0.2),
+        color: AppColors.fairway.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
         ),
       ),
       padding: EdgeInsets.all(4),
@@ -959,7 +963,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: AppColors.sunsetGold.withOpacity(0.4),
+                            color: AppColors.sunsetGold.withValues(alpha: 0.4),
                             blurRadius: 8,
                             offset: Offset(0, 2),
                           ),
@@ -973,7 +977,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                       option['icon'] as IconData,
                       color: isSelected
                           ? Colors.white
-                          : Colors.white.withOpacity(0.6),
+                          : Colors.white.withValues(alpha: 0.6),
                       size: 20,
                     ),
                     SizedBox(width: 8),
@@ -982,7 +986,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                       style: GoogleFonts.outfit(
                         color: isSelected
                             ? Colors.white
-                            : Colors.white.withOpacity(0.6),
+                            : Colors.white.withValues(alpha: 0.6),
                         fontSize: 15,
                         fontWeight:
                             isSelected ? FontWeight.w700 : FontWeight.w500,
@@ -1008,12 +1012,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.fairway.withOpacity(0.2),
+        color: AppColors.fairway.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: value
-              ? AppColors.sunsetGold.withOpacity(0.5)
-              : Colors.white.withOpacity(0.1),
+              ? AppColors.sunsetGold.withValues(alpha: 0.5)
+              : Colors.white.withValues(alpha: 0.1),
           width: value ? 2 : 1,
         ),
       ),
@@ -1035,7 +1039,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 Text(
                   description,
                   style: GoogleFonts.outfit(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 13,
                   ),
                 ),
@@ -1058,7 +1062,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                         colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
                       )
                     : null,
-                color: value ? null : Colors.white.withOpacity(0.2),
+                color: value ? null : Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: AnimatedAlign(
@@ -1074,7 +1078,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 4,
                         offset: Offset(0, 2),
                       ),
@@ -1709,10 +1713,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         return Container(
                                           padding: EdgeInsets.all(AppSpacing.lg),
                                           decoration: BoxDecoration(
-                                            color: AppColors.fairway.withOpacity(0.2),
+                                            color: AppColors.fairway.withValues(alpha: 0.2),
                                             borderRadius: BorderRadius.circular(12),
                                             border: Border.all(
-                                              color: AppColors.fairwayLight.withOpacity(0.3),
+                                              color: AppColors.fairwayLight.withValues(alpha: 0.3),
                                             ),
                                           ),
                                           child: Column(
@@ -1720,13 +1724,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               Icon(
                                                 Icons.golf_course_rounded,
                                                 size: 40,
-                                                color: Colors.white.withOpacity(0.4),
+                                                color: Colors.white.withValues(alpha: 0.4),
                                               ),
                                               SizedBox(height: AppSpacing.sm),
                                               Text(
                                                 'No courses available',
                                                 style: GoogleFonts.outfit(
-                                                  color: Colors.white.withOpacity(0.7),
+                                                  color: Colors.white.withValues(alpha: 0.7),
                                                   fontSize: 15,
                                                 ),
                                               ),
