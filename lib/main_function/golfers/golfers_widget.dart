@@ -913,6 +913,7 @@ class _GolfersWidgetState extends State<GolfersWidget>
                         'ProfileUser',
                         extra: <String, dynamic>{
                           'userRef': user.reference,
+                          kTransitionInfoKey: TransitionStandards.detailTransition,
                         },
                       );
                     },
@@ -1213,6 +1214,7 @@ class _GolfersWidgetState extends State<GolfersWidget>
                     'ProfileUser',
                     extra: <String, dynamic>{
                       'userRef': user.reference,
+                      kTransitionInfoKey: TransitionStandards.detailTransition,
                     },
                   );
                 },
