@@ -42,6 +42,7 @@ import '/user_onboarding/vibe_onboarding_widget.dart';
 
 export 'package:go_router/go_router.dart';
 export '/utils/serialization_util.dart';
+export 'transition_standards.dart';
 
 const kTransitionInfoKey = '__transition_info__';
 
@@ -711,6 +712,13 @@ class TransitionInfo {
   final Duration duration;
   final Alignment? alignment;
 
+  /// Default transition (no transition).
+  ///
+  /// For standard transitions, use constants from [TransitionStandards]:
+  /// - [TransitionStandards.modalTransition] - Modal-like screens (create, edit)
+  /// - [TransitionStandards.detailTransition] - Detail views (game details, profiles)
+  /// - [TransitionStandards.dismissalTransition] - Success/dismissal screens
+  /// - [TransitionStandards.tabTransition] - Tab navigation
   static TransitionInfo appDefault() => TransitionInfo(hasTransition: false);
 }
 
