@@ -567,7 +567,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            SizedBox(height: 2),
+            SizedBox(height: AppSpacing.xxs),
             Text(
               label,
               style: AppTypography.labelSmall.copyWith(
@@ -654,7 +654,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        SizedBox(height: AppSpacing.xxs),
                         Text(
                           'Help us match you with the right golfers',
                           style: AppTypography.bodySmall.copyWith(
@@ -903,7 +903,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     color: AppColors.stone,
                   ),
                 ),
-                SizedBox(height: 2),
+                SizedBox(height: AppSpacing.xxs),
                 Text(
                   value,
                   style: AppTypography.bodyMedium.copyWith(
