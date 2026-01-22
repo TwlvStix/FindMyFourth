@@ -2,19 +2,21 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-14)
+See: .planning/PROJECT.md (updated 2026-01-21)
 
 **Core value:** Component consistency — every button, card, input, and UI element looks and behaves the same way everywhere
-**Current focus:** Phase 4 — Spacing System Migration
+**Current focus:** Planning next milestone — v1.1 scope definition
 
 ## Current Position
 
-Phase: 7 of 7 (Tech Debt Cleanup)
-Plan: 07-01 COMPLETE (2 of 2 in Phase 7)
-Status: ✅ Phase 7 COMPLETE — All tech debt cleanup complete
-Last activity: 2026-01-21 — Completed 07-01 (deprecated file removal and debug logging cleanup)
+**v1.0 UI/UX Polish: SHIPPED ✅**
 
-Progress: ████████████████████████ 100% of Phase 7 (2 of 2 plans complete)
+Phase: All 7 phases complete
+Plans: 20/20 complete (100%)
+Status: Milestone complete — Ready to plan next milestone
+Last activity: 2026-01-21 — v1.0 milestone complete
+
+Progress: ████████████████████████ 100% (7 of 7 phases, 20 of 20 plans)
 
 ## Performance Metrics
 
@@ -43,17 +45,37 @@ Progress: ███████████████████████�
 - All 7 phases complete except Phase 6 partial (1 of 4 plans)
 - Trend: Cleanup phases very efficient (7-12min range)
 
+## v1.0 Milestone Summary
+
+**Shipped:** 2026-01-21
+**Duration:** 6 days (2026-01-15 → 2026-01-21)
+**Accomplishments:**
+- 8 complete design token systems created
+- 93% color adoption, 73% typography adoption, 77% spacing adoption
+- 30+ production-grade components with full design token integration
+- 2,293 lines removed through large widget refactoring
+- 95%+ navigation transition coverage
+- Zero deprecated files, zero large widgets (>1,700 lines)
+
+**See:** .planning/MILESTONES.md for full details
+**Archive:** .planning/milestones/v1.0-ROADMAP.md
+
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
+Key decisions from v1.0:
 
-**From Project Initialization:**
-- Component consistency as core priority (biggest visual impact)
-- Allow minor copy/functional tweaks (consistency sometimes requires small UX adjustments)
-- Keep current visual identity (not a rebrand, just polish)
+**v1.0 Validated Decisions:**
+- Component consistency as core priority — ✓ Good (achieved 93% color, 73% typography adoption)
+- Foundation-first strategy — ✓ Good (no token blockers in Phases 3-7)
+- Screen-by-screen migrations with atomic commits — ✓ Good (zero compilation errors)
+- Manual context-aware replacement over bulk regex — ✓ Good (avoided 311 errors)
+- Semantic over visual naming — ✓ Good (improved developer experience)
+- Stateless components with callbacks — ✓ Good (clean architecture, easy testing)
+
+**Historical Decisions (archived in v1.0-ROADMAP.md):**
 
 **From Plan 01-01 (Foundation Audit):**
 - AppSpacing is the success story (100% adoption) - validates token approach

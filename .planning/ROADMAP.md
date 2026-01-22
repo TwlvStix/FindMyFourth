@@ -1,5 +1,9 @@
 # Roadmap: Find My Fourth UI/UX Polish
 
+## Milestones
+
+- ✅ **v1.0 UI/UX Polish** — Phases 1-7 (shipped 2026-01-21) — [Archive](milestones/v1.0-ROADMAP.md)
+
 ## Overview
 
 Transforming Find My Fourth from functional to polished through systematic UI/UX improvements. Starting with foundation audit to understand current inconsistencies, then progressively standardizing components, typography, spacing, and screen flows. Concludes with refactoring large widgets and cleaning up technical debt to ensure maintainability.
@@ -7,6 +11,23 @@ Transforming Find My Fourth from functional to polished through systematic UI/UX
 ## Domain Expertise
 
 None
+
+## Completed Milestones
+
+<details>
+<summary>✅ v1.0 UI/UX Polish (Phases 1-7) — SHIPPED 2026-01-21</summary>
+
+- [x] Phase 1: Foundation Audit (3/3 plans) — completed 2026-01-15
+- [x] Phase 2: Component Library Standardization (4/4 plans) — completed 2026-01-16
+- [x] Phase 3: Typography System (3/3 plans) — completed 2026-01-20
+- [x] Phase 4: Spacing System (3/3 plans) — completed 2026-01-21
+- [x] Phase 5: Screen Flow Polish (3/3 plans) — completed 2026-01-21
+- [x] Phase 6: Large Widget Refactoring (4/4 plans) — completed 2026-01-21
+- [x] Phase 7: Tech Debt Cleanup (2/2 plans) — completed 2026-01-21
+
+**Summary:** Achieved 93% color adoption, 73% typography adoption, created 30+ components, removed 2,293 lines through refactoring. See [v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md) for full details.
+
+</details>
 
 ## Phases
 
