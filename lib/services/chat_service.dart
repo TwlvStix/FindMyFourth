@@ -18,10 +18,6 @@ class ChatService {
     required String uid,
     int limit = 50,
   }) {
-    debugPrint('💬 ChatService: getChatListStream called');
-    debugPrint('💬 ChatService: uid=$uid, limit=$limit');
-    debugPrint('💬 ChatService: Query: chats where memberIds contains $uid');
-
     final query = _firestore
         .collection('chats')
         .where('memberIds', arrayContains: uid)
@@ -37,14 +33,7 @@ class ChatService {
         )
         .asStream()
         .asyncExpand((page) => page.dataStream ?? Stream.value(page.data))
-        .map((chats) {
-          debugPrint('💬 ChatService: Received snapshot with ${chats.length} chats');
-          if (chats.isNotEmpty) {
-            debugPrint('💬 ChatService: First chat ID: ${chats.first.id}');
-          }
-          debugPrint('💬 ChatService: Successfully converted ${chats.length} Chat objects');
-          return chats;
-        });
+        .map((chats) => chats);
   }
 
   Stream<Chat?> getChatStream({
@@ -83,28 +72,13 @@ class ChatService {
     required String chatId,
     int limit = 50,
   }) {
-    debugPrint('📨 ChatService: getMessagesSnapshotStream called');
-    debugPrint('📨 ChatService: chatId=$chatId, limit=$limit');
-    final path = 'chats/$chatId/messages';
-    debugPrint('📨 ChatService: Querying path: $path');
-
     return _firestore
         .collection('chats')
         .doc(chatId)
         .collection('messages')
         .orderBy('createdAt', descending: true)
         .limit(limit)
-        .snapshots()
-        .map((snapshot) {
-          debugPrint('📨 ChatService: Received snapshot with ${snapshot.docs.length} messages');
-          if (snapshot.docs.isNotEmpty) {
-            final firstMsg = snapshot.docs.first.data();
-            final messageText = firstMsg['text']?.toString() ?? '';
-            final previewLength = messageText.length < 30 ? messageText.length : 30;
-            debugPrint('📨 ChatService: First message: ${messageText.isNotEmpty ? messageText.substring(0, previewLength) : 'no text'}');
-          }
-          return snapshot;
-        });
+        .snapshots();
   }
 
   Future<MessagesPage> getMessagesPage({
@@ -134,23 +108,13 @@ class ChatService {
     required String currentUid,
     required String otherUid,
   }) async {
-    debugPrint('🔧 ChatService: createOrGetDirectChat START');
-    debugPrint('🔧 ChatService: currentUid=$currentUid');
-    debugPrint('🔧 ChatService: otherUid=$otherUid');
-
     final memberIds = [currentUid, otherUid]..sort();
     final directKey = memberIds.join('_');
-    debugPrint('🔧 ChatService: directKey=$directKey');
-    debugPrint('🔧 ChatService: memberIds=$memberIds');
-
     final chats = _firestore.collection('chats');
 
     try {
       // Use directKey as the document ID
       final chatRef = chats.doc(directKey);
-
-      debugPrint('🔧 ChatService: Attempting to create chat document...');
-      debugPrint('🔧 ChatService: Chat path: ${chatRef.path}');
 
       await _firestore.runTransaction((transaction) async {
         final chatSnapshot = await transaction.get(chatRef);
@@ -183,12 +147,9 @@ class ChatService {
         });
       });
 
-      debugPrint('✅ ChatService: Chat created/updated successfully: ${chatRef.id}');
       return chatRef;
     } catch (e, stackTrace) {
-      debugPrint('❌ ChatService: ERROR in createOrGetDirectChat');
-      debugPrint('❌ ChatService: Error type: ${e.runtimeType}');
-      debugPrint('❌ ChatService: Error message: $e');
+      debugPrint('❌ ChatService: ERROR in createOrGetDirectChat: $e');
       debugPrint('❌ ChatService: Stack trace: $stackTrace');
       rethrow;
     }
@@ -315,16 +276,12 @@ class ChatService {
     required String chatId,
     required String uid,
   }) async {
-    debugPrint('🗑️ ChatService: deleteChat called');
-    debugPrint('🗑️ ChatService: chatId=$chatId, uid=$uid');
-
     try {
       final chatRef = _firestore.collection('chats').doc(chatId);
 
       // First, verify the user is a member of this chat
       final chatSnapshot = await chatRef.get();
       if (!chatSnapshot.exists) {
-        debugPrint('❌ ChatService: Chat does not exist');
         throw Exception('Chat not found');
       }
 
@@ -335,22 +292,16 @@ class ChatService {
           <String>[];
 
       if (!memberIds.contains(uid)) {
-        debugPrint('❌ ChatService: User is not a member of this chat');
         throw Exception('You do not have permission to delete this chat');
       }
-
-      debugPrint('🗑️ ChatService: User verified as member, proceeding with delete');
 
       // Delete all messages in the subcollection (batch delete)
       final messagesRef = chatRef.collection('messages');
       final messagesSnapshot = await messagesRef.get();
 
-      debugPrint('🗑️ ChatService: Found ${messagesSnapshot.docs.length} messages to delete');
-
       // Delete messages in batches of 500 (Firestore batch limit)
       const batchSize = 500;
       final totalMessages = messagesSnapshot.docs.length;
-      var deletedCount = 0;
 
       for (var i = 0; i < totalMessages; i += batchSize) {
         final batch = _firestore.batch();
@@ -361,13 +312,10 @@ class ChatService {
         }
 
         await batch.commit();
-        deletedCount += (end - i);
-        debugPrint('🗑️ ChatService: Deleted $deletedCount/$totalMessages messages');
       }
 
       // Delete the chat document itself
       await chatRef.delete();
-      debugPrint('✅ ChatService: Chat deleted successfully');
     } catch (e, stackTrace) {
       debugPrint('❌ ChatService: Error deleting chat: $e');
       debugPrint('❌ ChatService: StackTrace: $stackTrace');

@@ -67,7 +67,6 @@ class AppStateNotifier extends ChangeNotifier {
 
   bool get loading {
     final result = !_authStateReady || showSplashImage;
-    print('📊 LOADING GETTER: _authStateReady=$_authStateReady, showSplashImage=$showSplashImage, result=$result');
     return result;
   }
   bool get loggedIn => user?.loggedIn ?? false;
@@ -88,18 +87,14 @@ class AppStateNotifier extends ChangeNotifier {
   void updateNotifyOnAuthChange(bool notify) => notifyOnAuthChange = notify;
 
   void update(BaseAuthUser newUser) {
-    print('📝 NOTIFIER: update() called with uid=${newUser.uid ?? "null"}');
     final shouldUpdate =
         user?.uid == null || newUser.uid == null || user?.uid != newUser.uid;
-    print('📝 NOTIFIER: shouldUpdate=$shouldUpdate, notifyOnAuthChange=$notifyOnAuthChange');
     initialUser ??= newUser;
     user = newUser;
     _authStateReady = true;
-    print('📝 NOTIFIER: Set _authStateReady=true, loading=$loading');
     // Refresh the app on auth change unless explicitly marked otherwise.
     // No need to update unless the user has changed.
     if (notifyOnAuthChange && shouldUpdate) {
-      print('📝 NOTIFIER: Calling notifyListeners() from update()');
       notifyListeners();
     }
     // Once again mark the notifier as needing to update on auth change
@@ -108,9 +103,7 @@ class AppStateNotifier extends ChangeNotifier {
   }
 
   void stopShowingSplashImage() {
-    print('🎬 SPLASH: Setting showSplashImage to false (was: $showSplashImage)');
     showSplashImage = false;
-    print('🎬 SPLASH: showSplashImage is now false. Next notifyListeners() from update() will trigger rebuild.');
     // Note: We don't call notifyListeners() here because update() will call it
     // immediately after, and that single call will reflect the showSplashImage=false state
   }
@@ -515,28 +508,21 @@ GoRouterRedirect _buildRedirect(
   bool requireAuth = false,
 }) {
   return (context, state) {
-    print('🔀 REDIRECT: Checking redirect for ${state.uri.path}');
-    print('🔀 REDIRECT: authStateReady=${appStateNotifier.authStateReady}, loggedIn=${appStateNotifier.loggedIn}');
-
     if (!appStateNotifier.authStateReady) {
-      print('🔀 REDIRECT: Auth not ready, returning null');
       return null;
     }
 
     if (appStateNotifier.shouldRedirect) {
       final redirectLocation = appStateNotifier.getRedirectLocation();
       appStateNotifier.clearRedirectLocation();
-      print('🔀 REDIRECT: Redirecting to $redirectLocation');
       return redirectLocation;
     }
 
     if (requireAuth && !appStateNotifier.loggedIn) {
       appStateNotifier.setRedirectLocationIfUnset(state.uri.toString());
-      print('🔀 REDIRECT: Auth required but not logged in, redirecting to /signIn');
       return '/signIn';
     }
 
-    print('🔀 REDIRECT: No redirect needed, returning null');
     return null;
   };
 }
@@ -589,7 +575,6 @@ Page<dynamic> _buildPageWithTransition(
 ) {
   fixStatusBarOniOS16AndBelow(context);
   final isLoading = appStateNotifier.loading;
-  print('🏗️ BUILD PAGE: loading=$isLoading, route=${state.uri.path}, page=${page.runtimeType}');
 
   final child = isLoading
       ? Container(
@@ -600,8 +585,6 @@ Page<dynamic> _buildPageWithTransition(
           ),
         )
       : PushNotificationsHandler(child: page);
-
-  print('🏗️ BUILD PAGE: Showing ${isLoading ? "SPLASH" : "REAL PAGE (${page.runtimeType})"}');
 
   final transitionInfo = _transitionInfo(state);
   return transitionInfo.hasTransition

@@ -122,9 +122,6 @@ class UserProvider extends ChangeNotifier {
     }
     final resolvedUserId = currentUser?.reference.id ?? userRef.id;
 
-    debugPrint(
-      'UserProvider: getMyGames overrideCache=$overrideCache userId=$resolvedUserId',
-    );
     return _myGamesManager.performRequest(
       uniqueQueryKey: 'my_games_${resolvedUserId}',
       overrideCache: overrideCache,
