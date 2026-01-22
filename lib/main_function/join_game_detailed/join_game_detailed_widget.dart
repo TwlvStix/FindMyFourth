@@ -20,6 +20,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
+import 'components/game_details_card.dart';
+import 'components/host_info_section.dart';
+import 'components/player_slots_section.dart';
+import '../game_joined_detailed/components/quick_stats_row.dart';
+
 class JoinGameDetailedWidget extends StatefulWidget {
   const JoinGameDetailedWidget({
     super.key,
@@ -572,10 +577,38 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 ),
                               );
                             }
-                            return _buildPremiumHeroSection(
-                              context,
-                              joinGameDetailedGamesRecord,
-                              hostSnapshot.data!,
+                            return Container(
+                              padding: EdgeInsets.all(AppSpacing.lg),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    AppColors.fairway.withValues(alpha: 0.4),
+                                    AppColors.fairwayDark.withValues(alpha: 0.6),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.fairwayDark.withValues(alpha: 0.3),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  GameDetailsCard(game: joinGameDetailedGamesRecord),
+                                  SizedBox(height: AppSpacing.lg),
+                                  HostInfoSection(hostUser: hostSnapshot.data!),
+                                ],
+                              ),
                             );
                           },
                         ),
@@ -584,7 +617,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                       // Quick Stats Row (Date, Players, Spots)
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                        child: _buildQuickStatsRow(joinGameDetailedGamesRecord),
+                        child: QuickStatsRow(game: joinGameDetailedGamesRecord),
                       ),
 
                       SizedBox(height: AppSpacing.md),
@@ -688,47 +721,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                             SizedBox(height: AppSpacing.lg),
 
                             // Players Section Header with gradient accent
-                            Row(
-                              children: [
-                                Container(
-                                  width: 4,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                                    ),
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
-                                ),
-                                SizedBox(width: AppSpacing.sm),
-                                Text(
-                                  'Players',
-                                  style: AppTypography.titleMedium.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                SizedBox(width: AppSpacing.sm),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.sm,
-                                    vertical: AppSpacing.xxs,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.sunsetGold.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    '${_getPlayerCount(joinGameDetailedGamesRecord)}/4',
-                                    style: AppTypography.labelSmall.copyWith(
-                                      color: AppColors.sunsetGold,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            PlayerSlotsSectionHeader(
+                              currentCount: _getPlayerCount(joinGameDetailedGamesRecord),
+                              maxCount: 4,
                             ),
                             SizedBox(height: AppSpacing.md),
                           ],
@@ -1204,320 +1199,6 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PREMIUM HERO SECTION
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildPremiumHeroSection(
-    BuildContext context,
-    Game game,
-    UsersRecord hostUser,
-  ) {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.fairway.withValues(alpha: 0.4),
-            AppColors.fairwayDark.withValues(alpha: 0.6),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.fairwayDark.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Course name with golf icon
-          Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.sunsetGold.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.golf_course_rounded,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      game.coursePlay,
-                      style: AppTypography.titleMedium.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      game.nameGame,
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.sunsetGold,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: AppSpacing.lg),
-
-          // Host info
-          Container(
-            padding: EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.fairwayLight, AppColors.fairway],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: AppColors.sunsetGold,
-                      width: 2,
-                    ),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: hostUser.photoUrl.isNotEmpty
-                      ? Image.network(
-                          hostUser.photoUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Icon(
-                            Icons.person_rounded,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        )
-                      : Icon(
-                          Icons.person_rounded,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                ),
-                SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Hosted by',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: Colors.white.withValues(alpha: 0.6),
-                        ),
-                      ),
-                      Text(
-                        hostUser.displayName.isNotEmpty
-                            ? hostUser.displayName
-                            : 'Golfer',
-                        style: AppTypography.titleSmall.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // View profile button
-                GestureDetector(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    context.pushNamed(
-                      'ProfileUser',
-                      extra: <String, dynamic>{
-                        'userRef': hostUser.reference,
-                        kTransitionInfoKey: TransitionStandards.detailTransition,
-                      },
-                    );
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: AppSpacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'View',
-                          style: AppTypography.labelSmall.copyWith(
-                            color: Colors.white.withValues(alpha: 0.8),
-                          ),
-                        ),
-                        SizedBox(width: 4),
-                        Icon(
-                          Icons.chevron_right_rounded,
-                          color: Colors.white.withValues(alpha: 0.8),
-                          size: 16,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // QUICK STATS ROW
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildQuickStatsRow(Game game) {
-    final spotsLeft = game.maxPlayers - (game.joinedPlayers.length + game.guestPlayers.length);
-    final isFull = spotsLeft <= 0;
-
-    return Row(
-      children: [
-        // Date Card
-        Expanded(
-          child: Container(
-            padding: EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: AppColors.fairway.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.sunsetPeach, AppColors.sunsetRose],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(Icons.calendar_today_rounded, color: Colors.white, size: 18),
-                ),
-                SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        dateTimeFormat("MMM d", game.date),
-                        style: AppTypography.titleSmall.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        dateTimeFormat("jm", game.date),
-                        style: AppTypography.labelSmall.copyWith(
-                          color: Colors.white.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(width: AppSpacing.sm),
-        // Spots Card
-        Container(
-          padding: EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: isFull
-                ? AppColors.sunsetRose.withValues(alpha: 0.2)
-                : AppColors.sunsetGold.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isFull
-                  ? AppColors.sunsetRose.withValues(alpha: 0.3)
-                  : AppColors.sunsetGold.withValues(alpha: 0.3),
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isFull
-                        ? [AppColors.sunsetRose, AppColors.error]
-                        : [AppColors.sunsetGold, AppColors.sunsetPeach],
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  isFull ? Icons.block_rounded : Icons.person_add_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-              SizedBox(width: AppSpacing.sm),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isFull ? 'Full' : '$spotsLeft Spots',
-                    style: AppTypography.titleSmall.copyWith(
-                      color: isFull ? AppColors.sunsetRose : AppColors.sunsetGold,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    '${game.joinedPlayers.length + game.guestPlayers.length}/${game.maxPlayers}',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: Colors.white.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // PREMIUM GROUP VIBE SUMMARY
