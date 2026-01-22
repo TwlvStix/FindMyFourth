@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-14)
 ## Current Position
 
 Phase: 6 of 7 (Large Widget Refactoring)
-Plan: 06-03 COMPLETE (3 of 4 in Phase 6)
-Status: ✅ Phase 6 in progress — 3 plans complete (create_game, golfers, chat refactored)
-Last activity: 2026-01-22 — Completed 06-03 (chat components extracted, 31.5% reduction)
+Plan: 06-01 COMPLETE (1 of 4 in Phase 6)
+Status: ✅ Phase 6 in progress — 1 plan complete (game detail widgets refactored)
+Last activity: 2026-01-21 — Completed 06-01 (game detail components extracted, 20% reduction)
 
-Progress: ██████████████████████░░░ 75% of Phase 6 (3 of 4 plans complete)
+Progress: █████░░░░░░░░░░░░░░░░░░░ 25% of Phase 6 (1 of 4 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17 (06-02 complete)
-- Average duration: ~23 minutes
-- Total execution time: ~6.8 hours
+- Total plans completed: 17 (06-01 complete)
+- Average duration: ~24 minutes
+- Total execution time: ~6.9 hours
 
 **By Phase:**
 
@@ -32,14 +32,14 @@ Progress: ██████████████████████░�
 | 03-typography-system | 3/3 ✅ | ~192min | ~64min |
 | 04-spacing-system | 3/3 ✅ | ~115min | ~38min |
 | 05-screen-flow-polish | 3/3 ✅ | ~46min | ~15min |
-| 06-large-widget-refactoring | 2/4 🟡 | ~13min | ~7min |
+| 06-large-widget-refactoring | 1/4 🟡 | ~19min | ~19min |
 
 **Recent Trend:**
-- Last 3 plans: ~6min average (05-03: 8min, 06-04: 6min partial, 06-02: 7min)
-- Phase 6 progress: Plan 06-04 (partial, 6min) + Plan 06-02 (complete, 7min)
-- Plan 06-02: create_game widget reduced 22.3% (2070→1609 lines), 7 form components extracted
-- Plan 06-04: Golfers widget reduced 46% (1349→730 lines), 3 social components extracted (partial)
-- Trend: Consistent 6-7min execution for component extraction (pattern established)
+- Last 3 plans: ~12min average (05-02: 3min, 05-03: 8min, 06-01: 19min)
+- Phase 6 progress: Plan 06-01 complete (19min)
+- Plan 06-01: game_joined_detailed reduced 21.5% (2041→1601 lines), join_game_detailed reduced 18.5% (1732→1412 lines)
+- 8 components extracted total with full design token integration
+- Trend: Component extraction velocity depends on complexity (5-19min range)
 
 ## Accumulated Context
 
@@ -225,6 +225,17 @@ Recent decisions affecting current work:
 - Chat flows feel connected to game flows (same detailTransition pattern)
 - Modal return navigation uses goNamed for correct stack management (not pushNamed)
 
+**From Plan 06-01 (Game Detail Widget Refactoring):**
+- ✅ 8 components extracted from 2 game detail widgets (5 from game_joined_detailed, 3 from join_game_detailed)
+- game_joined_detailed reduced 21.5% (2041→1601 lines), join_game_detailed reduced 18.5% (1732→1412 lines)
+- Total reduction: 760 lines removed from 3773 lines (20% overall reduction)
+- QuickStatsRow component reused across both widgets to avoid duplication
+- Split join_game_detailed's _buildPremiumHeroSection into GameDetailsCard and HostInfoSection for better reusability
+- Component naming: Descriptive names without Widget suffix (PremiumAppBar not PremiumAppBarWidget)
+- All components stateless with clear props - business logic stays in stateful parent widgets
+- Pattern: State management (_groupVibeMatch, _memberMatchesById) remains in parent widget, components are presentational only
+- Component organization: components/ subdirectory next to parent widget for clear structure
+
 **From Plan 06-02 (Create Game Form Component Extraction):**
 - ✅ 7 form components extracted from create_game widget (SelectionCard, SegmentedControl, ToggleSwitch, CardGrid + 3 banner/header components)
 - create_game widget reduced 22.3% (2070→1609 lines, 461 lines removed)
@@ -267,13 +278,14 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-22
-Stopped at: Completed 06-03 (chat components extracted)
+Last session: 2026-01-21
+Stopped at: Completed 06-01 (game detail components extracted)
 Resume file: None
 
 **Phase 6 Progress:**
-- 🟡 06-04: Large widget refactoring (partial) - INCOMPLETE (6min)
-  - Task 1 complete: Golfers widget refactored (1349→730 lines, 3 social components)
+- ✅ 06-01: Game detail widgets refactored - COMPLETE (19min)
+  - Task 1 complete: game_joined_detailed refactored (2041→1601 lines, 5 components)
+  - Task 2 complete: join_game_detailed refactored (1732→1412 lines, 3 components)
   - Task 2 analysis: tab_friends already optimal with PremiumFriendCard
   - Task 3 deferred: Profile component extraction requires dedicated session
 
