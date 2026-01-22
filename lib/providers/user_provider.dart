@@ -145,9 +145,6 @@ class UserProvider extends ChangeNotifier {
         ? 'available_games_${fromDate.toIso8601String()}'
         : 'available_games';
 
-    debugPrint(
-      'UserProvider: getAvailableGames overrideCache=$overrideCache key=$queryKey',
-    );
     return _availableGamesManager.performRequest(
       uniqueQueryKey: queryKey,
       overrideCache: overrideCache,
@@ -171,14 +168,12 @@ class UserProvider extends ChangeNotifier {
     final currentUser = _currentUser;
     final userRef = currentUser?.reference ?? currentUserReference;
     final resolvedUserId = currentUser?.reference.id ?? userRef?.id ?? '';
-    debugPrint('UserProvider: refreshMyGames userId=$resolvedUserId');
     _myGamesManager.clearRequest('my_games_${resolvedUserId}');
     notifyListeners();
   }
 
   /// Refresh available games cache
   void refreshAvailableGames() {
-    debugPrint('UserProvider: refreshAvailableGames');
     _availableGamesManager.clear();
     notifyListeners();
   }
@@ -344,29 +339,15 @@ class UserProvider extends ChangeNotifier {
 
     try {
       final targetUser = await UsersRecord.getDocumentOnce(targetUserRef);
-      print(
-        'Send friend request: target=${targetUserRef.path} current=${currentUserRef.path} target_friend_requests=${targetUser.snapshotData['friend_requests']}',
-      );
       if (targetUser.friends.contains(currentUserRef) ||
           targetUser.friendRequests.contains(currentUserRef)) {
         return;
       }
-      print('Send friend request write start');
       await targetUserRef.update({
         'friend_requests': FieldValue.arrayUnion([currentUserRef.id]),
       });
-      print('Send friend request write success');
-      try {
-        final updatedTarget = await targetUserRef.get();
-        final targetData = updatedTarget.data() as Map<String, dynamic>?;
-        print(
-          'Friend request update: ${updatedTarget.reference.path} friend_requests=${targetData?['friend_requests']}',
-        );
-      } catch (e) {
-        print('Friend request update readback failed: $e');
-      }
     } catch (e) {
-      print('Error sending friend request: $e');
+      debugPrint('Error sending friend request: $e');
       rethrow;
     }
   }
