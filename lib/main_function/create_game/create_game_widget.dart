@@ -27,6 +27,12 @@ import 'dart:convert';
 import 'dart:math';
 
 import '/providers/chat_provider.dart';
+import 'components/draft_banner.dart';
+import 'components/quick_create_banner.dart';
+import 'components/section_header.dart';
+import 'components/segmented_control.dart';
+import 'components/toggle_switch.dart';
+import 'components/card_grid.dart';
 
 class CreateGameWidget extends StatefulWidget {
   const CreateGameWidget({super.key});
@@ -628,503 +634,6 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     super.dispose();
   }
 
-  // Build draft continuation banner
-  Widget _buildDraftBanner() {
-    return Container(
-      margin: EdgeInsets.only(bottom: AppSpacing.md),
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.sunsetGold.withValues(alpha: 0.2),
-            AppColors.sunsetPeach.withValues(alpha: 0.15),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.sunsetGold.withValues(alpha: 0.4),
-          width: 2,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.restore_rounded,
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
-          SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Continue where you left off',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.xxs),
-                Text(
-                  'Your draft has been restored',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          TextButton(
-            onPressed: _clearDraft,
-            child: Text(
-              'Clear',
-              style: GoogleFonts.outfit(
-                color: AppColors.sunsetGold,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Build quick create banner
-  Widget _buildQuickCreateBanner() {
-    return Container(
-      margin: EdgeInsets.only(bottom: AppSpacing.lg),
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.fairwayLight.withValues(alpha: 0.2),
-            AppColors.fairway.withValues(alpha: 0.15),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.fairwayLight.withValues(alpha: 0.4),
-          width: 2,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.flash_on_rounded,
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
-          SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Quick Create',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.xxs),
-                Text(
-                  'Use smart defaults for faster setup',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          AppButtonEnhanced(
-            text: 'Go',
-            variant: AppButtonVariant.primary,
-            size: AppButtonSize.small,
-            onPressed: _quickCreate,
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Build section header with icon and optional help
-  Widget _buildSectionHeader(
-    String emoji,
-    String title, {
-    String? helpText,
-  }) {
-    return Padding(
-      padding: EdgeInsets.only(
-        top: AppSpacing.md,
-        bottom: AppSpacing.xxs,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.fairwayLight, AppColors.fairway],
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: Text(
-                emoji,
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-          ),
-          SizedBox(width: AppSpacing.sm),
-          Text(
-            title,
-            style: AppTheme.of(context).labelMedium.override(
-                  font: GoogleFonts.outfit(
-                    fontWeight: AppTheme.of(context).labelMedium.fontWeight,
-                    fontStyle: AppTheme.of(context).labelMedium.fontStyle,
-                  ),
-                  color: Colors.white,
-                  fontSize: 16,
-                  letterSpacing: 0.0,
-                  fontWeight: FontWeight.w600,
-                  fontStyle: AppTheme.of(context).labelMedium.fontStyle,
-                ),
-          ),
-          if (helpText != null) ...[
-            SizedBox(width: AppSpacing.xs),
-            GestureDetector(
-              onTap: () => _showHelpDialog(context, title, helpText),
-              child: Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: AppColors.sunsetGold.withValues(alpha: 0.3),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.help_outline_rounded,
-                  color: AppColors.sunsetGold,
-                  size: 14,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  // Premium selection card for grid-based selections
-  Widget _buildSelectionCard({
-    required IconData icon,
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-    String? emoji,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      child: AnimatedContainer(
-        duration: Duration(milliseconds: 200),
-        padding: EdgeInsets.all(AppSpacing.sm),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  colors: [
-                    AppColors.fairway.withValues(alpha: 0.5),
-                    AppColors.fairwayDark.withValues(alpha: 0.7),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          color: isSelected ? null : AppColors.fairway.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.sunsetGold
-                : Colors.white.withValues(alpha: 0.1),
-            width: isSelected ? 2 : 1,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.sunsetGold.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                gradient: isSelected
-                    ? LinearGradient(
-                        colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                      )
-                    : null,
-                color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: emoji != null
-                  ? Center(
-                      child: Text(emoji, style: TextStyle(fontSize: 20)),
-                    )
-                  : Icon(icon, color: Colors.white, size: 22),
-            ),
-            SizedBox(height: AppSpacing.xs),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Segmented control for binary choices (Visibility)
-  Widget _buildSegmentedControl({
-    required List<Map<String, dynamic>> options,
-    required String? selectedValue,
-    required Function(String) onChanged,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.fairway.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
-      ),
-      padding: EdgeInsets.all(4),
-      child: Row(
-        children: options.map((option) {
-          final isSelected = selectedValue == option['value'];
-          return Expanded(
-            child: GestureDetector(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                onChanged(option['value']);
-              },
-              child: AnimatedContainer(
-                duration: Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  gradient: isSelected
-                      ? LinearGradient(
-                          colors: [
-                            AppColors.sunsetGold,
-                            AppColors.sunsetPeach,
-                          ],
-                        )
-                      : null,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: AppColors.sunsetGold.withValues(alpha: 0.4),
-                            blurRadius: 8,
-                            offset: Offset(0, 2),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      option['icon'] as IconData,
-                      color: isSelected
-                          ? Colors.white
-                          : Colors.white.withValues(alpha: 0.6),
-                      size: 20,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      option['label'] as String,
-                      style: GoogleFonts.outfit(
-                        color: isSelected
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.6),
-                        fontSize: 15,
-                        fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  // Toggle switch for boolean options (Member Discount)
-  Widget _buildToggleSwitch({
-    required String label,
-    required String description,
-    required bool value,
-    required Function(bool) onChanged,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.fairway.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: value
-              ? AppColors.sunsetGold.withValues(alpha: 0.5)
-              : Colors.white.withValues(alpha: 0.1),
-          width: value ? 2 : 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.xxs),
-                Text(
-                  description,
-                  style: GoogleFonts.outfit(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: AppSpacing.md),
-          GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              onChanged(!value);
-            },
-            child: AnimatedContainer(
-              duration: Duration(milliseconds: 200),
-              width: 56,
-              height: 32,
-              decoration: BoxDecoration(
-                gradient: value
-                    ? LinearGradient(
-                        colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                      )
-                    : null,
-                color: value ? null : Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: AnimatedAlign(
-                duration: Duration(milliseconds: 200),
-                alignment:
-                    value ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  width: 26,
-                  height: 26,
-                  margin: EdgeInsets.symmetric(horizontal: 3),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Card grid for multiple-choice selections
-  Widget _buildCardGrid({
-    required List<Map<String, dynamic>> options,
-    required String? selectedValue,
-    required Function(String) onChanged,
-    int crossAxisCount = 2,
-    double childAspectRatio = 1.4,
-  }) {
-    return GridView.count(
-      crossAxisCount: crossAxisCount,
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      crossAxisSpacing: AppSpacing.sm,
-      mainAxisSpacing: AppSpacing.sm,
-      childAspectRatio: childAspectRatio,
-      padding: EdgeInsets.zero,
-      children: options.map((option) {
-        final isSelected = selectedValue == option['value'];
-        return _buildSelectionCard(
-          icon: option['icon'] as IconData,
-          label: option['label'] as String,
-          emoji: option['emoji'] as String?,
-          isSelected: isSelected,
-          onTap: () {
-            onChanged(option['value'] as String);
-            _saveDraft();
-          },
-        );
-      }).toList(),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -1200,7 +709,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                         mainAxisSize: MainAxisSize.max,
                         children: [
                           // Draft continuation banner
-                          if (_hasDraft) _buildDraftBanner(),
+                          if (_hasDraft) DraftBanner(onClear: _clearDraft),
 
                           Container(
                             width: double.infinity,
@@ -1216,13 +725,17 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     // Quick Create Banner
-                                    _buildQuickCreateBanner(),
+                                    QuickCreateBanner(onQuickCreate: _quickCreate),
 
-                                    _buildSectionHeader(
-                                      '🏷️',
-                                      'Game Name',
+                                    SectionHeader(
+                                      emoji: '🏷️',
+                                      title: 'Game Name',
                                       helpText:
                                           'Auto-generated for you. Edit here if you want a custom name.',
+                                      onHelpTap: () => _showHelpDialog(
+                                          context,
+                                          'Game Name',
+                                          'Auto-generated for you. Edit here if you want a custom name.'),
                                     ),
                                     Padding(
                                       padding: EdgeInsets.only(
@@ -1237,9 +750,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                       ),
                                     ),
 
-                              _buildSectionHeader(
-                                '📅',
-                                'Game Day',
+                              SectionHeader(
+                                emoji: '📅',
+                                title: 'Game Day',
                               ),
                               Align(
                                 alignment: AlignmentDirectional(-1.0, 0.0),
@@ -1654,14 +1167,18 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                   ),
                                 ),
                               ),
-                              _buildSectionHeader(
-                                '👁️',
-                                'Visibility',
+                              SectionHeader(
+                                emoji: '👁️',
+                                title: 'Visibility',
                                 helpText: 'Choose whether your game is visible to friends only or everyone in your area.',
+                                onHelpTap: () => _showHelpDialog(
+                                    context,
+                                    'Visibility',
+                                    'Choose whether your game is visible to friends only or everyone in your area.'),
                               ),
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                child: _buildSegmentedControl(
+                                child: SegmentedControl(
                                   options: [
                                     {'value': 'Friends', 'label': 'Friends', 'icon': Icons.people_rounded},
                                     {'value': 'Public', 'label': 'Public', 'icon': Icons.public_rounded},
@@ -1675,9 +1192,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                   },
                                 ),
                               ),
-                              _buildSectionHeader(
-                                '🏌️',
-                                'Course',
+                              SectionHeader(
+                                emoji: '🏌️',
+                                title: 'Course',
                               ),
                               Align(
                                 alignment: AlignmentDirectional(-1.0, 0.0),
@@ -1845,7 +1362,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                 ),
                               ),
                               SizedBox(height: AppSpacing.md),
-                              _buildToggleSwitch(
+                              ToggleSwitch(
                                 label: '💰 Member Perk',
                                 description: 'Does the course offer a discount for members bringing guests?',
                                 value: memberDiscount,
@@ -1864,10 +1381,14 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
-                                    _buildSectionHeader(
-                                      '👥',
-                                      'Number of Players Needed',
+                                    SectionHeader(
+                                      emoji: '👥',
+                                      title: 'Number of Players Needed',
                                       helpText: 'How many additional players are you looking for to join your game?',
+                                      onHelpTap: () => _showHelpDialog(
+                                          context,
+                                          'Number of Players Needed',
+                                          'How many additional players are you looking for to join your game?'),
                                     ),
                                   ],
                                 ),
@@ -1942,14 +1463,18 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                   ),
                                 ),
                               ),
-                              _buildSectionHeader(
-                                '⚙️',
-                                'Rules Settings',
+                              SectionHeader(
+                                emoji: '⚙️',
+                                title: 'Rules Settings',
                                 helpText: 'Strict follows USGA rules precisely. Relaxed allows casual adjustments. Open to Discuss means flexible.',
+                                onHelpTap: () => _showHelpDialog(
+                                    context,
+                                    'Rules Settings',
+                                    'Strict follows USGA rules precisely. Relaxed allows casual adjustments. Open to Discuss means flexible.'),
                               ),
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                child: _buildCardGrid(
+                                child: CardGrid(
                                   options: [
                                     {'value': 'Strict', 'label': 'Strict', 'icon': Icons.gavel_rounded, 'emoji': '📏'},
                                     {'value': 'Relaxed', 'label': 'Relaxed', 'icon': Icons.self_improvement_rounded, 'emoji': '😌'},
@@ -1959,20 +1484,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                   onChanged: (val) {
                                     if (mounted) {
                                       setState(() => rulesSetValue = val);
+                                      _saveDraft();
                                     }
                                   },
                                   crossAxisCount: 3,
                                   childAspectRatio: 0.95,
                                 ),
                               ),
-                              _buildSectionHeader(
-                                '🎯',
-                                'Style of Game',
+                              SectionHeader(
+                                emoji: '🎯',
+                                title: 'Style of Game',
                                 helpText: 'Are you playing for money, just for fun, or open to discussing stakes?',
+                                onHelpTap: () => _showHelpDialog(
+                                    context,
+                                    'Style of Game',
+                                    'Are you playing for money, just for fun, or open to discussing stakes?'),
                               ),
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                child: _buildCardGrid(
+                                child: CardGrid(
                                   options: [
                                     {'value': 'Money Game', 'label': 'Money', 'icon': Icons.attach_money_rounded, 'emoji': '💵'},
                                     {'value': 'All Fun', 'label': 'Just Fun', 'icon': Icons.celebration_rounded, 'emoji': '🎉'},
@@ -1982,20 +1512,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                   onChanged: (val) {
                                     if (mounted) {
                                       setState(() => styleGameValue = val);
+                                      _saveDraft();
                                     }
                                   },
                                   crossAxisCount: 3,
                                   childAspectRatio: 0.95,
                                 ),
                               ),
-                              _buildSectionHeader(
-                                '🏆',
-                                'Game Type',
+                              SectionHeader(
+                                emoji: '🏆',
+                                title: 'Game Type',
                                 helpText: 'Choose your preferred format: Match Play (hole-by-hole), Stroke Play (total strokes), Stableford (points), etc.',
+                                onHelpTap: () => _showHelpDialog(
+                                    context,
+                                    'Game Type',
+                                    'Choose your preferred format: Match Play (hole-by-hole), Stroke Play (total strokes), Stableford (points), etc.'),
                               ),
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                child: _buildCardGrid(
+                                child: CardGrid(
                                   options: [
                                     {'value': 'Match Play', 'label': 'Match Play', 'icon': Icons.sports_golf_rounded, 'emoji': '🆚'},
                                     {'value': 'Stroke Play', 'label': 'Stroke Play', 'icon': Icons.format_list_numbered_rounded, 'emoji': '📝'},
@@ -2008,20 +1543,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                   onChanged: (val) {
                                     if (mounted) {
                                       setState(() => gameTypeValue = val);
+                                      _saveDraft();
                                     }
                                   },
                                   crossAxisCount: 3,
                                   childAspectRatio: 0.95,
                                 ),
                               ),
-                              _buildSectionHeader(
-                                '📊',
-                                'Scoring',
+                              SectionHeader(
+                                emoji: '📊',
+                                title: 'Scoring',
                                 helpText: 'Gross is total strokes. Net adjusts for handicap. Both tracks both scores.',
+                                onHelpTap: () => _showHelpDialog(
+                                    context,
+                                    'Scoring',
+                                    'Gross is total strokes. Net adjusts for handicap. Both tracks both scores.'),
                               ),
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                child: _buildCardGrid(
+                                child: CardGrid(
                                   options: [
                                     {'value': 'Gross', 'label': 'Gross', 'icon': Icons.sports_golf_rounded, 'emoji': '📊'},
                                     {'value': 'Net', 'label': 'Net', 'icon': Icons.calculate_rounded, 'emoji': '🧮'},
@@ -2032,6 +1572,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                   onChanged: (val) {
                                     if (mounted) {
                                       setState(() => scoringValue = val);
+                                      _saveDraft();
                                     }
                                   },
                                   crossAxisCount: 2,
