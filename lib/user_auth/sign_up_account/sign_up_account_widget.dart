@@ -1,11 +1,9 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/fairway_background.dart';
-import '/core/widgets/app_text_field.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/design_tokens/spacing.dart';
-import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_text.dart';
 import '/profile/create_profile/create_profile_widget.dart';

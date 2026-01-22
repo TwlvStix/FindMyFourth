@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/backend/backend.dart';
@@ -661,26 +659,6 @@ T? _deserializeParam<T>(
     isList,
     collectionNamePath: collectionNamePath,
   );
-}
-
-Future<T?> _resolveAsyncParam<T>(
-  GoRouterState state,
-  String name,
-  Future<T> Function(String) loader,
-) {
-  final param = _paramValue(state, name);
-  if (param == null) {
-    return Future.value(null);
-  }
-  if (param is T) {
-    return Future.value(param);
-  }
-  if (param is! String) {
-    return Future.value(param as T?);
-  }
-  return loader(param)
-      .then<T?>((value) => value)
-      .catchError((_, __) => null);
 }
 
 bool _isEmptyStateParams(GoRouterState state) {

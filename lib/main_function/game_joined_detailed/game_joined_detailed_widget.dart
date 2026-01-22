@@ -10,6 +10,7 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/navigation/app_router.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
+import '/main_function/games_list/games_list_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
 import '/models/game.dart';
 import '/models/vibe_profile.dart';
@@ -1077,20 +1078,33 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                               debugPrint(
                                 'CancelGame: isCancelled=${updatedData?['isCancelled']}',
                               );
+                            } catch (error, stackTrace) {
+                              debugPrint('CancelGame: failed $error');
+                              debugPrintStack(stackTrace: stackTrace);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Unable to cancel the game. Please try again.',
+                                  ),
+                                  backgroundColor: AppTheme.of(context).error,
+                                ),
+                              );
+                              return;
+                            }
 
-                              final currentUserId =
-                                  FirebaseAuth.instance.currentUser?.uid;
-                              if (gameJoinedDetailedGamesRecord.chatRef !=
-                                      null &&
-                                  currentUserId != null) {
-                                final gameName =
-                                    gameJoinedDetailedGamesRecord.nameGame;
-                                final cancelMessage =
-                                    gameName.trim().isNotEmpty
-                                    ? 'Game "$gameName" has been cancelled.'
-                                    : 'This game has been cancelled.';
-                                final chatRef =
-                                    gameJoinedDetailedGamesRecord.chatRef!;
+                            final currentUserId =
+                                FirebaseAuth.instance.currentUser?.uid;
+                            if (gameJoinedDetailedGamesRecord.chatRef != null &&
+                                currentUserId != null) {
+                              final gameName =
+                                  gameJoinedDetailedGamesRecord.nameGame;
+                              final cancelMessage =
+                                  gameName.trim().isNotEmpty
+                                  ? 'Game "$gameName" has been cancelled.'
+                                  : 'This game has been cancelled.';
+                              final chatRef =
+                                  gameJoinedDetailedGamesRecord.chatRef!;
+                              try {
                                 await context.read<ChatProvider>().sendMessage(
                                       chatId: chatRef.id,
                                       senderId: currentUserId,
@@ -1106,19 +1120,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                     ),
                                   ),
                                 });
+                              } catch (error, stackTrace) {
+                                debugPrint(
+                                  'CancelGame: chat update failed $error',
+                                );
+                                debugPrintStack(stackTrace: stackTrace);
                               }
-                            } catch (error, stackTrace) {
-                              debugPrint('CancelGame: failed $error');
-                              debugPrintStack(stackTrace: stackTrace);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Unable to cancel the game. Please try again.',
-                                  ),
-                                  backgroundColor: AppTheme.of(context).error,
-                                ),
-                              );
-                              return;
                             }
 
                             // Show success toast
@@ -1131,8 +1138,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             );
                             context.userProvider.refreshMyGames();
 
-                            // Navigate to Schedule tab (My Games)
-                            context.goNamed(GamesJoinedWidget.routeName);
+                            // Navigate to Games list tab
+                            context.goNamed(GamesListWidget.routeName);
                           }
                         },
                       ),

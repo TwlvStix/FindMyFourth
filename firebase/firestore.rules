@@ -36,6 +36,35 @@ service cloud.firestore {
       return /databases/$(database)/documents/users/$(uid);
     }
 
+    function isGameParticipant(gameId) {
+      let gamePath = /databases/$(database)/documents/games/$(gameId);
+      let gameData = exists(gamePath) ? get(gamePath).data : null;
+      return isSignedIn() &&
+        gameId is string &&
+        gameData != null &&
+        gameData.joined_players is list &&
+        gameData.joined_players.hasAny([userRef(request.auth.uid)]);
+    }
+
+    function memberIdsOrEmpty(data) {
+      return data.memberIds is list ? data.memberIds : [];
+    }
+
+    function isChatMemberOrLegacy(data) {
+      return isChatMember(data) || isLegacyChatMember(data);
+    }
+
+    function isChatMemberById(chatId) {
+      let chatPath = /databases/$(database)/documents/chats/$(chatId);
+      let chatData = exists(chatPath) ? get(chatPath).data : null;
+      return chatData != null && (
+        (chatData.memberIds is list &&
+          request.auth.uid in chatData.memberIds) ||
+        (chatData.users is list &&
+          chatData.users.hasAny([userRef(request.auth.uid)]))
+      );
+    }
+
     function isSelfFriendChange() {
       let nextList = request.resource.data.friends;
       let changedKeys = request.resource.data.diff(resource.data).changedKeys();
@@ -61,14 +90,14 @@ service cloud.firestore {
 
     function canSelfJoinGameChat(oldData, newData) {
       let changedKeys = newData.diff(oldData).changedKeys();
-      return oldData.type == 'game' &&
-        newData.type == oldData.type &&
-        oldData.memberIds is list &&
+      let oldMembers = memberIdsOrEmpty(oldData);
+      let newMembers = memberIdsOrEmpty(newData);
+      return isGameParticipant(oldData.gameId) &&
         newData.memberIds is list &&
-        !(request.auth.uid in oldData.memberIds) &&
-        request.auth.uid in newData.memberIds &&
-        newData.memberIds.hasAll(oldData.memberIds) &&
-        newData.memberIds.size() == oldData.memberIds.size() + 1 &&
+        !(request.auth.uid in oldMembers) &&
+        request.auth.uid in newMembers &&
+        newMembers.hasAll(oldMembers) &&
+        newMembers.size() == oldMembers.size() + 1 &&
         changedKeys.hasOnly([
           'memberIds',
           'users',
@@ -178,15 +207,20 @@ service cloud.firestore {
 
       // Allow update if user is a member and follows update rules
       allow update: if isSignedIn() && (
-        (isChatMember(resource.data) &&
-          request.auth.uid in request.resource.data.memberIds &&
+        (isChatMemberOrLegacy(resource.data) &&
+          (!(request.resource.data.memberIds is list) ||
+            request.auth.uid in request.resource.data.memberIds) &&
           canUpdateUnreadCount(resource.data, request.resource.data) &&
           request.resource.data.type == resource.data.type &&
           (resource.data.type != 'direct' ||
-            request.resource.data.memberIds == resource.data.memberIds) &&
+            (request.resource.data.memberIds is list &&
+              resource.data.memberIds is list &&
+              request.resource.data.memberIds == resource.data.memberIds)) &&
           (resource.data.type != 'direct' ||
             request.resource.data.directKey == resource.data.directKey) &&
           (resource.data.type == 'direct' ||
+            !(request.resource.data.memberIds is list &&
+              resource.data.memberIds is list) ||
             request.resource.data.memberIds.hasAll(resource.data.memberIds) ||
             resource.data.memberIds.hasAll(request.resource.data.memberIds))) ||
         canSelfJoinGameChat(resource.data, request.resource.data)
@@ -196,15 +230,14 @@ service cloud.firestore {
       allow delete: if isSignedIn() && isChatMember(resource.data);
 
       match /messages/{messageId} {
-        allow read: if isSignedIn() &&
-          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.memberIds;
+        allow read: if isSignedIn() && isChatMemberById(chatId);
         allow create: if isSignedIn() &&
           request.resource.data.senderId == request.auth.uid &&
-          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.memberIds;
+          isChatMemberById(chatId);
         // Allow update/delete if sender OR if user is a chat member (for bulk deletion)
         allow update, delete: if isSignedIn() && (
           resource.data.senderId == request.auth.uid ||
-          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.memberIds
+          isChatMemberById(chatId)
         );
       }
     }

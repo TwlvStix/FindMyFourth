@@ -338,24 +338,25 @@ class UserProvider extends ChangeNotifier {
 
   /// Send friend request
   Future<void> sendFriendRequest(DocumentReference targetUserRef) async {
-    if (!isLoggedIn) return;
-    if (currentUserReference == null) return;
-    if (targetUserRef.path == currentUserReference!.path) return;
+    final authUser = FirebaseAuth.instance.currentUser;
+    if (authUser == null) return;
+    final currentUserRef = UsersRecord.collection.doc(authUser.uid);
+    if (targetUserRef.path == currentUserRef.path) return;
     if (friends.contains(targetUserRef)) return;
     if (friendRequests.contains(targetUserRef)) return;
 
     try {
       final targetUser = await UsersRecord.getDocumentOnce(targetUserRef);
       print(
-        'Send friend request: target=${targetUserRef.path} current=${currentUserReference?.path} target_friend_requests=${targetUser.snapshotData['friend_requests']}',
+        'Send friend request: target=${targetUserRef.path} current=${currentUserRef.path} target_friend_requests=${targetUser.snapshotData['friend_requests']}',
       );
-      if (targetUser.friends.contains(currentUserReference) ||
-          targetUser.friendRequests.contains(currentUserReference)) {
+      if (targetUser.friends.contains(currentUserRef) ||
+          targetUser.friendRequests.contains(currentUserRef)) {
         return;
       }
       print('Send friend request write start');
       await targetUserRef.update({
-        'friend_requests': FieldValue.arrayUnion([currentUserReference!.id]),
+        'friend_requests': FieldValue.arrayUnion([currentUserRef.id]),
       });
       print('Send friend request write success');
       try {
@@ -404,7 +405,8 @@ class UserProvider extends ChangeNotifier {
 
     try {
       await currentUserReference!.update({
-        'friend_requests': FieldValue.arrayRemove([requesterRef]),
+        'friend_requests':
+            FieldValue.arrayRemove([requesterRef, requesterRef.id]),
       });
       refreshFriendRequests();
     } catch (e) {

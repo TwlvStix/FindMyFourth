@@ -13,6 +13,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
+import '/providers/provider_extensions.dart';
 class LeaveGameWidget extends StatefulWidget {
   const LeaveGameWidget({
     super.key,

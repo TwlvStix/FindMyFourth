@@ -12,13 +12,6 @@ import '/backend/backend.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/auth/firebase_auth/auth_util.dart';
 
-List<PostsRecord> getResultList(
-  List<PostsRecord> mainList,
-  List<PostsRecord> searchList,
-) {
-  return searchList.isNotEmpty ? searchList : mainList;
-}
-
 bool usernameChecker(
   String textfield,
   List<String> usernames,

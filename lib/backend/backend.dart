@@ -12,7 +12,6 @@ import 'schema/chat_messages_record.dart';
 import 'schema/chats_record.dart';
 import 'schema/games_record.dart';
 import 'schema/friend_request_record.dart';
-import 'schema/posts_record.dart';
 import 'schema/roles_record.dart';
 import 'schema/add_players_record.dart';
 import 'schema/verification_dash_record.dart';
@@ -32,7 +31,6 @@ export 'schema/chat_messages_record.dart';
 export 'schema/chats_record.dart';
 export 'schema/games_record.dart';
 export 'schema/friend_request_record.dart';
-export 'schema/posts_record.dart';
 export 'schema/roles_record.dart';
 export 'schema/add_players_record.dart';
 export 'schema/verification_dash_record.dart';
@@ -465,73 +463,6 @@ Future<FirestorePage<FriendRequestRecord>> queryFriendRequestRecordPage({
       return page;
     });
 
-/// Functions to query PostsRecords (as a Stream and as a Future).
-Future<int> queryPostsRecordCount({
-  Query Function(Query)? queryBuilder,
-  int limit = -1,
-}) =>
-    queryCollectionCount(
-      PostsRecord.collection,
-      queryBuilder: queryBuilder,
-      limit: limit,
-    );
-
-Stream<List<PostsRecord>> queryPostsRecord({
-  Query Function(Query)? queryBuilder,
-  int limit = -1,
-  bool singleRecord = false,
-}) =>
-    queryCollection(
-      PostsRecord.collection,
-      PostsRecord.fromSnapshot,
-      queryBuilder: queryBuilder,
-      limit: limit,
-      singleRecord: singleRecord,
-    );
-
-Future<List<PostsRecord>> queryPostsRecordOnce({
-  Query Function(Query)? queryBuilder,
-  int limit = -1,
-  bool singleRecord = false,
-}) =>
-    queryCollectionOnce(
-      PostsRecord.collection,
-      PostsRecord.fromSnapshot,
-      queryBuilder: queryBuilder,
-      limit: limit,
-      singleRecord: singleRecord,
-    );
-Future<FirestorePage<PostsRecord>> queryPostsRecordPage({
-  Query Function(Query)? queryBuilder,
-  DocumentSnapshot? nextPageMarker,
-  required int pageSize,
-  required bool isStream,
-  required PagingController<DocumentSnapshot?, PostsRecord> controller,
-  List<StreamSubscription?>? streamSubscriptions,
-}) =>
-    firestoreRepository.queryCollectionPage(
-      PostsRecord.collection,
-      PostsRecord.fromSnapshot,
-    queryBuilder: queryBuilder,
-    nextPageMarker: nextPageMarker,
-    pageSize: pageSize,
-    isStream: isStream,
-  ).then((page) {
-      _appendPageToController(
-        controller,
-        page.data,
-        page.nextPageMarker,
-      );
-      if (isStream) {
-        final streamSubscription =
-            (page.dataStream)?.listen((List<PostsRecord> data) {
-          _replaceStreamItems(controller, data);
-        });
-        streamSubscriptions?.add(streamSubscription);
-      }
-      return page;
-    });
-
 /// Functions to query RolesRecords (as a Stream and as a Future).
 Future<int> queryRolesRecordCount({
   Query Function(Query)? queryBuilder,
@@ -743,16 +674,20 @@ Future<int> queryCollectionCount(
   Query collection, {
   Query Function(Query)? queryBuilder,
   int limit = -1,
-}) {
+}) async {
   final builder = queryBuilder ?? (q) => q;
   var query = builder(collection);
   if (limit > 0) {
     query = query.limit(limit);
   }
 
-  return query.count().get().catchError((err) {
+  try {
+    final value = await query.count().get();
+    return value.count ?? 0;
+  } catch (err) {
     print('Error querying $collection: $err');
-  }).then((value) => value.count!);
+    rethrow;
+  }
 }
 
 Stream<List<T>> queryCollection<T>(
