@@ -24,6 +24,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
+import 'components/premium_app_bar.dart';
+import 'components/premium_hero_section.dart';
+import 'components/quick_stats_row.dart';
+import 'components/group_vibe_summary.dart';
+import 'components/player_match_chip.dart';
 
 enum _CancelListingHandling {
   removeNow,
@@ -154,53 +159,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PREMIUM APP BAR
-  // ═══════════════════════════════════════════════════════════════════════════
-  PreferredSizeWidget _buildPremiumAppBar(BuildContext context, String title) {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      automaticallyImplyLeading: false,
-      leading: GestureDetector(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          final router = GoRouter.of(context);
-          router.go('/gamesList');
-        },
-        child: Container(
-          margin: EdgeInsets.only(left: AppSpacing.sm),
-          decoration: BoxDecoration(
-            color: AppColors.fairway.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(12.0),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          ),
-          child: Icon(
-            Icons.chevron_left_rounded,
-            color: Colors.white,
-            size: 28.0,
-          ),
-        ),
-      ),
-      title: Text(
-        title,
-        style: AppTypography.headlineMedium.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      centerTitle: false,
-      elevation: 0.0,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.gameRef == null) {
       return Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: _buildPremiumAppBar(context, 'Game'),
+        appBar: const PremiumAppBar(title: 'Game'),
         body: FairwayBackgroundDark(
           showOrganic: true,
           showTexture: true,
@@ -253,7 +217,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
         if (!snapshot.hasData) {
           return Scaffold(
             extendBodyBehindAppBar: true,
-            appBar: _buildPremiumAppBar(context, 'Loading...'),
+            appBar: const PremiumAppBar(title: 'Loading...'),
             body: FairwayBackgroundDark(
               showOrganic: true,
               showTexture: true,
@@ -285,7 +249,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
         return Scaffold(
           key: scaffoldKey,
           extendBodyBehindAppBar: true,
-          appBar: _buildPremiumAppBar(context, 'Game Dashboard'),
+          appBar: const PremiumAppBar(title: 'Game Dashboard'),
           body: FairwayBackgroundDark(
             showOrganic: true,
             showTexture: true,
@@ -303,16 +267,15 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                     // Premium Hero Section
                     Padding(
                       padding: EdgeInsets.all(AppSpacing.md),
-                      child: _buildPremiumHeroSection(
-                        context,
-                        gameJoinedDetailedGamesRecord,
+                      child: PremiumHeroSection(
+                        game: gameJoinedDetailedGamesRecord,
                       ),
                     ),
 
                     // Quick Stats Row (Date, Players, Chat)
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      child: _buildQuickStatsRow(gameJoinedDetailedGamesRecord),
+                      child: QuickStatsRow(game: gameJoinedDetailedGamesRecord),
                     ),
 
                     SizedBox(height: AppSpacing.md),
@@ -423,7 +386,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                     // Group Vibe Summary
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      child: _buildPremiumGroupVibeSummary(),
+                      child: GroupVibeSummary(
+                        groupVibeMatch: _groupVibeMatch,
+                        onViewBreakdown: _openGroupVibeBreakdown,
+                      ),
                     ),
 
                     SizedBox(height: AppSpacing.lg),
@@ -742,9 +708,9 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                               padding: EdgeInsets.only(
                                                 right: AppSpacing.sm,
                                               ),
-                                              child: _buildPlayerMatchChip(
-                                                friend1UsersRecord.reference.id,
-                                                friend1UsersRecord.displayName,
+                                              child: PlayerMatchChip(
+                                                name: friend1UsersRecord.displayName,
+                                                memberMatch: _memberMatchesById[friend1UsersRecord.reference.id],
                                               ),
                                             ),
                                             // Show remove button for owner, checkmark for others
@@ -1359,40 +1325,6 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     );
   }
 
-  Widget _buildPlayerMatchChip(String userId, String name) {
-    final match = _memberMatchesById[userId];
-    final scoreLabel = match == null
-        ? '--%'
-        : '${match.displayScore.round()}%';
-    final label = '$name $scoreLabel';
-
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 160),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xxs,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.fairway.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: AppColors.fairway.withValues(alpha: 0.3),
-          ),
-        ),
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppTypography.labelSmall.copyWith(
-            color: AppColors.fairwayDark,
-            letterSpacing: AppTypography.letterSpacingNormal,
-          ),
-        ),
-      ),
-    );
-  }
-
   List<GroupVibeMemberResult> _sortedMemberResults(
     GroupVibeMatchResult result,
   ) {
@@ -1597,378 +1529,6 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PREMIUM HERO SECTION
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildPremiumHeroSection(BuildContext context, Game game) {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.fairway.withValues(alpha: 0.4),
-            AppColors.fairwayDark.withValues(alpha: 0.6),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.sunsetGold.withValues(alpha: 0.3),
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.sunsetGold.withValues(alpha: 0.15),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Status badge
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: AppSpacing.xxs,
-            ),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.check_circle_rounded, color: Colors.white, size: 14),
-                SizedBox(width: 4),
-                Text(
-                  'Joined',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: AppSpacing.md),
-          // Course name with golf icon
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.sunsetGold.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.golf_course_rounded,
-                  color: Colors.white,
-                  size: 26,
-                ),
-              ),
-              SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      game.coursePlay,
-                      style: AppTypography.titleLarge.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      game.nameGame,
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.sunsetGold,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // QUICK STATS ROW
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildQuickStatsRow(Game game) {
-    final spotsLeft = game.maxPlayers - (game.joinedPlayers.length + game.guestPlayers.length);
-    final isFull = spotsLeft <= 0;
-
-    return Row(
-      children: [
-        // Date Card
-        Expanded(
-          child: Container(
-            padding: EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: AppColors.fairway.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.sunsetPeach, AppColors.sunsetRose],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(Icons.calendar_today_rounded, color: Colors.white, size: 18),
-                ),
-                SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        dateTimeFormat("MMM d", game.date),
-                        style: AppTypography.titleSmall.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        dateTimeFormat("jm", game.date),
-                        style: AppTypography.labelSmall.copyWith(
-                          color: Colors.white.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(width: AppSpacing.sm),
-        // Players Card
-        Container(
-          padding: EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: isFull
-                ? AppColors.fairwayLight.withValues(alpha: 0.2)
-                : AppColors.sunsetGold.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isFull
-                  ? AppColors.fairwayLight.withValues(alpha: 0.3)
-                  : AppColors.sunsetGold.withValues(alpha: 0.3),
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isFull
-                        ? [AppColors.fairwayLight, AppColors.fairway]
-                        : [AppColors.sunsetGold, AppColors.sunsetPeach],
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  isFull ? Icons.groups_rounded : Icons.person_add_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-              SizedBox(width: AppSpacing.sm),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isFull ? 'Full' : '$spotsLeft Spots',
-                    style: AppTypography.titleSmall.copyWith(
-                      color: isFull ? AppColors.fairwayLight : AppColors.sunsetGold,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    '${game.joinedPlayers.length + game.guestPlayers.length}/${game.maxPlayers}',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: Colors.white.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PREMIUM GROUP VIBE SUMMARY
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildPremiumGroupVibeSummary() {
-    final result = _groupVibeMatch;
-    final groupScore = result?.groupFitScore.round() ?? 0;
-    final hasResult = result != null;
-
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.fairway.withValues(alpha: 0.4),
-            AppColors.fairwayDark.withValues(alpha: 0.3),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.psychology_rounded, color: Colors.white, size: 22),
-              ),
-              SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Group Vibe Match',
-                      style: AppTypography.titleSmall.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      hasResult ? 'Your fit with this group' : 'Calculating...',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: Colors.white.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Score badge
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  gradient: hasResult
-                      ? LinearGradient(
-                          colors: groupScore >= 70
-                              ? [AppColors.fairwayLight, AppColors.fairway]
-                              : groupScore >= 40
-                                  ? [AppColors.sunsetGold, AppColors.sunsetPeach]
-                                  : [AppColors.sunsetRose, AppColors.error],
-                        )
-                      : null,
-                  color: hasResult ? null : Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: hasResult
-                    ? Text(
-                        '$groupScore%',
-                        style: AppTypography.titleSmall.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      )
-                    : SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.sunsetGold,
-                        ),
-                      ),
-              ),
-            ],
-          ),
-          if (hasResult) ...[
-            SizedBox(height: AppSpacing.md),
-            GestureDetector(
-              onTap: _openGroupVibeBreakdown,
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.insights_rounded,
-                      color: AppColors.sunsetGold,
-                      size: 18,
-                    ),
-                    SizedBox(width: AppSpacing.xs),
-                    Text(
-                      'View Detailed Breakdown',
-                      style: AppTypography.labelMedium.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(width: AppSpacing.xs),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      color: Colors.white.withValues(alpha: 0.6),
-                      size: 18,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // PREMIUM INFO CARD
