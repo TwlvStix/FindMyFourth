@@ -45,10 +45,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Screen Flow Polish** - Smooth transitions and navigation consistency
 - [x] **Phase 6: Large Widget Refactoring** - Break down monolithic widgets into composable components
 - [x] **Phase 7: Tech Debt Cleanup** - Remove deprecated files and final polish pass
-- [ ] **Phase 8: File Structure & Code Duplication Audit** - Systematic analysis of organization and DRY violations
-- [ ] **Phase 9: Design Patterns & Code Smells Analysis** - Pattern review and anti-pattern identification
-- [ ] **Phase 10: Readability & Maintainability Review** - Naming, comments, function length, clarity assessment
-- [ ] **Phase 11: Prioritized Fixes & Refactoring** - Address critical/high priority issues identified in audit
+- [x] **Phase 8: File Structure & Code Duplication Audit** - Systematic analysis of organization and DRY violations
+- [ ] **Phase 9: Data Model & Schema Audit** - Firestore schema, data relationships, query optimization analysis
+- [ ] **Phase 10: State Management & Error Handling Audit** - Provider patterns, error handling consistency review
+- [ ] **Phase 11: Pre-Beta Refactoring** - Address critical/high priority issues identified in audit phases
 
 ## Phase Details
 
@@ -142,40 +142,46 @@ Plans:
 **Goal:** Systematic analysis of folder/module organization, naming conventions, separation of concerns, and DRY violations
 **Depends on:** v1.0 complete
 **Research:** Unlikely (internal codebase audit)
-**Research topics:** N/A
-**Plans:** TBD
+**Plans:** 3 plans
+**Status:** ✅ COMPLETE (2026-01-22)
 
 Plans:
-- [ ] 08-01: TBD (run /gsd:plan-phase 8 to break down)
+- [x] 08-01: File organization and naming conventions audit
+- [x] 08-02: Code duplication patterns analysis
+- [x] 08-03: Separation of concerns and layer boundary violations audit
 
-#### Phase 9: Design Patterns & Code Smells Analysis
+**Results:**
+- 7 file organization issues (4 high, 3 medium)
+- 8 code duplication patterns (3 critical, 5 high)
+- 27 architectural violations (16 critical, 6 high, 5 medium)
+- Architectural health score: 72/100
+- Estimated beta-ready refactoring effort: 37-53 hours
 
-**Goal:** Review implementation of design patterns, Flutter/Dart conventions, and identify anti-patterns and code smells
+#### Phase 9: Data Model & Schema Audit
+
+**Goal:** Review Firestore schema design, data relationships, query optimization, and index usage
 **Depends on:** Phase 8
-**Research:** Unlikely (established patterns review)
-**Research topics:** N/A
+**Research:** Unlikely (schema analysis)
 **Plans:** TBD
 
 Plans:
 - [ ] 09-01: TBD (run /gsd:plan-phase 9 to break down)
 
-#### Phase 10: Readability & Maintainability Review
+#### Phase 10: State Management & Error Handling Audit
 
-**Goal:** Assess naming clarity, code comments quality, function length, and overall code clarity
+**Goal:** Assess Provider patterns, error handling consistency, and edge case coverage
 **Depends on:** Phase 9
-**Research:** Unlikely (readability assessment)
-**Research topics:** N/A
+**Research:** Unlikely (pattern review)
 **Plans:** TBD
 
 Plans:
 - [ ] 10-01: TBD (run /gsd:plan-phase 10 to break down)
 
-#### Phase 11: Prioritized Fixes & Refactoring
+#### Phase 11: Pre-Beta Refactoring
 
 **Goal:** Address critical and high priority issues identified in audit phases (8-10)
 **Depends on:** Phase 10
 **Research:** Unlikely (implementing identified fixes)
-**Research topics:** N/A
 **Plans:** TBD
 
 Plans:
@@ -195,7 +201,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 5. Screen Flow Polish | v1.0 | 3/3 | ✓ Complete | 2026-01-21 |
 | 6. Large Widget Refactoring | v1.0 | 4/4 | ✓ Complete | 2026-01-21 |
 | 7. Tech Debt Cleanup | v1.0 | 2/2 | ✓ Complete | 2026-01-21 |
-| 8. File Structure & Code Duplication Audit | v1.1 | 0/? | Not started | - |
-| 9. Design Patterns & Code Smells Analysis | v1.1 | 0/? | Not started | - |
-| 10. Readability & Maintainability Review | v1.1 | 0/? | Not started | - |
-| 11. Prioritized Fixes & Refactoring | v1.1 | 0/? | Not started | - |
+| 8. File Structure & Code Duplication Audit | v1.1 | 3/3 | ✓ Complete | 2026-01-22 |
+| 9. Data Model & Schema Audit | v1.1 | 0/? | Not started | - |
+| 10. State Management & Error Handling Audit | v1.1 | 0/? | Not started | - |
+| 11. Pre-Beta Refactoring | v1.1 | 0/? | Not started | - |

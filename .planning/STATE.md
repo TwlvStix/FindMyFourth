@@ -333,11 +333,41 @@ Following v1.0 UI/UX Polish (93% color adoption, 73% typography adoption, 30+ co
 - Provide summary of findings and recommended next steps
 - Focus on pre-beta readiness (code quality gate before release)
 
+**v1.1 Decisions (Phase 08):**
+
+**From Plan 08-03 (Separation of Concerns Audit):**
+- Architectural health score: 72/100 based on 27 violations (good foundation, fixable critical issues)
+- Critical violations (16): Direct Firestore access in widgets bypasses Provider caching → Must fix before beta
+- High violations (6): Business logic in UI (vibe matching, filtering) reduces testability → Should fix before beta
+- Medium violations (5): Model/Record confusion (domain models import Firestore) → Defer post-beta
+- Provider-as-Wrapper pattern correctly implemented (ChatProvider wraps ChatService, UserProvider wraps backend queries)
+- Services correctly separated from UI (no Widget/BuildContext dependencies, only flutter/foundation for debugPrint)
+- Direct Firestore access is #1 architectural issue: 16 widgets bypass caching, tight coupling, untestable
+- Vibe matching logic belongs in provider: 2 widgets duplicate complex state management code
+- Estimated beta-ready effort: 37-53 hours (Critical + High fixes only) → manageable 2-week Phase 11 sprint
+- Phase 11 priorities: (1) Create GameService, (2) Create ProfileService, (3) Migrate to providers, (4) Extract VibeMatchProvider, (5) Extract GameFilterProvider
+
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Milestone v1.1 initialization
+Stopped at: Completed 08-03-PLAN.md
 Resume file: None
+
+**Phase 8 Complete:**
+- ✅ 08-01: File organization audit - COMPLETE (12min)
+  - Task 1 complete: Directory structure analyzed (170 files)
+  - Task 2 complete: FILE-ORGANIZATION-AUDIT.md generated
+  - 7 organization issues identified (4 high, 3 medium priority)
+- ✅ 08-02: Code duplication audit - COMPLETE (8min)
+  - Task 1 complete: Duplicate code patterns identified
+  - Task 2 complete: CODE-DUPLICATION-AUDIT.md generated
+  - 8 duplication patterns found (3 critical, 5 high priority)
+- ✅ 08-03: Separation of concerns audit - COMPLETE (5min)
+  - Task 1 complete: UI layer violations audited (20 violations)
+  - Task 2 complete: Service/Provider layer analyzed (2 violations)
+  - Task 3 complete: SEPARATION-CONCERNS-AUDIT.md generated (1319 lines)
+  - 27 violations total: 16 critical, 6 high, 5 medium
+  - Architectural health score: 72/100
 
 **Phase 7 Complete:**
 - ✅ 07-01: Tech debt cleanup - COMPLETE (7min)
