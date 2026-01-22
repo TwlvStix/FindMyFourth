@@ -10,10 +10,10 @@ import '/models/chat_message.dart';
 import '/providers/chat_provider.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
-import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_text.dart';
-import '/core/utils/formatting_utils.dart';
 import '/core/widgets/fairway_background.dart';
+import 'components/chat_date_divider.dart';
+import 'components/chat_message_bubble.dart';
 
 class GameChatDetailsWidget extends StatefulWidget {
   const GameChatDetailsWidget({
@@ -179,6 +179,27 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
     );
   }
 
+  Future<void> _handleReaction(ChatMessage message, String emoji, bool hasReacted) async {
+    final currentUserId = _currentUserId;
+    if (currentUserId == null) return;
+
+    if (hasReacted) {
+      await context.read<ChatProvider>().removeReaction(
+            chatId: widget.chatId,
+            messageId: message.id,
+            emoji: emoji,
+            uid: currentUserId,
+          );
+    } else {
+      await context.read<ChatProvider>().addReaction(
+            chatId: widget.chatId,
+            messageId: message.id,
+            emoji: emoji,
+            uid: currentUserId,
+          );
+    }
+  }
+
   void _showReactionPicker(ChatMessage message) {
     final currentUserId = _currentUserId;
     if (currentUserId == null) return;
@@ -296,23 +317,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
     }
   }
 
-  String _getDateLabel(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(Duration(days: 1));
-    final messageDate = DateTime(date.year, date.month, date.day);
-
-    if (messageDate == today) {
-      return 'Today';
-    } else if (messageDate == yesterday) {
-      return 'Yesterday';
-    } else if (now.difference(messageDate).inDays < 7) {
-      return dateTimeFormat('EEEE', date); // Day of week
-    } else {
-      return dateTimeFormat('MMM d, yyyy', date);
-    }
-  }
-
   bool _shouldShowDateDivider(int index, List<ChatMessage> messages) {
     if (index >= messages.length - 1) {
       return true; // Show date for the oldest message
@@ -385,42 +389,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
     }
 
     return false;
-  }
-
-  Widget _buildDateDivider(DateTime date) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        vertical: AppSpacing.md,
-        horizontal: AppSpacing.md,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Divider(
-              color: Colors.white.withOpacity(0.2),
-              thickness: 1,
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-            child: Text(
-              _getDateLabel(date),
-              style: AppTheme.of(context).labelMedium.override(
-                    color: Colors.white.withOpacity(0.6),
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.0,
-                  ),
-            ),
-          ),
-          Expanded(
-            child: Divider(
-              color: Colors.white.withOpacity(0.2),
-              thickness: 1,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _ensureChatMember() async {
@@ -699,316 +667,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
     return merged;
   }
 
-  Widget _buildMessageBubble({
-    required bool isMe,
-    required String text,
-    required String imageUrl,
-    required DateTime? createdAt,
-    required bool isFirstInGroup,
-    required bool isLastInGroup,
-    required String senderId,
-    required String? senderName,
-    required String? senderPhotoUrl,
-    required bool isGroupChat,
-    required ChatMessage message,
-    required int totalMembers,
-  }) {
-    final bubbleColor = isMe
-        ? AppTheme.of(context).primary
-        : AppTheme.of(context).secondaryBackground;
-    final textColor = isMe
-        ? AppTheme.of(context).primaryBtnText
-        : AppTheme.of(context).primaryText;
-
-    return Dismissible(
-      key: Key('message_${message.id}'),
-      direction: isMe ? DismissDirection.endToStart : DismissDirection.startToEnd,
-      confirmDismiss: (direction) async {
-        setState(() {
-          _replyToMessage = message;
-        });
-        _messageFocusNode.requestFocus();
-        return false; // Don't actually dismiss
-      },
-      background: Container(
-        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        child: Icon(
-          Icons.reply_rounded,
-          color: AppTheme.of(context).primary,
-          size: 28,
-        ),
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(
-          top: isLastInGroup ? AppSpacing.xs : 2,
-          bottom: isFirstInGroup ? AppSpacing.xs : 2,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment:
-              isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-          children: [
-          // Avatar on left for received messages
-          if (!isMe) ...[
-            SizedBox(width: AppSpacing.md),
-            Container(
-              width: 32,
-              height: 32,
-              margin: EdgeInsets.only(bottom: 4, right: AppSpacing.xs),
-              child: isFirstInGroup
-                  ? CircleAvatar(
-                      radius: 16,
-                      backgroundColor: AppTheme.of(context).primary.withOpacity(0.3),
-                      backgroundImage: senderPhotoUrl != null && senderPhotoUrl.isNotEmpty
-                          ? NetworkImage(senderPhotoUrl)
-                          : null,
-                      child: senderPhotoUrl == null || senderPhotoUrl.isEmpty
-                          ? Icon(
-                              Icons.person,
-                              size: 18,
-                              color: Colors.white.withOpacity(0.7),
-                            )
-                          : null,
-                    )
-                  : SizedBox.shrink(),
-            ),
-          ],
-          // Message bubble
-          Flexible(
-            child: Column(
-              crossAxisAlignment:
-                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-              children: [
-                // Sender name for group chats (first message only)
-                if (!isMe && isGroupChat && isFirstInGroup && senderName != null)
-                  Padding(
-                    padding: EdgeInsets.only(
-                      left: AppSpacing.xs,
-                      bottom: 4,
-                    ),
-                    child: Text(
-                      senderName,
-                      style: AppTheme.of(context).labelSmall.override(
-                                  color: Colors.white.withOpacity(0.6),
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.0,
-                          ),
-                    ),
-                  ),
-                // Message content
-                GestureDetector(
-                  onLongPress: () => _showReactionPicker(message),
-                  child: Container(
-                    margin: EdgeInsets.only(
-                      left: isMe ? 40 : 0,
-                      right: isMe ? 0 : 40,
-                    ),
-                    padding: EdgeInsets.all(AppSpacing.sm),
-                    decoration: BoxDecoration(
-                      color: bubbleColor,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(isMe || !isFirstInGroup ? 14.0 : 4.0),
-                        topRight: Radius.circular(!isMe || !isFirstInGroup ? 14.0 : 4.0),
-                        bottomLeft: Radius.circular(14.0),
-                        bottomRight: Radius.circular(14.0),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment:
-                          isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                      children: [
-                      if (imageUrl.isNotEmpty)
-                        Padding(
-                          padding: EdgeInsets.only(bottom: text.isNotEmpty ? AppSpacing.xs : 0),
-                          child: GestureDetector(
-                            onTap: () => _showImageFullscreen(imageUrl),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10.0),
-                              child: Container(
-                                constraints: BoxConstraints(
-                                  maxWidth: 250,
-                                  maxHeight: 300,
-                                ),
-                                child: Image.network(
-                                  imageUrl,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Container(
-                                      height: 200,
-                                      width: 200,
-                                      color: Colors.grey.withOpacity(0.2),
-                                      child: Center(
-                                        child: CircularProgressIndicator(
-                                          value: loadingProgress.expectedTotalBytes != null
-                                              ? loadingProgress.cumulativeBytesLoaded /
-                                                  loadingProgress.expectedTotalBytes!
-                                              : null,
-                                          color: isMe
-                                              ? Colors.white.withOpacity(0.8)
-                                              : AppTheme.of(context).primary,
-                                          strokeWidth: 2,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      height: 150,
-                                      width: 200,
-                                      color: Colors.grey.withOpacity(0.2),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.broken_image_outlined,
-                                            color: textColor.withOpacity(0.6),
-                                            size: 40,
-                                          ),
-                                          SizedBox(height: 8),
-                                          Text(
-                                            'Failed to load',
-                                            style: AppTheme.of(context).labelSmall.override(
-                                                                              color: textColor.withOpacity(0.6),
-                                                  letterSpacing: 0.0,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      if (text.isNotEmpty)
-                        Text(
-                          text,
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: textColor,
-                          ),
-                        ),
-                      if (createdAt != null && isLastInGroup) ...[
-                        SizedBox(height: 4),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              dateTimeFormat('jm', createdAt),
-                              style: AppTypography.text10.copyWith(
-                                color: textColor.withOpacity(0.6),
-                              ),
-                            ),
-                            // Read receipts for sent messages
-                            if (isMe) ...[
-                              SizedBox(width: 4),
-                              Icon(
-                                message.readBy.length > 1
-                                    ? Icons.done_all
-                                    : Icons.done,
-                                size: 14,
-                                color: message.readBy.length > 1
-                                    ? AppTheme.of(context).tertiary
-                                    : textColor.withOpacity(0.6),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ],
-                    ],
-                  ),
-                  ),
-                ),
-                // Reactions
-                if (message.reactions.isNotEmpty) ...[
-                  SizedBox(height: 4),
-                  Container(
-                    margin: EdgeInsets.only(
-                      left: isMe ? 40 : AppSpacing.md + 40,
-                      right: isMe ? AppSpacing.md : 40,
-                    ),
-                    child: Wrap(
-                      spacing: 4,
-                      runSpacing: 4,
-                      children: message.reactions.entries.map((entry) {
-                        final emoji = entry.key;
-                        final users = entry.value;
-                        final currentUserId = _currentUserId;
-                        final hasReacted = currentUserId != null && users.contains(currentUserId);
-
-                        return GestureDetector(
-                          onTap: () async {
-                            if (currentUserId == null) return;
-                            if (hasReacted) {
-                              await context.read<ChatProvider>().removeReaction(
-                                    chatId: widget.chatId,
-                                    messageId: message.id,
-                                    emoji: emoji,
-                                    uid: currentUserId,
-                                  );
-                            } else {
-                              await context.read<ChatProvider>().addReaction(
-                                    chatId: widget.chatId,
-                                    messageId: message.id,
-                                    emoji: emoji,
-                                    uid: currentUserId,
-                                  );
-                            }
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: hasReacted
-                                  ? AppTheme.of(context).primary.withOpacity(0.3)
-                                  : AppTheme.of(context).secondaryBackground.withOpacity(0.6),
-                              borderRadius: BorderRadius.circular(12),
-                              border: hasReacted
-                                  ? Border.all(
-                                      color: AppTheme.of(context).primary,
-                                      width: 1.5,
-                                    )
-                                  : null,
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  emoji,
-                                  style: AppTypography.bodyMedium,
-                                ),
-                                if (users.length > 1) ...[
-                                  SizedBox(width: 4),
-                                  Text(
-                                    '${users.length}',
-                                    style: AppTypography.text11.copyWith(
-                                      color: Colors.white.withOpacity(0.8),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-            // Spacing on right for sent messages
-            if (isMe) SizedBox(width: AppSpacing.md),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildTitle(Chat chat) {
     if (chat.type == 'game') {
@@ -1403,11 +1061,11 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                                         ? null
                                         : (userData['photo_url'] as String?);
 
-                                    return _buildMessageBubble(
-                                      isMe: isMe,
-                                      text: message.text,
+                                    return ChatMessageBubble(
+                                      isSentByCurrentUser: isMe,
+                                      messageText: message.text,
                                       imageUrl: message.imageUrl,
-                                      createdAt: message.createdAt,
+                                      timestamp: message.createdAt,
                                       isFirstInGroup: isFirstInGroup,
                                       isLastInGroup: isLastInGroup,
                                       senderId: message.senderId,
@@ -1416,11 +1074,23 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                                       isGroupChat: isGroupChat,
                                       message: message,
                                       totalMembers: chat.memberIds.length,
+                                      currentUserId: _currentUserId,
+                                      onLongPress: () => _showReactionPicker(message),
+                                      onReplySwipe: () {
+                                        setState(() {
+                                          _replyToMessage = message;
+                                        });
+                                        _messageFocusNode.requestFocus();
+                                      },
+                                      onImageTap: message.imageUrl.isNotEmpty
+                                          ? () => _showImageFullscreen(message.imageUrl)
+                                          : null,
+                                      onReactionTap: (emoji, hasReacted) => _handleReaction(message, emoji, hasReacted),
                                     );
                                   },
                                 ),
                                 if (showDateDivider && message.createdAt != null)
-                                  _buildDateDivider(message.createdAt!),
+                                  ChatDateDivider(date: message.createdAt!),
                               ],
                             );
                           },
