@@ -3,6 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 UI/UX Polish** — Phases 1-7 (shipped 2026-01-21) — [Archive](milestones/v1.0-ROADMAP.md)
+- 🚧 **v1.1 Pre-Beta Audit: Code Architecture & Quality** — Phases 8-11 (in progress)
 
 ## Overview
 
@@ -38,12 +39,16 @@ None
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation Audit** - Assess current design system and catalog inconsistencies
-- [ ] **Phase 2: Component Library Standardization** - Unify all UI components with consistent variants
+- [x] **Phase 2: Component Library Standardization** - Unify all UI components with consistent variants
 - [x] **Phase 3: Typography System** - Apply text hierarchy consistently across all screens
 - [x] **Phase 4: Spacing System** - Systematize layout using design tokens
 - [x] **Phase 5: Screen Flow Polish** - Smooth transitions and navigation consistency
 - [x] **Phase 6: Large Widget Refactoring** - Break down monolithic widgets into composable components
-- [ ] **Phase 7: Tech Debt Cleanup** - Remove deprecated files and final polish pass
+- [x] **Phase 7: Tech Debt Cleanup** - Remove deprecated files and final polish pass
+- [ ] **Phase 8: File Structure & Code Duplication Audit** - Systematic analysis of organization and DRY violations
+- [ ] **Phase 9: Design Patterns & Code Smells Analysis** - Pattern review and anti-pattern identification
+- [ ] **Phase 10: Readability & Maintainability Review** - Naming, comments, function length, clarity assessment
+- [ ] **Phase 11: Prioritized Fixes & Refactoring** - Address critical/high priority issues identified in audit
 
 ## Phase Details
 
@@ -128,17 +133,69 @@ Plans:
 - [x] 07-01: Remove deprecated OLD widget files and cleanup debug logging
 - [x] 07-02: Final consistency pass and polish verification
 
+### 🚧 v1.1 Pre-Beta Audit: Code Architecture & Quality (In Progress)
+
+**Milestone Goal:** Comprehensive code quality audit before beta release, identifying architectural issues and creating actionable refactoring roadmap
+
+#### Phase 8: File Structure & Code Duplication Audit
+
+**Goal:** Systematic analysis of folder/module organization, naming conventions, separation of concerns, and DRY violations
+**Depends on:** v1.0 complete
+**Research:** Unlikely (internal codebase audit)
+**Research topics:** N/A
+**Plans:** TBD
+
+Plans:
+- [ ] 08-01: TBD (run /gsd:plan-phase 8 to break down)
+
+#### Phase 9: Design Patterns & Code Smells Analysis
+
+**Goal:** Review implementation of design patterns, Flutter/Dart conventions, and identify anti-patterns and code smells
+**Depends on:** Phase 8
+**Research:** Unlikely (established patterns review)
+**Research topics:** N/A
+**Plans:** TBD
+
+Plans:
+- [ ] 09-01: TBD (run /gsd:plan-phase 9 to break down)
+
+#### Phase 10: Readability & Maintainability Review
+
+**Goal:** Assess naming clarity, code comments quality, function length, and overall code clarity
+**Depends on:** Phase 9
+**Research:** Unlikely (readability assessment)
+**Research topics:** N/A
+**Plans:** TBD
+
+Plans:
+- [ ] 10-01: TBD (run /gsd:plan-phase 10 to break down)
+
+#### Phase 11: Prioritized Fixes & Refactoring
+
+**Goal:** Address critical and high priority issues identified in audit phases (8-10)
+**Depends on:** Phase 10
+**Research:** Unlikely (implementing identified fixes)
+**Research topics:** N/A
+**Plans:** TBD
+
+Plans:
+- [ ] 11-01: TBD (run /gsd:plan-phase 11 to break down)
+
 ## Progress
 
 **Execution Order:**
 Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Foundation Audit | 3/3 | ✓ Complete | 2026-01-15 |
-| 2. Component Library Standardization | 4/4 | ✓ Complete | 2026-01-16 |
-| 3. Typography System | 3/3 | ✓ Complete | 2026-01-20 |
-| 4. Spacing System | 3/3 | ✓ Complete | 2026-01-21 |
-| 5. Screen Flow Polish | 3/3 | ✓ Complete | 2026-01-21 |
-| 6. Large Widget Refactoring | 4/4 | ✓ Complete | 2026-01-21 |
-| 7. Tech Debt Cleanup | 2/2 | ✓ Complete | 2026-01-21 |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Foundation Audit | v1.0 | 3/3 | ✓ Complete | 2026-01-15 |
+| 2. Component Library Standardization | v1.0 | 4/4 | ✓ Complete | 2026-01-16 |
+| 3. Typography System | v1.0 | 3/3 | ✓ Complete | 2026-01-20 |
+| 4. Spacing System | v1.0 | 3/3 | ✓ Complete | 2026-01-21 |
+| 5. Screen Flow Polish | v1.0 | 3/3 | ✓ Complete | 2026-01-21 |
+| 6. Large Widget Refactoring | v1.0 | 4/4 | ✓ Complete | 2026-01-21 |
+| 7. Tech Debt Cleanup | v1.0 | 2/2 | ✓ Complete | 2026-01-21 |
+| 8. File Structure & Code Duplication Audit | v1.1 | 0/? | Not started | - |
+| 9. Design Patterns & Code Smells Analysis | v1.1 | 0/? | Not started | - |
+| 10. Readability & Maintainability Review | v1.1 | 0/? | Not started | - |
+| 11. Prioritized Fixes & Refactoring | v1.1 | 0/? | Not started | - |
