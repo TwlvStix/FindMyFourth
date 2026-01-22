@@ -14,6 +14,8 @@ import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
 import 'components/chat_date_divider.dart';
 import 'components/chat_message_bubble.dart';
+import 'components/chat_header_title.dart';
+import 'components/chat_input_bar.dart';
 
 class GameChatDetailsWidget extends StatefulWidget {
   const GameChatDetailsWidget({
@@ -668,55 +670,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
   }
 
 
-  Widget _buildTitle(Chat chat) {
-    if (chat.type == 'game') {
-      final title =
-          (chat.gameName ?? '').trim().isNotEmpty ? chat.gameName! : 'Group Chat';
-      return AppText.cardTitle(title);
-    }
-    final memberIds = chat.memberIds;
-    if (memberIds.length <= 1) {
-      return AppText.cardTitle('Chat');
-    }
-
-    if (memberIds.length == 2) {
-      final currentUserId = _currentUserId;
-      final otherUserId = memberIds.firstWhere(
-        (id) => id != currentUserId,
-        orElse: () => memberIds.first,
-      );
-      return FutureBuilder<Map<String, dynamic>>(
-        future: context.read<ChatProvider>().getUserProfile(otherUserId),
-        builder: (context, snapshot) {
-          final otherData = snapshot.data ?? <String, dynamic>{};
-          final displayName =
-              (otherData['display_name'] as String?) ?? 'Golfer';
-          final photoUrl = otherData['photo_url'] as String?;
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (photoUrl != null && photoUrl.isNotEmpty)
-                Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(
-                    0.0,
-                    0.0,
-                    AppSpacing.sm,
-                    0.0,
-                  ),
-                  child: CircleAvatar(
-                    radius: 18.0,
-                    backgroundImage: NetworkImage(photoUrl),
-                  ),
-                ),
-              AppText.cardTitle(displayName),
-            ],
-          );
-        },
-      );
-    }
-
-    return AppText.cardTitle('Group Chat');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -775,7 +728,10 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                 ),
                 onPressed: () => Navigator.of(context).maybePop(),
               ),
-              title: _buildTitle(chat),
+              title: ChatHeaderTitle(
+                chat: chat,
+                currentUserId: _currentUserId,
+              ),
               centerTitle: false,
               elevation: 0.0,
               actions: [
@@ -1098,158 +1054,17 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                       },
                     ),
                   ),
-                  Container(
-                    padding: EdgeInsets.fromLTRB(
-                      AppSpacing.md,
-                      AppSpacing.sm,
-                      AppSpacing.md,
-                      AppSpacing.md,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.of(context).primaryBackground,
-                      boxShadow: const [
-                        BoxShadow(
-                          blurRadius: 6.0,
-                          color: Color(0x22000000),
-                          offset: Offset(0.0, -2.0),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Reply preview
-                        if (_replyToMessage != null)
-                          Container(
-                            margin: EdgeInsets.only(bottom: AppSpacing.sm),
-                            padding: EdgeInsets.all(AppSpacing.sm),
-                            decoration: BoxDecoration(
-                              color: AppTheme.of(context).secondaryBackground,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border(
-                                left: BorderSide(
-                                  color: AppTheme.of(context).primary,
-                                  width: 3,
-                                ),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Replying to',
-                                        style: AppTheme.of(context).labelSmall.override(
-                                                                      color: AppTheme.of(context).primary,
-                                              fontWeight: FontWeight.w600,
-                                              letterSpacing: 0.0,
-                                            ),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        _replyToMessage!.text.isNotEmpty
-                                            ? _replyToMessage!.text
-                                            : 'Image',
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTheme.of(context).bodySmall.override(
-                                                                      color: Colors.white.withOpacity(0.7),
-                                              letterSpacing: 0.0,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.close,
-                                    size: 20,
-                                    color: Colors.white.withOpacity(0.6),
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _replyToMessage = null;
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        Row(
-                          children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _messageController,
-                            focusNode: _messageFocusNode,
-                            textInputAction: TextInputAction.newline,
-                            keyboardType: TextInputType.multiline,
-                            minLines: 1,
-                            maxLines: 5,
-                            enabled: canSend,
-                            style: AppTheme.of(context).bodyMedium.override(
-                                              letterSpacing: 0.0,
-                                ),
-                            decoration: InputDecoration(
-                              hintText: canSend
-                                  ? 'Message...'
-                                  : 'Chat closed',
-                              hintStyle: AppTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                                  color: AppTheme.of(context)
-                                        .secondaryText
-                                        .withOpacity(0.6),
-                                    letterSpacing: 0.0,
-                                  ),
-                              filled: true,
-                              fillColor:
-                                  AppTheme.of(context).secondaryBackground,
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: AppSpacing.md,
-                                vertical: AppSpacing.sm,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20.0),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20.0),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20.0),
-                                borderSide: BorderSide(
-                                  color: AppTheme.of(context).primary.withOpacity(0.3),
-                                  width: 1.5,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: AppSpacing.sm),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: canSend && _messageController.text.trim().isNotEmpty
-                                ? AppTheme.of(context).primary
-                                : AppTheme.of(context).secondaryBackground,
-                            shape: BoxShape.circle,
-                          ),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.send_rounded,
-                              color: canSend && _messageController.text.trim().isNotEmpty
-                                  ? Colors.white
-                                  : AppTheme.of(context).secondaryText,
-                            ),
-                            onPressed: canSend ? _sendMessage : null,
-                          ),
-                          ),
-                        ],
-                      ),
-                      ],
-                    ),
+                  ChatInputBar(
+                    messageController: _messageController,
+                    messageFocusNode: _messageFocusNode,
+                    enabled: canSend,
+                    onSendMessage: _sendMessage,
+                    replyToMessage: _replyToMessage,
+                    onCancelReply: () {
+                      setState(() {
+                        _replyToMessage = null;
+                      });
+                    },
                   ),
                     ],
                   ),
