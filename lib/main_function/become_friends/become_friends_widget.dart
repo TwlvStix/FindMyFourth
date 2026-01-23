@@ -181,14 +181,47 @@ class _BecomeFriendsWidgetState extends State<BecomeFriendsWidget> {
                               size: AppButtonSize.large,
                               fullWidth: true,
                               onPressed: () async {
-                                if (containerUsersRecord != null) {
-                                  await context
-                                      .read<UserProvider>()
-                                      .sendFriendRequest(
-                                        containerUsersRecord.reference,
-                                      );
+                                try {
+                                  if (containerUsersRecord != null) {
+                                    await context
+                                        .read<UserProvider>()
+                                        .sendFriendRequest(
+                                          containerUsersRecord.reference,
+                                        );
+                                  }
+                                } catch (_) {
+                                  if (!mounted) {
+                                    return;
+                                  }
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Unable to send request.',
+                                        style: AppTheme.of(context)
+                                            .bodyMedium
+                                            .override(
+                                              font: GoogleFonts.outfit(
+                                                fontWeight: AppTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontWeight,
+                                                fontStyle: AppTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
+                                              ),
+                                              color: AppTheme.of(context)
+                                                  .secondaryBackground,
+                                            ),
+                                      ),
+                                      backgroundColor:
+                                          AppTheme.of(context).error,
+                                    ),
+                                  );
+                                  return;
                                 }
 
+                                if (!mounted) {
+                                  return;
+                                }
                                 context.pushNamed(
                                   TabFriendsWidget.routeName,
                                   extra: <String, dynamic>{

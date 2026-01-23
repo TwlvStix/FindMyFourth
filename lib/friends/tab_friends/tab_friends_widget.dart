@@ -850,69 +850,124 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                   onAction: isFriend || hasPending
                                                       ? null
                                                       : () async {
-                                                          await context
-                                                              .read<
-                                                                  UserProvider>()
-                                                              .sendFriendRequest(
-                                                                listViewUsersRecord
-                                                                    .reference,
-                                                              );
-                                                          addToReqUserList(
-                                                              valueOrDefault<
-                                                                  String>(
-                                                            listViewUsersRecord
-                                                                .uid,
-                                                            '007',
-                                                          ));
-                                                          if (mounted) {
-                                                            setState(() {});
-                                                          }
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .clearSnackBars();
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                            SnackBar(
-                                                              content: Text(
-                                                                'Friend request sent!',
-                                                                style: AppTheme.of(
-                                                                        context)
-                                                                    .titleMedium
-                                                                    .override(
-                                                                      font: GoogleFonts
-                                                                          .outfit(
-                                                                        fontWeight: AppTheme.of(context)
+                                                          try {
+                                                            await context
+                                                                .read<
+                                                                    UserProvider>()
+                                                                .sendFriendRequest(
+                                                              listViewUsersRecord
+                                                                  .reference,
+                                                            );
+                                                            addToReqUserList(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                              listViewUsersRecord
+                                                                  .uid,
+                                                              '007',
+                                                            ));
+                                                            if (mounted) {
+                                                              setState(() {});
+                                                            }
+                                                            if (!mounted) {
+                                                              return;
+                                                            }
+                                                            ScaffoldMessenger.of(
+                                                                    context)
+                                                                .clearSnackBars();
+                                                            ScaffoldMessenger.of(
+                                                                    context)
+                                                                .showSnackBar(
+                                                              SnackBar(
+                                                                content: Text(
+                                                                  'Friend request sent!',
+                                                                  style: AppTheme.of(
+                                                                          context)
+                                                                      .titleMedium
+                                                                      .override(
+                                                                        font: GoogleFonts
+                                                                            .outfit(
+                                                                          fontWeight: AppTheme.of(context)
+                                                                              .titleMedium
+                                                                              .fontWeight,
+                                                                          fontStyle: AppTheme.of(context)
+                                                                              .titleMedium
+                                                                              .fontStyle,
+                                                                        ),
+                                                                        color: AppTheme.of(
+                                                                                context)
+                                                                            .primaryBtnText,
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                        fontWeight: AppTheme.of(
+                                                                                context)
                                                                             .titleMedium
                                                                             .fontWeight,
-                                                                        fontStyle: AppTheme.of(context)
+                                                                        fontStyle: AppTheme.of(
+                                                                                context)
                                                                             .titleMedium
                                                                             .fontStyle,
                                                                       ),
-                                                                      color: AppTheme.of(
-                                                                              context)
-                                                                          .primaryBtnText,
-                                                                      letterSpacing:
-                                                                          0.0,
-                                                                      fontWeight: AppTheme.of(
-                                                                              context)
-                                                                          .titleMedium
-                                                                          .fontWeight,
-                                                                      fontStyle: AppTheme.of(
-                                                                              context)
-                                                                          .titleMedium
-                                                                          .fontStyle,
-                                                                    ),
+                                                                ),
+                                                                duration: Duration(
+                                                                    milliseconds:
+                                                                        1500),
+                                                                backgroundColor:
+                                                                    AppTheme.of(
+                                                                            context)
+                                                                        .primary,
                                                               ),
-                                                              duration: Duration(
-                                                                  milliseconds:
-                                                                      1500),
-                                                              backgroundColor:
-                                                                  AppTheme.of(
+                                                            );
+                                                          } catch (_) {
+                                                            if (!mounted) {
+                                                              return;
+                                                            }
+                                                            ScaffoldMessenger.of(
+                                                                    context)
+                                                                .clearSnackBars();
+                                                            ScaffoldMessenger.of(
+                                                                    context)
+                                                                .showSnackBar(
+                                                              SnackBar(
+                                                                content: Text(
+                                                                  'Unable to send request.',
+                                                                  style: AppTheme.of(
                                                                           context)
-                                                                      .primary,
-                                                            ),
-                                                          );
+                                                                      .titleMedium
+                                                                      .override(
+                                                                        font: GoogleFonts
+                                                                            .outfit(
+                                                                          fontWeight: AppTheme.of(context)
+                                                                              .titleMedium
+                                                                              .fontWeight,
+                                                                          fontStyle: AppTheme.of(context)
+                                                                              .titleMedium
+                                                                              .fontStyle,
+                                                                        ),
+                                                                        color: AppTheme.of(
+                                                                                context)
+                                                                            .primaryBtnText,
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                        fontWeight: AppTheme.of(
+                                                                                context)
+                                                                            .titleMedium
+                                                                            .fontWeight,
+                                                                        fontStyle: AppTheme.of(
+                                                                                context)
+                                                                            .titleMedium
+                                                                            .fontStyle,
+                                                                      ),
+                                                                ),
+                                                                duration: Duration(
+                                                                    milliseconds:
+                                                                        1500),
+                                                                backgroundColor:
+                                                                    AppTheme.of(
+                                                                            context)
+                                                                        .error,
+                                                              ),
+                                                            );
+                                                          }
                                                         },
                                                   actionLabel: actionLabel,
                                                   actionIcon: actionIcon,

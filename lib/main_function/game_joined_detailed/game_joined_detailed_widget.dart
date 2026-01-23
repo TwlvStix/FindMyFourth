@@ -214,6 +214,51 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     return StreamBuilder<DocumentSnapshot>(
       stream: widget.gameRef!.snapshots(),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Scaffold(
+            extendBodyBehindAppBar: true,
+            appBar: const PremiumAppBar(title: 'Game'),
+            body: FairwayBackgroundDark(
+              showOrganic: true,
+              showTexture: true,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: AppColors.fairway.withValues(alpha: 0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.error_outline_rounded,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        size: 40,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    Text(
+                      'Unable to load game',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Please try again later.',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: Colors.white.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
         // Premium loading state
         if (!snapshot.hasData) {
           return Scaffold(
@@ -437,7 +482,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             padding: EdgeInsets.zero,
                             crossAxisSpacing: AppSpacing.sm,
                             mainAxisSpacing: AppSpacing.sm,
-                            childAspectRatio: 3.2,
+                            childAspectRatio: 3.0,
                             children: [
                               _buildPremiumInfoCard(
                                 context,
@@ -937,10 +982,40 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             currentUserRef,
                             currentUserId,
                           ];
-                          await widget.gameRef!.update({
-                            'joined_players':
-                                FieldValue.arrayRemove(removeValues),
-                          });
+                          try {
+                            await widget.gameRef!.update({
+                              'joined_players':
+                                  FieldValue.arrayRemove(removeValues),
+                            });
+                          } on FirebaseException catch (error) {
+                            if (!mounted) {
+                              return;
+                            }
+                            final message =
+                                error.code == 'permission-denied'
+                                    ? 'You do not have permission to leave this game.'
+                                    : 'Unable to leave the game right now. Please try again.';
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(message),
+                                backgroundColor: AppTheme.of(context).error,
+                              ),
+                            );
+                            return;
+                          } catch (_) {
+                            if (!mounted) {
+                              return;
+                            }
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Unable to leave the game right now. Please try again.',
+                                ),
+                                backgroundColor: AppTheme.of(context).error,
+                              ),
+                            );
+                            return;
+                          }
                           context.userProvider.refreshMyGames();
 
                           // Show success toast

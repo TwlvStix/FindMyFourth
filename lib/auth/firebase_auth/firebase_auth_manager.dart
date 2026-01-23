@@ -56,6 +56,7 @@ class FirebaseAuthManager extends AuthManager
   FirebasePhoneAuthManager phoneAuthManager = FirebasePhoneAuthManager();
   final Map<String, DateTime> _authRequestExpiry = {};
   static const _authThrottleDuration = Duration(milliseconds: 1200);
+  VoidCallback? _phoneAuthListener;
 
   bool _allowAuthAttempt(String email) {
     final normalizedEmail = email.trim().toLowerCase();
@@ -83,6 +84,9 @@ class FirebaseAuthManager extends AuthManager
       await currentUser?.delete();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'requires-recent-login') {
+        if (!context.mounted) {
+          return;
+        }
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -107,6 +111,9 @@ class FirebaseAuthManager extends AuthManager
       await updateUserDocument(email: email);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'requires-recent-login') {
+        if (!context.mounted) {
+          return;
+        }
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -130,6 +137,9 @@ class FirebaseAuthManager extends AuthManager
       await currentUser?.updatePassword(newPassword);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'requires-recent-login') {
+        if (!context.mounted) {
+          return;
+        }
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${e.message!}')),
@@ -146,11 +156,17 @@ class FirebaseAuthManager extends AuthManager
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
+      if (!context.mounted) {
+        return false;
+      }
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.message!}')),
       );
       return false;
+    }
+    if (!context.mounted) {
+      return true;
     }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Password reset email sent')),
@@ -200,8 +216,19 @@ class FirebaseAuthManager extends AuthManager
       _signInOrCreateAccount(context, () => jwtTokenSignIn(jwtToken), 'JWT');
 
   void handlePhoneAuthStateChanges(BuildContext context) {
-    phoneAuthManager.addListener(() {
+    if (_phoneAuthListener != null) {
+      phoneAuthManager.removeListener(_phoneAuthListener!);
+    }
+
+    VoidCallback? listener;
+    listener = () {
       if (!context.mounted) {
+        if (listener != null) {
+          phoneAuthManager.removeListener(listener!);
+          if (identical(_phoneAuthListener, listener)) {
+            _phoneAuthListener = null;
+          }
+        }
         return;
       }
 
@@ -216,7 +243,10 @@ class FirebaseAuthManager extends AuthManager
         ));
         phoneAuthManager.update(() => phoneAuthManager.phoneAuthError = null);
       }
-    });
+    };
+
+    _phoneAuthListener = listener;
+    phoneAuthManager.addListener(listener);
   }
 
   @override

@@ -478,6 +478,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
 
       await Future.wait([
         Future(() async {
+          if (!mounted) {
+            return;
+          }
           context.userProvider.refreshAvailableGames();
           context.userProvider.refreshMyGames();
           debugPrint('CreateGame: refreshed game caches');
@@ -535,6 +538,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         errorMsg = errorMsg.substring(0, 100) + '...';
       }
 
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

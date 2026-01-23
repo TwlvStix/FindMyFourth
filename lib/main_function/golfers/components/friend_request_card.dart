@@ -91,18 +91,40 @@ class FriendRequestCard extends StatelessWidget {
               GestureDetector(
                 onTap: () async {
                   HapticFeedback.mediumImpact();
-                  await context.read<UserProvider>().acceptFriendRequest(user.reference);
-                  onAccepted?.call();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Friend request accepted!',
-                        style: AppTypography.bodySmall.copyWith(color: Colors.white),
+                  try {
+                    await context
+                        .read<UserProvider>()
+                        .acceptFriendRequest(user.reference);
+                    onAccepted?.call();
+                    if (!context.mounted) {
+                      return;
+                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Friend request accepted!',
+                          style:
+                              AppTypography.bodySmall.copyWith(color: Colors.white),
+                        ),
+                        duration: Duration(milliseconds: 1500),
+                        backgroundColor: AppColors.success,
                       ),
-                      duration: Duration(milliseconds: 1500),
-                      backgroundColor: AppColors.success,
-                    ),
-                  );
+                    );
+                  } catch (_) {
+                    if (!context.mounted) {
+                      return;
+                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Unable to accept request.',
+                          style:
+                              AppTypography.bodySmall.copyWith(color: Colors.white),
+                        ),
+                        backgroundColor: AppColors.error,
+                      ),
+                    );
+                  }
                 },
                 child: Container(
                   width: 44,
@@ -128,8 +150,26 @@ class FriendRequestCard extends StatelessWidget {
               GestureDetector(
                 onTap: () async {
                   HapticFeedback.lightImpact();
-                  await context.read<UserProvider>().rejectFriendRequest(user.reference);
-                  onRejected?.call();
+                  try {
+                    await context
+                        .read<UserProvider>()
+                        .rejectFriendRequest(user.reference);
+                    onRejected?.call();
+                  } catch (_) {
+                    if (!context.mounted) {
+                      return;
+                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Unable to reject request.',
+                          style:
+                              AppTypography.bodySmall.copyWith(color: Colors.white),
+                        ),
+                        backgroundColor: AppColors.error,
+                      ),
+                    );
+                  }
                 },
                 child: Container(
                   width: 44,
