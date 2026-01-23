@@ -9,6 +9,7 @@ import '/core/design_tokens/typography.dart';
 import '/models/game.dart';
 import '/models/vibe_profile.dart';
 import '/providers/provider_extensions.dart';
+import '/providers/game_provider.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/services/vibe_group_matcher.dart';
 import '/services/vibe_repository.dart';
@@ -498,8 +499,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
       );
     }
 
-    return StreamBuilder<DocumentSnapshot>(
-      stream: gameRef.snapshots(),
+    return StreamBuilder<GamesRecord?>(
+      stream: context.read<GameProvider>().watchGame(gameRef.id),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Scaffold(
@@ -576,7 +577,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
           );
         }
 
-        final joinGameDetailedGamesRecord = Game.fromDoc(snapshot.data!);
+        final gamesRecord = snapshot.data;
+        if (gamesRecord == null) {
+          return Scaffold(
+            appBar: _buildPremiumAppBar(context, 'Game'),
+            body: Center(child: Text('Game not found')),
+          );
+        }
+        final joinGameDetailedGamesRecord = Game.fromRecord(gamesRecord);
         _ensureGroupVibeMatch(joinGameDetailedGamesRecord, currentUserRef);
 
         return Scaffold(

@@ -15,6 +15,8 @@ import '/core/widgets/fairway_background.dart';
 import '/models/vibe_profile.dart';
 import '/providers/chat_provider.dart';
 import '/providers/user_provider.dart';
+import '/providers/profile_provider.dart';
+import '/backend/schema/users_record.dart';
 import '/services/vibe_matcher.dart';
 import '/services/vibe_repository.dart';
 
@@ -1066,10 +1068,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         FocusScope.of(context).unfocus();
         FocusManager.instance.primaryFocus?.unfocus();
       },
-      child: StreamBuilder<DocumentSnapshot>(
-        stream: widget.userRef.snapshots(),
+      child: StreamBuilder<UsersRecord?>(
+        stream: context.read<ProfileProvider>().watchProfile(widget.userRef.id),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (!snapshot.hasData || snapshot.data == null) {
             return Scaffold(
               key: scaffoldKey,
               backgroundColor: AppColors.fairwayDark,
@@ -1079,28 +1081,33 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             );
           }
 
-          final data =
-              (snapshot.data!.data() as Map<String, dynamic>?) ??
-                  <String, dynamic>{};
+          final userRecord = snapshot.data!;
+          // Create data map for legacy _buildQuickActionsGrid method
+          final data = <String, dynamic>{
+            'friend_requests': userRecord.friendRequests,
+          };
           final isSelf =
               currentUserReference?.path == widget.userRef.path;
           if (!isSelf) {
-            _ensureVibeMatch(snapshot.data!);
+            // TODO(11-06): Migrate vibe matching to VibeMatchProvider
+            // For now, fetch DocumentSnapshot separately for vibe matching
+            widget.userRef.get().then((docSnapshot) {
+              if (mounted) {
+                _ensureVibeMatch(docSnapshot);
+              }
+            });
           }
-          final photoUrl = _stringValue(
-            data,
-            'photo_url',
-            'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-          );
-          final firstName = _stringValue(data, 'first_name', '');
-          final lastName = _stringValue(data, 'last_name', '');
-          final displayName = _stringValue(data, 'display_name', 'Golfer');
-          final phoneNumber = _stringValue(data, 'phone_number', 'Not set');
-          final email = _stringValue(data, 'email', 'Not set');
-          final homeCourse = _stringValue(data, 'home_course', 'Not set');
-          final handicap = _numValue(data, 'handicap', '0');
-          final golfCanadaNumber =
-              _stringValue(data, 'golf_canada_number', 'Not set');
+          final photoUrl = userRecord.photoUrl.isNotEmpty
+              ? userRecord.photoUrl
+              : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+          final firstName = userRecord.firstName;
+          final lastName = userRecord.lastName;
+          final displayName = userRecord.displayName.isNotEmpty ? userRecord.displayName : 'Golfer';
+          final phoneNumber = userRecord.phoneNumber.isNotEmpty ? userRecord.phoneNumber : 'Not set';
+          final email = userRecord.email.isNotEmpty ? userRecord.email : 'Not set';
+          final homeCourse = userRecord.homeCourse.isNotEmpty ? userRecord.homeCourse : 'Not set';
+          final handicap = userRecord.handicap.toString();
+          final golfCanadaNumber = userRecord.golfCanadaNumber.isNotEmpty ? userRecord.golfCanadaNumber : 'Not set';
 
           final fullName = [firstName, lastName]
               .where((name) => name.trim().isNotEmpty)
@@ -1109,8 +1116,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           final displayTitle = fullName.isNotEmpty ? fullName : displayName;
           final handle =
               displayName.trim().isNotEmpty ? '@$displayName' : '';
-          final friendsRaw = data['friends'];
-          final friendsCount = friendsRaw is List ? friendsRaw.length : 0;
+          final friendsCount = userRecord.friends.length;
 
           return Scaffold(
             key: scaffoldKey,

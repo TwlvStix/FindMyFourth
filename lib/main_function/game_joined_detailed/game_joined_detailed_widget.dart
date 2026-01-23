@@ -3,6 +3,7 @@ import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/providers/provider_extensions.dart';
+import '/providers/game_provider.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -221,8 +222,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
       );
     }
 
-    return StreamBuilder<DocumentSnapshot>(
-      stream: gameRef.snapshots(),
+    return StreamBuilder<GamesRecord?>(
+      stream: context.read<GameProvider>().watchGame(gameRef.id),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Scaffold(
@@ -299,7 +300,14 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
           );
         }
 
-        final gameJoinedDetailedGamesRecord = Game.fromDoc(snapshot.data!);
+        final gamesRecord = snapshot.data;
+        if (gamesRecord == null) {
+          return Scaffold(
+            appBar: const PremiumAppBar(title: 'Game'),
+            body: Center(child: Text('Game not found')),
+          );
+        }
+        final gameJoinedDetailedGamesRecord = Game.fromRecord(gamesRecord);
         _ensureGroupVibeMatch(gameJoinedDetailedGamesRecord, currentUserRef);
 
         return Scaffold(
