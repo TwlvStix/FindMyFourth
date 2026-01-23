@@ -1098,12 +1098,17 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                       print(
                                                         'Accept request: current=${currentUserReference?.path} requester=${userList5UsersRecord.reference.path}',
                                                       );
+                                                      final userRef = currentUserReference;
+                                                      if (userRef == null) {
+                                                        print('Error: currentUserReference is null');
+                                                        return;
+                                                      }
                                                       await FirebaseFirestore
                                                           .instance
                                                           .runTransaction(
                                                               (transaction) async {
                                                         transaction.update(
-                                                          currentUserReference!,
+                                                          userRef,
                                                           {
                                                             ...mapToFirestore(
                                                               {

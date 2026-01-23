@@ -488,8 +488,18 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     final currentUserRef = currentUser == null
         ? null
         : FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
+
+    // Early return if gameRef is null (defensive programming)
+    final gameRef = widget.gameRef;
+    if (gameRef == null) {
+      return Scaffold(
+        appBar: _buildPremiumAppBar(context, 'Game'),
+        body: Center(child: Text('Game not found')),
+      );
+    }
+
     return StreamBuilder<DocumentSnapshot>(
-      stream: widget.gameRef!.snapshots(),
+      stream: gameRef.snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Scaffold(
@@ -602,7 +612,23 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                       // Premium Hero Section
                       Padding(
                         padding: EdgeInsets.all(AppSpacing.md),
-                        child: StreamBuilder<UsersRecord>(
+                        child: joinGameDetailedGamesRecord.userRef == null
+                          ? Container(
+                              height: 200,
+                              decoration: BoxDecoration(
+                                color: AppColors.fairway.withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'Host information unavailable',
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : StreamBuilder<UsersRecord>(
                           stream: UsersRecord.getDocument(
                             joinGameDetailedGamesRecord.userRef!,
                           ),

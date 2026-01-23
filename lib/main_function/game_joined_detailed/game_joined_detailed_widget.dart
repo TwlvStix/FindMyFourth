@@ -211,8 +211,18 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     final currentUserRef = currentUser == null
         ? null
         : FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
+
+    // Early return if gameRef is null (defensive programming)
+    final gameRef = widget.gameRef;
+    if (gameRef == null) {
+      return Scaffold(
+        appBar: const PremiumAppBar(title: 'Game'),
+        body: Center(child: Text('Game not found')),
+      );
+    }
+
     return StreamBuilder<DocumentSnapshot>(
-      stream: widget.gameRef!.snapshots(),
+      stream: gameRef.snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Scaffold(
@@ -983,7 +993,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             currentUserId,
                           ];
                           try {
-                            await widget.gameRef!.update({
+                            await gameRef.update({
                               'joined_players':
                                   FieldValue.arrayRemove(removeValues),
                             });
@@ -1122,16 +1132,16 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             if (visibilityChoice ==
                                 _CancelListingHandling.removeNow) {
                               AppState().setCancelledGameHandling(
-                                widget.gameRef!.path,
+                                gameRef.path,
                                 'removeNow',
                               );
                             } else {
                               AppState().setCancelledGameHandling(
-                                widget.gameRef!.path,
+                                gameRef.path,
                                 'removeAfter7Days',
                               );
                               AppState().setCancelledGameHideAt(
-                                widget.gameRef!.path,
+                                gameRef.path,
                                 getCurrentTimestamp.add(Duration(days: 7)),
                               );
                             }
@@ -1142,12 +1152,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                               debugPrint(
                                 'CancelGame: updating ${widget.gameRef?.path}',
                               );
-                              await widget.gameRef!.update({
+                              await gameRef.update({
                                 'isCancelled': true,
                                 'status': 'cancelled',
                               });
                               final updatedSnapshot =
-                                  await widget.gameRef!.get();
+                                  await gameRef.get();
                               final updatedData = updatedSnapshot.data()
                                   as Map<String, dynamic>?;
                               debugPrint(
@@ -1169,16 +1179,14 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
 
                             final currentUserId =
                                 FirebaseAuth.instance.currentUser?.uid;
-                            if (gameJoinedDetailedGamesRecord.chatRef != null &&
-                                currentUserId != null) {
+                            final chatRef = gameJoinedDetailedGamesRecord.chatRef;
+                            if (chatRef != null && currentUserId != null) {
                               final gameName =
                                   gameJoinedDetailedGamesRecord.nameGame;
                               final cancelMessage =
                                   gameName.trim().isNotEmpty
                                   ? 'Game "$gameName" has been cancelled.'
                                   : 'This game has been cancelled.';
-                              final chatRef =
-                                  gameJoinedDetailedGamesRecord.chatRef!;
                               try {
                                 await context.read<ChatProvider>().sendMessage(
                                       chatId: chatRef.id,
@@ -1500,26 +1508,33 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     required String playerName,
     required Game gameRecord,
   }) async {
+    final gameRef = widget.gameRef;
+    if (gameRef == null) {
+      debugPrint('Player Management: gameRef is null');
+      return;
+    }
+
     try {
 
       if (isGuest && guestName != null) {
         // Remove guest player
-        await widget.gameRef!.update({
+        await gameRef.update({
           'guest_players': FieldValue.arrayRemove([guestName]),
         });
 
         debugPrint('Player Management: Removed guest player: $guestName');
       } else if (!isGuest && playerRef != null) {
         // Remove registered player from game
-        await widget.gameRef!.update({
+        await gameRef.update({
           'joined_players': FieldValue.arrayRemove([playerRef]),
         });
 
         // Remove from chat group if chat exists
-        if (gameRecord.chatRef != null) {
+        final chatRef = gameRecord.chatRef;
+        if (chatRef != null) {
           try {
             await context.read<ChatProvider>().removeMember(
-              chatId: gameRecord.chatRef!.id,
+              chatId: chatRef.id,
               uid: playerRef.id,
             );
             debugPrint('Player Management: Removed from chat: ${playerRef.id}');
