@@ -11,19 +11,19 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 
 **v1.1 Pre-Beta Audit: Code Architecture & Quality**
 
-Phase: 8 of 11 (File Structure & Code Duplication Audit)
-Plans: 3/3 complete (100%)
+Phase: 9 of 11 (Data Model & Schema Audit)
+Plans: 1/1 complete (100%)
 Status: Phase complete
-Last activity: 2026-01-22 — Completed 08-03-PLAN.md
+Last activity: 2026-01-22 — Completed 09-01-PLAN.md
 
-Progress: ███░░░░░░░░░░░░░░░░░░░░░ 12.5% (1 of 4 phases, 3 of 24 plans)
+Progress: ████░░░░░░░░░░░░░░░░░░░░ 16.7% (2 of 4 phases, 4 of 24 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 23 (08-03 complete)
-- Average duration: ~20 minutes
-- Total execution time: ~7.6 hours
+- Total plans completed: 24 (09-01 complete)
+- Average duration: ~19 minutes
+- Total execution time: ~7.7 hours
 
 **By Phase:**
 
@@ -37,13 +37,13 @@ Progress: ███░░░░░░░░░░░░░░░░░░░░�
 | 06-large-widget-refactoring | 1/4 🟡 | ~19min | ~19min |
 | 07-tech-debt-cleanup | 2/2 ✅ | ~19min | ~10min |
 | 08-file-structure-code-duplication-audit | 3/3 ✅ | ~25min | ~8min |
+| 09-data-model-schema-audit | 1/1 ✅ | ~6min | ~6min |
 
 **Recent Trend:**
-- Last 3 plans: ~8min average (08-03: 5min, 08-02: 8min, 08-01: 12min)
+- Last 3 plans: ~7min average (09-01: 6min, 08-03: 5min, 08-02: 8min)
+- Phase 9 complete: Data model & schema audit complete (6min total)
+- Plan 09-01: Schema design audit - 47 issues identified, health score 68/100 (6min)
 - Phase 8 complete: File structure & separation audit complete (25min total)
-- Plan 08-01: File organization audit (12min)
-- Plan 08-02: Code duplication audit (8min)
-- Plan 08-03: Separation of concerns audit - 27 violations identified (5min)
 - Trend: Audit phases very efficient (5-12min range)
 
 ## v1.0 Milestone Summary
@@ -347,11 +347,33 @@ Following v1.0 UI/UX Polish (93% color adoption, 73% typography adoption, 30+ co
 - Estimated beta-ready effort: 37-53 hours (Critical + High fixes only) → manageable 2-week Phase 11 sprint
 - Phase 11 priorities: (1) Create GameService, (2) Create ProfileService, (3) Migrate to providers, (4) Extract VibeMatchProvider, (5) Extract GameFilterProvider
 
+**From Plan 09-01 (Schema Design Audit):**
+- Data model health score: 68/100 based on 47 schema issues across 9 collections
+- Critical issues (8): friends array scalability, uid+userRef redundancy, joined_players mixed types, incomplete migrations, missing security rules → Must fix before beta
+- High issues (15): Notification prefs explosion (9 booleans), unstructured vibe_profile Map, String fields needing enums, missing denormalization causing N+1 queries → Should fix before beta
+- Quick wins identified (5): Remove uid redundancy, add enum validation (role, request_status), add timestamps (2-3 hours each)
+- Naming inconsistencies: Mixed snake_case vs camelCase (14 issues), decide on snake_case standard for Firestore fields
+- Type safety gaps: Most String fields should be enums (game_type, style_game, scoring), vibe_profile needs structured class
+- Denormalization strategy: Missing host info in games, participant names in chats, requester info in friend_requests (N+1 query risks)
+- Schema issues enable Phase 8 violations: Unstructured vibe_profile forces widget logic, inconsistent joined_players prevents service layer
+- Estimated beta-ready effort: 90-120 hours (Critical + High + Quick Wins) → 12-17 day Phase 11 sprint
+- Health score improvement: 68 → 85 (+17 points) after fixing 30 of 47 issues
+- Phase 11 prerequisites: Standardize joined_players types, structure vibe_profile, complete users→memberIds migration, add enums for all type fields
+
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 08-03-PLAN.md
+Stopped at: Completed 09-01-PLAN.md
 Resume file: None
+
+**Phase 9 Complete:**
+- ✅ 09-01: Data model & schema audit - COMPLETE (6min)
+  - Task 1 complete: All 9 collections analyzed field-by-field (users, games, chats, chat_messages, friend_request, course, roles, add_players, verification_dash)
+  - Task 2 complete: Denormalization patterns audited (4 good, 4 bad, 3 missing N+1 risks)
+  - Task 3 complete: SCHEMA-DESIGN-AUDIT.md generated (1545 lines)
+  - 47 schema issues identified: 8 critical, 15 high, 18 medium, 6 low
+  - Data model health score: 68/100
+  - Pre-beta refactoring roadmap: 90-120 hours to reach 85/100 health score
 
 **Phase 8 Complete:**
 - ✅ 08-01: File organization audit - COMPLETE (12min)
