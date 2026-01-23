@@ -16,6 +16,8 @@ import '/core/design_tokens/typography.dart';
 import '/utils/app_util.dart';
 import '/providers/user_provider.dart';
 import '/providers/chat_provider.dart';
+import '/providers/game_provider.dart';
+import '/providers/profile_provider.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import '/main_function/community/community_widget.dart';
 import '/main_function/create_game/create_game_widget.dart';
@@ -40,6 +42,8 @@ void main() async {
         ChangeNotifierProvider<AppState>(create: (_) => appState),
         ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
         ChangeNotifierProvider<ChatProvider>(create: (_) => ChatProvider()),
+        ChangeNotifierProvider<GameProvider>(create: (_) => GameProvider()),
+        ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
       ],
       child: MyApp(),
     ),
