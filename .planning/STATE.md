@@ -12,18 +12,18 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 **v1.1 Pre-Beta Audit: Code Architecture & Quality**
 
 Phase: 9 of 11 (Data Model & Schema Audit)
-Plans: 2/3 complete (67%)
-Status: In progress
-Last activity: 2026-01-22 — Completed 09-02-PLAN.md
+Plans: 3/3 complete (100%)
+Status: Phase complete
+Last activity: 2026-01-22 — Completed 09-03-PLAN.md
 
-Progress: ████░░░░░░░░░░░░░░░░░░░░ 20.8% (2 of 4 phases, 5 of 24 plans)
+Progress: █████░░░░░░░░░░░░░░░░░░░ 25.0% (2 of 4 phases, 6 of 24 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 25 (09-02 complete)
-- Average duration: ~19 minutes
-- Total execution time: ~8.1 hours
+- Total plans completed: 26 (09-03 complete)
+- Average duration: ~18 minutes
+- Total execution time: ~8.2 hours
 
 **By Phase:**
 
@@ -37,14 +37,14 @@ Progress: ████░░░░░░░░░░░░░░░░░░░�
 | 06-large-widget-refactoring | 1/4 🟡 | ~19min | ~19min |
 | 07-tech-debt-cleanup | 2/2 ✅ | ~19min | ~10min |
 | 08-file-structure-code-duplication-audit | 3/3 ✅ | ~25min | ~8min |
-| 09-data-model-schema-audit | 2/3 🟡 | ~31min | ~16min |
+| 09-data-model-schema-audit | 3/3 ✅ | ~40min | ~13min |
 
 **Recent Trend:**
-- Last 3 plans: ~13min average (09-02: 25min, 09-01: 6min, 08-03: 5min)
-- Phase 9 progress: 2 of 3 plans complete (31min total)
+- Last 3 plans: ~13min average (09-03: 9min, 09-02: 25min, 09-01: 6min)
+- Phase 9 complete: Data model & schema audit complete (40min total)
+- Plan 09-03: Data relationships audit - 23 issues, health score 58/100 (9min)
 - Plan 09-02: Query performance audit - 24 issues, 72% read reduction opportunity (25min)
 - Plan 09-01: Schema design audit - 47 issues identified, health score 68/100 (6min)
-- Phase 8 complete: File structure & separation audit complete (25min total)
 - Trend: Audit phases very efficient (5-25min range)
 
 ## v1.0 Milestone Summary
@@ -375,18 +375,47 @@ Following v1.0 UI/UX Polish (93% color adoption, 73% typography adoption, 30+ co
 - Cross-references Phase 8: 16 direct access violations mapped to Q-PERF-007 through Q-PERF-014 (40-50h refactoring)
 - Performance targets: <200ms list queries, <500ms detail queries, <300ms p95 latency post-optimization
 
+**From Plan 09-03 (Data Relationships Audit):**
+- Data integrity health score: 58/100 based on 23 relationship issues (8 critical, 9 high, 6 medium) - significant room for improvement
+- Critical issues (8): Mixed DocumentReference/String UID patterns, chat messages subcollection orphaning, incomplete user deletion cascade, game-chat inconsistency → Must fix before beta
+- High issues (9): Course String reference, no bidirectional game tracking, friend request not transactional, legacy chat_messages, partial cleanup → Should fix before beta
+- Chat messages subcollection cleanup is HIGHEST PRIORITY: Firestore doesn't auto-delete subcollections, causes storage leak + GDPR violation
+- Standardize on DocumentReference for entity references: String UID only for security rules comparisons and chat memberIds efficiency checks
+- User deletion incomplete: Only cleans friends arrays + legacy chat_messages, missing games (host+participant), chats, friend_requests, message subcollections
+- GDPR compliance risk: User deletion doesn't fully erase data (game participation, chat messages, friend requests remain after user deleted)
+- Estimated beta-ready effort: 40-56 hours (Critical 24-32h + High 16-24h) → 2-week Phase 11 sprint
+- Cloud Functions gaps: 1 existing cleanup (onUserDeleted), 6 recommended new triggers (cleanupChatMessages, cleanupUserGames, etc.)
+- Phase 11 critical path: (1) Chat subcollection cleanup, (2) Game-chat standardization, (3) Legacy migration, (4) Comprehensive user deletion cascade
+- Best practices established: Plan cascading deletes before implementing delete, use Cloud Functions (not client-side), always cleanup subcollections, use transactions for multi-doc updates
+- Migration strategy: Add new field (backward compatible) → Backfill data → Update client code → Remove legacy field (4-phase approach for breaking changes)
+
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 09-02-PLAN.md
+Stopped at: Completed 09-03-PLAN.md
 Resume file: None
 
-**Phase 9 Progress:**
+**Phase 9 Complete:**
 - ✅ 09-01: Data model & schema audit - COMPLETE (6min)
   - Task 1 complete: All 9 collections analyzed field-by-field
   - Task 2 complete: Denormalization patterns audited
   - Task 3 complete: SCHEMA-DESIGN-AUDIT.md generated (1545 lines)
   - 47 schema issues identified: 8 critical, 15 high, 18 medium, 6 low
+  - Health score: 68/100
+- ✅ 09-02: Query performance audit - COMPLETE (25min)
+  - Task 1 complete: All 24 query patterns analyzed
+  - Task 2 complete: N+1 patterns identified (friends, game players)
+  - Task 3 complete: QUERY-PERFORMANCE-AUDIT.md generated (1476 lines)
+  - 24 issues identified: 8 critical, 10 high, 6 medium
+  - 72% read reduction opportunity (640→178 reads/session)
+  - Health score: 65/100
+- ✅ 09-03: Data relationships audit - COMPLETE (9min)
+  - Task 1 complete: All collection relationships mapped
+  - Task 2 complete: Orphaned data risks identified (user, chat, game deletion)
+  - Task 3 complete: DATA-RELATIONSHIPS-AUDIT.md generated (1729 lines)
+  - 23 issues identified: 8 critical, 9 high, 6 medium
+  - Cloud Functions gaps: 6 new triggers recommended
+  - Health score: 58/100
   - Data model health score: 68/100
 - ✅ 09-02: Query performance audit - COMPLETE (25min)
   - Task 1 complete: Analyzed 27 query-related files for performance issues
