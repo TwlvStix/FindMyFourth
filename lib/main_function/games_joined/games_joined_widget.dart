@@ -10,11 +10,14 @@ import '/core/design_tokens/typography.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/models/game.dart';
 import '/providers/provider_extensions.dart';
+import '/providers/game_provider.dart';
+import '/auth/firebase_auth/auth_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class GamesJoinedWidget extends StatefulWidget {
   const GamesJoinedWidget({super.key});
@@ -102,8 +105,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
               padding: EdgeInsets.only(
                 top: MediaQuery.of(context).padding.top + 56,
               ),
-              child: StreamBuilder<List<Game>>(
-              stream: context.userProvider.getMyGames(),
+              child: StreamBuilder<List<GamesRecord>>(
+              stream: context.read<GameProvider>().userGamesStream(currentUserUid),
               builder: (context, snapshot) {
                 // Show loading indicator
                 if (!snapshot.hasData) {
@@ -172,8 +175,11 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                   color: AppColors.sunsetGold,
                   backgroundColor: AppColors.fairwayDark,
                   onRefresh: () async {
-                    context.userProvider.refreshMyGames();
+                    context.read<GameProvider>().invalidateUserGamesCache(currentUserUid);
                     await Future.delayed(Duration(milliseconds: 500));
+                    if (mounted) {
+                      setState(() {});
+                    }
                   },
                   child: CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(
@@ -216,7 +222,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
   // ═══════════════════════════════════════════════════════════════════════════
   // PREMIUM MY GAME CARD
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildPremiumMyGameCard(BuildContext context, Game game) {
+  Widget _buildPremiumMyGameCard(BuildContext context, GamesRecord game) {
     final isCancelled = game.isCancelled;
     final isExpired = game.date != null && game.date!.isBefore(getCurrentTimestamp) && !isCancelled;
     final spotsLeft = game.maxPlayers - (game.joinedPlayers.length + game.guestPlayers.length);

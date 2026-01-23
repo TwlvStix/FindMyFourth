@@ -10,13 +10,14 @@ import '/core/form_field_controller.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/models/game.dart';
-import '/services/firestore_repository.dart';
+import '/providers/game_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 enum CancelledGameHandling {
   removeNow,
@@ -57,15 +58,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   @override
   void initState() {
     super.initState();
-    _gamesStream = const FirestoreRepository()
-        .queryCollectionPage<Game>(
-          FirebaseFirestore.instance.collection('games').orderBy('date'),
-          (doc) => Game.fromDoc(doc),
-          pageSize: 100,
-          isStream: true,
-        )
-        .asStream()
-        .asyncExpand((page) => page.dataStream ?? Stream.value(page.data));
+    final gameProvider = context.read<GameProvider>();
+    _gamesStream = gameProvider
+        .availableGamesStream()
+        .map((records) => records.map((record) => Game.fromRecord(record)).toList());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -404,8 +400,11 @@ class _GamesListWidgetState extends State<GamesListWidget> {
 
                   return RefreshIndicator(
                     onRefresh: () async {
+                      context.read<GameProvider>().invalidateAllGameCache();
                       await Future.delayed(Duration(milliseconds: 500));
-                      setState(() {});
+                      if (mounted) {
+                        setState(() {});
+                      }
                     },
                     child: CustomScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
