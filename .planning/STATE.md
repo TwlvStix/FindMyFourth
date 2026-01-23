@@ -12,18 +12,18 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 **v1.1 Pre-Beta Audit: Code Architecture & Quality**
 
 Phase: 9 of 11 (Data Model & Schema Audit)
-Plans: 1/1 complete (100%)
-Status: Phase complete
-Last activity: 2026-01-22 — Completed 09-01-PLAN.md
+Plans: 2/3 complete (67%)
+Status: In progress
+Last activity: 2026-01-22 — Completed 09-02-PLAN.md
 
-Progress: ████░░░░░░░░░░░░░░░░░░░░ 16.7% (2 of 4 phases, 4 of 24 plans)
+Progress: ████░░░░░░░░░░░░░░░░░░░░ 20.8% (2 of 4 phases, 5 of 24 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 24 (09-01 complete)
+- Total plans completed: 25 (09-02 complete)
 - Average duration: ~19 minutes
-- Total execution time: ~7.7 hours
+- Total execution time: ~8.1 hours
 
 **By Phase:**
 
@@ -37,14 +37,15 @@ Progress: ████░░░░░░░░░░░░░░░░░░░�
 | 06-large-widget-refactoring | 1/4 🟡 | ~19min | ~19min |
 | 07-tech-debt-cleanup | 2/2 ✅ | ~19min | ~10min |
 | 08-file-structure-code-duplication-audit | 3/3 ✅ | ~25min | ~8min |
-| 09-data-model-schema-audit | 1/1 ✅ | ~6min | ~6min |
+| 09-data-model-schema-audit | 2/3 🟡 | ~31min | ~16min |
 
 **Recent Trend:**
-- Last 3 plans: ~7min average (09-01: 6min, 08-03: 5min, 08-02: 8min)
-- Phase 9 complete: Data model & schema audit complete (6min total)
+- Last 3 plans: ~13min average (09-02: 25min, 09-01: 6min, 08-03: 5min)
+- Phase 9 progress: 2 of 3 plans complete (31min total)
+- Plan 09-02: Query performance audit - 24 issues, 72% read reduction opportunity (25min)
 - Plan 09-01: Schema design audit - 47 issues identified, health score 68/100 (6min)
 - Phase 8 complete: File structure & separation audit complete (25min total)
-- Trend: Audit phases very efficient (5-12min range)
+- Trend: Audit phases very efficient (5-25min range)
 
 ## v1.0 Milestone Summary
 
@@ -360,20 +361,40 @@ Following v1.0 UI/UX Polish (93% color adoption, 73% typography adoption, 30+ co
 - Health score improvement: 68 → 85 (+17 points) after fixing 30 of 47 issues
 - Phase 11 prerequisites: Standardize joined_players types, structure vibe_profile, complete users→memberIds migration, add enums for all type fields
 
+**From Plan 09-02 (Query Performance Audit):**
+- Query performance health score: 65/100 based on 24 issues (8 critical, 10 high, 6 medium)
+- Critical issues (8): Missing indexes (games, notifications), unbounded queries (100+ reads), direct Firestore access bypassing caching → Must fix before beta
+- High issues (10): N+1 patterns (friends 21→3 reads, game players 5→1), missing pagination, 12 direct access violations → Should fix before beta
+- Cost impact: Current 640 reads/session → optimized 178 reads/session (72% reduction), saves $8.32/month at 1k DAU
+- Index cleanup: Remove 2-3 unused indexes (legacy chat, redundant games), keep 3-4 active indexes
+- N+1 solutions: Batch reads for friends (86% reduction), denormalization for game players (80% reduction)
+- Pagination standards: 20 items for games list, 50 for chats/notifications, always use startAfter cursor
+- Cache duration strategy: 5 min for dynamic data (games, friends), 15-60 min for static data (courses)
+- Phase 11 priority matrix: Critical 23-32h, High 48-56h, Medium 15h → Pre-beta total 61-77 hours across 4 weeks
+- Optimization roadmap: Week 1 (indexes), Week 2 (service layer), Week 3 (N+1 fixes), Week 4 (pagination + UX)
+- Cross-references Phase 8: 16 direct access violations mapped to Q-PERF-007 through Q-PERF-014 (40-50h refactoring)
+- Performance targets: <200ms list queries, <500ms detail queries, <300ms p95 latency post-optimization
+
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 09-01-PLAN.md
+Stopped at: Completed 09-02-PLAN.md
 Resume file: None
 
-**Phase 9 Complete:**
+**Phase 9 Progress:**
 - ✅ 09-01: Data model & schema audit - COMPLETE (6min)
-  - Task 1 complete: All 9 collections analyzed field-by-field (users, games, chats, chat_messages, friend_request, course, roles, add_players, verification_dash)
-  - Task 2 complete: Denormalization patterns audited (4 good, 4 bad, 3 missing N+1 risks)
+  - Task 1 complete: All 9 collections analyzed field-by-field
+  - Task 2 complete: Denormalization patterns audited
   - Task 3 complete: SCHEMA-DESIGN-AUDIT.md generated (1545 lines)
   - 47 schema issues identified: 8 critical, 15 high, 18 medium, 6 low
   - Data model health score: 68/100
-  - Pre-beta refactoring roadmap: 90-120 hours to reach 85/100 health score
+- ✅ 09-02: Query performance audit - COMPLETE (25min)
+  - Task 1 complete: Analyzed 27 query-related files for performance issues
+  - Task 2 complete: Audited 6 Firestore indexes (3 unused, 3 active)
+  - Task 3 complete: QUERY-PERFORMANCE-AUDIT.md generated (1319 lines)
+  - 24 query issues identified: 8 critical, 10 high, 6 medium
+  - Query performance health score: 65/100
+  - Cost reduction: 72% (640→178 reads/session), saves $8.32/month at 1k DAU
 
 **Phase 8 Complete:**
 - ✅ 08-01: File organization audit - COMPLETE (12min)
