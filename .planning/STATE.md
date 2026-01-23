@@ -12,18 +12,18 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 **v1.1 Pre-Beta Audit: Code Architecture & Quality**
 
 Phase: 11 of 11 (Prioritized Fixes & Refactoring)
-Plans: 2/3 complete (67%)
-Status: In progress
-Last activity: 2026-01-23 — Completed 11-01-SUMMARY.md (async safety & null safety hardening)
+Plans: 3/3 complete (100%)
+Status: ✅ Complete
+Last activity: 2026-01-23 — Completed 11-03-SUMMARY.md (service layer + provider architecture)
 
-Progress: █████░░░░░░░░░░░░░░░░░░░ 41.7% (3 of 4 phases, 10 of 24 plans)
+Progress: █████░░░░░░░░░░░░░░░░░░░ 45.8% (3 of 4 phases, 11 of 24 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 28 (10-03 complete)
+- Total plans completed: 29 (11-03 complete)
 - Average duration: ~16 minutes
-- Total execution time: ~8.4 hours
+- Total execution time: ~8.7 hours
 
 **By Phase:**
 
@@ -39,12 +39,13 @@ Progress: █████░░░░░░░░░░░░░░░░░░�
 | 08-file-structure-code-duplication-audit | 3/3 ✅ | ~25min | ~8min |
 | 09-data-model-schema-audit | 3/3 ✅ | ~40min | ~13min |
 | 10-state-management-error-handling-audit | 3/3 ✅ | ~28min | ~9min |
-| 11-prioritized-fixes-refactoring | 2/3 🟡 | ~122min | ~61min |
+| 11-prioritized-fixes-refactoring | 3/3 ✅ | ~137min | ~46min |
 
 **Recent Trend:**
-- Last 3 plans: ~43min average (11-01: 120min, 11-02: 2min, 10-03: 6min)
-- Plan 11-01: Async safety & null safety hardening - mounted checks, null guards, security rules (120min)
+- Last 3 plans: ~46min average (11-01: 120min, 11-02: 2min, 11-03: 15min)
+- Plan 11-03: Service layer + provider architecture - GameService, ProfileService, GameProvider, ProfileProvider (15min)
 - Plan 11-02: ChatProvider refactoring - stateful provider with caching (2min)
+- Plan 11-01: Async safety & null safety hardening - mounted checks, null guards, security rules (120min)
 - Phase 10 complete: State management audit complete (28min total)
 - Plan 10-03: Async & edge case audit - 42 issues, health score 62/100 (6min)
 - Plan 10-02: Error handling audit - 28 issues, health score 58/100 (6min)
@@ -331,6 +332,22 @@ Key decisions from v1.0:
 - Cache invalidation on mutations: sendMessage, markChatRead, deleteChat, addMember, removeMember all invalidate relevant caches
 - Dispose safety pattern: _disposed flag prevents notifyListeners after dispose in async contexts
 
+**From Plan 11-03 (Service Layer + Provider Architecture):**
+- Service-Provider separation: Services are stateless pure functions, Providers add stateful caching layer
+- Static-only service pattern: Private constructor prevents instantiation, all methods static
+- Error handling consistency: try-catch FirebaseException, debugPrint with service.method prefix, rethrow for provider
+- No UI dependencies in services: Only flutter/foundation for debugPrint, no material/widgets imports
+- 5-minute cache TTL standard: Matches UserProvider/ChatProvider for dynamic data (games, profiles)
+- Debounced notifyListeners (50ms): Aggregates rapid cache updates to prevent UI jank
+- Cache invalidation on mutations: Every write operation invalidates relevant caches and refreshes
+- StreamRequestManager for streams: Prevents duplicate subscriptions, provides 5-min TTL for reactive data
+- Dispose safety pattern: _disposed flag + timer cancel prevents crashes in async contexts
+- Filter-based cache keys: Unique query keys for different filter combinations (course, style, date)
+- Cache-first strategy: Check cache validity before fetching (batchGetProfiles pattern)
+- Nested map updates: Use dot notation for Firestore nested fields (vibe_profile.music)
+- Batch query chunking: Split 'in' queries into 10-item chunks (Firestore limit)
+- Architectural fix: Eliminates Phase 08's #1 violation (16 widgets with direct Firestore access)
+
 **From Plan 11-01 (Async Safety & Null Safety Hardening):**
 - Mounted check pattern: Always add `if (!mounted) return;` before setState and context usage after await calls
 - Try-catch async pattern: Wrap async operations in try-catch, add mounted checks in catch blocks before showing errors
@@ -460,10 +477,10 @@ Following v1.0 UI/UX Polish (93% color adoption, 73% typography adoption, 30+ co
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: Completed 11-01-SUMMARY.md
+Stopped at: Completed 11-03-SUMMARY.md
 Resume file: None
 
-**Phase 11 Progress:**
+**Phase 11 Progress (COMPLETE):**
 - ✅ 11-01: Async safety & null safety hardening - COMPLETE (120min)
   - Task 1 complete: Stream subscription verification (minimal pass)
     - Verified 6 files with .listen() - 4 have proper cleanup, 2 minor issues deferred
@@ -495,6 +512,27 @@ Resume file: None
   - Dispose cleanup implemented (cancel timers, clear managers, clear caches)
   - 100% backward compatible (no breaking changes to method signatures)
   - Health score improvement: 62/100 → ~72/100 (estimated +10 points)
+- ✅ 11-03: Service layer + provider architecture - COMPLETE (15min)
+  - Task 1 complete: GameService created (9 static methods)
+    - Query methods: queryAvailableGames, queryUserGames, getGameById, watchGameById
+    - Mutation methods: joinGame, leaveGame, updateGameDetails
+    - Lifecycle methods: createGame, cancelGame
+    - Pattern: Static-only, no UI dependencies, try-catch FirebaseException, debugPrint, rethrow
+  - Task 2 complete: ProfileService created (7 static methods)
+    - Query methods: getUserProfile, watchUserProfile, searchUsersByName
+    - Mutation methods: updateProfile, updateVibeProfile
+    - Analytics: getUserStats, batchGetUserProfiles
+    - Pattern: Matches GameService architecture
+  - Task 3 complete: GameProvider and ProfileProvider created
+    - GameProvider: 8 _scheduleNotify calls, 5-min TTL, StreamRequestManager integration
+    - ProfileProvider: 9 _scheduleNotify calls, dual caching (profiles + stats)
+    - Pattern: Extends ChangeNotifier, debounced notifyListeners, dispose cleanup
+  - Files created: 4 files, 1,122 lines total
+  - Architectural foundation: Services (stateless) → Providers (stateful caching)
+  - Eliminates Phase 08's #1 violation (16 widgets with direct Firestore access)
+  - Ready for widget migration in Plan 11-04
+  - Health score improvement: Foundation for 72/100 → 85+ (after widget migration)
+  - 3 atomic commits: GameService, ProfileService, Providers
 
 **Phase 10 Complete:**
 - ✅ 10-02: Error handling audit - COMPLETE (6min)
