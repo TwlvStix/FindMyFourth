@@ -1,0 +1,216 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+
+import '/backend/backend.dart';
+
+/// ProfileService provides stateless, centralized access to user profile data in Firestore
+///
+/// This service follows the established pattern from ChatService and GameService:
+/// - Static methods only (no instance state)
+/// - Pure functions without UI dependencies
+/// - Firestore error handling with try-catch, debugPrint, and rethrow
+/// - No business logic (vibe matching, filtering) - that stays in providers
+///
+/// Usage:
+/// - Call directly: ProfileService.getUserProfile(userId)
+/// - Or wrap with ProfileProvider for caching and state management
+class ProfileService {
+  // Private constructor to prevent instantiation (static-only class)
+  ProfileService._();
+
+  /// Get a user profile by ID (one-time fetch)
+  ///
+  /// Returns null if user doesn't exist
+  static Future<UsersRecord?> getUserProfile(String userId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      return doc.exists ? UsersRecord.fromSnapshot(doc) : null;
+    } on FirebaseException catch (e) {
+      debugPrint(
+          'ProfileService.getUserProfile error: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// Watch a user profile by ID for reactive updates
+  ///
+  /// Returns Stream<UsersRecord?> that emits null if user doesn't exist
+  static Stream<UsersRecord?> watchUserProfile(String userId) {
+    try {
+      return FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .snapshots()
+          .map((doc) => doc.exists ? UsersRecord.fromSnapshot(doc) : null);
+    } on FirebaseException catch (e) {
+      debugPrint(
+          'ProfileService.watchUserProfile error: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// Update user profile (partial update)
+  ///
+  /// Automatically adds updated_at timestamp to updates
+  static Future<void> updateProfile(
+      String userId, Map<String, dynamic> updates) async {
+    try {
+      final updateData = Map<String, dynamic>.from(updates);
+      updateData['updated_at'] = FieldValue.serverTimestamp();
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .update(updateData);
+    } on FirebaseException catch (e) {
+      debugPrint('ProfileService.updateProfile error: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// Update vibe profile data (partial update of vibe_profile map)
+  ///
+  /// Updates nested fields in vibe_profile map
+  /// Example: {'vibe_profile.music': 5, 'vibe_profile.drinks': 3}
+  static Future<void> updateVibeProfile(
+      String userId, Map<String, dynamic> vibeData) async {
+    try {
+      // Prefix all keys with 'vibe_profile.' for nested update
+      final updateData = <String, dynamic>{};
+      vibeData.forEach((key, value) {
+        updateData['vibe_profile.$key'] = value;
+      });
+      updateData['updated_at'] = FieldValue.serverTimestamp();
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .update(updateData);
+    } on FirebaseException catch (e) {
+      debugPrint(
+          'ProfileService.updateVibeProfile error: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// Get user statistics (games played, friends count, etc.)
+  ///
+  /// Returns aggregated stats from user document and related collections
+  static Future<Map<String, dynamic>> getUserStats(String userId) async {
+    try {
+      // Get user document
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (!userDoc.exists) {
+        return {
+          'gamesPlayed': 0,
+          'friendsCount': 0,
+          'friendRequestsCount': 0,
+        };
+      }
+
+      final userData = userDoc.data() as Map<String, dynamic>;
+
+      // Count friends (array length)
+      final friends = (userData['friends'] as List<dynamic>?)?.length ?? 0;
+
+      // Count friend requests (array length)
+      final friendRequests =
+          (userData['friend_requests'] as List<dynamic>?)?.length ?? 0;
+
+      // Count games played (query games where user is in joined_players)
+      final userRef =
+          FirebaseFirestore.instance.collection('users').doc(userId);
+      final gamesSnapshot = await FirebaseFirestore.instance
+          .collection('games')
+          .where('joined_players', arrayContains: userRef)
+          .where('isCancelled', isEqualTo: false)
+          .get();
+
+      return {
+        'gamesPlayed': gamesSnapshot.docs.length,
+        'friendsCount': friends,
+        'friendRequestsCount': friendRequests,
+        'handicap': userData['handicap'] ?? 0,
+        'homeCourse': userData['home_course'] ?? '',
+      };
+    } on FirebaseException catch (e) {
+      debugPrint('ProfileService.getUserStats error: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// Query users by name (search)
+  ///
+  /// Returns Stream<List<UsersRecord>> matching the search query
+  /// Note: Firestore text search is limited - this uses >= and <= for prefix matching
+  static Stream<List<UsersRecord>> searchUsersByName(String searchQuery) {
+    try {
+      if (searchQuery.isEmpty) {
+        return Stream.value([]);
+      }
+
+      // Firestore text search limitation: use >= and <= for prefix matching
+      final searchLower = searchQuery.toLowerCase();
+      final searchEnd = searchLower.substring(0, searchLower.length - 1) +
+          String.fromCharCode(
+              searchLower.codeUnitAt(searchLower.length - 1) + 1);
+
+      return FirebaseFirestore.instance
+          .collection('users')
+          .where('display_name_lowercase', isGreaterThanOrEqualTo: searchLower)
+          .where('display_name_lowercase', isLessThan: searchEnd)
+          .limit(20)
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => UsersRecord.fromSnapshot(doc))
+              .toList());
+    } on FirebaseException catch (e) {
+      debugPrint(
+          'ProfileService.searchUsersByName error: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// Batch get multiple user profiles by IDs
+  ///
+  /// Returns Map<String, UsersRecord> where key is userId
+  /// Efficiently fetches multiple users in a single read batch
+  static Future<Map<String, UsersRecord>> batchGetUserProfiles(
+      List<String> userIds) async {
+    try {
+      if (userIds.isEmpty) {
+        return {};
+      }
+
+      // Firestore 'in' query limit is 10 items, so batch in chunks
+      final result = <String, UsersRecord>{};
+
+      for (var i = 0; i < userIds.length; i += 10) {
+        final end = (i + 10) > userIds.length ? userIds.length : i + 10;
+        final batchIds = userIds.sublist(i, end);
+
+        final snapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .where(FieldPath.documentId, whereIn: batchIds)
+            .get();
+
+        for (final doc in snapshot.docs) {
+          result[doc.id] = UsersRecord.fromSnapshot(doc);
+        }
+      }
+
+      return result;
+    } on FirebaseException catch (e) {
+      debugPrint(
+          'ProfileService.batchGetUserProfiles error: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+}
