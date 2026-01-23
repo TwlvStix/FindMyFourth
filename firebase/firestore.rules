@@ -43,7 +43,10 @@ service cloud.firestore {
         gameId is string &&
         gameData != null &&
         gameData.joined_players is list &&
-        gameData.joined_players.hasAny([userRef(request.auth.uid)]);
+        gameData.joined_players.hasAny([
+          userRef(request.auth.uid),
+          request.auth.uid
+        ]);
     }
 
     function memberIdsOrEmpty(data) {
@@ -156,6 +159,125 @@ service cloud.firestore {
             usernameDoc.data.uid == request.auth.uid))));
     }
 
+    // Game-related helper functions
+    function joinedPlayers(data) {
+      return data.joined_players is list ? data.joined_players : [];
+    }
+
+    function guestPlayers(data) {
+      return data.guest_players is list ? data.guest_players : [];
+    }
+
+    function maxPlayers(data) {
+      return data.max_players is int ? data.max_players : 0;
+    }
+
+    function totalPlayers(data) {
+      return joinedPlayers(data).size() + guestPlayers(data).size();
+    }
+
+    function containsSelf(playersList) {
+      return playersList.hasAny([
+        userRef(request.auth.uid),
+        request.auth.uid
+      ]);
+    }
+
+    function isOwner(data) {
+      return isSignedIn() &&
+        data.uid is string &&
+        data.uid == request.auth.uid;
+    }
+
+    function isParticipant(data) {
+      return isSignedIn() && containsSelf(joinedPlayers(data));
+    }
+
+    function statusIsActive(data) {
+      return !data.keys().hasAny(['status']) || data.status == 'active';
+    }
+
+    function isCancelled(data) {
+      return data.isCancelled == true;
+    }
+
+    function isOpenForJoin(data) {
+      return statusIsActive(data) && !isCancelled(data);
+    }
+
+    function isValidStatus(data) {
+      return !data.keys().hasAny(['status']) ||
+        (data.status is string &&
+          data.status in ['active', 'completed', 'cancelled', 'expired']);
+    }
+
+    function isCancelStatusConsistent(data) {
+      return !(data.status == 'cancelled') || data.isCancelled == true;
+    }
+
+    function userRefMatchesUid(data) {
+      return !data.keys().hasAny(['userRef']) ||
+        data.userRef == userRef(data.uid);
+    }
+
+    function ownerUpdateAllowed() {
+      let changed = request.resource.data.diff(resource.data).changedKeys();
+      return isOwner(resource.data) &&
+        request.resource.data.uid == resource.data.uid &&
+        userRefMatchesUid(request.resource.data) &&
+        changed.hasOnly([
+          'name_game',
+          'date',
+          'num_players',
+          'style_game',
+          'game_type',
+          'course_play',
+          'member_discount',
+          'scoring',
+          'friend_game',
+          'max_players',
+          'rules_setting',
+          'courseRef',
+          'chatRef',
+          'isCancelled',
+          'status',
+          'joined_players',
+          'guest_players',
+          'userRef'
+        ]) &&
+        maxPlayers(request.resource.data) >= totalPlayers(request.resource.data) &&
+        isValidStatus(request.resource.data) &&
+        isCancelStatusConsistent(request.resource.data);
+    }
+
+    function participantJoinAllowed() {
+      let changed = request.resource.data.diff(resource.data).changedKeys();
+      return isSignedIn() &&
+        isOpenForJoin(resource.data) &&
+        changed.hasOnly(['joined_players']) &&
+        request.resource.data.joined_players is list &&
+        !containsSelf(joinedPlayers(resource.data)) &&
+        containsSelf(joinedPlayers(request.resource.data)) &&
+        request.resource.data.joined_players.size() ==
+          joinedPlayers(resource.data).size() + 1 &&
+        request.resource.data.joined_players.hasAll(joinedPlayers(resource.data)) &&
+        maxPlayers(request.resource.data) >= totalPlayers(request.resource.data);
+    }
+
+    function participantLeaveAllowed() {
+      let changed = request.resource.data.diff(resource.data).changedKeys();
+      return isSignedIn() &&
+        changed.hasOnly(['joined_players']) &&
+        request.resource.data.joined_players is list &&
+        containsSelf(joinedPlayers(resource.data)) &&
+        !containsSelf(joinedPlayers(request.resource.data)) &&
+        request.resource.data.joined_players.size() ==
+          joinedPlayers(resource.data).size() - 1 &&
+        joinedPlayers(resource.data).hasAll(
+          request.resource.data.joined_players
+        );
+    }
+
     match /users/{document} {
       allow update: if roleUnchanged() &&
         ((request.auth.uid == document &&
@@ -251,10 +373,20 @@ service cloud.firestore {
     }
 
     match /games/{document} {
-      allow create: if request.auth != null;
-      allow read: if true;
-      allow write: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow create: if isSignedIn() &&
+        request.resource.data.uid is string &&
+        request.resource.data.uid == request.auth.uid &&
+        userRefMatchesUid(request.resource.data) &&
+        request.resource.data.joined_players is list &&
+        containsSelf(request.resource.data.joined_players) &&
+        maxPlayers(request.resource.data) >= totalPlayers(request.resource.data) &&
+        isValidStatus(request.resource.data) &&
+        isCancelStatusConsistent(request.resource.data);
+      allow read: if isSignedIn();
+      allow update: if ownerUpdateAllowed() ||
+        participantJoinAllowed() ||
+        participantLeaveAllowed();
+      allow delete: if false;
     }
 
     match /friend_request/{document} {
@@ -273,18 +405,6 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if false;
     }
-
-    match /games/{parent}/addPlayers/{document} {
-      allow create: if request.auth != null;
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-      allow delete: if false;
-    }
-
-    match /{path=**}/addPlayers/{document} {
-      allow read: if request.auth != null;
-    }
-
 
     match /user_push_notifications/{id} {
       allow read, update, delete: if false;
