@@ -210,6 +210,18 @@ class ChatService {
     });
   }
 
+  /// Send a message to a chat
+  ///
+  /// Uses Firestore transaction to atomically create message and update chat's
+  /// last_message field. This prevents race conditions where concurrent sends
+  /// could overwrite each other's last_message updates (Phase 10-03 A-RACE-004).
+  ///
+  /// Transaction ensures:
+  /// - Message document created in messages subcollection
+  /// - Chat's last_message field always reflects latest message
+  /// - Unread counts updated atomically for all members
+  ///
+  /// Throws Exception if chat is read-only or archived
   Future<void> sendMessage({
     required String chatId,
     required String senderId,
