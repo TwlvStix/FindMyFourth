@@ -1,60 +1,95 @@
 import 'package:flutter/material.dart';
-import 'app_loading_state.dart';
-import 'app_empty_state.dart';
+import 'package:find_my_fourth/core/utils/error_messages.dart';
+import 'package:find_my_fourth/core/exceptions/app_exceptions.dart';
 
+/// Universal StreamBuilder with error states and retry mechanism
 class AppStreamBuilder<T> extends StatelessWidget {
   final Stream<T> stream;
   final Widget Function(BuildContext context, T data) builder;
-  final String? loadingMessage;
-  final IconData? emptyIcon;
-  final String? emptyTitle;
-  final String? emptyMessage;
+  final Widget Function(BuildContext context)? loadingBuilder;
+  final Widget Function(BuildContext context, Object error)? errorBuilder;
+  final VoidCallback? onRetry;
+  final T? initialData;
 
   const AppStreamBuilder({
-    super.key,
+    Key? key,
     required this.stream,
     required this.builder,
-    this.loadingMessage,
-    this.emptyIcon,
-    this.emptyTitle,
-    this.emptyMessage,
-  });
+    this.loadingBuilder,
+    this.errorBuilder,
+    this.onRetry,
+    this.initialData,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<T>(
       stream: stream,
+      initialData: initialData,
       builder: (context, snapshot) {
+        // Loading state
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return loadingBuilder?.call(context) ?? _defaultLoading();
+        }
+
+        // Error state
         if (snapshot.hasError) {
-          return AppEmptyState(
-            icon: Icons.error_outline,
-            title: 'Something went wrong',
-            message: snapshot.error.toString(),
-          );
+          return errorBuilder?.call(context, snapshot.error!) ??
+              _defaultError(context, snapshot.error!);
         }
 
-        if (!snapshot.hasData) {
-          return AppLoadingState(
-            variant: loadingMessage != null
-                ? AppLoadingVariant.message
-                : AppLoadingVariant.spinner,
-            message: loadingMessage,
-          );
+        // Data state
+        if (snapshot.hasData) {
+          return builder(context, snapshot.data!);
         }
 
-        final data = snapshot.data as T;
-
-        // Check if data is empty list
-        if (data is List && data.isEmpty) {
-          return AppEmptyState(
-            icon: emptyIcon ?? Icons.inbox_outlined,
-            title: emptyTitle ?? 'No items',
-            message: emptyMessage,
-          );
-        }
-
-        return builder(context, data);
+        // Empty/no data state
+        return _defaultLoading();
       },
+    );
+  }
+
+  Widget _defaultLoading() {
+    return Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+
+  Widget _defaultError(BuildContext context, Object error) {
+    String message = ErrorMessages.genericError;
+
+    // Extract user-friendly message from error
+    if (error is AppException) {
+      message = error.message;
+    } else if (error.toString().contains('permission-denied')) {
+      message = ErrorMessages.forFirebaseCode('permission-denied');
+    } else if (error.toString().contains('unavailable')) {
+      message = ErrorMessages.forFirebaseCode('unavailable');
+    }
+
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 48, color: Colors.red),
+            SizedBox(height: 16),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+            if (onRetry != null) ...[
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: onRetry,
+                child: Text('Retry'),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
