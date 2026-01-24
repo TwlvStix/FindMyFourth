@@ -26,6 +26,8 @@ class BecomeFriendsWidget extends StatefulWidget {
 }
 
 class _BecomeFriendsWidgetState extends State<BecomeFriendsWidget> {
+  bool _isProcessing = false; // Debounce flag for friend request
+
   @override
   void initState() {
     super.initState();
@@ -180,7 +182,11 @@ class _BecomeFriendsWidgetState extends State<BecomeFriendsWidget> {
                               variant: AppButtonVariant.primary,
                               size: AppButtonSize.large,
                               fullWidth: true,
-                              onPressed: () async {
+                              onPressed: _isProcessing ? null : () async {
+                                // Debounce: prevent double-tap (Phase 10-03 A-RACE-005)
+                                if (_isProcessing) return;
+                                setState(() => _isProcessing = true);
+
                                 try {
                                   if (containerUsersRecord != null) {
                                     await context
@@ -217,6 +223,10 @@ class _BecomeFriendsWidgetState extends State<BecomeFriendsWidget> {
                                     ),
                                   );
                                   return;
+                                } finally {
+                                  if (mounted) {
+                                    setState(() => _isProcessing = false);
+                                  }
                                 }
 
                                 if (!mounted) {

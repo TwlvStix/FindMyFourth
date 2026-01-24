@@ -36,6 +36,9 @@ class UserProvider extends ChangeNotifier {
   // Stream subscription
   StreamSubscription<UsersRecord?>? _userSubscription;
 
+  // Debounced notifyListeners to prevent excessive rebuilds (Phase 10-03 A-RACE-001)
+  Timer? _notifyDebounce;
+
   // Request managers for caching
   final _myGamesManager = StreamRequestManager<List<Game>>(5);
   final _availableGamesManager = StreamRequestManager<List<Game>>(5);
@@ -71,8 +74,23 @@ class UserProvider extends ChangeNotifier {
   @override
   void dispose() {
     _userSubscription?.cancel();
+    _notifyDebounce?.cancel();
     clearAllCaches();
     super.dispose();
+  }
+
+  /// Schedule a debounced notifyListeners call
+  ///
+  /// During login, multiple async operations trigger rapid notifyListeners calls,
+  /// causing widgets to rebuild mid-login with unstable state. This debounces
+  /// those calls to batch state updates into a single rebuild after 50ms.
+  ///
+  /// This prevents Phase 10-03 A-RACE-001 (concurrent notifyListeners during login).
+  void _scheduleNotify() {
+    _notifyDebounce?.cancel();
+    _notifyDebounce = Timer(Duration(milliseconds: 50), () {
+      notifyListeners();
+    });
   }
 
   // ========================================
@@ -169,13 +187,13 @@ class UserProvider extends ChangeNotifier {
     final userRef = currentUser?.reference ?? currentUserReference;
     final resolvedUserId = currentUser?.reference.id ?? userRef?.id ?? '';
     _myGamesManager.clearRequest('my_games_${resolvedUserId}');
-    notifyListeners();
+    _scheduleNotify();
   }
 
   /// Refresh available games cache
   void refreshAvailableGames() {
     _availableGamesManager.clear();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   // ========================================
@@ -211,13 +229,13 @@ class UserProvider extends ChangeNotifier {
   /// Refresh friends cache
   void refreshFriends() {
     _friendsManager.clearRequest('friends_${userId}');
-    notifyListeners();
+    _scheduleNotify();
   }
 
   /// Refresh friend requests cache
   void refreshFriendRequests() {
     _friendRequestsManager.clearRequest('friend_requests_${userId}');
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Stream<List<UsersRecord>> _queryUsersByRefs(List<DocumentReference> refs) {
@@ -264,7 +282,7 @@ class UserProvider extends ChangeNotifier {
   /// Refresh courses cache
   void refreshCourses() {
     _coursesManager.clearRequest('all_courses');
-    notifyListeners();
+    _scheduleNotify();
   }
 
   // ========================================
