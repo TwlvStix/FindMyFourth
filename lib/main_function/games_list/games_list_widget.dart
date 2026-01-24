@@ -3,6 +3,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_choice_chips.dart';
 import '/core/widgets/app_icon_button.dart';
+import '/core/widgets/app_stream_builder.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
@@ -285,74 +286,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                 right: AppSpacing.md,
                 top: MediaQuery.of(context).padding.top + 56,
               ),
-              child: StreamBuilder<List<Game>>(
+              child: AppStreamBuilder<List<Game>>(
                 stream: _gamesStream,
-                builder: (context, snapshot) {
+                onRetry: () => setState(() {}),
+                builder: (context, gamesList) {
                   debugPrint('📋 GAME LIST: StreamBuilder triggered');
+                  debugPrint('✅ GAME LIST: Received ${gamesList.length} documents from Firestore');
 
-                  // Handle errors
-                  if (snapshot.hasError) {
-                    debugPrint('❌ GAME LIST: Error fetching games: ${snapshot.error}');
-                    debugPrint('❌ GAME LIST: Error type: ${snapshot.error.runtimeType}');
-                    return Center(
-                      child: Padding(
-                        padding: AppSpacing.allXl,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.error_outline_rounded, size: 56, color: AppColors.sunsetRose),
-                            SizedBox(height: AppSpacing.md),
-                            Text(
-                              'Unable to load games',
-                              style: AppTypography.titleMedium.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(height: AppSpacing.xs),
-                            Text(
-                              'Please check your connection and try again',
-                              style: AppTypography.bodySmall.copyWith(
-                                color: Colors.white.withOpacity(0.7),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  // Show loading indicator
-                  if (!snapshot.hasData) {
-                    debugPrint('⏳ GAME LIST: Waiting for data...');
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 50.0,
-                            height: 50.0,
-                            child: SpinKitWanderingCubes(
-                              color: AppTheme.of(context).secondary,
-                              size: 50.0,
-                            ),
-                          ),
-                          SizedBox(height: AppSpacing.md),
-                          Text(
-                            'Finding games...',
-                            style: AppTypography.bodySmall.copyWith(
-                              color: Colors.white.withOpacity(0.7),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  debugPrint('✅ GAME LIST: Received ${snapshot.data!.length} documents from Firestore');
-
-                  final allGames = snapshot.data!
+                  final allGames = gamesList
                       .map((game) {
                         debugPrint('  - Game: ${game.nameGame} (ID: ${game.reference.id}, isCancelled: ${game.isCancelled})');
                         return game;

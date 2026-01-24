@@ -1,5 +1,6 @@
 import '/backend/backend.dart';
 import '/core/widgets/app_icon_button.dart';
+import '/core/widgets/app_stream_builder.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/core/navigation/app_router.dart';
@@ -105,32 +106,10 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
               padding: EdgeInsets.only(
                 top: MediaQuery.of(context).padding.top + 56,
               ),
-              child: StreamBuilder<List<GamesRecord>>(
+              child: AppStreamBuilder<List<GamesRecord>>(
               stream: context.read<GameProvider>().userGamesStream(currentUserUid),
-              builder: (context, snapshot) {
-                // Show loading indicator
-                if (!snapshot.hasData) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SpinKitWanderingCubes(
-                          color: AppColors.sunsetGold,
-                          size: 50.0,
-                        ),
-                        SizedBox(height: AppSpacing.md),
-                        Text(
-                          'Loading your games...',
-                          style: AppTypography.bodySmall.copyWith(
-                            color: Colors.white.withOpacity(0.7),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                final listViewGamesRecordList = snapshot.data!;
+              onRetry: () => setState(() {}),
+              builder: (context, listViewGamesRecordList) {
 
                 // Empty state
                 if (listViewGamesRecordList.isEmpty) {
