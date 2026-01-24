@@ -1,4 +1,6 @@
 import '/backend/backend.dart';
+import '/backend/api_requests/game_service.dart';
+import '/core/exceptions/app_exceptions.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
@@ -1151,57 +1153,85 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 variant: AppButtonVariant.primary,
                                 size: AppButtonSize.large,
                                 onPressed: () async {
-                                  if ((joinGameDetailedGamesRecord.maxPlayers >
-                                          (joinGameDetailedGamesRecord
-                                                  .joinedPlayers.length +
-                                              joinGameDetailedGamesRecord
-                                                  .guestPlayers.length)) &&
-                                      ((joinGameDetailedGamesRecord
-                                                  .friendGame ==
-                                              'Public') ||
-                                          ((joinGameDetailedGamesRecord
-                                                      .friendGame ==
-                                                  'Friends') &&
-                                              isCreatorFriend))) {
-                                    final currentUser =
-                                        FirebaseAuth.instance.currentUser;
-                                    if (currentUser == null) {
-                                      showSnackbar(
-                                        context,
-                                        'Please sign in to join this game.',
-                                      );
+                                  // Check permission before attempting join
+                                  if (!((joinGameDetailedGamesRecord.friendGame == 'Public') ||
+                                      ((joinGameDetailedGamesRecord.friendGame == 'Friends') && isCreatorFriend))) {
+                                    await showDialog(
+                                      context: context,
+                                      builder: (alertDialogContext) {
+                                        return AlertDialog(
+                                          title: Text('Sorry!'),
+                                          content: Text('You are not friends with the game creator.'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(alertDialogContext),
+                                              child: Text('Ok'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                    return;
+                                  }
+
+                                  final currentUser = FirebaseAuth.instance.currentUser;
+                                  if (currentUser == null) {
+                                    showSnackbar(
+                                      context,
+                                      'Please sign in to join this game.',
+                                    );
+                                    return;
+                                  }
+
+                                  try {
+                                    // Use GameService.joinGame with transaction for atomic capacity check
+                                    await GameService.joinGame(
+                                      joinGameDetailedGamesRecord.reference.id,
+                                      currentUser.uid,
+                                    );
+                                  } on GameOperationException catch (error) {
+                                    if (!mounted) {
                                       return;
                                     }
-                                    final currentUserRef = FirebaseFirestore
-                                        .instance
-                                        .collection('users')
-                                        .doc(currentUser.uid);
-                                    try {
-                                      await joinGameDetailedGamesRecord.reference
-                                          .update({
-                                        'joined_players':
-                                            FieldValue.arrayUnion([currentUserRef]),
-                                      });
-                                    } on FirebaseException catch (error) {
-                                      if (!mounted) {
-                                        return;
-                                      }
-                                      final message =
-                                          error.code == 'permission-denied'
-                                              ? 'You do not have permission to join this game.'
-                                              : 'Unable to join the game right now. Please try again.';
-                                      showSnackbar(context, message);
-                                      return;
-                                    } catch (_) {
-                                      if (!mounted) {
-                                        return;
-                                      }
-                                      showSnackbar(
-                                        context,
-                                        'Unable to join the game right now. Please try again.',
-                                      );
+                                    // Handle specific error codes from transaction
+                                    String message;
+                                    switch (error.code) {
+                                      case 'game-full':
+                                        message = 'This game is now full';
+                                        break;
+                                      case 'already-joined':
+                                        message = "You've already joined this game";
+                                        break;
+                                      case 'transaction-conflict':
+                                        message = 'Game updated by another user, please refresh';
+                                        break;
+                                      case 'game-not-found':
+                                        message = 'Game not found';
+                                        break;
+                                      default:
+                                        message = error.message;
+                                    }
+                                    showSnackbar(context, message);
+                                    return;
+                                  } on FirebaseException catch (error) {
+                                    if (!mounted) {
                                       return;
                                     }
+                                    final message = error.code == 'permission-denied'
+                                        ? 'You do not have permission to join this game.'
+                                        : 'Unable to join the game right now. Please try again.';
+                                    showSnackbar(context, message);
+                                    return;
+                                  } catch (_) {
+                                    if (!mounted) {
+                                      return;
+                                    }
+                                    showSnackbar(
+                                      context,
+                                      'Unable to join the game right now. Please try again.',
+                                    );
+                                    return;
+                                  }
 
                                     if (joinGameDetailedGamesRecord.chatRef !=
                                         null) {
@@ -1242,25 +1272,6 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                         ),
                                       },
                                     );
-                                  } else {
-                                    await showDialog(
-                                      context: context,
-                                      builder: (alertDialogContext) {
-                                        return AlertDialog(
-                                          title: Text('Sorry!'),
-                                          content: Text(
-                                              'You are not friends with the game creator or the group  is full.'),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(
-                                                  alertDialogContext),
-                                              child: Text('Ok'),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  }
                                 },
                               ),
                             ),

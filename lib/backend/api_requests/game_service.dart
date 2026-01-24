@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '/backend/backend.dart';
+import '/core/exceptions/app_exceptions.dart';
 
 /// GameService provides stateless, centralized access to game data in Firestore
 ///
@@ -117,20 +118,61 @@ class GameService {
 
   /// Join a game (add user to joined_players array)
   ///
+  /// Uses Firestore transaction to atomically check capacity and duplicate membership
+  /// before adding user. This prevents race conditions where multiple users can
+  /// join simultaneously and exceed max capacity.
+  ///
+  /// Throws GameOperationException with specific codes:
+  /// - 'game-not-found': Game doesn't exist
+  /// - 'game-full': Already at max capacity
+  /// - 'already-joined': User already in joined_players
+  /// - 'transaction-conflict': Transaction aborted (retry needed)
+  ///
   /// Updates:
   /// - joined_players: adds userId DocumentReference
   /// - updated_at: server timestamp
   static Future<void> joinGame(String gameId, String userId) async {
     try {
-      final userRef =
-          FirebaseFirestore.instance.collection('users').doc(userId);
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        // 1. Read game document
+        final gameRef = FirebaseFirestore.instance.collection('games').doc(gameId);
+        final gameDoc = await transaction.get(gameRef);
 
-      await FirebaseFirestore.instance.collection('games').doc(gameId).update({
-        'joined_players': FieldValue.arrayUnion([userRef]),
-        'updated_at': FieldValue.serverTimestamp(),
+        if (!gameDoc.exists) {
+          throw GameOperationException('Game not found', code: 'game-not-found');
+        }
+
+        final game = GamesRecord.fromSnapshot(gameDoc);
+        final currentPlayers = game.joinedPlayers?.length ?? 0;
+        final maxPlayers = game.maxPlayers ?? 4;
+
+        // 2. Check capacity atomically
+        if (currentPlayers >= maxPlayers) {
+          throw GameOperationException('Game is full', code: 'game-full');
+        }
+
+        // 3. Check not already joined
+        final userRef = FirebaseFirestore.instance.collection('users').doc(userId);
+        if (game.joinedPlayers?.contains(userRef) ?? false) {
+          throw GameOperationException('Already joined this game', code: 'already-joined');
+        }
+
+        // 4. Atomic update - only if checks pass
+        transaction.update(gameRef, {
+          'joined_players': FieldValue.arrayUnion([userRef]),
+          'updated_at': FieldValue.serverTimestamp(),
+        });
       });
+
+      debugPrint('GameService.joinGame: User $userId joined game $gameId');
+    } on GameOperationException {
+      // Re-throw our custom exceptions as-is
+      rethrow;
     } on FirebaseException catch (e) {
       debugPrint('GameService.joinGame error: ${e.code} - ${e.message}');
+      if (e.code == 'aborted') {
+        throw GameOperationException('Game capacity changed, please try again', code: 'transaction-conflict');
+      }
       rethrow;
     }
   }
