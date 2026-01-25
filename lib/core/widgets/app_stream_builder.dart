@@ -27,11 +27,6 @@ class AppStreamBuilder<T> extends StatelessWidget {
       stream: stream,
       initialData: initialData,
       builder: (context, snapshot) {
-        // Loading state
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return loadingBuilder?.call(context) ?? _defaultLoading();
-        }
-
         // Error state
         if (snapshot.hasError) {
           return errorBuilder?.call(context, snapshot.error!) ??
@@ -41,6 +36,11 @@ class AppStreamBuilder<T> extends StatelessWidget {
         // Data state
         if (snapshot.hasData) {
           return builder(context, snapshot.data!);
+        }
+
+        // Loading state
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return loadingBuilder?.call(context) ?? _defaultLoading();
         }
 
         // Empty/no data state

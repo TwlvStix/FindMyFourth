@@ -372,19 +372,20 @@ class UserProvider extends ChangeNotifier {
 
   /// Accept friend request
   Future<void> acceptFriendRequest(DocumentReference requesterRef) async {
-    if (!isLoggedIn) return;
-
     try {
-      await currentUserReference!.update({
+      final authUser = FirebaseAuth.instance.currentUser;
+      if (authUser == null) return;
+      final currentUserRef = UsersRecord.collection.doc(authUser.uid);
+      await currentUserRef.update({
         'friend_requests': FieldValue.arrayRemove(
           [requesterRef, requesterRef.id],
         ),
       });
-      await currentUserReference!.update({
+      await currentUserRef.update({
         'friends': FieldValue.arrayUnion([requesterRef]),
       });
       await requesterRef.update({
-        'friends': FieldValue.arrayUnion([currentUserReference]),
+        'friends': FieldValue.arrayUnion([currentUserRef]),
       });
 
       refreshFriends();
@@ -397,16 +398,33 @@ class UserProvider extends ChangeNotifier {
 
   /// Reject friend request
   Future<void> rejectFriendRequest(DocumentReference requesterRef) async {
-    if (!isLoggedIn) return;
-
     try {
-      await currentUserReference!.update({
+      final authUser = FirebaseAuth.instance.currentUser;
+      if (authUser == null) return;
+      final currentUserRef = UsersRecord.collection.doc(authUser.uid);
+      await currentUserRef.update({
         'friend_requests':
             FieldValue.arrayRemove([requesterRef, requesterRef.id]),
       });
       refreshFriendRequests();
     } catch (e) {
       debugPrint('Error rejecting friend request: $e');
+      rethrow;
+    }
+  }
+
+  /// Cancel a friend request that the current user previously sent
+  Future<void> cancelFriendRequest(DocumentReference targetUserRef) async {
+    try {
+      final authUser = FirebaseAuth.instance.currentUser;
+      if (authUser == null) return;
+      final currentUserRef = UsersRecord.collection.doc(authUser.uid);
+      await targetUserRef.update({
+        'friend_requests':
+            FieldValue.arrayRemove([currentUserRef, currentUserRef.id]),
+      });
+    } catch (e) {
+      debugPrint('Error cancelling friend request: $e');
       rethrow;
     }
   }

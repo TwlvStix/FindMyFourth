@@ -6,14 +6,16 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_icon_button.dart';
+import '/services/vibe_matcher.dart';
+import '/models/vibe_profile.dart';
 
-/// Premium friend card with social proof, status indicators, and quick actions
-/// Displays rich user context including handicap, mutual friends, and activity
+/// Redesigned premium friend card with high contrast, clear hierarchy, and compact horizontal actions
+/// Optimized for readability and efficient space usage
 class PremiumFriendCard extends StatefulWidget {
   final UsersRecord user;
   final VoidCallback? onViewProfile;
   final VoidCallback? onMessage;
-  final VoidCallback? onAction; // Accept, Add, Remove depending on context
+  final VoidCallback? onAction;
   final String actionLabel;
   final IconData actionIcon;
   final Color actionColor;
@@ -23,6 +25,7 @@ class PremiumFriendCard extends StatefulWidget {
   final int? gamesPlayedTogether;
   final bool isOnline;
   final String? lastActive;
+  final UsersRecord? currentUser; // For vibe matching
 
   const PremiumFriendCard({
     super.key,
@@ -39,6 +42,7 @@ class PremiumFriendCard extends StatefulWidget {
     this.gamesPlayedTogether,
     this.isOnline = false,
     this.lastActive,
+    this.currentUser,
   });
 
   @override
@@ -50,17 +54,34 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   late AnimationController _scaleController;
   late Animation<double> _scaleAnimation;
   bool _isPressed = false;
+  VibeMatchResult? _vibeMatch;
 
   @override
   void initState() {
     super.initState();
+
     _scaleController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 120),
     );
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeOut),
     );
+
+    // Calculate vibe match if both profiles exist
+    if (widget.currentUser != null &&
+        widget.currentUser!.vibeProfile.isNotEmpty &&
+        widget.user.vibeProfile.isNotEmpty) {
+      try {
+        final myProfile =
+            VibeProfile.fromFirestore(widget.currentUser!.vibeProfile);
+        final theirProfile = VibeProfile.fromFirestore(widget.user.vibeProfile);
+        _vibeMatch = VibeMatcher.score(myProfile, theirProfile);
+      } catch (e) {
+        // Vibe calculation failed, leave as null
+        _vibeMatch = null;
+      }
+    }
   }
 
   @override
@@ -100,212 +121,169 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
             vertical: AppSpacing.sm,
           ),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white,
-                AppColors.sand.withOpacity(0.2),
-              ],
-            ),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: _isPressed
-                  ? AppColors.fairway.withOpacity(0.4)
-                  : AppColors.cloud.withOpacity(0.5),
-              width: 2,
+                  ? AppColors.fairway.withValues(alpha: 0.3)
+                  : AppColors.cloud.withValues(alpha: 0.4),
+              width: 1.5,
             ),
             boxShadow: [
+              // Far ambient shadow
               BoxShadow(
-                color: AppColors.sunsetGold.withOpacity(_isPressed ? 0.15 : 0.08),
-                blurRadius: _isPressed ? 12 : 20,
-                offset: Offset(0, _isPressed ? 4 : 8),
+                color: AppColors.fairwayDark.withValues(alpha: _isPressed ? 0.12 : 0.18),
+                blurRadius: _isPressed ? 16 : 24,
+                offset: Offset(0, _isPressed ? 6 : 12),
                 spreadRadius: 0,
               ),
+              // Mid accent shadow
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: AppColors.sunsetGold.withValues(alpha: _isPressed ? 0.06 : 0.1),
+                blurRadius: _isPressed ? 8 : 12,
+                offset: Offset(0, _isPressed ? 3 : 6),
+                spreadRadius: 0,
+              ),
+              // Near edge shadow
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 4,
                 offset: Offset(0, 2),
+                spreadRadius: 0,
               ),
             ],
           ),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              color: Colors.white.withOpacity(0.95),
-            ),
-            child: Column(
-              children: [
-                // Main content row
-                Padding(
-                  padding: EdgeInsets.all(AppSpacing.lg),
-                  child: Row(
-                    children: [
-                      // Avatar with status indicator
-                      _buildAvatar(),
-                      SizedBox(width: AppSpacing.md),
-
-                      // User info section
-                      Expanded(
-                        child: _buildUserInfo(),
-                      ),
-
-                      SizedBox(width: AppSpacing.sm),
-
-                      // Action buttons
-                      _buildActionButtons(),
+          child: Column(
+            children: [
+              // Top accent stripe
+              Container(
+                height: 2,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      AppColors.sunsetGold.withValues(alpha: 0.6),
+                      AppColors.sunsetPeach.withValues(alpha: 0.6),
+                      AppColors.sunsetGold.withValues(alpha: 0.6),
+                      Colors.transparent,
                     ],
                   ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                 ),
+              ),
 
-                // Divider
-                if (_shouldShowBottomSection())
-                  Container(
-                    height: 1,
-                    margin: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          AppColors.cloud.withOpacity(0.3),
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                  ),
+              // Main content
+              Padding(
+                padding: EdgeInsets.all(AppSpacing.md),
+                child: Row(
+                  children: [
+                    // Avatar
+                    _buildAvatar(),
 
-                // Bottom stats section
-                if (_shouldShowBottomSection())
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      AppSpacing.lg,
-                      AppSpacing.sm,
-                      AppSpacing.lg,
-                      AppSpacing.md,
+                    SizedBox(width: AppSpacing.md),
+
+                    // User info
+                    Expanded(
+                      child: _buildUserInfo(),
                     ),
-                    child: _buildBottomStats(),
-                  ),
-              ],
-            ),
+
+                    SizedBox(width: AppSpacing.sm),
+
+                    // Actions (horizontal layout)
+                    _buildHorizontalActions(),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  bool _shouldShowBottomSection() {
-    return (widget.mutualFriendsCount != null && widget.mutualFriendsCount! > 0) ||
-        (widget.gamesPlayedTogether != null && widget.gamesPlayedTogether! > 0);
-  }
-
   Widget _buildAvatar() {
     return Stack(
       children: [
-        // Outer glow
-        Container(
-          width: 70,
-          height: 70,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: widget.isOnline
-                  ? [
-                      AppColors.sunsetGold.withOpacity(0.3),
-                      AppColors.sunsetPeach.withOpacity(0.1),
-                      Colors.transparent,
-                    ]
-                  : [
-                      AppColors.cloud.withOpacity(0.2),
-                      Colors.transparent,
-                    ],
-            ),
-          ),
-        ),
-
-        // Avatar with gradient border
-        Positioned(
-          left: 5,
-          top: 5,
-          child: Container(
-            width: 60,
-            height: 60,
-            padding: EdgeInsets.all(3),
+        // Outer glow for online users
+        if (widget.isOnline)
+          Container(
+            width: 68,
+            height: 68,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: widget.isOnline
-                  ? LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppColors.sunsetGold,
-                        AppColors.sunsetPeach,
-                        AppColors.sunsetRose,
-                      ],
-                    )
-                  : null,
-              color: widget.isOnline ? null : AppColors.cloud.withOpacity(0.5),
               boxShadow: [
                 BoxShadow(
-                  color: widget.isOnline
-                      ? AppColors.sunsetGold.withOpacity(0.3)
-                      : Colors.black.withOpacity(0.08),
-                  blurRadius: 8,
-                  offset: Offset(0, 3),
+                  color: AppColors.fairway.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  spreadRadius: 2,
                 ),
               ],
             ),
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                border: Border.all(
-                  color: Colors.white,
-                  width: 2,
-                ),
-              ),
-              child: ClipOval(
-                child: widget.user.photoUrl.isNotEmpty
-                    ? Image.network(
-                        widget.user.photoUrl,
-                        width: 54,
-                        height: 54,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _buildAvatarFallback(),
-                      )
-                    : _buildAvatarFallback(),
-              ),
+          ),
+
+        // Avatar ring
+        Container(
+          width: 68,
+          height: 68,
+          padding: EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: widget.isOnline
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.fairway,
+                      AppColors.fairwayLight,
+                    ],
+                  )
+                : null,
+            color: widget.isOnline ? null : AppColors.cloud.withValues(alpha: 0.5),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+            ),
+            child: ClipOval(
+              child: widget.user.photoUrl.isNotEmpty
+                  ? Image.network(
+                      widget.user.photoUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          _buildAvatarFallback(),
+                    )
+                  : _buildAvatarFallback(),
             ),
           ),
         ),
 
-        // Online status indicator with pulse effect
+        // Online indicator
         if (widget.isOnline)
           Positioned(
-            right: 3,
-            bottom: 3,
+            right: 0,
+            bottom: 0,
             child: Container(
-              width: 20,
-              height: 20,
+              width: 18,
+              height: 18,
               decoration: BoxDecoration(
-                color: AppColors.fairway,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 3),
+                color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.fairway.withOpacity(0.5),
-                    blurRadius: 8,
-                    spreadRadius: 2,
+                    color: AppColors.fairway.withValues(alpha: 0.3),
+                    blurRadius: 4,
+                    spreadRadius: 1,
                   ),
                 ],
               ),
               child: Center(
                 child: Container(
-                  width: 8,
-                  height: 8,
+                  width: 10,
+                  height: 10,
                   decoration: BoxDecoration(
-                    color: Colors.white,
                     shape: BoxShape.circle,
+                    color: AppColors.fairway,
                   ),
                 ),
               ),
@@ -335,7 +313,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Name
+        // Name with inline VIBE badge
         Row(
           children: [
             Flexible(
@@ -343,20 +321,25 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
                 displayName,
                 style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.onyx,
                   fontSize: 17,
-                  letterSpacing: -0.3,
+                  color: AppColors.onyx,
+                  height: 1.2,
+                  letterSpacing: -0.2,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            if (_vibeMatch != null) ...[
+              SizedBox(width: 8),
+              _buildVibeBadge(),
+            ],
           ],
         ),
 
-        SizedBox(height: 2),
+        SizedBox(height: 6),
 
-        // Handicap badge and home course
+        // Secondary info row: handicap + location
         Row(
           children: [
             if (widget.user.handicap != null && widget.user.handicap! > 0) ...[
@@ -365,29 +348,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
             ],
             if (widget.user.homeCourse != null && widget.user.homeCourse!.isNotEmpty)
               Flexible(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.golf_course_rounded,
-                      size: 13,
-                      color: AppColors.fairway.withOpacity(0.7),
-                    ),
-                    SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        widget.user.homeCourse!,
-                        style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.stone,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
+                child: _buildLocationChip(),
               ),
           ],
         ),
@@ -395,9 +356,58 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     );
   }
 
+  Widget _buildVibeBadge() {
+    if (_vibeMatch == null) return SizedBox.shrink();
+
+    final score = (_vibeMatch!.cappedScore ?? _vibeMatch!.totalScore).round();
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.fairway,
+            AppColors.fairwayLight,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.fairway.withValues(alpha: 0.3),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.favorite,
+            size: 10,
+            color: Colors.white,
+          ),
+          SizedBox(width: 4),
+          Text(
+            '$score%',
+            style: AppTypography.labelSmall.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: 11,
+              height: 1,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHandicapBadge(int handicap) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -407,13 +417,12 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
             AppColors.sunsetPeach,
           ],
         ),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         boxShadow: [
           BoxShadow(
-            color: AppColors.sunsetGold.withOpacity(0.35),
-            blurRadius: 6,
+            color: AppColors.sunsetGold.withValues(alpha: 0.35),
+            blurRadius: 4,
             offset: Offset(0, 2),
-            spreadRadius: 0,
           ),
         ],
       ),
@@ -422,7 +431,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
         children: [
           Icon(
             Icons.flag_rounded,
-            size: 11,
+            size: 10,
             color: Colors.white,
           ),
           SizedBox(width: 4),
@@ -431,7 +440,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
             style: AppTypography.labelSmall.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,
-              fontSize: 12,
+              fontSize: 11,
               height: 1,
             ),
           ),
@@ -440,175 +449,143 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     );
   }
 
-
-  Widget _buildBottomStats() {
-    final statItems = <Widget>[];
-
-    if (widget.mutualFriendsCount != null && widget.mutualFriendsCount! > 0) {
-      statItems.add(
-        _buildBottomStatChip(
-          icon: Icons.people_rounded,
-          label: '${widget.mutualFriendsCount} mutual friends',
-          color: AppColors.sunsetPeach,
-        ),
-      );
-    }
-
-    if (widget.gamesPlayedTogether != null && widget.gamesPlayedTogether! > 0) {
-      statItems.add(
-        _buildBottomStatChip(
-          icon: Icons.emoji_events_rounded,
-          label: '${widget.gamesPlayedTogether} games together',
-          color: AppColors.sunsetGold,
-        ),
-      );
-    }
-
-    if (statItems.isEmpty) {
-      return SizedBox.shrink();
-    }
-
-    return Wrap(
-      spacing: AppSpacing.sm,
-      runSpacing: AppSpacing.xs,
-      children: statItems,
-    );
-  }
-
-  Widget _buildBottomStatChip({
-    required IconData icon,
-    required String label,
-    required Color color,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.25),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 14,
-            color: color,
-          ),
-          SizedBox(width: 6),
-          Text(
-            label,
-            style: AppTypography.labelSmall.copyWith(
-              color: AppColors.onyx,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Column(
+  Widget _buildLocationChip() {
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Message button
-        if (widget.onMessage != null)
-          _buildPremiumIconButton(
-            icon: FontAwesomeIcons.commentDots,
-            onPressed: widget.onMessage!,
-            color: AppColors.fairway,
-            isPrimary: true,
+        Icon(
+          Icons.location_on,
+          size: 12,
+          color: AppColors.stone,
+        ),
+        SizedBox(width: 3),
+        Flexible(
+          child: Text(
+            widget.user.homeCourse!,
+            style: AppTypography.labelSmall.copyWith(
+              color: AppColors.stone,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.2,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-
-        if (widget.onMessage != null && widget.showActionButton)
-          SizedBox(height: AppSpacing.xs),
-
-        // Action button (Add/Accept/Remove)
-        if (widget.showActionButton)
-          _buildPremiumIconButton(
-            icon: widget.actionIcon,
-            onPressed: widget.onAction,
-            color: widget.actionColor,
-            isLoading: widget.isLoading,
-            isPrimary: false,
-          ),
+        ),
       ],
     );
   }
 
-  Widget _buildPremiumIconButton({
+  Widget _buildHorizontalActions() {
+    final actions = <Widget>[];
+
+    // Message button (primary)
+    if (widget.onMessage != null) {
+      actions.add(_buildActionButton(
+        label: 'Chat',
+        icon: Icons.message_rounded,
+        onPressed: widget.onMessage!,
+        isPrimary: true,
+        color: AppColors.fairway,
+      ));
+    }
+
+    // Action button (secondary)
+    if (widget.showActionButton) {
+      actions.add(_buildActionButton(
+        label: widget.actionLabel,
+        icon: widget.actionIcon,
+        onPressed: widget.onAction,
+        isPrimary: false,
+        color: widget.actionColor,
+        isLoading: widget.isLoading,
+      ));
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: actions
+          .expand((widget) => [widget, SizedBox(width: AppSpacing.xs)])
+          .toList()
+        ..removeLast(), // Remove last spacer
+    );
+  }
+
+  Widget _buildActionButton({
+    required String label,
     required IconData icon,
     required VoidCallback? onPressed,
+    required bool isPrimary,
     required Color color,
     bool isLoading = false,
-    bool isPrimary = false,
   }) {
     return Container(
-      width: 48,
-      height: 48,
+      height: 40,
       decoration: BoxDecoration(
         gradient: isPrimary
             ? LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  color,
-                  color.withOpacity(0.8),
-                ],
+                colors: [color, color.withValues(alpha: 0.85)],
               )
             : null,
-        color: isPrimary ? null : color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isPrimary ? Colors.transparent : color.withOpacity(0.2),
-          width: isPrimary ? 0 : 1.5,
-        ),
+        color: isPrimary ? null : color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+        border: isPrimary
+            ? null
+            : Border.all(
+                color: color.withValues(alpha: 0.3),
+                width: 1.5,
+              ),
         boxShadow: isPrimary
             ? [
                 BoxShadow(
-                  color: color.withOpacity(0.3),
+                  color: color.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: Offset(0, 4),
                 ),
               ]
-            : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
-                ),
-              ],
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(14),
-          child: Center(
-            child: isLoading
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isLoading)
+                  SizedBox(
+                    width: 16,
+                    height: 16,
                     child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
+                      strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
                         isPrimary ? Colors.white : color,
                       ),
                     ),
                   )
-                : Icon(
+                else
+                  Icon(
                     icon,
+                    size: 16,
                     color: isPrimary ? Colors.white : color,
-                    size: 20,
                   ),
+                SizedBox(width: 6),
+                Text(
+                  label,
+                  style: AppTypography.labelSmall.copyWith(
+                    color: isPrimary ? Colors.white : color,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

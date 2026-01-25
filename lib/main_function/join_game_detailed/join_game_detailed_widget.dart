@@ -1,5 +1,4 @@
 import '/backend/backend.dart';
-import '/backend/api_requests/game_service.dart';
 import '/core/exceptions/app_exceptions.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
@@ -12,6 +11,7 @@ import '/models/game.dart';
 import '/models/vibe_profile.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
+import '/providers/profile_provider.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/services/vibe_group_matcher.dart';
 import '/services/vibe_repository.dart';
@@ -692,7 +692,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                               ),
                             );
                           },
-                        ),
+                        )
                       ),
 
                       // Quick Stats Row (Date, Players, Spots)
@@ -835,44 +835,53 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                               groupPlayers.insert(0, gameOwner);
                             }
 
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                // Registered players
-                                ...List.generate(groupPlayers.length,
-                                    (groupPlayersIndex) {
-                                  final groupPlayersItem =
-                                      groupPlayers[groupPlayersIndex];
-                                  return Padding(
-                                    padding: EdgeInsets.only(bottom: AppSpacing.sm),
-                                    child: StreamBuilder<UsersRecord>(
-                                      stream:
-                                          UsersRecord.getDocument(groupPlayersItem),
-                                      builder: (context, snapshot) {
-                                        if (!snapshot.hasData) {
-                                          return Center(
-                                            child: SizedBox(
-                                              width: 40.0,
-                                              height: 40.0,
-                                              child: SpinKitWanderingCubes(
-                                                color:
-                                                    AppTheme.of(context).secondary,
-                                                size: 40.0,
-                                              ),
-                                            ),
-                                          );
-                                        }
+                            final playerIds = groupPlayers
+                                .map((playerRef) => playerRef.id)
+                                .toList();
+                            final profilesFuture = playerIds.isEmpty
+                                ? Future.value(<String, UsersRecord>{})
+                                : context
+                                    .read<ProfileProvider>()
+                                    .batchGetProfiles(playerIds);
 
-                                        final friend1UsersRecord = snapshot.data!;
+                            return FutureBuilder<Map<String, UsersRecord>>(
+                              future: profilesFuture,
+                              builder: (context, profilesSnapshot) {
+                                final profileMap =
+                                    profilesSnapshot.data ?? <String, UsersRecord>{};
 
-                                        return InkWell(
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    // Registered players
+                                    ...List.generate(groupPlayers.length,
+                                        (groupPlayersIndex) {
+                                      final groupPlayersItem =
+                                          groupPlayers[groupPlayersIndex];
+                                      final friendRecord =
+                                          profileMap[groupPlayersItem.id];
+                                      final displayName =
+                                          (friendRecord?.displayName ?? '')
+                                                  .trim()
+                                                  .isNotEmpty
+                                              ? friendRecord!.displayName
+                                              : 'Golfer';
+                                      final userRef = friendRecord?.reference ??
+                                          groupPlayersItem;
+                                      final photoUrl =
+                                          friendRecord?.photoUrl ?? '';
+
+                                      return Padding(
+                                        padding:
+                                            EdgeInsets.only(bottom: AppSpacing.sm),
+                                        child: InkWell(
                                           onTap: () {
                                             context.pushNamed(
                                               'ProfileUser',
                                               extra: <String, dynamic>{
-                                                'userRef':
-                                                    friend1UsersRecord.reference,
-                                                kTransitionInfoKey: TransitionStandards.detailTransition,
+                                                'userRef': userRef,
+                                                kTransitionInfoKey:
+                                                    TransitionStandards.detailTransition,
                                               },
                                             );
                                           },
@@ -905,10 +914,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                   ),
                                                   clipBehavior: Clip.antiAlias,
                                                   child: Image.network(
-                                                    friend1UsersRecord.photoUrl !=
-                                                            ''
-                                                        ? friend1UsersRecord
-                                                            .photoUrl
+                                                    photoUrl.isNotEmpty
+                                                        ? photoUrl
                                                         : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
                                                     fit: BoxFit.cover,
                                                     errorBuilder: (context, error,
@@ -928,8 +935,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     mainAxisSize: MainAxisSize.min,
                                                     children: [
                                                       Text(
-                                                        friend1UsersRecord
-                                                            .displayName,
+                                                        displayName,
                                                         style: AppTheme.of(context)
                                                             .bodyLarge
                                                             .override(
@@ -994,8 +1000,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     right: AppSpacing.sm,
                                                   ),
                                                   child: _buildPlayerMatchChip(
-                                                    friend1UsersRecord.reference.id,
-                                                    friend1UsersRecord.displayName,
+                                                    groupPlayersItem.id,
+                                                    displayName,
                                                   ),
                                                 ),
                                                 // Checkmark icon
@@ -1007,11 +1013,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                               ],
                                             ),
                                           ),
-                                        );
-                                      },
-                                    ),
-                                  );
-                                }),
+                                        ),
+                                      );
+                                    }),
                                 // Guest players
                                 ...guestPlayers.map(
                                   (guestName) => Padding(
@@ -1136,8 +1140,10 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                               ],
                             );
                           },
-                        ),
+                        );
+                      },
                       ),
+                    ),
 
                       SizedBox(height: AppSpacing.md),
                       if (joinGameDetailedGamesRecord.userRef != currentUserRef)
@@ -1184,11 +1190,11 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                   }
 
                                   try {
-                                    // Use GameService.joinGame with transaction for atomic capacity check
-                                    await GameService.joinGame(
-                                      joinGameDetailedGamesRecord.reference.id,
-                                      currentUser.uid,
-                                    );
+                                    // Use GameProvider to join and invalidate caches
+                                    await context.read<GameProvider>().joinGame(
+                                          joinGameDetailedGamesRecord.reference.id,
+                                          currentUser.uid,
+                                        );
                                   } on GameOperationException catch (error) {
                                     if (!mounted) {
                                       return;
@@ -1272,22 +1278,22 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                         ),
                                       },
                                     );
-                                },
+                                  },
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                );
+                      ],
+                    ),
+                  );
               },
             ),
           ),
         ),
-        );
-      },
-    );
-  }
+      );
+    },
+  );
+}
 
 
   // ═══════════════════════════════════════════════════════════════════════════

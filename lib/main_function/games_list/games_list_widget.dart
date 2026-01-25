@@ -4,10 +4,12 @@ import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_choice_chips.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_stream_builder.dart';
+import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/form_field_controller.dart';
+import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/models/game.dart';
@@ -288,6 +290,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
               ),
               child: AppStreamBuilder<List<Game>>(
                 stream: _gamesStream,
+                initialData: const <Game>[],
                 onRetry: () => setState(() {}),
                 builder: (context, gamesList) {
                   debugPrint('📋 GAME LIST: StreamBuilder triggered');
@@ -414,25 +417,87 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             top: AppSpacing.sm,
                             bottom: 44.0,
                           ),
-                          sliver: SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                                final containerVarItem = visibleGames[index];
-                                final isLast = index == visibleGames.length - 1;
-                                return Padding(
-                                  padding: EdgeInsets.only(
-                                    bottom: isLast ? 0.0 : AppSpacing.sm,
+                          sliver: visibleGames.isEmpty
+                              ? SliverToBoxAdapter(
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.lg,
+                                      vertical: AppSpacing.xl,
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          width: 120,
+                                          height: 120,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.fairway.withOpacity(0.3),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.golf_course_rounded,
+                                            size: 56,
+                                            color: Colors.white.withOpacity(0.5),
+                                          ),
+                                        ),
+                                        SizedBox(height: AppSpacing.lg),
+                                        Text(
+                                          'No games yet',
+                                          style: AppTypography.titleMedium.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        SizedBox(height: AppSpacing.xs),
+                                        Text(
+                                          'Be the first to create a game.',
+                                          style: AppTypography.bodyMedium.copyWith(
+                                            color: Colors.white.withOpacity(0.7),
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        SizedBox(height: AppSpacing.lg),
+                                        SizedBox(
+                                          width: 220,
+                                          child: AppButtonEnhanced(
+                                            text: 'Create a game',
+                                            variant: AppButtonVariant.primary,
+                                            size: AppButtonSize.medium,
+                                            onPressed: () {
+                                              context.pushNamed(
+                                                CreateGameWidget.routeName,
+                                                extra: <String, dynamic>{
+                                                  kTransitionInfoKey:
+                                                      TransitionStandards.detailTransition,
+                                                },
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  child: _buildPremiumGameCard(
-                                    context,
-                                    containerVarItem,
-                                    currentUserReference,
+                                )
+                              : SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                      final containerVarItem = visibleGames[index];
+                                      final isLast = index == visibleGames.length - 1;
+                                      return Padding(
+                                        padding: EdgeInsets.only(
+                                          bottom: isLast ? 0.0 : AppSpacing.sm,
+                                        ),
+                                        child: _buildPremiumGameCard(
+                                          context,
+                                          containerVarItem,
+                                          currentUserReference,
+                                        ),
+                                      );
+                                    },
+                                    childCount: visibleGames.length,
                                   ),
-                                );
-                              },
-                              childCount: visibleGames.length,
-                            ),
-                          ),
+                                ),
                         ),
                       ],
                     ),

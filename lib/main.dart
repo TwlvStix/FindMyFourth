@@ -19,11 +19,11 @@ import '/providers/chat_provider.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:find_my_fourth/friends/tab_friends/tab_friends_widget.dart';
 import '/main_function/community/community_widget.dart';
 import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
-import '/main_function/golfers/golfers_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 
 void main() async {
@@ -285,7 +285,7 @@ class _NavBarPageState extends State<NavBarPage> {
     final tabs = {
       'GamesList': GamesListWidget(),
       'GamesJoined': GamesJoinedWidget(),
-      'Golfers': GolfersWidget(),
+      'Golfers': TabFriendsWidget(),
       'Community': CommunityWidget(),
       'Profile': MainProfileWidget(),
     };

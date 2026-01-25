@@ -658,6 +658,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             borderRadius: 30.0,
             borderWidth: 1.0,
             buttonSize: 55.0,
+            tooltip: 'Back',
             icon: Icon(
               Icons.arrow_back_sharp,
               color: AppTheme.of(context).primary,

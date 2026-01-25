@@ -189,7 +189,23 @@ class UsersRecord extends FirestoreRecord {
     _shortDescription = snapshotData['shortDescription'] as String?;
     _role = snapshotData['role'] as String?;
     _title = snapshotData['title'] as String?;
-    _friends = getDataList(snapshotData['friends']);
+    final friendsRaw = snapshotData['friends'];
+    if (friendsRaw is List) {
+      _friends = friendsRaw
+          .map((item) {
+            if (item is DocumentReference) {
+              return item;
+            }
+            if (item is String && item.isNotEmpty) {
+              return UsersRecord.collection.doc(item);
+            }
+            return null;
+          })
+          .whereType<DocumentReference>()
+          .toList();
+    } else {
+      _friends = getDataList(snapshotData['friends']);
+    }
     final friendRequestsRaw = snapshotData['friend_requests'];
     if (friendRequestsRaw is List) {
       _friendRequests = friendRequestsRaw
@@ -288,6 +304,7 @@ Map<String, dynamic> createUsersRecordData({
   Map<String, dynamic>? vibeProfile,
   bool? onboardingCompleted,
 }) {
+  final displayNameLower = displayName?.toLowerCase();
   final firestoreData = mapToFirestore(
     <String, dynamic>{
       'email': email,
@@ -304,6 +321,8 @@ Map<String, dynamic> createUsersRecordData({
       'first_name': firstName,
       'last_name': lastName,
       'display_name': displayName,
+      'display_name_lower': displayNameLower,
+      'display_name_lowercase': displayNameLower,
       'shortDescription': shortDescription,
       'role': role,
       'title': title,

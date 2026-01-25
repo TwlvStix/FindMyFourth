@@ -108,11 +108,19 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
               ),
               child: AppStreamBuilder<List<GamesRecord>>(
               stream: context.read<GameProvider>().userGamesStream(currentUserUid),
+              initialData: const <GamesRecord>[],
               onRetry: () => setState(() {}),
               builder: (context, listViewGamesRecordList) {
+                final visibleGames = listViewGamesRecordList.where((game) {
+                  if (game.isCancelled) {
+                    return false;
+                  }
+                  final status = game.snapshotData['status'];
+                  return status != 'cancelled';
+                }).toList();
 
                 // Empty state
-                if (listViewGamesRecordList.isEmpty) {
+                if (visibleGames.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -173,7 +181,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                         sliver: SliverList(
                           delegate: SliverChildBuilderDelegate(
                             (context, listViewIndex) {
-                              final game = listViewGamesRecordList[listViewIndex];
+                              final game = visibleGames[listViewIndex];
                               return Padding(
                                 padding: EdgeInsets.symmetric(
                                   horizontal: AppSpacing.md,
@@ -182,7 +190,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                 child: _buildPremiumMyGameCard(context, game),
                               );
                             },
-                            childCount: listViewGamesRecordList.length,
+                            childCount: visibleGames.length,
                           ),
                         ),
                       ),

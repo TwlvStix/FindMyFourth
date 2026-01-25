@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import '/core/widgets/app_drop_down.dart';
+import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -61,6 +64,18 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   // Track if submission is in progress to prevent double submission
   bool _isSubmitting = false;
 
+  static const int _minSearchChars = 2;
+  static const int _pageSize = 25;
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _searchDebounce;
+  String _activeQuery = '';
+  bool _isSearching = false;
+  bool _hasMoreResults = false;
+  int _searchToken = 0;
+  QueryDocumentSnapshot<Map<String, dynamic>>? _lastDocument;
+  List<UserProfile> _searchResults = [];
+  final Map<String, String> _labelCache = {};
+
   @override
   void initState() {
     super.initState();
@@ -73,10 +88,151 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
+    _searchController.dispose();
     for (final controller in _dropDownControllers) {
       controller.dispose();
     }
     super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    final query = value.trim().toLowerCase();
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      if (query.length < _minSearchChars) {
+        setState(() {
+          _activeQuery = query;
+          _searchResults = [];
+          _lastDocument = null;
+          _hasMoreResults = false;
+          _isSearching = false;
+        });
+        return;
+      }
+      _runSearch(query: query, reset: true);
+    });
+  }
+
+  void _addPlayerToNextSlot(UserProfile profile) {
+    final uid = profile.uid;
+    if (uid.isEmpty) return;
+    final alreadySelected =
+        _dropDownControllers.any((controller) => controller.value == uid);
+    if (alreadySelected) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Player already selected.'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return;
+    }
+
+    FormFieldController<String>? targetController;
+    for (final controller in _dropDownControllers) {
+      final value = controller.value;
+      if (value == null || value.isEmpty) {
+        targetController = controller;
+        break;
+      }
+    }
+
+    if (targetController == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No open slots available.'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      targetController!.value = uid;
+      _labelCache[uid] =
+          profile.displayName.isNotEmpty ? profile.displayName : 'Player';
+    });
+  }
+
+  Future<void> _runSearch({required String query, required bool reset}) async {
+    final searchToken = ++_searchToken;
+    if (mounted) {
+      setState(() {
+        _isSearching = true;
+        _activeQuery = query;
+        if (reset) {
+          _lastDocument = null;
+          _hasMoreResults = false;
+        }
+      });
+    }
+
+    try {
+      Query<Map<String, dynamic>> baseQuery = FirebaseFirestore.instance
+          .collection('users')
+          .orderBy('display_name_lower')
+          .startAt([query])
+          .endAt(['$query\uf8ff'])
+          .limit(_pageSize);
+
+      if (!reset && _lastDocument != null) {
+        baseQuery = baseQuery.startAfterDocument(_lastDocument!);
+      }
+
+      final snapshot = await baseQuery.get();
+      if (!mounted || searchToken != _searchToken) return;
+
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+      final results = snapshot.docs
+          .map(UserProfile.fromDoc)
+          .where((profile) => profile.uid != currentUserId)
+          .toList();
+
+      for (final profile in results) {
+        _labelCache[profile.uid] =
+            profile.displayName.isNotEmpty ? profile.displayName : 'Name';
+      }
+
+      setState(() {
+        _lastDocument =
+            snapshot.docs.isNotEmpty ? snapshot.docs.last : _lastDocument;
+        _hasMoreResults = snapshot.docs.length == _pageSize;
+        if (reset) {
+          _searchResults = results;
+        } else {
+          final existing = _searchResults.map((e) => e.uid).toSet();
+          _searchResults = [
+            ..._searchResults,
+            ...results.where((profile) => !existing.contains(profile.uid)),
+          ];
+        }
+        _isSearching = false;
+      });
+    } catch (e) {
+      if (!mounted || searchToken != _searchToken) return;
+      setState(() {
+        _isSearching = false;
+        _hasMoreResults = false;
+        if (reset) {
+          _searchResults = [];
+          _lastDocument = null;
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error searching players: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _loadMoreResults() async {
+    if (_isSearching || !_hasMoreResults) return;
+    if (_activeQuery.length < _minSearchChars) return;
+    await _runSearch(query: _activeQuery, reset: false);
   }
 
   @override
@@ -128,6 +284,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
 
         final currentPlayerCount =
             game.joinedPlayers.length + game.guestPlayers.length;
+        final joinedPlayerIds =
+            game.joinedPlayers.map((player) => player.id).toSet();
         final remainingSlots =
             (game.maxPlayers - currentPlayerCount).clamp(0, game.maxPlayers);
 
@@ -138,6 +296,29 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
           _dropDownControllers.removeRange(
               remainingSlots, _dropDownControllers.length);
         }
+
+        final selectedValues = _dropDownControllers
+            .map((controller) => controller.value)
+            .whereType<String>()
+            .toList();
+        final selectedUids = selectedValues
+            .where((value) => value != guestOptionValue && value.isNotEmpty)
+            .toList();
+
+        final labelMap = Map<String, String>.from(_labelCache);
+        for (final profile in _searchResults) {
+          if (profile.uid.isEmpty) continue;
+          labelMap[profile.uid] =
+              profile.displayName.isNotEmpty ? profile.displayName : 'Name';
+        }
+        for (final uid in selectedUids) {
+          labelMap.putIfAbsent(uid, () => 'Player');
+        }
+
+        final hasOpenSlot = _dropDownControllers.any((controller) {
+          final value = controller.value;
+          return value == null || value.isEmpty;
+        });
 
         debugPrint(
             'PlayerList: current=$currentPlayerCount/${game.maxPlayers}, remaining=$remainingSlots');
@@ -234,113 +415,164 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                     ),
                                   ],
                                 ),
-                                child: FutureBuilder<
-                                    QuerySnapshot<Map<String, dynamic>>>(
-                                  future: FirebaseFirestore.instance
-                                      .collection('users')
-                                      .get(),
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasData) {
-                                      return Padding(
-                                        padding: AppSpacing.allXl,
-                                        child: Center(
-                                          child: SizedBox(
-                                            width: 50.0,
-                                            height: 50.0,
-                                            child: SpinKitWanderingCubes(
-                                              color: AppTheme.of(context)
-                                                  .secondary,
-                                              size: 50.0,
+                                child: Padding(
+                                  padding: AppSpacing.allLg,
+                                  child: Form(
+                                    key: formKey,
+                                    autovalidateMode:
+                                        AutovalidateMode.disabled,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Search Players',
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 16.0,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF4A5568),
+                                          ),
+                                        ),
+                                        SizedBox(height: AppSpacing.sm),
+                                        TextField(
+                                          controller: _searchController,
+                                          onChanged: _onSearchChanged,
+                                          decoration: InputDecoration(
+                                            hintText:
+                                                'Type at least $_minSearchChars characters',
+                                            prefixIcon:
+                                                Icon(Icons.search, size: 20.0),
+                                            filled: true,
+                                            fillColor: AppTheme.of(context)
+                                                .secondaryBackground,
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                              horizontal: 12.0,
+                                              vertical: 12.0,
+                                            ),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8.0),
+                                              borderSide: BorderSide(
+                                                color: AppTheme.of(context)
+                                                    .alternate,
+                                                width: 1.0,
+                                              ),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8.0),
+                                              borderSide: BorderSide(
+                                                color: AppTheme.of(context)
+                                                    .alternate,
+                                                width: 1.0,
+                                              ),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8.0),
+                                              borderSide: BorderSide(
+                                                color: AppTheme.of(context)
+                                                    .primary,
+                                                width: 1.0,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      );
-                                    }
-                                    final allProfiles = snapshot.data!.docs
-                                        .map(UserProfile.fromDoc)
-                                        .toList();
-                                    final gameFormUsers = allProfiles
-                                        .where(
-                                          (profile) =>
-                                              profile.uid != currentUser?.uid,
-                                        )
-                                        .toList();
-                                    final playerOptions = gameFormUsers
-                                        .map((profile) => profile.uid)
-                                        .where((uid) => uid.isNotEmpty)
-                                        .toList();
-                                    final playerLabels = gameFormUsers
-                                        .map((profile) =>
-                                            profile.displayName.isNotEmpty
-                                                ? profile.displayName
-                                                : 'Name')
-                                        .toList();
-                                    playerOptions.add(guestOptionValue);
-                                    playerLabels.add('Guest');
-
-                                    return Form(
-                                      key: formKey,
-                                      autovalidateMode:
-                                          AutovalidateMode.disabled,
-                                      child: Padding(
-                                        padding: AppSpacing.allLg,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            // Section header
-                                            Text(
-                                              'Your Group',
-                                              style: GoogleFonts.outfit(
-                                                fontSize: 18.0,
-                                                fontWeight: FontWeight.w600,
-                                                color: Color(0xFF1A4D2E),
-                                              ),
+                                        SizedBox(height: AppSpacing.sm),
+                                        if (_activeQuery.length <
+                                            _minSearchChars)
+                                          Text(
+                                            'Type at least $_minSearchChars characters to search all players.',
+                                            style: GoogleFonts.outfit(
+                                              fontSize: 12.0,
+                                              color: Color(0xFF718096),
                                             ),
-                                            SizedBox(height: AppSpacing.md),
-                                            // Current user card
-                                            StreamBuilder<DocumentSnapshot>(
-                                              stream:
-                                                  currentUserRef?.snapshots(),
-                                              builder: (context, userSnapshot) {
-                                                final profile =
-                                                    userSnapshot.hasData
-                                                        ? UserProfile.fromDoc(
-                                                            userSnapshot.data!)
-                                                        : null;
+                                          )
+                                        else if (_isSearching)
+                                          Row(
+                                            children: [
+                                              SizedBox(
+                                                width: 16.0,
+                                                height: 16.0,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2.0,
+                                                  color: AppTheme.of(context)
+                                                      .primary,
+                                                ),
+                                              ),
+                                              SizedBox(width: 8.0),
+                                              Text(
+                                                'Searching...',
+                                                style: GoogleFonts.outfit(
+                                                  fontSize: 12.0,
+                                                  color: Color(0xFF718096),
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        else
+                                          Text(
+                                            '${_searchResults.length} result${_searchResults.length == 1 ? '' : 's'}',
+                                            style: GoogleFonts.outfit(
+                                              fontSize: 12.0,
+                                              color: Color(0xFF718096),
+                                            ),
+                                          ),
+                                        if (_activeQuery.length >=
+                                            _minSearchChars) ...[
+                                          SizedBox(height: AppSpacing.md),
+                                          if (_searchResults.isNotEmpty)
+                                            Column(
+                                              children: _searchResults
+                                                  .map((profile) {
+                                                final isInGame =
+                                                    joinedPlayerIds
+                                                        .contains(profile.uid);
+                                                final isSelected =
+                                                    selectedUids
+                                                        .contains(profile.uid);
+                                                final canAdd =
+                                                    !isInGame && !isSelected;
+
                                                 return Container(
-                                                  padding: EdgeInsets.all(16.0),
+                                                  width: double.infinity,
+                                                  margin: EdgeInsets.only(
+                                                      bottom: AppSpacing.xs),
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: AppSpacing.sm,
+                                                    vertical: AppSpacing.xs,
+                                                  ),
                                                   decoration: BoxDecoration(
-                                                    color: Color(0xFFE8F5E9),
+                                                    color: AppTheme.of(context)
+                                                        .secondaryBackground,
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             12.0),
                                                     border: Border.all(
-                                                      color: Color(0xFF1A4D2E)
-                                                          .withValues(
-                                                              alpha: 0.2),
-                                                      width: 1.0,
+                                                      color: AppTheme.of(context)
+                                                          .alternate,
                                                     ),
                                                   ),
                                                   child: Row(
                                                     children: [
                                                       ClipRRect(
                                                         borderRadius:
-                                                            BorderRadius
-                                                                .circular(24.0),
+                                                            BorderRadius.circular(
+                                                                18.0),
                                                         child: Image.network(
-                                                          profile?.photoUrl
-                                                                      .isNotEmpty ??
-                                                                  false
-                                                              ? profile!
-                                                                  .photoUrl
+                                                          profile.photoUrl
+                                                                  .isNotEmpty
+                                                              ? profile.photoUrl
                                                               : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                                                          width: 48.0,
-                                                          height: 48.0,
+                                                          width: 36.0,
+                                                          height: 36.0,
                                                           fit: BoxFit.cover,
                                                         ),
                                                       ),
-                                                      SizedBox(width: 12.0),
+                                                      SizedBox(
+                                                          width: AppSpacing.sm),
                                                       Expanded(
                                                         child: Column(
                                                           crossAxisAlignment:
@@ -348,105 +580,282 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                                   .start,
                                                           children: [
                                                             Text(
-                                                              profile?.displayName
-                                                                          .isNotEmpty ??
-                                                                      false
-                                                                  ? profile!
+                                                              profile.displayName
+                                                                      .isNotEmpty
+                                                                  ? profile
                                                                       .displayName
-                                                                  : 'You',
+                                                                  : 'Player',
                                                               style: GoogleFonts
                                                                   .outfit(
-                                                                fontSize: 16.0,
+                                                                fontSize: 14.0,
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w600,
                                                                 color: Color(
                                                                     0xFF1A4D2E),
                                                               ),
+                                                              maxLines: 1,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
                                                             ),
-                                                            SizedBox(
-                                                                height: 2.0),
-                                                            Text(
-                                                              'Game Creator',
-                                                              style: GoogleFonts
-                                                                  .outfit(
-                                                                fontSize: 13.0,
-                                                                color: Color(
-                                                                    0xFF718096),
+                                                            if (isInGame ||
+                                                                isSelected)
+                                                              Text(
+                                                                isInGame
+                                                                    ? 'Already in game'
+                                                                    : 'Selected',
+                                                                style: GoogleFonts
+                                                                    .outfit(
+                                                                  fontSize: 12.0,
+                                                                  color: Color(
+                                                                      0xFF718096),
+                                                                ),
                                                               ),
-                                                            ),
                                                           ],
                                                         ),
                                                       ),
-                                                      Container(
-                                                        padding: EdgeInsets
-                                                            .symmetric(
-                                                          horizontal: 12.0,
-                                                          vertical: 6.0,
-                                                        ),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color:
-                                                              Color(0xFF1A4D2E),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      20.0),
-                                                        ),
+                                                      TextButton(
+                                                        onPressed: canAdd
+                                                            ? () => _addPlayerToNextSlot(
+                                                                profile)
+                                                            : null,
                                                         child: Text(
-                                                          'You',
-                                                          style: GoogleFonts
-                                                              .outfit(
-                                                            fontSize: 12.0,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            color: Colors.white,
-                                                          ),
+                                                          canAdd
+                                                              ? 'Add'
+                                                              : 'Added',
                                                         ),
                                                       ),
                                                     ],
                                                   ),
                                                 );
-                                              },
+                                              }).toList(),
+                                            )
+                                          else if (!_isSearching)
+                                            Text(
+                                              'No players found.',
+                                              style: GoogleFonts.outfit(
+                                                fontSize: 12.0,
+                                                color: Color(0xFF718096),
+                                              ),
                                             ),
-                                            SizedBox(height: AppSpacing.lg),
-                                            // Player dropdowns section
-                                            if (remainingSlots > 0) ...[
-                                              Text(
-                                                'Add Friends',
-                                                style: GoogleFonts.outfit(
-                                                  fontSize: 16.0,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Color(0xFF4A5568),
+                                          if (_hasMoreResults)
+                                            Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: TextButton(
+                                                onPressed: _loadMoreResults,
+                                                child: Text('Load more'),
+                                              ),
+                                            ),
+                                          SizedBox(height: AppSpacing.lg),
+                                        ],
+                                        // Section header
+                                        Text(
+                                          'Your Group',
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 18.0,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF1A4D2E),
+                                          ),
+                                        ),
+                                        SizedBox(height: AppSpacing.md),
+                                        // Current user card
+                                        StreamBuilder<DocumentSnapshot>(
+                                          stream:
+                                              currentUserRef?.snapshots(),
+                                          builder: (context, userSnapshot) {
+                                            final profile = userSnapshot.hasData
+                                                ? UserProfile.fromDoc(
+                                                    userSnapshot.data!)
+                                                : null;
+                                            return Container(
+                                              padding: EdgeInsets.all(16.0),
+                                              decoration: BoxDecoration(
+                                                color: Color(0xFFE8F5E9),
+                                                borderRadius:
+                                                    BorderRadius.circular(12.0),
+                                                border: Border.all(
+                                                  color: Color(0xFF1A4D2E)
+                                                      .withValues(alpha: 0.2),
+                                                  width: 1.0,
                                                 ),
                                               ),
-                                              SizedBox(height: AppSpacing.sm),
-                                            ],
-                                            for (var i = 0;
-                                                i < remainingSlots;
-                                                i++) ...[
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
+                                              child: Row(
+                                                children: [
+                                                  ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            24.0),
+                                                    child: Image.network(
+                                                      profile?.photoUrl
+                                                                  .isNotEmpty ??
+                                                              false
+                                                          ? profile!.photoUrl
+                                                          : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+                                                      width: 48.0,
+                                                      height: 48.0,
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                                  ),
+                                                  SizedBox(width: 12.0),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          profile?.displayName
+                                                                      .isNotEmpty ??
+                                                                  false
+                                                              ? profile!
+                                                                  .displayName
+                                                              : 'You',
+                                                          style: GoogleFonts
+                                                              .outfit(
+                                                            fontSize: 16.0,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: Color(
+                                                                0xFF1A4D2E),
+                                                          ),
+                                                        ),
+                                                        SizedBox(height: 2.0),
+                                                        Text(
+                                                          'Game Creator',
+                                                          style: GoogleFonts
+                                                              .outfit(
+                                                            fontSize: 13.0,
+                                                            color: Color(
+                                                                0xFF718096),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                      horizontal: 12.0,
+                                                      vertical: 6.0,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      color: Color(0xFF1A4D2E),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              20.0),
+                                                    ),
+                                                    child: Text(
+                                                      'You',
+                                                      style: GoogleFonts.outfit(
+                                                        fontSize: 12.0,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        SizedBox(height: AppSpacing.lg),
+                                        // Player dropdowns section
+                                        if (remainingSlots > 0) ...[
+                                          Text(
+                                            'Add Friends',
+                                            style: GoogleFonts.outfit(
+                                              fontSize: 16.0,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFF4A5568),
+                                            ),
+                                          ),
+                                          SizedBox(height: AppSpacing.sm),
+                                        ],
+                                        for (var i = 0;
+                                            i < remainingSlots;
+                                            i++) ...[
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.spaceBetween,
                                                 children: [
                                                   Text(
                                                     'Player ${currentPlayerCount + i + 1}',
                                                     style: GoogleFonts.outfit(
                                                       fontSize: 14.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
+                                                      fontWeight: FontWeight.w500,
                                                       color: Color(0xFF718096),
                                                     ),
                                                   ),
-                                                  SizedBox(
-                                                      height: AppSpacing.xs),
-                                                  AppDropDown<String>(
+                                                  if (_dropDownControllers[i]
+                                                          .value !=
+                                                      null &&
+                                                      _dropDownControllers[i]
+                                                          .value!
+                                                          .isNotEmpty)
+                                                    AppIconButton(
+                                                      icon: Icon(
+                                                        Icons.delete_outline,
+                                                        color: AppTheme.of(context)
+                                                            .error,
+                                                        size: 20.0,
+                                                      ),
+                                                      borderRadius: 18.0,
+                                                      buttonSize: 32.0,
+                                                      fillColor:
+                                                          Colors.transparent,
+                                                      tooltip: 'Remove player',
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          _dropDownControllers[i]
+                                                              .value = null;
+                                                        });
+                                                      },
+                                                    ),
+                                                ],
+                                              ),
+                                              SizedBox(height: AppSpacing.xs),
+                                              Builder(
+                                                builder: (context) {
+                                                  final currentValue =
+                                                      _dropDownControllers[i]
+                                                          .value;
+                                                  final slotOptions = <String>[
+                                                    if (currentValue != null &&
+                                                        currentValue.isNotEmpty &&
+                                                        currentValue !=
+                                                            guestOptionValue)
+                                                      currentValue,
+                                                    guestOptionValue,
+                                                  ];
+                                                  final slotLabels = slotOptions
+                                                      .map(
+                                                        (uid) =>
+                                                            uid == guestOptionValue
+                                                                ? 'Guest'
+                                                                : (labelMap[uid] ??
+                                                                    'Player'),
+                                                      )
+                                                      .toList();
+
+                                                  return AppDropDown<String>(
                                                     controller:
                                                         _dropDownControllers[i],
-                                                    options: List<String>.from(
-                                                        playerOptions),
-                                                    optionLabels: playerLabels,
+                                                    options: slotOptions,
+                                                    optionLabels: slotLabels,
                                                     onChanged: (val) {
+                                                      if (val != null &&
+                                                          val !=
+                                                              guestOptionValue) {
+                                                        _labelCache[val] ??=
+                                                            labelMap[val] ??
+                                                                'Player';
+                                                      }
                                                       if (mounted) {
                                                         setState(() {});
                                                       }
@@ -468,8 +877,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                                     .labelMedium
                                                                     .fontStyle,
                                                               ),
-                                                              letterSpacing:
-                                                                  0.0,
+                                                              letterSpacing: 0.0,
                                                               fontWeight: AppTheme
                                                                       .of(context)
                                                                   .labelMedium
@@ -494,8 +902,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                                     .bodyMedium
                                                                     .fontStyle,
                                                               ),
-                                                              letterSpacing:
-                                                                  0.0,
+                                                              letterSpacing: 0.0,
                                                               fontWeight: AppTheme
                                                                       .of(context)
                                                                   .bodyMedium
@@ -520,8 +927,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                                     .bodyMedium
                                                                     .fontStyle,
                                                               ),
-                                                              letterSpacing:
-                                                                  0.0,
+                                                              letterSpacing: 0.0,
                                                               fontWeight: AppTheme
                                                                       .of(context)
                                                                   .bodyMedium
@@ -538,13 +944,11 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                     icon: Icon(
                                                       Icons
                                                           .keyboard_arrow_down_rounded,
-                                                      color:
-                                                          AppTheme.of(context)
-                                                              .secondaryText,
+                                                      color: AppTheme.of(context)
+                                                          .secondaryText,
                                                       size: 24.0,
                                                     ),
-                                                    fillColor: AppTheme.of(
-                                                            context)
+                                                    fillColor: AppTheme.of(context)
                                                         .secondaryBackground,
                                                     elevation: 2.0,
                                                     borderColor:
@@ -552,179 +956,177 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                             .alternate,
                                                     borderWidth: 2.0,
                                                     borderRadius: 8.0,
-                                                    margin:
-                                                        AppSpacing.symmetric(
+                                                    margin: AppSpacing.symmetric(
                                                       horizontal: AppSpacing.md,
                                                       vertical: AppSpacing.xxs,
                                                     ),
                                                     hidesUnderline: true,
                                                     isOverButton: true,
-                                                    isSearchable: i == 0,
+                                                    isSearchable: false,
                                                     isMultiSelect: false,
-                                                  ),
-                                                ],
-                                              ),
-                                              if (i < remainingSlots - 1)
-                                                SizedBox(
-                                                    height: AppSpacing.md),
-                                            ],
-                                            if (remainingSlots == 0) ...[
-                                              Text(
-                                                'This game is already full.',
-                                                style: GoogleFonts.outfit(
-                                                  fontSize: 14.0,
-                                                  color: Color(0xFF718096),
-                                                ),
-                                              ),
-                                              SizedBox(height: AppSpacing.md),
-                                            ],
-                                            SizedBox(height: AppSpacing.xl),
-                                            // Submit button
-                                            SizedBox(
-                                              width: double.infinity,
-                                              child: AppButtonEnhanced(
-                                                onPressed: _isSubmitting ? null : () async {
-                                                  // Prevent double submission
-                                                  if (_isSubmitting) {
-                                                    debugPrint('⚠️ PLAYER LIST: Already submitting, ignoring click');
-                                                    return;
-                                                  }
-
-                                                  setState(() {
-                                                    _isSubmitting = true;
-                                                  });
-
-                                                  debugPrint('👥 PLAYER LIST: Starting player submission');
-                                                  debugPrint('👥 PLAYER LIST: Current game max players: ${game.maxPlayers}');
-                                                  debugPrint('👥 PLAYER LIST: Current joined players: ${game.joinedPlayers.length}');
-                                                  debugPrint('👥 PLAYER LIST: Current guest players: ${game.guestPlayers.length}');
-
-                                                  // Calculate current player count
-                                                  final currentPlayerCount = game.joinedPlayers.length + game.guestPlayers.length;
-                                                  debugPrint('👥 PLAYER LIST: Current total players: $currentPlayerCount / ${game.maxPlayers}');
-
-                                                  // Validate we haven't exceeded max players
-                                                  if (currentPlayerCount >= game.maxPlayers) {
-                                                    debugPrint('❌ PLAYER LIST: Game is already full!');
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text('Game is already full (${game.maxPlayers} players)'),
-                                                        backgroundColor: Colors.red,
-                                                      ),
-                                                    );
-                                                    setState(() {
-                                                      _isSubmitting = false;
-                                                    });
-                                                    return;
-                                                  }
-
-                                                  final selections = _dropDownControllers
-                                                      .map((controller) => controller.value)
-                                                      .toList();
-                                                  final joinedPlayersToAdd =
-                                                      <DocumentReference>[];
-                                                  final guestPlayersToAdd =
-                                                      <String>[];
-
-                                                  for (final selection
-                                                      in selections) {
-                                                    if (selection == null ||
-                                                        selection.isEmpty) {
-                                                      continue;
-                                                    }
-                                                    if (selection ==
-                                                        guestOptionValue) {
-                                                      guestPlayersToAdd.add(
-                                                        'Guest ${game.guestPlayers.length + guestPlayersToAdd.length + 1}',
-                                                      );
-                                                    } else {
-                                                      final playerRef =
-                                                          FirebaseFirestore
-                                                              .instance
-                                                              .collection(
-                                                                  'users')
-                                                              .doc(selection);
-                                                      if (playerRef != null) {
-                                                        joinedPlayersToAdd
-                                                            .add(playerRef);
-                                                      }
-                                                    }
-                                                  }
-
-                                                  debugPrint('👥 PLAYER LIST: Adding ${joinedPlayersToAdd.length} joined players');
-                                                  debugPrint('👥 PLAYER LIST: Adding ${guestPlayersToAdd.length} guest players');
-
-                                                  // Validate total count won't exceed max
-                                                  final newPlayerCount = currentPlayerCount + joinedPlayersToAdd.length + guestPlayersToAdd.length;
-                                                  if (newPlayerCount > game.maxPlayers) {
-                                                    debugPrint('❌ PLAYER LIST: Would exceed max players: $newPlayerCount > ${game.maxPlayers}');
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text('Cannot add ${joinedPlayersToAdd.length + guestPlayersToAdd.length} players - would exceed max (${game.maxPlayers})'),
-                                                        backgroundColor: Colors.red,
-                                                      ),
-                                                    );
-                                                    setState(() {
-                                                      _isSubmitting = false;
-                                                    });
-                                                    return;
-                                                  }
-
-                                                  try {
-                                                    if (joinedPlayersToAdd
-                                                            .isNotEmpty ||
-                                                        guestPlayersToAdd
-                                                            .isNotEmpty) {
-                                                      await widget.gameRef
-                                                          .update({
-                                                        if (joinedPlayersToAdd
-                                                            .isNotEmpty)
-                                                          'joined_players':
-                                                              FieldValue.arrayUnion(
-                                                                  joinedPlayersToAdd),
-                                                        if (guestPlayersToAdd
-                                                            .isNotEmpty)
-                                                          'guest_players':
-                                                              FieldValue.arrayUnion(
-                                                                  guestPlayersToAdd),
-                                                      });
-                                                      debugPrint('✅ PLAYER LIST: Players added successfully');
-                                                    } else {
-                                                      debugPrint('ℹ️ PLAYER LIST: No players selected, proceeding anyway');
-                                                    }
-
-                                                    // Navigate to Game List
-                                                    // This replaces the current location and prevents back navigation issues
-                                                    debugPrint('🚀 PLAYER LIST: Navigating to Game List');
-
-                                                    if (!mounted) return;
-
-                                                    // Use context.goNamed for standard API
-                                                    context.goNamed(GamesListWidget.routeName);
-                                                  } catch (e) {
-                                                    debugPrint('❌ PLAYER LIST: Error adding players: $e');
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text('Error adding players: $e'),
-                                                        backgroundColor: Colors.red,
-                                                      ),
-                                                    );
-                                                    setState(() {
-                                                      _isSubmitting = false;
-                                                    });
-                                                  }
+                                                  );
                                                 },
-                                                text: _isSubmitting ? 'Adding...' : 'Add to Group',
-                                                variant:
-                                                    AppButtonVariant.primary,
-                                                size: AppButtonSize.medium,
                                               ),
+                                            ],
+                                          ),
+                                          if (i < remainingSlots - 1)
+                                            SizedBox(height: AppSpacing.md),
+                                        ],
+                                        if (remainingSlots == 0) ...[
+                                          Text(
+                                            'This game is already full.',
+                                            style: GoogleFonts.outfit(
+                                              fontSize: 14.0,
+                                              color: Color(0xFF718096),
                                             ),
-                                          ],
+                                          ),
+                                          SizedBox(height: AppSpacing.md),
+                                        ],
+                                        SizedBox(height: AppSpacing.xl),
+                                        // Submit button
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: AppButtonEnhanced(
+                                            onPressed: _isSubmitting ? null : () async {
+                                              // Prevent double submission
+                                              if (_isSubmitting) {
+                                                debugPrint('⚠️ PLAYER LIST: Already submitting, ignoring click');
+                                                return;
+                                              }
+
+                                              setState(() {
+                                                _isSubmitting = true;
+                                              });
+
+                                              debugPrint('👥 PLAYER LIST: Starting player submission');
+                                              debugPrint('👥 PLAYER LIST: Current game max players: ${game.maxPlayers}');
+                                              debugPrint('👥 PLAYER LIST: Current joined players: ${game.joinedPlayers.length}');
+                                              debugPrint('👥 PLAYER LIST: Current guest players: ${game.guestPlayers.length}');
+
+                                              // Calculate current player count
+                                              final currentPlayerCount = game.joinedPlayers.length + game.guestPlayers.length;
+                                              debugPrint('👥 PLAYER LIST: Current total players: $currentPlayerCount / ${game.maxPlayers}');
+
+                                              // Validate we haven't exceeded max players
+                                              if (currentPlayerCount >= game.maxPlayers) {
+                                                debugPrint('❌ PLAYER LIST: Game is already full!');
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('Game is already full (${game.maxPlayers} players)'),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                                setState(() {
+                                                  _isSubmitting = false;
+                                                });
+                                                return;
+                                              }
+
+                                              final selections = _dropDownControllers
+                                                  .map((controller) => controller.value)
+                                                  .toList();
+                                              final joinedPlayersToAdd =
+                                                  <DocumentReference>[];
+                                              final guestPlayersToAdd =
+                                                  <String>[];
+
+                                              for (final selection
+                                                  in selections) {
+                                                if (selection == null ||
+                                                    selection.isEmpty) {
+                                                  continue;
+                                                }
+                                                if (selection ==
+                                                    guestOptionValue) {
+                                                  guestPlayersToAdd.add(
+                                                    'Guest ${game.guestPlayers.length + guestPlayersToAdd.length + 1}',
+                                                  );
+                                                } else {
+                                                  final playerRef =
+                                                      FirebaseFirestore
+                                                          .instance
+                                                          .collection(
+                                                              'users')
+                                                          .doc(selection);
+                                                  if (playerRef != null) {
+                                                    joinedPlayersToAdd
+                                                        .add(playerRef);
+                                                  }
+                                                }
+                                              }
+
+                                              debugPrint('👥 PLAYER LIST: Adding ${joinedPlayersToAdd.length} joined players');
+                                              debugPrint('👥 PLAYER LIST: Adding ${guestPlayersToAdd.length} guest players');
+
+                                              // Validate total count won't exceed max
+                                              final newPlayerCount = currentPlayerCount + joinedPlayersToAdd.length + guestPlayersToAdd.length;
+                                              if (newPlayerCount > game.maxPlayers) {
+                                                debugPrint('❌ PLAYER LIST: Would exceed max players: $newPlayerCount > ${game.maxPlayers}');
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('Cannot add ${joinedPlayersToAdd.length + guestPlayersToAdd.length} players - would exceed max (${game.maxPlayers})'),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                                setState(() {
+                                                  _isSubmitting = false;
+                                                });
+                                                return;
+                                              }
+
+                                              try {
+                                                if (joinedPlayersToAdd
+                                                        .isNotEmpty ||
+                                                    guestPlayersToAdd
+                                                        .isNotEmpty) {
+                                                  await widget.gameRef
+                                                      .update({
+                                                    if (joinedPlayersToAdd
+                                                        .isNotEmpty)
+                                                      'joined_players':
+                                                          FieldValue.arrayUnion(
+                                                              joinedPlayersToAdd),
+                                                    if (guestPlayersToAdd
+                                                        .isNotEmpty)
+                                                      'guest_players':
+                                                          FieldValue.arrayUnion(
+                                                              guestPlayersToAdd),
+                                                  });
+                                                  debugPrint('✅ PLAYER LIST: Players added successfully');
+                                                } else {
+                                                  debugPrint('ℹ️ PLAYER LIST: No players selected, proceeding anyway');
+                                                }
+
+                                                // Navigate to Game List
+                                                // This replaces the current location and prevents back navigation issues
+                                                debugPrint('🚀 PLAYER LIST: Navigating to Game List');
+
+                                                if (!mounted) return;
+
+                                                // Use context.goNamed for standard API
+                                                context.goNamed(GamesListWidget.routeName);
+                                              } catch (e) {
+                                                debugPrint('❌ PLAYER LIST: Error adding players: $e');
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('Error adding players: $e'),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                                setState(() {
+                                                  _isSubmitting = false;
+                                                });
+                                              }
+                                            },
+                                            text: _isSubmitting ? 'Adding...' : 'Add to Group',
+                                            variant:
+                                                AppButtonVariant.primary,
+                                            size: AppButtonSize.medium,
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  },
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
                               SizedBox(height: AppSpacing.md),

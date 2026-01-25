@@ -4,6 +4,7 @@ import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
+import '/providers/profile_provider.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -614,44 +615,51 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             .where((name) => name.trim().isNotEmpty)
                             .toList();
 
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Registered players
-                            ...List.generate(groupPlayers.length,
-                                (groupPlayersIndex) {
-                              final groupPlayersItem =
-                                  groupPlayers[groupPlayersIndex];
-                              return Padding(
-                                padding: EdgeInsets.only(bottom: AppSpacing.sm),
-                                child: StreamBuilder<UsersRecord>(
-                                  stream:
-                                      UsersRecord.getDocument(groupPlayersItem),
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasData) {
-                                      return Center(
-                                        child: SizedBox(
-                                          width: 40.0,
-                                          height: 40.0,
-                                          child: SpinKitWanderingCubes(
-                                            color:
-                                                AppTheme.of(context).secondary,
-                                            size: 40.0,
-                                          ),
-                                        ),
-                                      );
-                                    }
+                        final playerIds =
+                            groupPlayers.map((playerRef) => playerRef.id).toList();
+                        final profilesFuture = playerIds.isEmpty
+                            ? Future.value(<String, UsersRecord>{})
+                            : context
+                                .read<ProfileProvider>()
+                                .batchGetProfiles(playerIds);
 
-                                    final friend1UsersRecord = snapshot.data!;
+                        return FutureBuilder<Map<String, UsersRecord>>(
+                          future: profilesFuture,
+                          builder: (context, profilesSnapshot) {
+                            final profileMap =
+                                profilesSnapshot.data ?? <String, UsersRecord>{};
 
-                                    return InkWell(
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Registered players
+                                ...List.generate(groupPlayers.length,
+                                    (groupPlayersIndex) {
+                                  final groupPlayersItem =
+                                      groupPlayers[groupPlayersIndex];
+                                  final friendRecord =
+                                      profileMap[groupPlayersItem.id];
+                                  final displayName =
+                                      (friendRecord?.displayName ?? '')
+                                              .trim()
+                                              .isNotEmpty
+                                          ? friendRecord!.displayName
+                                          : 'Golfer';
+                                  final userRef =
+                                      friendRecord?.reference ?? groupPlayersItem;
+                                  final photoUrl = friendRecord?.photoUrl ?? '';
+
+                                  return Padding(
+                                    padding:
+                                        EdgeInsets.only(bottom: AppSpacing.sm),
+                                    child: InkWell(
                                       onTap: () {
                                         context.pushNamed(
                                           'ProfileUser',
                                           extra: <String, dynamic>{
-                                            'userRef':
-                                                friend1UsersRecord.reference,
-                                            kTransitionInfoKey: TransitionStandards.detailTransition,
+                                            'userRef': userRef,
+                                            kTransitionInfoKey:
+                                                TransitionStandards.detailTransition,
                                           },
                                         );
                                       },
@@ -684,10 +692,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                               ),
                                               clipBehavior: Clip.antiAlias,
                                               child: Image.network(
-                                                friend1UsersRecord.photoUrl !=
-                                                        ''
-                                                    ? friend1UsersRecord
-                                                        .photoUrl
+                                                photoUrl.isNotEmpty
+                                                    ? photoUrl
                                                     : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
                                                 fit: BoxFit.cover,
                                                 errorBuilder: (context, error,
@@ -707,8 +713,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   Text(
-                                                    friend1UsersRecord
-                                                        .displayName,
+                                                    displayName,
                                                     style: AppTheme.of(context)
                                                         .bodyLarge
                                                         .override(
@@ -773,12 +778,14 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                 right: AppSpacing.sm,
                                               ),
                                               child: PlayerMatchChip(
-                                                name: friend1UsersRecord.displayName,
-                                                memberMatch: _memberMatchesById[friend1UsersRecord.reference.id],
+                                                name: displayName,
+                                                memberMatch:
+                                                    _memberMatchesById[groupPlayersItem.id],
                                               ),
                                             ),
                                             // Show remove button for owner, checkmark for others
-                                            if (gameJoinedDetailedGamesRecord.userRef == currentUserRef)
+                                            if (gameJoinedDetailedGamesRecord.userRef ==
+                                                currentUserRef)
                                               AppIconButton(
                                                 icon: Icon(
                                                   Icons.remove_circle_outline,
@@ -788,9 +795,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                 borderRadius: 20.0,
                                                 buttonSize: 40.0,
                                                 fillColor: Colors.transparent,
+                                                tooltip: 'Remove player',
                                                 onPressed: () => _showRemovePlayerDialog(
                                                   context: context,
-                                                  playerName: friend1UsersRecord.displayName,
+                                                  playerName: displayName,
                                                   playerRef: groupPlayersItem,
                                                   isGuest: false,
                                                   gameRecord: gameJoinedDetailedGamesRecord,
@@ -805,11 +813,9 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                           ],
                                         ),
                                       ),
-                                    );
-                                  },
-                                ),
-                              );
-                            }),
+                                    ),
+                                  );
+                                }),
                             // Guest players
                             ...guestPlayers.map(
                               (guestName) => Padding(
@@ -937,6 +943,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                           borderRadius: 20.0,
                                           buttonSize: 40.0,
                                           fillColor: Colors.transparent,
+                                          tooltip: 'Remove guest',
                                           onPressed: () => _showRemovePlayerDialog(
                                             context: context,
                                             playerName: guestName,
@@ -954,8 +961,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                           ],
                         );
                       },
-                    ),
+                    );
+                  },
                   ),
+                ),
                   SizedBox(height: AppSpacing.md),
                   // Add Players button (for owner, when not full)
                   if (gameJoinedDetailedGamesRecord.userRef == currentUserRef &&
@@ -992,13 +1001,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             );
                             return;
                           }
-                          final currentUser =
-                              FirebaseAuth.instance.currentUser;
-                          final currentUserId =
-                              currentUser?.uid ?? currentUserRef.id;
                           final removeValues = <Object>[
                             currentUserRef,
-                            currentUserId,
                           ];
                           try {
                             await gameRef.update({
@@ -1034,7 +1038,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             );
                             return;
                           }
-                          context.userProvider.refreshMyGames();
+                          context.read<GameProvider>().invalidateUserGamesCache(
+                              currentUserRef.id);
 
                           // Show success toast
                           ScaffoldMessenger.of(context).showSnackBar(

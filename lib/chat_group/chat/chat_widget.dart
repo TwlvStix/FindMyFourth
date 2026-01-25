@@ -10,9 +10,11 @@ import '/core/design_tokens/typography.dart';
 import '/core/navigation/app_router.dart';
 import '/core/utils/formatting_utils.dart';
 import '/core/widgets/fairway_background.dart';
-import '/main_function/golfers/golfers_widget.dart';
+import '/backend/backend.dart';
+import '/friends/tab_friends/tab_friends_widget.dart';
 import '/models/chat.dart';
 import '/providers/chat_provider.dart';
+import '/providers/profile_provider.dart';
 
 class ChatWidget extends StatefulWidget {
   const ChatWidget({super.key, this.isEmbedded = false});
@@ -30,6 +32,14 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   String? _currentUserId() {
     return FirebaseAuth.instance.currentUser?.uid;
+  }
+
+  void _safeHaptic() {
+    try {
+      HapticFeedback.lightImpact();
+    } catch (_) {
+      // Haptics can be unsupported on web/desktop; ignore.
+    }
   }
 
   String? _chatListLabel(Chat chat) {
@@ -112,8 +122,8 @@ class _ChatWidgetState extends State<ChatWidget> {
               ),
               child: GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
-                  context.goNamed(GolfersWidget.routeName);
+                  _safeHaptic();
+                  context.goNamed(TabFriendsWidget.routeName);
                 },
                 child: Container(
                   width: 40,
@@ -164,8 +174,8 @@ class _ChatWidgetState extends State<ChatWidget> {
             padding: EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
             child: GestureDetector(
               onTap: () {
-                HapticFeedback.lightImpact();
-                context.goNamed(GolfersWidget.routeName);
+                _safeHaptic();
+                context.goNamed(TabFriendsWidget.routeName);
               },
               child: Container(
                 padding: EdgeInsets.symmetric(
@@ -295,21 +305,45 @@ class _ChatWidgetState extends State<ChatWidget> {
                 );
               }
 
-              return ListView.separated(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                itemCount: chats.length,
-                separatorBuilder: (_, __) => SizedBox(height: AppSpacing.sm),
-                itemBuilder: (context, index) {
-                  final chat = chats[index];
-                  final lastMessage = chat.lastMessage;
-                  final lastMessageAt = chat.lastMessageAt;
-                  final unreadCount =
-                      chat.unreadCountByUser[currentUserId] ?? 0;
+              final directUserIds = <String>{};
+              for (final chat in chats) {
+                if (chat.type == 'game') continue;
+                final otherUserId = chat.memberIds.firstWhere(
+                  (id) => id != currentUserId,
+                  orElse: () => currentUserId,
+                );
+                if (otherUserId.isNotEmpty) {
+                  directUserIds.add(otherUserId);
+                }
+              }
+
+              final profilesFuture = directUserIds.isEmpty
+                  ? Future.value(<String, UsersRecord>{})
+                  : context
+                      .read<ProfileProvider>()
+                      .batchGetProfiles(directUserIds.toList());
+
+              return FutureBuilder<Map<String, UsersRecord>>(
+                future: profilesFuture,
+                builder: (context, profilesSnapshot) {
+                  final profileMap =
+                      profilesSnapshot.data ?? <String, UsersRecord>{};
+
+                  return ListView.separated(
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    itemCount: chats.length,
+                    separatorBuilder: (_, __) => SizedBox(height: AppSpacing.sm),
+                    itemBuilder: (context, index) {
+                      final chat = chats[index];
+                      final lastMessage = chat.lastMessage;
+                      final lastMessageAt = chat.lastMessageAt;
+                      final unreadCount =
+                          chat.unreadCountByUser[currentUserId] ?? 0;
 
                   Widget buildRow(String displayName, String photoUrl) {
                     return GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        _safeHaptic();
                         context.pushNamed(
                           'ChatDetails',
                           pathParameters: {
@@ -460,27 +494,21 @@ class _ChatWidgetState extends State<ChatWidget> {
                     );
                   }
 
-                  if (chat.type == 'game') {
-                    final displayName = _chatListLabel(chat) ?? 'Game Chat';
-                    return buildRow(displayName, '');
-                  }
+                      if (chat.type == 'game') {
+                        final displayName = _chatListLabel(chat) ?? 'Game Chat';
+                        return buildRow(displayName, '');
+                      }
 
-                  final otherUserId = chat.memberIds.firstWhere(
-                    (id) => id != currentUserId,
-                    orElse: () => currentUserId,
-                  );
-                  return FutureBuilder<Map<String, dynamic>>(
-                    future: context
-                        .read<ChatProvider>()
-                        .getUserProfile(otherUserId),
-                    builder: (context, userSnapshot) {
-                      final userData =
-                          userSnapshot.data ?? <String, dynamic>{};
+                      final otherUserId = chat.memberIds.firstWhere(
+                        (id) => id != currentUserId,
+                        orElse: () => currentUserId,
+                      );
+                      final profile = profileMap[otherUserId];
                       final displayName =
-                          valueOrDefault<String>(
-                              userData['display_name'] as String?, 'Golfer');
-                      final photoUrl =
-                          (userData['photo_url'] as String?) ?? '';
+                          (profile?.displayName ?? '').trim().isNotEmpty
+                              ? profile!.displayName
+                              : 'Golfer';
+                      final photoUrl = profile?.photoUrl ?? '';
 
                       return buildRow(displayName, photoUrl);
                     },

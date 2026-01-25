@@ -33,10 +33,7 @@ class GameService {
   }) {
     try {
       Query query = FirebaseFirestore.instance
-          .collection('games')
-          .where('is_private', isEqualTo: false)
-          .where('status', isEqualTo: 'open')
-          .where('isCancelled', isEqualTo: false);
+          .collection('games');
 
       if (courseFilter != null && courseFilter.isNotEmpty) {
         query = query.where('course', isEqualTo: courseFilter);
@@ -72,7 +69,6 @@ class GameService {
       return FirebaseFirestore.instance
           .collection('games')
           .where('joined_players', arrayContains: userRef)
-          .where('isCancelled', isEqualTo: false)
           .orderBy('date', descending: true)
           .snapshots()
           .map((snapshot) => snapshot.docs
@@ -143,8 +139,8 @@ class GameService {
         }
 
         final game = GamesRecord.fromSnapshot(gameDoc);
-        final currentPlayers = game.joinedPlayers?.length ?? 0;
-        final maxPlayers = game.maxPlayers ?? 4;
+        final currentPlayers = game.joinedPlayers.length;
+        final maxPlayers = game.maxPlayers;
 
         // 2. Check capacity atomically
         if (currentPlayers >= maxPlayers) {
@@ -153,14 +149,16 @@ class GameService {
 
         // 3. Check not already joined
         final userRef = FirebaseFirestore.instance.collection('users').doc(userId);
-        if (game.joinedPlayers?.contains(userRef) ?? false) {
+        final rawJoinedPlayers = (gameDoc.data() as Map<String, dynamic>?)?['joined_players'];
+        final alreadyJoined = rawJoinedPlayers is List &&
+            rawJoinedPlayers.any((entry) => entry == userRef || entry == userId);
+        if (alreadyJoined) {
           throw GameOperationException('Already joined this game', code: 'already-joined');
         }
 
         // 4. Atomic update - only if checks pass
         transaction.update(gameRef, {
           'joined_players': FieldValue.arrayUnion([userRef]),
-          'updated_at': FieldValue.serverTimestamp(),
         });
       });
 
@@ -188,8 +186,7 @@ class GameService {
           FirebaseFirestore.instance.collection('users').doc(userId);
 
       await FirebaseFirestore.instance.collection('games').doc(gameId).update({
-        'joined_players': FieldValue.arrayRemove([userRef]),
-        'updated_at': FieldValue.serverTimestamp(),
+        'joined_players': FieldValue.arrayRemove([userRef, userId]),
       });
     } on FirebaseException catch (e) {
       debugPrint('GameService.leaveGame error: ${e.code} - ${e.message}');

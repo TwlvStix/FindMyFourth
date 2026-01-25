@@ -185,6 +185,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
           borderColor: Colors.transparent,
           borderRadius: 30.0,
           buttonSize: 46.0,
+          tooltip: 'Back',
           icon: Icon(
             Icons.arrow_back_rounded,
             color: AppTheme.of(context).primaryBtnText,

@@ -2,12 +2,15 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '/backend/backend.dart';
 import '/models/chat.dart';
 import '/models/chat_message.dart';
 import '/providers/chat_provider.dart';
+import '/providers/profile_provider.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_text.dart';
@@ -171,6 +174,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                 right: 10,
                 child: IconButton(
                   icon: Icon(Icons.close, color: Colors.white, size: 30),
+                  tooltip: 'Close image',
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
@@ -726,6 +730,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                   Icons.arrow_back_rounded,
                   color: AppTheme.of(context).primaryText,
                 ),
+                tooltip: 'Back',
                 onPressed: () => Navigator.of(context).maybePop(),
               ),
               title: ChatHeaderTitle(
@@ -740,6 +745,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                     Icons.more_vert,
                     color: AppTheme.of(context).primaryText,
                   ),
+                  tooltip: 'More options',
                   onSelected: (String value) {
                     if (value == 'delete') {
                       _showDeleteConfirmation();
@@ -839,24 +845,27 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                     ),
                   // Typing Indicator
                   StreamBuilder<Chat?>(
-                    stream: context.read<ChatProvider>().chatStream(widget.chatId),
+                    stream:
+                        context.read<ChatProvider>().chatStream(widget.chatId),
                     builder: (context, chatSnapshot) {
                       if (!chatSnapshot.hasData) return SizedBox.shrink();
 
-                      final typingUserIds = _getTypingUserNames(chatSnapshot.data!);
+                      final typingUserIds =
+                          _getTypingUserNames(chatSnapshot.data!);
                       if (typingUserIds.isEmpty) return SizedBox.shrink();
 
-                      return FutureBuilder<List<Map<String, dynamic>>>(
-                        future: Future.wait(
-                          typingUserIds.map(
-                            (uid) => context.read<ChatProvider>().getUserProfile(uid),
-                          ),
-                        ),
-                        builder: (context, usersSnapshot) {
-                          if (!usersSnapshot.hasData) return SizedBox.shrink();
+                      final typingProfilesFuture =
+                          context.read<ProfileProvider>().batchGetProfiles(
+                                typingUserIds,
+                              );
 
-                          final names = usersSnapshot.data!
-                              .map((user) => (user['display_name'] as String?) ?? 'Someone')
+                      return FutureBuilder<Map<String, UsersRecord>>(
+                        future: typingProfilesFuture,
+                        builder: (context, usersSnapshot) {
+                          final profileMap =
+                              usersSnapshot.data ?? <String, UsersRecord>{};
+                          final names = typingUserIds
+                              .map((uid) => profileMap[uid]?.displayName ?? 'Someone')
                               .toList();
 
                           String typingText;
@@ -908,31 +917,49 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                             limit: _initialPageSize,
                           ),
                       builder: (context, snapshot) {
-                        debugPrint('📨 UI: StreamBuilder called for chatId: ${widget.chatId}');
-                        debugPrint('📨 UI: snapshot.connectionState = ${snapshot.connectionState}');
-                        debugPrint('📨 UI: snapshot.hasError = ${snapshot.hasError}');
-                        debugPrint('📨 UI: snapshot.hasData = ${snapshot.hasData}');
+                        if (kDebugMode) {
+                          debugPrint(
+                              '📨 UI: StreamBuilder called for chatId: ${widget.chatId}');
+                          debugPrint(
+                              '📨 UI: snapshot.connectionState = ${snapshot.connectionState}');
+                          debugPrint(
+                              '📨 UI: snapshot.hasError = ${snapshot.hasError}');
+                          debugPrint(
+                              '📨 UI: snapshot.hasData = ${snapshot.hasData}');
+                        }
 
                         if (snapshot.hasError) {
-                          debugPrint('❌ UI: StreamBuilder error: ${snapshot.error}');
+                          if (kDebugMode) {
+                            debugPrint(
+                                '❌ UI: StreamBuilder error: ${snapshot.error}');
+                          }
                           return Center(
-                            child: Text(
+                            child: AppText.body(
                               'Unable to load messages.',
-                              style: AppTheme.of(context).bodyMedium,
+                              color: AppTheme.of(context).secondaryText,
                             ),
                           );
                         }
                         if (!snapshot.hasData) {
-                          debugPrint('📨 UI: No data yet, showing loading indicator');
+                          if (kDebugMode) {
+                            debugPrint(
+                                '📨 UI: No data yet, showing loading indicator');
+                          }
                           return const Center(
                             child: CircularProgressIndicator(),
                           );
                         }
                         final docs = snapshot.data!.docs;
-                        debugPrint('📨 UI: Received ${docs.length} document(s)');
+                        if (kDebugMode) {
+                          debugPrint(
+                              '📨 UI: Received ${docs.length} document(s)');
+                        }
 
                         if (docs.isEmpty) {
-                          debugPrint('📨 UI: Docs array is empty - showing "No messages yet"');
+                          if (kDebugMode) {
+                            debugPrint(
+                                '📨 UI: Docs array is empty - showing "No messages yet"');
+                          }
                           return Center(
                             child: AppText.body(
                               'No messages yet.',
@@ -945,79 +972,104 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                             docs.isNotEmpty ? docs.last : _lastStreamDoc;
                         final latestMessages =
                             docs.map(ChatMessage.fromDoc).toList();
-                        debugPrint('📨 UI: Converted ${latestMessages.length} ChatMessage objects');
+                        if (kDebugMode) {
+                          debugPrint(
+                              '📨 UI: Converted ${latestMessages.length} ChatMessage objects');
+                        }
                         final messages = _mergeMessages(latestMessages);
-                        debugPrint('📨 UI: After merging: ${messages.length} messages');
+                        if (kDebugMode) {
+                          debugPrint(
+                              '📨 UI: After merging: ${messages.length} messages');
+                        }
                         final itemCount =
                             messages.length + (_hasMoreOlder ? 1 : 0);
-                        debugPrint('📨 UI: Rendering ListView with $itemCount items');
-
-                        if (messages.isNotEmpty) {
-                          final firstMessageText = messages.first.text;
-                          final previewLength = firstMessageText.length < 30 ? firstMessageText.length : 30;
-                          debugPrint('📨 UI: First message text: ${firstMessageText.substring(0, previewLength)}');
+                        if (kDebugMode) {
+                          debugPrint(
+                              '📨 UI: Rendering ListView with $itemCount items');
                         }
 
-                        return ListView.builder(
-                          controller: _scrollController,
-                          padding: EdgeInsets.symmetric(
-                            vertical: AppSpacing.md,
-                          ),
-                          reverse: true,
-                          itemCount: itemCount,
-                          itemBuilder: (context, index) {
-                            if (_hasMoreOlder &&
-                                index == messages.length) {
-                              return Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: AppSpacing.sm,
-                                  horizontal: AppSpacing.md,
-                                ),
-                                child: Center(
-                                  child: TextButton(
-                                    onPressed: _isLoadingOlder
-                                        ? null
-                                        : _loadOlderMessages,
-                                    child: _isLoadingOlder
-                                        ? const SizedBox(
-                                            width: 18,
-                                            height: 18,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                            ),
-                                          )
-                                        : const Text('Load earlier messages'),
-                                  ),
-                                ),
-                              );
-                            }
-                            final message = messages[index];
-                            final isMe =
-                                message.senderId == _currentUserId;
-                            final showDateDivider = _shouldShowDateDivider(index, messages);
-                            final isFirstInGroup = _isFirstInGroup(index, messages);
-                            final isLastInGroup = _isLastInGroup(index, messages);
-                            final isGroupChat = chat.type == 'game';
+                        if (messages.isNotEmpty && kDebugMode) {
+                          final firstMessageText = messages.first.text;
+                          final previewLength = firstMessageText.length < 30
+                              ? firstMessageText.length
+                              : 30;
+                          debugPrint(
+                              '📨 UI: First message text: ${firstMessageText.substring(0, previewLength)}');
+                        }
 
-                            return Column(
-                              children: [
-                                FutureBuilder<Map<String, dynamic>>(
-                                  future: isMe
-                                      ? Future.value(<String, dynamic>{})
-                                      : context
-                                          .read<ChatProvider>()
-                                          .getUserProfile(message.senderId),
-                                  builder: (context, userSnapshot) {
-                                    final userData =
-                                        userSnapshot.data ?? <String, dynamic>{};
-                                    final senderName = isMe
-                                        ? null
-                                        : (userData['display_name'] as String?) ?? 'Golfer';
-                                    final senderPhotoUrl = isMe
-                                        ? null
-                                        : (userData['photo_url'] as String?);
+                        final senderIds = messages
+                            .map((message) => message.senderId)
+                            .where((id) => id != _currentUserId)
+                            .toSet()
+                            .toList();
+                        final profileFuture = senderIds.isEmpty
+                            ? Future.value(<String, UsersRecord>{})
+                            : context
+                                .read<ProfileProvider>()
+                                .batchGetProfiles(senderIds);
 
-                                    return ChatMessageBubble(
+                        return FutureBuilder<Map<String, UsersRecord>>(
+                          future: profileFuture,
+                          builder: (context, profileSnapshot) {
+                            final profileMap =
+                                profileSnapshot.data ?? <String, UsersRecord>{};
+
+                            return ListView.builder(
+                              controller: _scrollController,
+                              padding: EdgeInsets.symmetric(
+                                vertical: AppSpacing.md,
+                              ),
+                              reverse: true,
+                              itemCount: itemCount,
+                              itemBuilder: (context, index) {
+                                if (_hasMoreOlder &&
+                                    index == messages.length) {
+                                  return Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: AppSpacing.sm,
+                                      horizontal: AppSpacing.md,
+                                    ),
+                                    child: Center(
+                                      child: TextButton(
+                                        onPressed: _isLoadingOlder
+                                            ? null
+                                            : _loadOlderMessages,
+                                        child: _isLoadingOlder
+                                            ? const SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                ),
+                                              )
+                                            : const Text('Load earlier messages'),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                final message = messages[index];
+                                final isMe =
+                                    message.senderId == _currentUserId;
+                                final showDateDivider =
+                                    _shouldShowDateDivider(index, messages);
+                                final isFirstInGroup =
+                                    _isFirstInGroup(index, messages);
+                                final isLastInGroup =
+                                    _isLastInGroup(index, messages);
+                                final isGroupChat = chat.type == 'game';
+                                final senderProfile =
+                                    profileMap[message.senderId];
+                                final senderName = isMe
+                                    ? null
+                                    : (senderProfile?.displayName ?? '').trim().isNotEmpty
+                                        ? senderProfile!.displayName
+                                        : 'Golfer';
+                                final senderPhotoUrl =
+                                    isMe ? null : senderProfile?.photoUrl;
+
+                                return Column(
+                                  children: [
+                                    ChatMessageBubble(
                                       isSentByCurrentUser: isMe,
                                       messageText: message.text,
                                       imageUrl: message.imageUrl,
@@ -1031,7 +1083,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                                       message: message,
                                       totalMembers: chat.memberIds.length,
                                       currentUserId: _currentUserId,
-                                      onLongPress: () => _showReactionPicker(message),
+                                      onLongPress: () =>
+                                          _showReactionPicker(message),
                                       onReplySwipe: () {
                                         setState(() {
                                           _replyToMessage = message;
@@ -1039,15 +1092,21 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                                         _messageFocusNode.requestFocus();
                                       },
                                       onImageTap: message.imageUrl.isNotEmpty
-                                          ? () => _showImageFullscreen(message.imageUrl)
+                                          ? () => _showImageFullscreen(
+                                              message.imageUrl)
                                           : null,
-                                      onReactionTap: (emoji, hasReacted) => _handleReaction(message, emoji, hasReacted),
-                                    );
-                                  },
-                                ),
-                                if (showDateDivider && message.createdAt != null)
-                                  ChatDateDivider(date: message.createdAt!),
-                              ],
+                                      onReactionTap: (emoji, hasReacted) =>
+                                          _handleReaction(
+                                              message, emoji, hasReacted),
+                                    ),
+                                    if (showDateDivider &&
+                                        message.createdAt != null)
+                                      ChatDateDivider(
+                                        date: message.createdAt!,
+                                      ),
+                                  ],
+                                );
+                              },
                             );
                           },
                         );
@@ -1073,36 +1132,42 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                     Positioned(
                       bottom: 90,
                       right: 16,
-                      child: Material(
-                        elevation: 4,
-                        borderRadius: BorderRadius.circular(16),
-                        color: Colors.transparent,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppTheme.of(context).primary,
-                                AppTheme.of(context).primary.withOpacity(0.8),
+                      child: Semantics(
+                        button: true,
+                        label: 'Scroll to bottom',
+                        child: Material(
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(16),
+                          color: Colors.transparent,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppTheme.of(context).primary,
+                                  AppTheme.of(context).primary.withOpacity(0.8),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.of(context)
+                                      .primary
+                                      .withOpacity(0.4),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 4),
+                                ),
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.of(context).primary.withOpacity(0.4),
-                                blurRadius: 8,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: InkWell(
-                            onTap: _scrollToBottom,
-                            borderRadius: BorderRadius.circular(16),
-                            child: Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: Colors.white,
-                                size: 28,
+                            child: InkWell(
+                              onTap: _scrollToBottom,
+                              borderRadius: BorderRadius.circular(16),
+                              child: Padding(
+                                padding: EdgeInsets.all(12),
+                                child: Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: Colors.white,
+                                  size: 28,
+                                ),
                               ),
                             ),
                           ),

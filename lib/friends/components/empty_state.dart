@@ -6,7 +6,7 @@ import '/core/widgets/app_button_enhanced.dart';
 
 /// Empty state widget for friends page
 /// Shows contextual illustrations and CTAs based on the tab
-class FriendsEmptyState extends StatelessWidget {
+class FriendsEmptyState extends StatefulWidget {
   final FriendsEmptyStateType type;
   final VoidCallback? onActionPressed;
 
@@ -17,6 +17,38 @@ class FriendsEmptyState extends StatelessWidget {
   });
 
   @override
+  State<FriendsEmptyState> createState() => _FriendsEmptyStateState();
+}
+
+class _FriendsEmptyStateState extends State<FriendsEmptyState>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _floatController;
+  late Animation<double> _floatAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+
+    _floatAnimation = Tween<double>(
+      begin: -8.0,
+      end: 8.0,
+    ).animate(CurvedAnimation(
+      parent: _floatController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _floatController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
@@ -24,8 +56,17 @@ class FriendsEmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Illustration
-            _buildIllustration(),
+            // Illustration with floating animation
+            AnimatedBuilder(
+              animation: _floatAnimation,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(0, _floatAnimation.value),
+                  child: child,
+                );
+              },
+              child: _buildIllustration(),
+            ),
 
             SizedBox(height: AppSpacing.xl),
 
@@ -34,12 +75,13 @@ class FriendsEmptyState extends StatelessWidget {
               _getTitle(),
               style: AppTypography.titleLarge.copyWith(
                 color: AppColors.onyx,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
+                fontSize: 22,
               ),
               textAlign: TextAlign.center,
             ),
 
-            SizedBox(height: AppSpacing.sm),
+            SizedBox(height: AppSpacing.md),
 
             // Description
             Padding(
@@ -48,18 +90,19 @@ class FriendsEmptyState extends StatelessWidget {
                 _getDescription(),
                 style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.stone,
-                  height: 1.5,
+                  height: 1.6,
+                  fontSize: 15,
                 ),
                 textAlign: TextAlign.center,
               ),
             ),
 
-            SizedBox(height: AppSpacing.xl),
+            SizedBox(height: AppSpacing.xxl),
 
-            // CTA Button
-            if (onActionPressed != null)
+            // CTA Button with enhanced styling
+            if (widget.onActionPressed != null)
               AppButtonEnhanced(
-                onPressed: onActionPressed,
+                onPressed: widget.onActionPressed,
                 text: _getActionLabel(),
                 variant: AppButtonVariant.primary,
                 size: AppButtonSize.large,
@@ -74,7 +117,7 @@ class FriendsEmptyState extends StatelessWidget {
     IconData iconData;
     List<Color> gradientColors;
 
-    switch (type) {
+    switch (widget.type) {
       case FriendsEmptyStateType.noSearchResults:
         iconData = Icons.search_off_rounded;
         gradientColors = [AppColors.stone, AppColors.cloud];
@@ -90,23 +133,30 @@ class FriendsEmptyState extends StatelessWidget {
     }
 
     return Container(
-      width: 140,
-      height: 140,
+      width: 160,
+      height: 160,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(
           colors: [
-            gradientColors[0].withOpacity(0.15),
-            gradientColors[1].withOpacity(0.15),
+            gradientColors[0].withOpacity(0.12),
+            gradientColors[1].withOpacity(0.12),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors[0].withOpacity(0.1),
+            blurRadius: 30,
+            offset: Offset(0, 10),
+          ),
+        ],
       ),
       child: Center(
         child: Container(
-          width: 100,
-          height: 100,
+          width: 110,
+          height: 110,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
@@ -114,10 +164,17 @@ class FriendsEmptyState extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: gradientColors[0].withOpacity(0.3),
+                blurRadius: 20,
+                offset: Offset(0, 8),
+              ),
+            ],
           ),
           child: Icon(
             iconData,
-            size: 50,
+            size: 56,
             color: Colors.white,
           ),
         ),
@@ -126,7 +183,7 @@ class FriendsEmptyState extends StatelessWidget {
   }
 
   String _getTitle() {
-    switch (type) {
+    switch (widget.type) {
       case FriendsEmptyStateType.noSearchResults:
         return 'No Golfers Found';
       case FriendsEmptyStateType.noFriendRequests:
@@ -137,7 +194,7 @@ class FriendsEmptyState extends StatelessWidget {
   }
 
   String _getDescription() {
-    switch (type) {
+    switch (widget.type) {
       case FriendsEmptyStateType.noSearchResults:
         return 'Try searching with a different name or check your spelling. You can also browse golfers at your club!';
       case FriendsEmptyStateType.noFriendRequests:
@@ -148,9 +205,9 @@ class FriendsEmptyState extends StatelessWidget {
   }
 
   String _getActionLabel() {
-    switch (type) {
+    switch (widget.type) {
       case FriendsEmptyStateType.noSearchResults:
-        return 'Browse All Golfers';
+        return 'Clear Search';
       case FriendsEmptyStateType.noFriendRequests:
         return 'Find Golfers';
       case FriendsEmptyStateType.noFriends:

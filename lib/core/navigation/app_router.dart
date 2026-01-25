@@ -19,7 +19,6 @@ import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
-import '/main_function/golfers/golfers_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
 import '/main_function/success_leave/success_leave_widget.dart';
@@ -172,18 +171,21 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         GoRoute(
-          name: GolfersWidget.routeName,
-          path: GolfersWidget.routePath,
+          name: 'Golfers',
+          path: '/golfers',
           redirect: _buildRedirect(appStateNotifier),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
             appStateNotifier,
             _isEmptyStateParams(state)
-                ? NavBarPage(initialPage: 'Golfers')
+                ? NavBarPage(
+                    initialPage: 'Golfers',
+                    page: TabFriendsWidget(),
+                  )
                 : NavBarPage(
                     initialPage: 'Golfers',
-                    page: GolfersWidget(),
+                    page: TabFriendsWidget(),
                   ),
           ),
         ),
@@ -450,10 +452,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             state,
             appStateNotifier,
             _isEmptyStateParams(state)
-                ? NavBarPage(initialPage: 'Golfers')
+                ? NavBarPage(
+                    initialPage: 'Golfers',
+                    page: TabFriendsWidget(),
+                  )
                 : NavBarPage(
                     initialPage: 'Golfers',
-                    page: GolfersWidget(),
+                    page: TabFriendsWidget(),
                   ),
           ),
         ),

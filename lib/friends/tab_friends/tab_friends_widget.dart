@@ -23,6 +23,7 @@ import '/friends/components/empty_state.dart';
 import '/friends/components/friend_section_header.dart';
 import '/friends/components/grouped_friends_list.dart';
 import '/friends/components/friend_filter_bottom_sheet.dart';
+import '/friends/components/friend_card_skeleton.dart';
 
 class TabFriendsWidget extends StatefulWidget {
   const TabFriendsWidget({super.key});
@@ -250,6 +251,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
             borderRadius: 30.0,
             borderWidth: 1.0,
             buttonSize: 55.0,
+            tooltip: 'Back',
             icon: Icon(
               Icons.arrow_back_sharp,
               color: AppTheme.of(context).primary,
@@ -278,54 +280,71 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
               Expanded(
                 child: Column(
                   children: [
-                    Align(
-                      alignment: Alignment(-1.0, 0),
-                      child: AppButtonTabBar(
-                        useToggleButtonStyle: false,
-                        labelStyle: AppTypography.labelLarge,
-                        unselectedLabelStyle: TextStyle(),
-                        labelColor: AppTheme.of(context).primaryBtnText,
-                        unselectedLabelColor:
-                            AppTheme.of(context).secondaryText,
-                        backgroundColor: AppTheme.of(context).primary,
-                        unselectedBackgroundColor:
-                            AppTheme.of(context).alternate,
-                        borderColor: AppTheme.of(context).primary,
-                        unselectedBorderColor:
-                            AppTheme.of(context).alternate,
-                        borderWidth: 2.0,
-                        borderRadius: 8.0,
-                        elevation: 0.0,
-                        labelPadding: EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm),
-                        buttonMargin:
-                            EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                        padding: AppSpacing.allXxs,
-                        tabs: [
-                          Tab(
-                            text: 'Search',
-                          ),
-                          Tab(
-                            text: 'Requests',
-                          ),
-                          Tab(
-                            text: 'Friends',
+                    // Enhanced tab bar with shadow
+                    Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.fairway.withOpacity(0.08),
+                            blurRadius: 12,
+                            offset: Offset(0, 4),
                           ),
                         ],
-                        controller: tabBarController,
-                        onTap: (i) async {
-                          [
-                            () async {},
-                            () async {
-                              friendList = [];
-                              if (mounted) setState(() {});
-                            },
-                            () async {
-                              friendList = [];
-                              if (mounted) setState(() {});
-                            }
-                          ][i]();
-                        },
+                      ),
+                      child: Align(
+                        alignment: Alignment(-1.0, 0),
+                        child: AppButtonTabBar(
+                          useToggleButtonStyle: false,
+                          labelStyle: AppTypography.labelLarge.copyWith(
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.3,
+                          ),
+                          unselectedLabelStyle: AppTypography.labelLarge.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                          labelColor: AppTheme.of(context).primaryBtnText,
+                          unselectedLabelColor:
+                              AppTheme.of(context).secondaryText,
+                          backgroundColor: AppTheme.of(context).primary,
+                          unselectedBackgroundColor:
+                              AppTheme.of(context).alternate,
+                          borderColor: AppTheme.of(context).primary,
+                          unselectedBorderColor:
+                              AppTheme.of(context).alternate,
+                          borderWidth: 2.0,
+                          borderRadius: 10.0,
+                          elevation: 0.0,
+                          labelPadding: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md),
+                          buttonMargin:
+                              EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                          padding: EdgeInsets.all(AppSpacing.xxs),
+                          tabs: [
+                            Tab(
+                              text: 'Search',
+                            ),
+                            Tab(
+                              text: 'Requests',
+                            ),
+                            Tab(
+                              text: 'Friends',
+                            ),
+                          ],
+                          controller: tabBarController,
+                          onTap: (i) async {
+                            [
+                              () async {},
+                              () async {
+                                friendList = [];
+                                if (mounted) setState(() {});
+                              },
+                              () async {
+                                friendList = [];
+                                if (mounted) setState(() {});
+                              }
+                            ][i]();
+                          },
+                        ),
                       ),
                     ),
                     Expanded(
@@ -336,16 +355,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                             builder: (context) => Container(
                               width: double.infinity,
                               height: double.infinity,
-                              decoration: BoxDecoration(
-                                color: AppTheme.of(context)
-                                    .secondaryBackground,
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: Image.asset(
-                                    'assets/images/igdownloader.com_2980395830822133751.jpg',
-                                  ).image,
-                                ),
-                              ),
                               child: RefreshIndicator(
                                 onRefresh: _refreshSearchTab,
                                 color: AppColors.fairway,
@@ -359,9 +368,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                       Padding(
                                         padding: EdgeInsets.only(
                                             left: AppSpacing.md,
-                                            top: AppSpacing.xs,
+                                            top: AppSpacing.md,
                                             right: AppSpacing.md,
-                                            bottom: AppSpacing.sm),
+                                            bottom: AppSpacing.md),
                                         child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
@@ -647,6 +656,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                               fillColor: friendFilters.hasActiveFilters
                                                   ? AppColors.fairway.withOpacity(0.1)
                                                   : Colors.transparent,
+                                              tooltip: 'Filters',
                                               icon: Icon(
                                                 Icons.tune_rounded,
                                                 color: friendFilters.hasActiveFilters
@@ -666,6 +676,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                               borderRadius: 30.0,
                                               borderWidth: 1.0,
                                               buttonSize: 44.0,
+                                              tooltip: 'Clear search',
                                               icon: Icon(
                                                 Icons.clear_sharp,
                                                 color:
@@ -688,11 +699,14 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                     ),
                                     Padding(
                                       padding: EdgeInsets.only(
-                                          left: AppSpacing.xl),
+                                          left: AppSpacing.lg,
+                                          bottom: AppSpacing.xs),
                                       child: Text(
-                                        'Add a Friend Request',
+                                        'Search Results',
                                         style: AppTypography.labelMedium.copyWith(
                                           color: AppTheme.of(context).primaryBtnText,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.8,
                                         ),
                                       ),
                                     ),
@@ -708,22 +722,23 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                         return queryUsersRecord(
                                           queryBuilder: (usersRecord) =>
                                               usersRecord
-                                                  .orderBy('display_name')
-                                                  .startAt([term]).endAt(
-                                                      ['${term}\uf8ff']).limit(25),
+                                                  .orderBy('display_name_lower')
+                                                  .startAt([term])
+                                                  .endAt(['${term}\uf8ff'])
+                                                  .limit(25),
                                         );
                                       })(),
                                       builder: (context, snapshot) {
-                                        // Customize what your widget looks like when it's loading.
+                                        // Skeleton loading state
                                         if (!snapshot.hasData) {
-                                          return Center(
-                                            child: SizedBox(
-                                              width: 50.0,
-                                              height: 50.0,
-                                              child: SpinKitWanderingCubes(
-                                                color: AppTheme.of(context).secondary,
-                                                size: 50.0,
-                                              ),
+                                          return Padding(
+                                            padding: EdgeInsets.only(top: AppSpacing.md),
+                                            child: Column(
+                                              children: [
+                                                FriendCardSkeleton(),
+                                                FriendCardSkeleton(),
+                                                FriendCardSkeleton(),
+                                              ],
                                             ),
                                           );
                                         }
@@ -774,9 +789,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                         return ListView.separated(
                                           padding: EdgeInsets.fromLTRB(
                                             0,
-                                            AppSpacing.sm,
+                                            AppSpacing.xs,
                                             0,
-                                            44.0,
+                                            AppSpacing.xxl,
                                           ),
                                           primary: false,
                                           shrinkWrap: true,
@@ -784,7 +799,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                           itemCount:
                                               listViewUsersRecordList.length,
                                           separatorBuilder: (_, __) =>
-                                              SizedBox(height: AppSpacing.xxs),
+                                              SizedBox(height: 0),
                                           itemBuilder:
                                               (context, listViewIndex) {
                                             final listViewUsersRecord =
@@ -800,18 +815,22 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                         .contains(
                                                   listViewUsersRecord.reference,
                                                 );
-                                                final hasPending =
+                                                final isOutgoingPending =
                                                     listViewUsersRecord
                                                         .friendRequests
                                                         .contains(
-                                                            currentUserReference) ||
-                                                        (currentUserDocument
+                                                            currentUserReference);
+                                                final isIncomingPending =
+                                                    (currentUserDocument
                                                                 ?.friendRequests
                                                                 .toList() ??
                                                             [])
-                                                            .contains(
+                                                        .contains(
                                                   listViewUsersRecord.reference,
                                                 );
+                                                final hasPending =
+                                                    isOutgoingPending ||
+                                                        isIncomingPending;
 
                                                 String actionLabel;
                                                 IconData actionIcon;
@@ -822,8 +841,12 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                   actionIcon = Icons.people_rounded;
                                                   showActionButton = true;
                                                 } else if (hasPending) {
-                                                  actionLabel = 'Pending';
-                                                  actionIcon = Icons.pending_rounded;
+                                                  actionLabel = isOutgoingPending
+                                                      ? 'Cancel'
+                                                      : 'Pending';
+                                                  actionIcon = isOutgoingPending
+                                                      ? Icons.close_rounded
+                                                      : Icons.pending_rounded;
                                                   showActionButton = true;
                                                 } else {
                                                   actionLabel = 'Add';
@@ -833,6 +856,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
 
                                                 return PremiumFriendCard(
                                                   user: listViewUsersRecord,
+                                                  currentUser: currentUserDocument,
                                                   onViewProfile: () {
                                                     context.pushNamed(
                                                       'ProfileUser',
@@ -847,9 +871,115 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                     await _openDirectChat(
                                                         listViewUsersRecord);
                                                   },
-                                                  onAction: isFriend || hasPending
+                                                  onAction: isFriend
                                                       ? null
-                                                      : () async {
+                                                      : hasPending
+                                                          ? (isOutgoingPending
+                                                              ? () async {
+                                                                  try {
+                                                                    await context
+                                                                        .read<UserProvider>()
+                                                                        .cancelFriendRequest(
+                                                                      listViewUsersRecord
+                                                                          .reference,
+                                                                    );
+                                                                    if (mounted) {
+                                                                      setState(
+                                                                          () {});
+                                                                    }
+                                                                    if (!mounted) {
+                                                                      return;
+                                                                    }
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .clearSnackBars();
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .showSnackBar(
+                                                                      SnackBar(
+                                                                        content: Text(
+                                                                          'Request cancelled.',
+                                                                          style: AppTheme.of(context)
+                                                                              .titleMedium
+                                                                              .override(
+                                                                                font: GoogleFonts
+                                                                                    .outfit(
+                                                                                  fontWeight: AppTheme.of(context)
+                                                                                      .titleMedium
+                                                                                      .fontWeight,
+                                                                                  fontStyle: AppTheme.of(context)
+                                                                                      .titleMedium
+                                                                                      .fontStyle,
+                                                                                ),
+                                                                                color: AppTheme.of(context)
+                                                                                    .primaryBtnText,
+                                                                                letterSpacing:
+                                                                                    0.0,
+                                                                                fontWeight: AppTheme.of(context)
+                                                                                    .titleMedium
+                                                                                    .fontWeight,
+                                                                                fontStyle: AppTheme.of(context)
+                                                                                    .titleMedium
+                                                                                    .fontStyle,
+                                                                              ),
+                                                                        ),
+                                                                        duration: Duration(
+                                                                            milliseconds:
+                                                                                1500),
+                                                                        backgroundColor:
+                                                                            AppTheme.of(context)
+                                                                                .primary,
+                                                                      ),
+                                                                    );
+                                                                  } catch (_) {
+                                                                    if (!mounted) {
+                                                                      return;
+                                                                    }
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .clearSnackBars();
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .showSnackBar(
+                                                                      SnackBar(
+                                                                        content: Text(
+                                                                          'Unable to cancel request.',
+                                                                          style: AppTheme.of(context)
+                                                                              .titleMedium
+                                                                              .override(
+                                                                                font: GoogleFonts
+                                                                                    .outfit(
+                                                                                  fontWeight: AppTheme.of(context)
+                                                                                      .titleMedium
+                                                                                      .fontWeight,
+                                                                                  fontStyle: AppTheme.of(context)
+                                                                                      .titleMedium
+                                                                                      .fontStyle,
+                                                                                ),
+                                                                                color: AppTheme.of(context)
+                                                                                    .primaryBtnText,
+                                                                                letterSpacing:
+                                                                                    0.0,
+                                                                                fontWeight: AppTheme.of(context)
+                                                                                    .titleMedium
+                                                                                    .fontWeight,
+                                                                                fontStyle: AppTheme.of(context)
+                                                                                    .titleMedium
+                                                                                    .fontStyle,
+                                                                              ),
+                                                                        ),
+                                                                        duration: Duration(
+                                                                            milliseconds:
+                                                                                1500),
+                                                                        backgroundColor:
+                                                                            AppTheme.of(context)
+                                                                                .error,
+                                                                      ),
+                                                                    );
+                                                                  }
+                                                                }
+                                                              : null)
+                                                          : () async {
                                                           try {
                                                             await context
                                                                 .read<
@@ -994,16 +1124,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                 minWidth: double.infinity,
                                 minHeight: double.infinity,
                               ),
-                              decoration: BoxDecoration(
-                                color: AppTheme.of(context)
-                                    .secondaryBackground,
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: Image.asset(
-                                    'assets/images/igdownloader.com_2980395830822133751.jpg',
-                                  ).image,
-                                ),
-                              ),
                               child: RefreshIndicator(
                                 onRefresh: _refreshRequestsTab,
                                 color: AppColors.fairway,
@@ -1042,16 +1162,16 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                           return ListView.separated(
                                             padding: EdgeInsets.fromLTRB(
                                               0,
-                                              12.0,
+                                              AppSpacing.md,
                                               0,
-                                              44.0,
+                                              AppSpacing.xxl,
                                             ),
                                             primary: false,
                                             shrinkWrap: true,
                                             scrollDirection: Axis.vertical,
                                             itemCount: friendRequestList.length,
                                             separatorBuilder: (_, __) =>
-                                                SizedBox(height: AppSpacing.xxs),
+                                                SizedBox(height: 0),
                                             itemBuilder: (context,
                                                 friendRequestListIndex) {
                                               final friendRequestListItem =
@@ -1063,18 +1183,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                         friendRequestListItem),
                                                 builder: (context, snapshot) {
                                                   if (!snapshot.hasData) {
-                                                    return Center(
-                                                      child: SizedBox(
-                                                        width: 50.0,
-                                                        height: 50.0,
-                                                        child:
-                                                            SpinKitWanderingCubes(
-                                                          color: Color(
-                                                              0xFF25504F),
-                                                          size: 50.0,
-                                                        ),
-                                                      ),
-                                                    );
+                                                    return FriendCardSkeleton();
                                                   }
 
                                                   final userList5UsersRecord =
@@ -1082,6 +1191,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
 
                                                   return PremiumFriendCard(
                                                     user: userList5UsersRecord,
+                                                    currentUser: currentUserDocument,
                                                     onViewProfile: () {
                                                       context.pushNamed(
                                                         'ProfileUser',
@@ -1095,59 +1205,19 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                     },
                                                     onMessage: () async {
                                                       // Accept button
-                                                      print(
-                                                        'Accept request: current=${currentUserReference?.path} requester=${userList5UsersRecord.reference.path}',
-                                                      );
-                                                      final userRef = currentUserReference;
-                                                      if (userRef == null) {
-                                                        print('Error: currentUserReference is null');
-                                                        return;
-                                                      }
-                                                      await FirebaseFirestore
-                                                          .instance
-                                                          .runTransaction(
-                                                              (transaction) async {
-                                                        transaction.update(
-                                                          userRef,
-                                                          {
-                                                            ...mapToFirestore(
-                                                              {
-                                                                'friends':
-                                                                    FieldValue
-                                                                        .arrayUnion([
-                                                                  userList5UsersRecord
-                                                                      .reference
-                                                                ]),
-                                                                'friend_requests':
-                                                                    FieldValue
-                                                                        .arrayRemove([
-                                                                  userList5UsersRecord
-                                                                      .reference,
-                                                                  userList5UsersRecord
-                                                                      .reference
-                                                                      .id
-                                                                ]),
-                                                              },
-                                                            ),
-                                                          },
-                                                        );
-                                                        transaction.update(
-                                                          userList5UsersRecord
-                                                              .reference,
-                                                          {
-                                                            ...mapToFirestore(
-                                                              {
-                                                                'friends':
-                                                                    FieldValue
-                                                                        .arrayUnion([
-                                                                  currentUserReference
-                                                                ]),
-                                                              },
-                                                            ),
-                                                          },
-                                                        );
-                                                      });
-                                                      if (mounted) {
+                                                      try {
+                                                        await context
+                                                            .read<UserProvider>()
+                                                            .acceptFriendRequest(
+                                                              userList5UsersRecord
+                                                                  .reference,
+                                                            );
+                                                        if (mounted) {
+                                                          setState(() {});
+                                                        }
+                                                        if (!mounted) {
+                                                          return;
+                                                        }
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(
@@ -1193,6 +1263,14 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                     .primary,
                                                           ),
                                                         );
+                                                      } catch (e) {
+                                                        if (!mounted) {
+                                                          return;
+                                                        }
+                                                        showSnackbar(
+                                                          context,
+                                                          'Unable to accept request. Please try again.',
+                                                        );
                                                       }
                                                     },
                                                     onAction: () async {
@@ -1204,6 +1282,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                               userList5UsersRecord
                                                                   .reference,
                                                             );
+                                                        if (mounted) {
+                                                          setState(() {});
+                                                        }
                                                         if (mounted) {
                                                           ScaffoldMessenger.of(
                                                                   context)
@@ -1288,16 +1369,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                 minWidth: double.infinity,
                                 minHeight: double.infinity,
                               ),
-                              decoration: BoxDecoration(
-                                color: AppTheme.of(context)
-                                    .secondaryBackground,
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: Image.asset(
-                                    'assets/images/igdownloader.com_2980395830822133751.jpg',
-                                  ).image,
-                                ),
-                              ),
                               child: SingleChildScrollView(
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -1328,6 +1399,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                             favoriteFriends: favoriteFriends,
                                             currentUserHomeCourse:
                                                 currentUserDocument?.homeCourse,
+                                            currentUser: currentUserDocument,
                                             onToggleFavorite: toggleFavorite,
                                             onViewProfile: (user) {
                                               context.pushNamed(
@@ -1411,6 +1483,7 @@ OLD CODE BELOW - KEEPING FOR REFERENCE
 
                                                   return PremiumFriendCard(
                                                     user: userList5UsersRecord,
+                                                    currentUser: currentUserDocument,
                                                     onViewProfile: () {
                                                       context.pushNamed(
                                                         'ProfileUser',

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '/backend/backend.dart';
 import '/models/chat.dart';
-import '/providers/chat_provider.dart';
+import '/providers/profile_provider.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_text.dart';
 
@@ -47,13 +48,15 @@ class ChatHeaderTitle extends StatelessWidget {
         orElse: () => memberIds.first,
       );
 
-      return FutureBuilder<Map<String, dynamic>>(
-        future: context.read<ChatProvider>().getUserProfile(otherUserId),
+      return FutureBuilder<UsersRecord?>(
+        future: context.read<ProfileProvider>().getProfile(otherUserId),
         builder: (context, snapshot) {
-          final otherData = snapshot.data ?? <String, dynamic>{};
+          final otherData = snapshot.data;
           final displayName =
-              (otherData['display_name'] as String?) ?? 'Golfer';
-          final photoUrl = otherData['photo_url'] as String?;
+              (otherData?.displayName ?? '').trim().isNotEmpty
+                  ? otherData!.displayName
+                  : 'Golfer';
+          final photoUrl = otherData?.photoUrl;
 
           return Row(
             mainAxisSize: MainAxisSize.min,

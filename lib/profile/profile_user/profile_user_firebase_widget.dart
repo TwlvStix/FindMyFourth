@@ -1140,6 +1140,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                     borderRadius: 12.0,
                     borderWidth: 0,
                     buttonSize: 44.0,
+                    tooltip: 'Back',
                     icon: Icon(
                       Icons.arrow_back_rounded,
                       color: Colors.white,

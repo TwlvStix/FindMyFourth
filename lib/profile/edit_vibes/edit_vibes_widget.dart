@@ -168,6 +168,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
           borderRadius: 30.0,
           borderWidth: 1.0,
           buttonSize: 60.0,
+          tooltip: 'Back',
           icon: Icon(
             Icons.arrow_back_rounded,
             color: AppTheme.of(context).primary,

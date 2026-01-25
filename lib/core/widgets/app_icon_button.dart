@@ -15,6 +15,7 @@ class AppIconButton extends StatefulWidget {
     this.hoverColor,
     this.hoverIconColor,
     this.hoverBorderColor,
+    this.tooltip,
     this.onPressed,
     this.showLoadingIndicator = false,
     this.focusBorderSide,
@@ -30,6 +31,7 @@ class AppIconButton extends StatefulWidget {
   final Color? hoverColor;
   final Color? hoverIconColor;
   final Color? hoverBorderColor;
+  final String? tooltip;
   final Color? borderColor;
   final double? borderWidth;
   final bool showLoadingIndicator;
@@ -170,6 +172,7 @@ class _AppIconButtonState extends State<AppIconButton> {
                     ),
                   )
                 : effectiveIcon,
+            tooltip: widget.tooltip,
             onPressed: widget.onPressed == null
                 ? null
                 : () async {

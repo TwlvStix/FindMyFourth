@@ -137,6 +137,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             borderRadius: 12.0,
                             borderWidth: 0,
                             buttonSize: 44.0,
+                            tooltip: 'Notifications',
                             icon: Icon(
                               Icons.notifications_none_rounded,
                               color: Colors.white,

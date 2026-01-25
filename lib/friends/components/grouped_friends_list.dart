@@ -12,6 +12,7 @@ class GroupedFriendsList extends StatefulWidget {
   final List<DocumentReference> friendRefs;
   final Set<String> favoriteFriends;
   final String? currentUserHomeCourse;
+  final UsersRecord? currentUser; // For vibe matching
   final Function(String) onToggleFavorite;
   final Function(UsersRecord) onViewProfile;
   final Function(UsersRecord) onMessage;
@@ -22,6 +23,7 @@ class GroupedFriendsList extends StatefulWidget {
     required this.friendRefs,
     required this.favoriteFriends,
     this.currentUserHomeCourse,
+    this.currentUser,
     required this.onToggleFavorite,
     required this.onViewProfile,
     required this.onMessage,
@@ -85,7 +87,10 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
           backgroundColor: Colors.white,
           child: ListView(
             physics: AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.only(bottom: 44.0),
+            padding: EdgeInsets.only(
+              top: AppSpacing.sm,
+              bottom: AppSpacing.xxl,
+            ),
             children: [
             // Favorites Section
             if (favorites.isNotEmpty) ...[
@@ -167,6 +172,7 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
       swipeLeftColor: AppColors.stone,
       child: PremiumFriendCard(
         user: friend,
+        currentUser: widget.currentUser,
         onViewProfile: () => widget.onViewProfile(friend),
         onMessage: () => widget.onMessage(friend),
         onAction: () => widget.onRemove(friend),
