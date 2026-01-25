@@ -173,168 +173,264 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
     return TimeOfDay(hour: hour, minute: minute);
   }
 
+  Widget _buildPremiumPanel(
+    BuildContext context, {
+    String? title,
+    required List<Widget> children,
+  }) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.fairway.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1.0,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (title != null) ...[
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.sm,
+              ),
+              child: Text(
+                title,
+                style: AppTypography.titleSmall.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Divider(
+              color: Colors.white.withValues(alpha: 0.1),
+              height: 1,
+              thickness: 1,
+            ),
+          ],
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPremiumRow(
+    BuildContext context, {
+    required String title,
+    String? subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTypography.bodyLarge.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          SizedBox(width: AppSpacing.sm),
+          Switch.adaptive(
+            value: value,
+            onChanged: onChanged,
+            thumbColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
+                return Colors.white;
+              }
+              return null;
+            }),
+            trackColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
+                return AppColors.fairway;
+              }
+              return null;
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeRow(
+    BuildContext context, {
+    required String label,
+    required String time,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.md,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Text(
+              time,
+              style: AppTypography.bodyMedium.copyWith(
+                color: Colors.white.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(width: AppSpacing.xs),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.white.withValues(alpha: 0.5),
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: AppTheme.of(context).primaryBackground,
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: AppTheme.of(context).primaryBackground,
+        backgroundColor: Colors.transparent,
         automaticallyImplyLeading: false,
-        leading: AppIconButton(
-          borderColor: Colors.transparent,
-          borderRadius: 30.0,
-          buttonSize: 46.0,
-          tooltip: 'Back',
-          icon: Icon(
-            Icons.arrow_back_rounded,
-            color: AppTheme.of(context).primaryBtnText,
-            size: 25.0,
-          ),
-          onPressed: () async {
+        elevation: 0.0,
+        leading: GestureDetector(
+          onTap: () async {
             context.pop();
           },
+          child: Container(
+            margin: EdgeInsets.only(left: AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: AppColors.fairway.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12.0),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
+              ),
+            ),
+            child: Icon(
+              Icons.chevron_left_rounded,
+              color: Colors.white,
+              size: 28.0,
+            ),
+          ),
         ),
         title: Text(
           'Notification Settings',
-          style: AppTheme.of(context).headlineSmall.override(
-                font: GoogleFonts.outfit(
-                  fontWeight:
-                      AppTheme.of(context).headlineSmall.fontWeight,
-                  fontStyle:
-                      AppTheme.of(context).headlineSmall.fontStyle,
-                ),
-                letterSpacing: 0.0,
-                color: AppTheme.of(context).primaryBtnText,
-                fontWeight:
-                    AppTheme.of(context).headlineSmall.fontWeight,
-                fontStyle:
-                    AppTheme.of(context).headlineSmall.fontStyle,
-              ),
+          style: AppTypography.headlineMedium.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         actions: [],
         centerTitle: false,
-        elevation: 0.0,
       ),
       body: FairwayBackgroundDark(
         showOrganic: true,
         showTexture: true,
-        child: StreamBuilder<UsersRecord>(
-          stream: currentUserReference == null
-              ? null
-              : UsersRecord.getDocument(currentUserReference!),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
+        child: SafeArea(
+          child: StreamBuilder<UsersRecord>(
+            stream: currentUserReference == null
+                ? null
+                : UsersRecord.getDocument(currentUserReference!),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-            final data = snapshot.data!;
-            if (!_initialized) {
-              final prefsMap = data.snapshotData['notification_prefs'];
-              _prefs = NotificationPreferences.fromMap(
-                prefsMap is Map ? Map<String, dynamic>.from(prefsMap) : null,
-              );
-              _ensureControllers();
-              _initialized = true;
-            }
+              final data = snapshot.data!;
+              if (!_initialized) {
+                final prefsMap = data.snapshotData['notification_prefs'];
+                _prefs = NotificationPreferences.fromMap(
+                  prefsMap is Map ? Map<String, dynamic>.from(prefsMap) : null,
+                );
+                _ensureControllers();
+                _initialized = true;
+              }
 
-            return ListView(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.md,
-                AppSpacing.lg,
-                AppSpacing.xxxl,
-              ),
-              children: [
+              return ListView(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  AppSpacing.xxxl,
+                ),
+                children: [
                 Text(
                   'Manage push alerts and in-app notifications.',
-                  style: AppTheme.of(context).labelMedium.override(
-                        font: GoogleFonts.outfit(
-                          fontWeight: AppTheme.of(context)
-                              .labelMedium
-                              .fontWeight,
-                          fontStyle: AppTheme.of(context)
-                              .labelMedium
-                              .fontStyle,
-                        ),
-                        letterSpacing: 0.0,
-                        fontWeight: AppTheme.of(context)
-                            .labelMedium
-                            .fontWeight,
-                        fontStyle: AppTheme.of(context)
-                            .labelMedium
-                            .fontStyle,
-                      ),
+                  style: AppTypography.labelMedium.copyWith(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    letterSpacing: 0.0,
+                  ),
                 ),
-                SizedBox(height: AppSpacing.md),
-                SwitchListTile.adaptive(
-                  value: _prefs.pushEnabled,
-                  onChanged: (value) async {
-                    if (value) {
-                      final granted = await _ensureNotificationPermission();
-                      if (!granted) {
-                        return;
-                      }
-                    }
-                    setState(() {
-                      _prefs = _prefs.copyWith(pushEnabled: value);
-                      if (!value) {
-                        _permissionDenied = false;
-                      }
-                    });
-                  },
-                  title: Text(
-                    'Push notifications',
-                    style: AppTheme.of(context).bodyLarge.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyLarge
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyLarge
-                                .fontStyle,
-                          ),
-                          letterSpacing: 0.0,
-                          fontWeight:
-                              AppTheme.of(context).bodyLarge.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyLarge.fontStyle,
-                        ),
-                  ),
-                  subtitle: Text(
-                    'Allow alerts for games and chats.',
-                    style: AppTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyMedium
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyMedium
-                                .fontStyle,
-                          ),
-                          color: const Color(0xFF8B97A2),
-                          letterSpacing: 0.0,
-                          fontWeight: AppTheme.of(context)
-                              .bodyMedium
-                              .fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyMedium.fontStyle,
-                        ),
-                  ),
-                  tileColor: AppTheme.of(context).secondaryBackground,
-                  activeColor: AppTheme.of(context).primary,
-                  activeTrackColor: AppTheme.of(context).accent1,
-                  contentPadding: AppSpacing.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
+                SizedBox(height: AppSpacing.lg),
+
+                // PUSH NOTIFICATIONS PANEL
+                _buildPremiumPanel(
+                  context,
+                  children: [
+                    _buildPremiumRow(
+                      context,
+                      title: 'Push notifications',
+                      subtitle: 'Allow alerts for games and chats',
+                      value: _prefs.pushEnabled,
+                      onChanged: (value) async {
+                        if (value) {
+                          final granted = await _ensureNotificationPermission();
+                          if (!granted) {
+                            return;
+                          }
+                        }
+                        setState(() {
+                          _prefs = _prefs.copyWith(pushEnabled: value);
+                          if (!value) {
+                            _permissionDenied = false;
+                          }
+                        });
+                      },
+                    ),
+                  ],
                 ),
                 if (_permissionDenied) ...[
+                  SizedBox(height: AppSpacing.xs),
                   Padding(
-                    padding: EdgeInsets.only(
-                      left: AppSpacing.sm,
-                      top: AppSpacing.xs,
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                     child: Text(
                       'Push permissions are off in system settings.',
                       style: AppTypography.bodySmall.copyWith(
@@ -344,387 +440,283 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   ),
                 ],
                 SizedBox(height: AppSpacing.lg),
-                Text(
-                  'Game alerts',
-                  style: AppTypography.titleSmall.copyWith(
-                    color: AppColors.onyx,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.xs),
-                SwitchListTile.adaptive(
-                  value: _prefs.gameAlerts.enabled,
-                  onChanged: (value) {
-                    setState(() {
-                      _prefs = _prefs.copyWith(
-                        gameAlerts: _prefs.gameAlerts.copyWith(enabled: value),
-                      );
-                    });
-                  },
-                  title: Text(
-                    'Enable game alerts',
-                    style: AppTheme.of(context).bodyLarge.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyLarge
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyLarge
-                                .fontStyle,
+
+                // GAME ALERTS PANEL
+                _buildPremiumPanel(
+                  context,
+                  title: 'Game alerts',
+                  children: [
+                    _buildPremiumRow(
+                      context,
+                      title: 'Enable game alerts',
+                      value: _prefs.gameAlerts.enabled,
+                      onChanged: (value) {
+                        setState(() {
+                          _prefs = _prefs.copyWith(
+                            gameAlerts: _prefs.gameAlerts.copyWith(enabled: value),
+                          );
+                        });
+                      },
+                    ),
+                    Divider(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      height: 1,
+                      thickness: 1,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(AppSpacing.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Alert types',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                          letterSpacing: 0.0,
-                          fontWeight:
-                              AppTheme.of(context).bodyLarge.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyLarge.fontStyle,
-                        ),
-                  ),
-                  tileColor: AppTheme.of(context).secondaryBackground,
-                  activeColor: AppTheme.of(context).primary,
-                  activeTrackColor: AppTheme.of(context).accent1,
-                  contentPadding: AppSpacing.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.sm),
-                AppChoiceChips(
-                  options: _gameStyleOptions
-                      .map((option) => ChipData(option.label))
-                      .toList(),
-                  onChanged: (labels) {
-                    final values =
-                        _valuesForLabels(_gameStyleOptions, labels ?? []);
-                    setState(() {
-                      _prefs = _prefs.copyWith(
-                        gameAlerts:
-                            _prefs.gameAlerts.copyWith(styles: values),
-                      );
-                    });
-                  },
-                  controller: _gameStyleController!,
-                  selectedChipStyle: ChipStyle(
-                    backgroundColor: AppTheme.of(context).primary,
-                    textStyle: AppTypography.labelSmall.copyWith(
-                      color: AppColors.pure,
-                      letterSpacing: AppTypography.letterSpacingNormal,
+                          SizedBox(height: AppSpacing.sm),
+                          AppChoiceChips(
+                            options: _gameStyleOptions
+                                .map((option) => ChipData(option.label))
+                                .toList(),
+                            onChanged: (labels) {
+                              final values =
+                                  _valuesForLabels(_gameStyleOptions, labels ?? []);
+                              setState(() {
+                                _prefs = _prefs.copyWith(
+                                  gameAlerts:
+                                      _prefs.gameAlerts.copyWith(styles: values),
+                                );
+                              });
+                            },
+                            controller: _gameStyleController!,
+                            selectedChipStyle: ChipStyle(
+                              backgroundColor: AppColors.fairway,
+                              textStyle: AppTypography.labelSmall.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: AppTypography.letterSpacingNormal,
+                              ),
+                              borderColor: AppColors.fairway,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            unselectedChipStyle: ChipStyle(
+                              backgroundColor: Colors.white.withValues(alpha: 0.1),
+                              textStyle: AppTypography.labelSmall.copyWith(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                letterSpacing: AppTypography.letterSpacingNormal,
+                              ),
+                              borderColor: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            chipSpacing: AppSpacing.sm,
+                            rowSpacing: AppSpacing.xs,
+                            multiselect: true,
+                          ),
+                        ],
+                      ),
                     ),
-                    borderColor: AppTheme.of(context).primary,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  unselectedChipStyle: ChipStyle(
-                    backgroundColor: AppTheme.of(context).secondaryBackground,
-                    textStyle: AppTypography.labelSmall.copyWith(
-                      color: AppColors.stone,
-                      letterSpacing: AppTypography.letterSpacingNormal,
-                    ),
-                    borderColor: AppTheme.of(context).alternate,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  chipSpacing: AppSpacing.sm,
-                  rowSpacing: AppSpacing.xs,
-                  multiselect: true,
+                  ],
                 ),
                 SizedBox(height: AppSpacing.lg),
-                Text(
-                  'Chat alerts',
-                  style: AppTypography.titleSmall.copyWith(
-                    color: AppColors.onyx,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.xs),
-                SwitchListTile.adaptive(
-                  value: _prefs.chatAlerts.enabled,
-                  onChanged: (value) {
-                    setState(() {
-                      _prefs = _prefs.copyWith(
-                        chatAlerts:
-                            _prefs.chatAlerts.copyWith(enabled: value),
-                      );
-                    });
-                  },
-                  title: Text(
-                    'Enable chat alerts',
-                    style: AppTheme.of(context).bodyLarge.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyLarge
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyLarge
-                                .fontStyle,
-                          ),
-                          letterSpacing: 0.0,
-                          fontWeight:
-                              AppTheme.of(context).bodyLarge.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyLarge.fontStyle,
-                        ),
-                  ),
-                  tileColor: AppTheme.of(context).secondaryBackground,
-                  activeColor: AppTheme.of(context).primary,
-                  activeTrackColor: AppTheme.of(context).accent1,
-                  contentPadding: AppSpacing.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                ),
-                SwitchListTile.adaptive(
-                  value: _prefs.chatAlerts.direct,
-                  onChanged: (value) {
-                    setState(() {
-                      _prefs = _prefs.copyWith(
-                        chatAlerts: _prefs.chatAlerts.copyWith(direct: value),
-                      );
-                    });
-                  },
-                  title: Text(
-                    'Direct messages',
-                    style: AppTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyMedium
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyMedium
-                                .fontStyle,
-                          ),
-                          letterSpacing: 0.0,
-                          fontWeight:
-                              AppTheme.of(context).bodyMedium.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyMedium.fontStyle,
-                        ),
-                  ),
-                  tileColor: AppTheme.of(context).secondaryBackground,
-                  activeColor: AppTheme.of(context).primary,
-                  activeTrackColor: AppTheme.of(context).accent1,
-                  contentPadding: AppSpacing.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.xs,
-                  ),
-                ),
-                SwitchListTile.adaptive(
-                  value: _prefs.chatAlerts.group,
-                  onChanged: (value) {
-                    setState(() {
-                      _prefs = _prefs.copyWith(
-                        chatAlerts: _prefs.chatAlerts.copyWith(group: value),
-                      );
-                    });
-                  },
-                  title: Text(
-                    'Group chats',
-                    style: AppTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyMedium
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyMedium
-                                .fontStyle,
-                          ),
-                          letterSpacing: 0.0,
-                          fontWeight:
-                              AppTheme.of(context).bodyMedium.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyMedium.fontStyle,
-                        ),
-                  ),
-                  tileColor: AppTheme.of(context).secondaryBackground,
-                  activeColor: AppTheme.of(context).primary,
-                  activeTrackColor: AppTheme.of(context).accent1,
-                  contentPadding: AppSpacing.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.xs,
-                  ),
+
+                // CHAT ALERTS PANEL
+                _buildPremiumPanel(
+                  context,
+                  title: 'Chat alerts',
+                  children: [
+                    _buildPremiumRow(
+                      context,
+                      title: 'Enable chat alerts',
+                      value: _prefs.chatAlerts.enabled,
+                      onChanged: (value) {
+                        setState(() {
+                          _prefs = _prefs.copyWith(
+                            chatAlerts:
+                                _prefs.chatAlerts.copyWith(enabled: value),
+                          );
+                        });
+                      },
+                    ),
+                    Divider(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      height: 1,
+                      thickness: 1,
+                    ),
+                    _buildPremiumRow(
+                      context,
+                      title: 'Direct messages',
+                      value: _prefs.chatAlerts.direct,
+                      onChanged: (value) {
+                        setState(() {
+                          _prefs = _prefs.copyWith(
+                            chatAlerts: _prefs.chatAlerts.copyWith(direct: value),
+                          );
+                        });
+                      },
+                    ),
+                    Divider(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      height: 1,
+                      thickness: 1,
+                    ),
+                    _buildPremiumRow(
+                      context,
+                      title: 'Group chats',
+                      value: _prefs.chatAlerts.group,
+                      onChanged: (value) {
+                        setState(() {
+                          _prefs = _prefs.copyWith(
+                            chatAlerts: _prefs.chatAlerts.copyWith(group: value),
+                          );
+                        });
+                      },
+                    ),
+                  ],
                 ),
                 SizedBox(height: AppSpacing.lg),
-                Text(
-                  'Quiet hours',
-                  style: AppTypography.titleSmall.copyWith(
-                    color: AppColors.onyx,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.xs),
-                SwitchListTile.adaptive(
-                  value: _prefs.quietHours.enabled,
-                  onChanged: (value) {
-                    setState(() {
-                      _prefs = _prefs.copyWith(
-                        quietHours:
-                            _prefs.quietHours.copyWith(enabled: value),
-                      );
-                    });
-                  },
-                  title: Text(
-                    'Enable quiet hours',
-                    style: AppTheme.of(context).bodyLarge.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyLarge
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyLarge
-                                .fontStyle,
-                          ),
-                          letterSpacing: 0.0,
-                          fontWeight:
-                              AppTheme.of(context).bodyLarge.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyLarge.fontStyle,
-                        ),
-                  ),
-                  tileColor: AppTheme.of(context).secondaryBackground,
-                  activeColor: AppTheme.of(context).primary,
-                  activeTrackColor: AppTheme.of(context).accent1,
-                  contentPadding: AppSpacing.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                ),
-                ListTile(
-                  title: Text(
-                    'Start',
-                    style: AppTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyMedium
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyMedium
-                                .fontStyle,
-                          ),
-                          letterSpacing: 0.0,
-                          fontWeight:
-                              AppTheme.of(context).bodyMedium.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyMedium.fontStyle,
-                        ),
-                  ),
-                  trailing: Text(
-                    _prefs.quietHours.start,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.stone,
+
+                // QUIET HOURS PANEL
+                _buildPremiumPanel(
+                  context,
+                  title: 'Quiet hours',
+                  children: [
+                    _buildPremiumRow(
+                      context,
+                      title: 'Enable quiet hours',
+                      value: _prefs.quietHours.enabled,
+                      onChanged: (value) {
+                        setState(() {
+                          _prefs = _prefs.copyWith(
+                            quietHours:
+                                _prefs.quietHours.copyWith(enabled: value),
+                          );
+                        });
+                      },
                     ),
-                  ),
-                  onTap: () => _pickTime(isStart: true),
-                  contentPadding: AppSpacing.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.xs,
-                  ),
-                ),
-                ListTile(
-                  title: Text(
-                    'End',
-                    style: AppTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyMedium
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyMedium
-                                .fontStyle,
-                          ),
-                          letterSpacing: 0.0,
-                          fontWeight:
-                              AppTheme.of(context).bodyMedium.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyMedium.fontStyle,
-                        ),
-                  ),
-                  trailing: Text(
-                    _prefs.quietHours.end,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.stone,
+                    Divider(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      height: 1,
+                      thickness: 1,
                     ),
-                  ),
-                  onTap: () => _pickTime(isStart: false),
-                  contentPadding: AppSpacing.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.xs,
-                  ),
+                    _buildTimeRow(
+                      context,
+                      label: 'Start',
+                      time: _prefs.quietHours.start,
+                      onTap: () => _pickTime(isStart: true),
+                    ),
+                    Divider(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      height: 1,
+                      thickness: 1,
+                    ),
+                    _buildTimeRow(
+                      context,
+                      label: 'End',
+                      time: _prefs.quietHours.end,
+                      onTap: () => _pickTime(isStart: false),
+                    ),
+                  ],
                 ),
                 SizedBox(height: AppSpacing.lg),
-                Text(
-                  'Digest mode',
-                  style: AppTypography.titleSmall.copyWith(
-                    color: AppColors.onyx,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.xs),
-                AppChoiceChips(
-                  options: _digestOptions
-                      .map((option) => ChipData(option.label))
-                      .toList(),
-                  onChanged: (labels) {
-                    final label =
-                        labels != null && labels.isNotEmpty
-                            ? labels.first
-                            : 'Instant';
-                    final value = _valueForLabel(_digestOptions, label);
-                    setState(() {
-                      _prefs = _prefs.copyWith(digestMode: value);
-                    });
-                  },
-                  controller: _digestController!,
-                  selectedChipStyle: ChipStyle(
-                    backgroundColor: AppTheme.of(context).primary,
-                    textStyle: AppTypography.labelSmall.copyWith(
-                      color: AppColors.pure,
-                      letterSpacing: AppTypography.letterSpacingNormal,
+
+                // DIGEST MODE PANEL
+                _buildPremiumPanel(
+                  context,
+                  title: 'Digest mode',
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(AppSpacing.md),
+                      child: AppChoiceChips(
+                        options: _digestOptions
+                            .map((option) => ChipData(option.label))
+                            .toList(),
+                        onChanged: (labels) {
+                          final label =
+                              labels != null && labels.isNotEmpty
+                                  ? labels.first
+                                  : 'Instant';
+                          final value = _valueForLabel(_digestOptions, label);
+                          setState(() {
+                            _prefs = _prefs.copyWith(digestMode: value);
+                          });
+                        },
+                        controller: _digestController!,
+                        selectedChipStyle: ChipStyle(
+                          backgroundColor: AppColors.fairway,
+                          textStyle: AppTypography.labelSmall.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: AppTypography.letterSpacingNormal,
+                          ),
+                          borderColor: AppColors.fairway,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        unselectedChipStyle: ChipStyle(
+                          backgroundColor: Colors.white.withValues(alpha: 0.1),
+                          textStyle: AppTypography.labelSmall.copyWith(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            letterSpacing: AppTypography.letterSpacingNormal,
+                          ),
+                          borderColor: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        chipSpacing: AppSpacing.sm,
+                        rowSpacing: AppSpacing.xs,
+                        multiselect: false,
+                      ),
                     ),
-                    borderColor: AppTheme.of(context).primary,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  unselectedChipStyle: ChipStyle(
-                    backgroundColor: AppTheme.of(context).secondaryBackground,
-                    textStyle: AppTypography.labelSmall.copyWith(
-                      color: AppColors.stone,
-                      letterSpacing: AppTypography.letterSpacingNormal,
-                    ),
-                    borderColor: AppTheme.of(context).alternate,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  chipSpacing: AppSpacing.sm,
-                  rowSpacing: AppSpacing.xs,
-                  multiselect: false,
+                  ],
                 ),
                 SizedBox(height: AppSpacing.lg),
-                ListTile(
-                  title: Text(
-                    'Muted threads',
-                    style: AppTheme.of(context).bodyLarge.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: AppTheme.of(context)
-                                .bodyLarge
-                                .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .bodyLarge
-                                .fontStyle,
-                          ),
-                          letterSpacing: 0.0,
-                          fontWeight:
-                              AppTheme.of(context).bodyLarge.fontWeight,
-                          fontStyle:
-                              AppTheme.of(context).bodyLarge.fontStyle,
+
+                // MUTED THREADS PANEL
+                _buildPremiumPanel(
+                  context,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        // TODO: Navigate to muted threads management
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.md,
                         ),
-                  ),
-                  subtitle: Text(
-                    '${_prefs.mutedThreads.length} muted',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.stone,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Muted threads',
+                                    style: AppTypography.bodyLarge.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    '${_prefs.mutedThreads.length} muted',
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: Colors.white.withValues(alpha: 0.6),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right,
+                              color: Colors.white.withValues(alpha: 0.5),
+                              size: 24,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                  trailing: Text(
-                    'Manage',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.stone,
-                    ),
-                  ),
-                  contentPadding: AppSpacing.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.xs,
-                  ),
+                  ],
                 ),
                 SizedBox(height: AppSpacing.xl),
                 AppButtonEnhanced(
@@ -736,6 +728,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               ],
             );
           },
+        ),
         ),
       ),
     );

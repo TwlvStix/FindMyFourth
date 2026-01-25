@@ -242,29 +242,37 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppTheme.of(context).alternate,
+        extendBodyBehindAppBar: true,
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
-          backgroundColor: AppTheme.of(context).alternate,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
-          leading: AppIconButton(
-            borderColor: Colors.transparent,
-            borderRadius: 30.0,
-            borderWidth: 1.0,
-            buttonSize: 55.0,
-            tooltip: 'Back',
-            icon: Icon(
-              Icons.arrow_back_sharp,
-              color: AppTheme.of(context).primary,
-              size: 25.0,
-            ),
-            onPressed: () async {
+          elevation: 0.0,
+          leading: GestureDetector(
+            onTap: () async {
               context.pop();
             },
+            child: Container(
+              margin: EdgeInsets.only(left: AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.fairway.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(12.0),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                ),
+              ),
+              child: Icon(
+                Icons.chevron_left_rounded,
+                color: Colors.white,
+                size: 28.0,
+              ),
+            ),
           ),
           title: Text(
             'Golfers',
-            style: AppTypography.headlineSmall.copyWith(
-              color: AppTheme.of(context).primary,
+            style: AppTypography.headlineMedium.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
             ),
           ),
           actions: [],

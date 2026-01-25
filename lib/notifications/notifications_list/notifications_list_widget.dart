@@ -4,7 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/app_theme.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/navigation/app_router.dart';
 import '/core/widgets/fairway_background.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
@@ -164,28 +166,36 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppTheme.of(context).primaryBackground,
+        extendBodyBehindAppBar: true,
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
-          backgroundColor: AppTheme.of(context).primaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back_rounded,
-              color: AppTheme.of(context).primaryText,
+          elevation: 0.0,
+          leading: GestureDetector(
+            onTap: () => context.pop(),
+            child: Container(
+              margin: EdgeInsets.only(left: AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.fairway.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(12.0),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                ),
+              ),
+              child: Icon(
+                Icons.chevron_left_rounded,
+                color: Colors.white,
+                size: 28.0,
+              ),
             ),
-            onPressed: () => context.pop(),
           ),
           title: Text(
             'Notifications',
-            style: AppTheme.of(context).headlineLarge.override(
-                  font: GoogleFonts.outfit(
-                    fontWeight: AppTheme.of(context).headlineLarge.fontWeight,
-                    fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
-                  ),
-                  letterSpacing: 0.0,
-                  fontWeight: AppTheme.of(context).headlineLarge.fontWeight,
-                  fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
-                ),
+            style: AppTypography.headlineMedium.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           actions: userRef == null
               ? []
@@ -203,25 +213,18 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                             hasUnread ? () => _markAllAsRead(userRef) : null,
                         child: Text(
                           'Mark all read',
-                          style: AppTheme.of(context).labelLarge.override(
-                                font: GoogleFonts.outfit(
-                                  fontWeight:
-                                      AppTheme.of(context).labelLarge.fontWeight,
-                                  fontStyle:
-                                      AppTheme.of(context).labelLarge.fontStyle,
-                                ),
-                                color: hasUnread
-                                    ? AppTheme.of(context).primary
-                                    : AppTheme.of(context).secondaryText,
-                                letterSpacing: 0.0,
-                              ),
+                          style: AppTypography.labelLarge.copyWith(
+                            color: hasUnread
+                                ? AppColors.sunsetGold
+                                : Colors.white.withValues(alpha: 0.5),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       );
                     },
                   ),
                 ],
           centerTitle: false,
-          elevation: 0.0,
         ),
         body: FairwayBackgroundDark(
           child: userRef == null

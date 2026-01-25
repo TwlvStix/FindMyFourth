@@ -47,51 +47,16 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        // Dark green tinted background - matches card style
+        color: AppColors.fairway.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.cloud.withValues(alpha: 0.4),
-          width: 1.5,
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1.0,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.fairwayDark.withValues(alpha: 0.15),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: AppColors.sunsetGold.withValues(alpha: 0.08),
-            blurRadius: 10,
-            offset: Offset(0, 5),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-            spreadRadius: 0,
-          ),
-        ],
       ),
       child: Column(
         children: [
-          // Top accent stripe
-          Container(
-            height: 2,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.transparent,
-                  AppColors.sunsetGold.withValues(alpha: 0.3),
-                  AppColors.sunsetPeach.withValues(alpha: 0.3),
-                  AppColors.sunsetGold.withValues(alpha: 0.3),
-                  Colors.transparent,
-                ],
-              ),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-          ),
 
           // Main content
           Padding(
@@ -115,30 +80,30 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Name skeleton
+                          // Name skeleton (larger - hero element)
                           _buildShimmerBox(
-                            width: 120,
-                            height: 17,
+                            width: 140,
+                            height: 22,
                             borderRadius: 4,
                             shimmerPosition: _shimmerAnimation.value,
                           ),
 
                           SizedBox(height: 6),
 
-                          // Badges row skeleton
+                          // Badges row skeleton (vibe + handicap only, no location)
                           Row(
                             children: [
                               _buildShimmerBox(
-                                width: 50,
-                                height: 20,
-                                borderRadius: 6,
+                                width: 60,
+                                height: 22,
+                                borderRadius: 999,
                                 shimmerPosition: _shimmerAnimation.value,
                               ),
-                              SizedBox(width: 8),
+                              SizedBox(width: 6),
                               _buildShimmerBox(
-                                width: 80,
-                                height: 18,
-                                borderRadius: 999,
+                                width: 50,
+                                height: 22,
+                                borderRadius: 6,
                                 shimmerPosition: _shimmerAnimation.value,
                               ),
                             ],
@@ -149,21 +114,21 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
 
                     SizedBox(width: AppSpacing.sm),
 
-                    // Horizontal action buttons skeleton
+                    // Action buttons skeleton (icon-only variant for compact layout)
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         _buildShimmerBox(
-                          width: 70,
-                          height: 40,
-                          borderRadius: 10,
+                          width: 44,
+                          height: 44,
+                          borderRadius: 12,
                           shimmerPosition: _shimmerAnimation.value,
                         ),
                         SizedBox(width: AppSpacing.xs),
                         _buildShimmerBox(
-                          width: 60,
-                          height: 40,
-                          borderRadius: 10,
+                          width: 44,
+                          height: 44,
+                          borderRadius: 12,
                           shimmerPosition: _shimmerAnimation.value,
                         ),
                       ],
@@ -193,9 +158,9 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [
-            AppColors.cloud.withValues(alpha: 0.25),
-            AppColors.cloud.withValues(alpha: 0.4),
-            AppColors.cloud.withValues(alpha: 0.25),
+            Colors.white.withValues(alpha: 0.15),
+            Colors.white.withValues(alpha: 0.25),
+            Colors.white.withValues(alpha: 0.15),
           ],
           stops: [
             (shimmerPosition - 0.3).clamp(0.0, 1.0),
@@ -217,7 +182,7 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: AppColors.cloud.withValues(alpha: 0.3),
+          color: Colors.white.withValues(alpha: 0.2),
           width: 3,
         ),
       ),
@@ -228,9 +193,9 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
             colors: [
-              AppColors.cloud.withValues(alpha: 0.2),
-              AppColors.cloud.withValues(alpha: 0.35),
-              AppColors.cloud.withValues(alpha: 0.2),
+              Colors.white.withValues(alpha: 0.15),
+              Colors.white.withValues(alpha: 0.25),
+              Colors.white.withValues(alpha: 0.15),
             ],
             stops: [
               (shimmerPosition - 0.3).clamp(0.0, 1.0),
