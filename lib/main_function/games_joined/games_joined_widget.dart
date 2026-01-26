@@ -61,32 +61,6 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
-          leading: GestureDetector(
-            onTap: () async {
-              HapticFeedback.lightImpact();
-              final router = GoRouter.of(context);
-              if (router.canPop()) {
-                router.pop();
-              } else {
-                router.go('/');
-              }
-            },
-            child: Container(
-              margin: EdgeInsets.only(left: AppSpacing.sm),
-              decoration: BoxDecoration(
-                color: AppColors.fairway.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(12.0),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
-                ),
-              ),
-              child: Icon(
-                Icons.chevron_left_rounded,
-                color: Colors.white,
-                size: 28.0,
-              ),
-            ),
-          ),
           title: Text(
             'My Games',
             style: AppTypography.headlineMedium.copyWith(

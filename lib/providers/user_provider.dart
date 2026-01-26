@@ -329,14 +329,22 @@ class UserProvider extends ChangeNotifier {
     if (!isLoggedIn) return;
 
     try {
+      final currentUserRef = currentUserReference;
+      if (currentUserRef == null) return;
       // Remove friend from current user's friends list
       await currentUserReference!.update({
-        'friends': FieldValue.arrayRemove([friendRef]),
+        'friends': FieldValue.arrayRemove([
+          friendRef,
+          friendRef.id,
+        ]),
       });
 
       // Remove current user from friend's friends list (bidirectional)
       await friendRef.update({
-        'friends': FieldValue.arrayRemove([currentUserReference]),
+        'friends': FieldValue.arrayRemove([
+          currentUserRef,
+          currentUserRef.id,
+        ]),
       });
 
       refreshFriends();

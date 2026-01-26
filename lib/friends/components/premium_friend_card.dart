@@ -16,6 +16,8 @@ class PremiumFriendCard extends StatefulWidget {
   final VoidCallback? onViewProfile;
   final VoidCallback? onMessage;
   final VoidCallback? onAction;
+  final String messageLabel;
+  final IconData messageIcon;
   final String actionLabel;
   final IconData actionIcon;
   final Color actionColor;
@@ -33,6 +35,8 @@ class PremiumFriendCard extends StatefulWidget {
     this.onViewProfile,
     this.onMessage,
     this.onAction,
+    this.messageLabel = 'Chat',
+    this.messageIcon = Icons.message_rounded,
     this.actionLabel = 'Add',
     this.actionIcon = Icons.person_add_rounded,
     this.actionColor = AppColors.fairway,
@@ -426,15 +430,15 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       actions.add(
         useIconOnly
             ? _buildIconOnlyButton(
-                icon: Icons.message_rounded,
+                icon: widget.messageIcon,
                 onPressed: widget.onMessage!,
                 isPrimary: true,
                 color: AppColors.fairway,
-                tooltip: 'Chat',
+                tooltip: widget.messageLabel,
               )
             : _buildActionButton(
-                label: 'Chat',
-                icon: Icons.message_rounded,
+                label: widget.messageLabel,
+                icon: widget.messageIcon,
                 onPressed: widget.onMessage!,
                 isPrimary: true,
                 color: AppColors.fairway,

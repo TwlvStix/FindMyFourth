@@ -238,26 +238,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
           backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           elevation: 0.0,
-          leading: GestureDetector(
-            onTap: () async {
-              context.pop();
-            },
-            child: Container(
-              margin: EdgeInsets.only(left: AppSpacing.sm),
-              decoration: BoxDecoration(
-                color: AppColors.fairway.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(12.0),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
-                ),
-              ),
-              child: Icon(
-                Icons.chevron_left_rounded,
-                color: Colors.white,
-                size: 28.0,
-              ),
-            ),
-          ),
           title: Text(
             'Golfers',
             style: AppTypography.headlineMedium.copyWith(
@@ -270,85 +250,89 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
         ),
         body: FairwayBackgroundDark(
           child: SafeArea(
-            top: true,
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    // Enhanced tab bar with shadow
-                    Container(
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.fairway.withOpacity(0.08),
-                            blurRadius: 12,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Align(
-                        alignment: Alignment(-1.0, 0),
-                        child: AppButtonTabBar(
-                          useToggleButtonStyle: false,
-                          labelStyle: AppTypography.labelLarge.copyWith(
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.3,
-                          ),
-                          unselectedLabelStyle: AppTypography.labelLarge.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                          labelColor: AppTheme.of(context).primaryBtnText,
-                          unselectedLabelColor:
-                              AppTheme.of(context).secondaryText,
-                          backgroundColor: AppTheme.of(context).primary,
-                          unselectedBackgroundColor:
-                              AppTheme.of(context).alternate,
-                          borderColor: AppTheme.of(context).primary,
-                          unselectedBorderColor:
-                              AppTheme.of(context).alternate,
-                          borderWidth: 2.0,
-                          borderRadius: 10.0,
-                          elevation: 0.0,
-                          labelPadding: EdgeInsets.symmetric(
-                              horizontal: AppSpacing.md),
-                          buttonMargin:
-                              EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                          padding: EdgeInsets.all(AppSpacing.xxs),
-                          tabs: [
-                            Tab(
-                              text: 'Search',
-                            ),
-                            Tab(
-                              text: 'Requests',
-                            ),
-                            Tab(
-                              text: 'Friends',
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top + 56,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      // Enhanced tab bar with shadow
+                      Container(
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.fairway.withOpacity(0.08),
+                              blurRadius: 12,
+                              offset: Offset(0, 4),
                             ),
                           ],
-                          controller: tabBarController,
-                          onTap: (i) async {
-                            [
-                              () async {},
-                              () async {
-                                friendList = [];
-                                if (mounted) setState(() {});
-                              },
-                              () async {
-                                friendList = [];
-                                if (mounted) setState(() {});
-                              }
-                            ][i]();
-                          },
+                        ),
+                        child: Align(
+                          alignment: Alignment(-1.0, 0),
+                          child: AppButtonTabBar(
+                            useToggleButtonStyle: false,
+                            labelStyle: AppTypography.labelLarge.copyWith(
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.3,
+                            ),
+                            unselectedLabelStyle: AppTypography.labelLarge.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                            labelColor: AppTheme.of(context).primaryBtnText,
+                            unselectedLabelColor:
+                                AppTheme.of(context).secondaryText,
+                            backgroundColor: AppTheme.of(context).primary,
+                            unselectedBackgroundColor:
+                                AppTheme.of(context).alternate,
+                            borderColor: AppTheme.of(context).primary,
+                            unselectedBorderColor:
+                                AppTheme.of(context).alternate,
+                            borderWidth: 2.0,
+                            borderRadius: 10.0,
+                            elevation: 0.0,
+                            labelPadding: EdgeInsets.symmetric(
+                                horizontal: AppSpacing.md),
+                            buttonMargin:
+                                EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                            padding: EdgeInsets.all(AppSpacing.xxs),
+                            tabs: [
+                              Tab(
+                                text: 'Search',
+                              ),
+                              Tab(
+                                text: 'Requests',
+                              ),
+                              Tab(
+                                text: 'Friends',
+                              ),
+                            ],
+                            controller: tabBarController,
+                            onTap: (i) async {
+                              [
+                                () async {},
+                                () async {
+                                  friendList = [];
+                                  if (mounted) setState(() {});
+                                },
+                                () async {
+                                  friendList = [];
+                                  if (mounted) setState(() {});
+                                }
+                              ][i]();
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                    Expanded(
-                      child: TabBarView(
-                        controller: tabBarController,
-                        children: [
+                      Expanded(
+                        child: TabBarView(
+                          controller: tabBarController,
+                          children: [
                           KeepAliveWidgetWrapper(
                             builder: (context) => Container(
                               width: double.infinity,
@@ -642,6 +626,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                   return PremiumFriendCard(
                                                     user: userList5UsersRecord,
                                                     currentUser: currentUserDocument,
+                                                    messageLabel: '+Add',
+                                                    messageIcon:
+                                                        Icons.person_add_rounded,
                                                     onViewProfile: () {
                                                       context.pushNamed(
                                                         'ProfileUser',
@@ -819,55 +806,45 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                 minWidth: double.infinity,
                                 minHeight: double.infinity,
                               ),
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.max,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    AuthUserStreamWidget(
-                                      builder: (context) => Builder(
-                                        builder: (context) {
-                                          final friendsList =
-                                              (currentUserDocument?.friends
-                                                          .toList() ??
-                                                      [])
-                                                  .toList();
+                              child: AuthUserStreamWidget(
+                                builder: (context) => Builder(
+                                  builder: (context) {
+                                    final friendsList =
+                                        (currentUserDocument?.friends.toList() ??
+                                                [])
+                                            .toList();
 
-                                          // Show empty state if no friends
-                                          if (friendsList.isEmpty) {
-                                            return FriendsEmptyState(
-                                              type:
-                                                  FriendsEmptyStateType.noFriends,
-                                              onActionPressed: () {
-                                                tabBarController?.animateTo(0);
-                                              },
-                                            );
-                                          }
-
-                                          return GroupedFriendsList(
-                                            friendRefs: friendsList,
-                                            favoriteFriends: favoriteFriends,
-                                            currentUserHomeCourse:
-                                                currentUserDocument?.homeCourse,
-                                            currentUser: currentUserDocument,
-                                            onToggleFavorite: toggleFavorite,
-                                            onViewProfile: (user) {
-                                              context.pushNamed(
-                                                'ProfileUser',
-                                                extra: <String, dynamic>{
-                                                  'userRef': user.reference,
-                                                },
-                                              );
-                                            },
-                                            onMessage: _openDirectChat,
-                                            onRemove: (user) async {
-                                              await _removeFriend(user);
-                                            },
-                                          );
+                                    // Show empty state if no friends
+                                    if (friendsList.isEmpty) {
+                                      return FriendsEmptyState(
+                                        type: FriendsEmptyStateType.noFriends,
+                                        onActionPressed: () {
+                                          tabBarController?.animateTo(0);
                                         },
-                                      ),
-                                    ),
-                                  ],
+                                      );
+                                    }
+
+                                    return GroupedFriendsList(
+                                      friendRefs: friendsList,
+                                      favoriteFriends: favoriteFriends,
+                                      currentUserHomeCourse:
+                                          currentUserDocument?.homeCourse,
+                                      currentUser: currentUserDocument,
+                                      onToggleFavorite: toggleFavorite,
+                                      onViewProfile: (user) {
+                                        context.pushNamed(
+                                          'ProfileUser',
+                                          extra: <String, dynamic>{
+                                            'userRef': user.reference,
+                                          },
+                                        );
+                                      },
+                                      onMessage: _openDirectChat,
+                                      onRemove: (user) async {
+                                        await _removeFriend(user);
+                                      },
+                                    );
+                                  },
                                 ),
                               ),
                             ),
@@ -883,7 +860,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

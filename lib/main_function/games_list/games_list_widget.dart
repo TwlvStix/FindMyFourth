@@ -1,7 +1,6 @@
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/widgets/app_choice_chips.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_stream_builder.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -12,11 +11,12 @@ import '/core/form_field_controller.dart';
 import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
+import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
 import '/models/game.dart';
 import '/providers/game_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -40,10 +40,11 @@ class GamesListWidget extends StatefulWidget {
 }
 
 class _GamesListWidgetState extends State<GamesListWidget> {
-  FormFieldController<List<String>>? choiceChipsValueController;
   final Map<DocumentReference, CancelledGameHandling>
       _cancelledGameHandlingByGame = {};
   late final Stream<List<Game>> _gamesStream;
+  GameListFilters _filters = GameListFilters();
+  Set<String> _availableGameTypes = {};
   static const Map<CancelledGameHandling, String>
       _cancelledHandlingStorageMap = {
     CancelledGameHandling.removeNow: 'removeNow',
@@ -51,11 +52,6 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     CancelledGameHandling.removeAfter7Days: 'removeAfter7Days',
     CancelledGameHandling.keepInList: 'keepInList',
   };
-  String? get choiceChipsValue =>
-      choiceChipsValueController?.value?.firstOrNull;
-  set choiceChipsValue(String? val) =>
-      choiceChipsValueController?.value = val != null ? [val] : [];
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -81,9 +77,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     if (value == null) {
       return null;
     }
-    return _cancelledHandlingStorageMap.entries
-        .firstWhereOrNull((entry) => entry.value == value)
-        ?.key;
+    for (final entry in _cancelledHandlingStorageMap.entries) {
+      if (entry.value == value) {
+        return entry.key;
+      }
+    }
+    return null;
   }
 
   CancelledGameHandling? _getCancelledHandling(Game game) {
@@ -135,40 +134,109 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     return false;
   }
 
-  List<Game> _filterGames(List<Game> gamesList, String? choiceChipValue) {
-    debugPrint('🔍 FILTER: Applying choice chip filter: "$choiceChipValue"');
-    debugPrint('🔍 FILTER: Input games: ${gamesList.length}');
+  String? _canonicalGameType(String rawValue) {
+    final value = rawValue.trim().toLowerCase();
+    if (value.isEmpty) {
+      return null;
+    }
+    switch (value) {
+      case 'stroke':
+      case 'stroke play':
+        return 'Stroke';
+      case 'match play':
+      case 'matchplay':
+        return 'Match Play';
+      case 'skins':
+        return 'Skins';
+      case 'money':
+      case 'money game':
+        return 'Money';
+      case 'casual':
+        return 'Casual';
+      case 'fun':
+      case 'for fun':
+      case 'all fun':
+        return 'Fun';
+      default:
+        return null;
+    }
+  }
 
-    if (choiceChipValue == '\$\$\$\$') {
-      debugPrint('🔍 FILTER: Filtering for Money Game');
-      final filtered = gamesList
-          .where((game) => game.styleGame == 'Money Game')
-          .toList();
-      debugPrint('🔍 FILTER: Found ${filtered.length} Money Games');
-      return filtered;
+  String? _gameTypeForFilters(Game game) {
+    return _canonicalGameType(game.gameType) ??
+        _canonicalGameType(game.styleGame);
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  bool _matchesDateRange(DateTime? gameDate, GameDateRange range) {
+    if (range == GameDateRange.any) {
+      return true;
     }
-    if (choiceChipValue == 'Vegas') {
-      debugPrint('🔍 FILTER: Filtering for Vegas');
-      final filtered = gamesList.where((game) => game.gameType == 'Vegas').toList();
-      debugPrint('🔍 FILTER: Found ${filtered.length} Vegas games');
-      return filtered;
+    if (gameDate == null) {
+      return false;
     }
-    if (choiceChipValue == 'For Fun') {
-      debugPrint('🔍 FILTER: Filtering for All Fun');
-      final filtered = gamesList.where((game) => game.styleGame == 'All Fun').toList();
-      debugPrint('🔍 FILTER: Found ${filtered.length} All Fun games');
-      return filtered;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final gameDay = DateTime(gameDate.year, gameDate.month, gameDate.day);
+    switch (range) {
+      case GameDateRange.today:
+        return _isSameDay(gameDay, today);
+      case GameDateRange.tomorrow:
+        return _isSameDay(gameDay, today.add(Duration(days: 1)));
+      case GameDateRange.next7Days:
+        final end = today.add(Duration(days: 7));
+        return !gameDay.isBefore(today) && !gameDay.isAfter(end);
+      case GameDateRange.any:
+        return true;
     }
-    if (choiceChipValue == 'Discount') {
-      debugPrint('🔍 FILTER: Filtering for Member Discount');
-      final filtered = gamesList
-          .where((game) => game.memberDiscount == 'Yes')
-          .toList();
-      debugPrint('🔍 FILTER: Found ${filtered.length} games with discount');
-      return filtered;
+  }
+
+  List<Game> _applyFilters(List<Game> gamesList, GameListFilters filters) {
+    return gamesList.where((game) {
+      if (filters.selectedGameTypes.isNotEmpty) {
+        final gameType = _gameTypeForFilters(game);
+        if (gameType == null ||
+            !filters.selectedGameTypes.contains(gameType)) {
+          return false;
+        }
+      }
+      if (!_matchesDateRange(game.date, filters.selectedDateRange)) {
+        return false;
+      }
+      return true;
+    }).toList();
+  }
+
+  Set<String> _extractAvailableGameTypes(List<Game> gamesList) {
+    final types = <String>{};
+    for (final game in gamesList) {
+      final type = _gameTypeForFilters(game);
+      if (type != null) {
+        types.add(type);
+      }
     }
-    debugPrint('🔍 FILTER: No filter applied (showing all ${gamesList.length} games)');
-    return gamesList;
+    return types;
+  }
+
+  Future<void> _showFilterBottomSheet(Set<String> availableGameTypes) async {
+    final result = await showModalBottomSheet<GameListFilters>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => GameListFilterBottomSheet(
+        currentFilters: _filters,
+        availableGameTypes: availableGameTypes,
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _filters = result;
+      });
+    }
   }
 
   Future<void> _showCancelledGameOptions(Game game) async {
@@ -244,29 +312,6 @@ class _GamesListWidgetState extends State<GamesListWidget> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
-          leading: GestureDetector(
-            onTap: () async {
-              debugPrint('🔙 GAME LIST: Back button pressed');
-              final router = GoRouter.of(context);
-              debugPrint('🔙 GAME LIST: Navigating to home screen');
-              router.go('/home');
-            },
-            child: Container(
-              margin: EdgeInsets.only(left: AppSpacing.sm),
-              decoration: BoxDecoration(
-                color: AppColors.fairway.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(12.0),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
-                ),
-              ),
-              child: Icon(
-                Icons.chevron_left_rounded,
-                color: Colors.white,
-                size: 28.0,
-              ),
-            ),
-          ),
           title: Text(
             'Game List',
             style: AppTypography.headlineMedium.copyWith(
@@ -274,6 +319,33 @@ class _GamesListWidgetState extends State<GamesListWidget> {
               fontWeight: FontWeight.w600,
             ),
           ),
+          actions: [
+            Padding(
+              padding: EdgeInsets.only(right: AppSpacing.sm),
+              child: AppIconButton(
+                borderColor: _filters.hasActiveFilters
+                    ? AppColors.fairway.withOpacity(0.2)
+                    : Colors.transparent,
+                borderRadius: 30.0,
+                borderWidth: _filters.hasActiveFilters ? 2.0 : 1.0,
+                buttonSize: 44.0,
+                fillColor: _filters.hasActiveFilters
+                    ? AppColors.fairway.withOpacity(0.12)
+                    : Colors.transparent,
+                tooltip: 'Filter games',
+                icon: Icon(
+                  Icons.tune_rounded,
+                  color: _filters.hasActiveFilters
+                      ? AppColors.fairway
+                      : Colors.white,
+                  size: 24.0,
+                ),
+                onPressed: () {
+                  _showFilterBottomSheet(_availableGameTypes);
+                },
+              ),
+            ),
+          ],
           centerTitle: false,
           elevation: 0.0,
         ),
@@ -330,12 +402,18 @@ class _GamesListWidgetState extends State<GamesListWidget> {
 
                   debugPrint('📊 GAME LIST: After status filter: ${activeGames.length} games');
 
-                  final filteredList =
-                      _filterGames(activeGames, choiceChipsValue);
+                  final availableTypes = _extractAvailableGameTypes(activeGames);
+                  if (!setEquals(availableTypes, _availableGameTypes)) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        setState(() {
+                          _availableGameTypes = availableTypes;
+                        });
+                      }
+                    });
+                  }
 
-                  debugPrint('📊 GAME LIST: After choice chip filter ("$choiceChipsValue"): ${filteredList.length} games');
-
-                  final visibleGames = filteredList;
+                  final visibleGames = _applyFilters(activeGames, _filters);
 
                   debugPrint('✅ GAME LIST: Final visible games: ${visibleGames.length}');
                   visibleGames.forEach((game) {
@@ -353,68 +431,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                     child: CustomScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       slivers: [
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: AppSpacing.verticalSm,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Align(
-                                    alignment: AlignmentDirectional(0.0, 0.0),
-                                    child: AppChoiceChips(
-                                      options: [
-                                        ChipData('\$\$\$\$'),
-                                        ChipData('Vegas'),
-                                        ChipData('For Fun'),
-                                        ChipData('Discount'),
-                                        ChipData('All')
-                                      ],
-                                      onChanged: (val) async {
-                                        if (mounted) {
-                                          setState(() => choiceChipsValue =
-                                              val?.firstOrNull);
-                                        }
-                                      },
-                                      selectedChipStyle: ChipStyle(
-                                        backgroundColor: AppColors.fairwayDark,
-                                        textStyle: AppTypography.labelMedium.withColor(AppColors.pure),
-                                        iconColor: AppColors.pure,
-                                        iconSize: 16.0,
-                                        elevation: 2.0,
-                                        borderColor: AppColors.fairwayDark,
-                                        borderRadius: BorderRadius.circular(20.0),
-                                      ),
-                                      unselectedChipStyle: ChipStyle(
-                                        backgroundColor: AppColors.pure,
-                                        textStyle: AppTypography.labelMedium.withColor(AppColors.slate),
-                                        iconColor: AppColors.slate,
-                                        iconSize: 16.0,
-                                        elevation: 0.0,
-                                        borderColor: AppColors.cloud,
-                                        borderRadius: BorderRadius.circular(20.0),
-                                      ),
-                                      chipSpacing: AppSpacing.xs,
-                                      rowSpacing: AppSpacing.xs,
-                                      multiselect: false,
-                                      initialized: choiceChipsValue != null,
-                                      alignment: WrapAlignment.start,
-                                      controller: choiceChipsValueController ??=
-                                          FormFieldController<List<String>>(
-                                        ['All'],
-                                      ),
-                                      wrapped: false,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
                         SliverPadding(
                           padding: EdgeInsets.only(
-                            top: AppSpacing.sm,
+                            top: AppSpacing.md,
                             bottom: 44.0,
                           ),
                           sliver: visibleGames.isEmpty
@@ -441,40 +460,79 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                           ),
                                         ),
                                         SizedBox(height: AppSpacing.lg),
-                                        Text(
-                                          'No games yet',
-                                          style: AppTypography.titleMedium.copyWith(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w600,
+                                        if (_filters.hasActiveFilters) ...[
+                                          Text(
+                                            'No games match these filters',
+                                            style:
+                                                AppTypography.titleMedium.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            textAlign: TextAlign.center,
                                           ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        SizedBox(height: AppSpacing.xs),
-                                        Text(
-                                          'Be the first to create a game.',
-                                          style: AppTypography.bodyMedium.copyWith(
-                                            color: Colors.white.withOpacity(0.7),
+                                          SizedBox(height: AppSpacing.xs),
+                                          Text(
+                                            'Try adjusting or clearing your filters.',
+                                            style:
+                                                AppTypography.bodyMedium.copyWith(
+                                              color: Colors.white.withOpacity(0.7),
+                                            ),
+                                            textAlign: TextAlign.center,
                                           ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        SizedBox(height: AppSpacing.lg),
-                                        SizedBox(
-                                          width: 220,
-                                          child: AppButtonEnhanced(
-                                            text: 'Create a game',
-                                            variant: AppButtonVariant.primary,
-                                            size: AppButtonSize.medium,
-                                            onPressed: () {
-                                              context.pushNamed(
-                                                CreateGameWidget.routeName,
-                                                extra: <String, dynamic>{
-                                                  kTransitionInfoKey:
-                                                      TransitionStandards.detailTransition,
-                                                },
-                                              );
-                                            },
+                                          SizedBox(height: AppSpacing.lg),
+                                          SizedBox(
+                                            width: 220,
+                                            child: AppButtonEnhanced(
+                                              text: 'Clear filters',
+                                              variant: AppButtonVariant.secondary,
+                                              size: AppButtonSize.medium,
+                                              onPressed: () {
+                                                if (mounted) {
+                                                  setState(() {
+                                                    _filters = GameListFilters();
+                                                  });
+                                                }
+                                              },
+                                            ),
                                           ),
-                                        ),
+                                        ] else ...[
+                                          Text(
+                                            'No games yet',
+                                            style:
+                                                AppTypography.titleMedium.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          SizedBox(height: AppSpacing.xs),
+                                          Text(
+                                            'Be the first to create a game.',
+                                            style:
+                                                AppTypography.bodyMedium.copyWith(
+                                              color: Colors.white.withOpacity(0.7),
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          SizedBox(height: AppSpacing.lg),
+                                          SizedBox(
+                                            width: 220,
+                                            child: AppButtonEnhanced(
+                                              text: 'Create a game',
+                                              variant: AppButtonVariant.primary,
+                                              size: AppButtonSize.medium,
+                                              onPressed: () {
+                                                context.pushNamed(
+                                                  CreateGameWidget.routeName,
+                                                  extra: <String, dynamic>{
+                                                    kTransitionInfoKey:
+                                                        TransitionStandards.detailTransition,
+                                                  },
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ],
                                       ],
                                     ),
                                   ),
