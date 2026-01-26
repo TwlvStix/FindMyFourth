@@ -1,4 +1,3 @@
-import '/core/button_tabbar.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
@@ -6,7 +5,6 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/chat_group/chat/chat_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class CommunityWidget extends StatefulWidget {
   const CommunityWidget({super.key});
@@ -18,39 +16,9 @@ class CommunityWidget extends StatefulWidget {
   State<CommunityWidget> createState() => _CommunityWidgetState();
 }
 
-class _CommunityWidgetState extends State<CommunityWidget>
-    with TickerProviderStateMixin {
-  TabController? _tabBarController;
-  int get tabBarCurrentIndex =>
-      _tabBarController != null ? _tabBarController!.index : 0;
+class _CommunityWidgetState extends State<CommunityWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-
-  @override
-  void initState() {
-    super.initState();
-    _tabBarController = TabController(
-      vsync: this,
-      length: 1,
-      initialIndex: 0,
-    )..addListener(() {
-        if (mounted) {
-          setState(() {});
-        }
-      });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _tabBarController?.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,77 +54,10 @@ class _CommunityWidgetState extends State<CommunityWidget>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: MediaQuery.of(context).padding.top + 56),
-                // Header section with glass effect
-                Container(
-                  width: double.infinity,
-                  margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: AppColors.fairway.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.1),
-                    ),
-                  ),
-                  child: Text(
-                    'Group chats and DMs with golfers',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                ),
-                SizedBox(height: AppSpacing.md),
-                // Tabs with glass morphism style
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.fairway.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.1),
-                      ),
-                    ),
-                    child: AppButtonTabBar(
-                      useToggleButtonStyle: false,
-                      labelStyle: AppTypography.labelMedium.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                      unselectedLabelStyle: AppTypography.labelMedium,
-                      labelColor: Colors.white,
-                      unselectedLabelColor: Colors.white.withOpacity(0.6),
-                      backgroundColor: AppColors.sunsetGold,
-                      unselectedBackgroundColor: Colors.transparent,
-                      borderColor: AppColors.sunsetGold,
-                      unselectedBorderColor: Colors.transparent,
-                      borderWidth: 0,
-                      borderRadius: 10.0,
-                      elevation: 0.0,
-                      labelPadding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md),
-                      buttonMargin: EdgeInsets.all(AppSpacing.xxs),
-                      padding: AppSpacing.allXxs,
-                      tabs: [
-                        Tab(text: 'Chats'),
-                      ],
-                      controller: _tabBarController,
-                      onTap: (i) async {
-                        [() async {}][i]();
-                      },
-                    ),
-                  ),
-                ),
-                SizedBox(height: AppSpacing.md),
                 // Content area
                 Expanded(
-                  child: TabBarView(
-                    controller: _tabBarController,
-                    children: [
-                      // Chats Tab
-                      KeepAliveWidgetWrapper(
-                        builder: (context) => ChatWidget(isEmbedded: true),
-                      ),
-                    ],
+                  child: KeepAliveWidgetWrapper(
+                    builder: (context) => ChatWidget(isEmbedded: true),
                   ),
                 ),
               ],

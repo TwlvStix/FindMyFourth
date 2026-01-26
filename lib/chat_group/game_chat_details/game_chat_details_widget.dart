@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '/backend/backend.dart';
@@ -32,13 +33,19 @@ class GameChatDetailsWidget extends StatefulWidget {
   State<GameChatDetailsWidget> createState() => _GameChatDetailsWidgetState();
 }
 
-class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
+class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
+    with TickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _messageFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
+  late final Stream<Chat?> _chatStream;
+  late final Stream<Chat?> _chatUiStream;
+  late final Stream<QuerySnapshot> _messagesStream;
+  StreamSubscription<Chat?>? _chatUiSubscription;
   static const int _initialPageSize = 40;
   static const int _pageSize = 30;
   final List<ChatMessage> _olderMessages = [];
+  final List<ChatMessage> _latestMessages = [];
   final Set<String> _olderMessageIds = {};
   DocumentSnapshot? _lastStreamDoc;
   DocumentSnapshot? _lastLoadedDoc;
@@ -48,6 +55,12 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
   bool _isTyping = false;
   Timer? _typingTimer;
   ChatMessage? _replyToMessage;
+  Chat? _chatUi;
+  bool _chatLoaded = false;
+  Object? _chatError;
+  bool _canSend = false;
+  bool _isArchived = false;
+  String _bannerText = '';
 
   String? get _currentUserId => FirebaseAuth.instance.currentUser?.uid;
 
@@ -56,6 +69,33 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
     super.initState();
     debugPrint('📨 UI: Chat page loaded for chatId: ${widget.chatId}');
     debugPrint('📨 UI: Current user ID: $_currentUserId');
+    final chatProvider = context.read<ChatProvider>();
+    _chatStream = chatProvider.chatStream(widget.chatId);
+    _chatUiStream = _chatStream.distinct(_chatUiEquals);
+    _messagesStream = chatProvider.messagesSnapshotStream(
+      chatId: widget.chatId,
+      limit: _initialPageSize,
+    );
+    _chatUiSubscription = _chatUiStream.listen(
+      (chat) {
+        if (!mounted) return;
+        _updateChatUiState(chat);
+      },
+      onError: (error) {
+        if (!mounted) return;
+        if (kDebugMode) {
+          debugPrint('❌ UI: Chat stream error for chatId=${widget.chatId}: $error');
+        }
+        setState(() {
+          _chatError = error;
+          _chatLoaded = true;
+          _chatUi = null;
+          _canSend = false;
+          _bannerText = '';
+          _isArchived = false;
+        });
+      },
+    );
     _ensureChatMember().whenComplete(_markChatSeen);
     _messageController.addListener(_onTextChanged);
     _scrollController.addListener(_onScroll);
@@ -63,7 +103,11 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
 
   @override
   void dispose() {
+    if (kDebugMode) {
+      debugPrint('📨 UI: Disposing ChatDetails for chatId=${widget.chatId}');
+    }
     _typingTimer?.cancel();
+    _chatUiSubscription?.cancel();
     _messageController.dispose();
     _messageFocusNode.dispose();
     _scrollController.dispose();
@@ -75,9 +119,12 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
     if (currentUserId == null) return;
 
     final hasText = _messageController.text.trim().isNotEmpty;
-
-    // Update UI for send button
-    setState(() {});
+    if (kDebugMode) {
+      debugPrint(
+        '✍️ UI: onTextChanged chatId=${widget.chatId} hasText=$hasText '
+        'textLen=${_messageController.text.length} isTyping=$_isTyping',
+      );
+    }
 
     // Handle typing indicator
     if (hasText && !_isTyping) {
@@ -321,6 +368,54 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
         curve: Curves.easeOut,
       );
     }
+  }
+
+  bool _chatUiEquals(Chat? previous, Chat? next) {
+    if (identical(previous, next)) {
+      return true;
+    }
+    if (previous == null || next == null) {
+      return previous == next;
+    }
+    return previous.id == next.id &&
+        previous.type == next.type &&
+        previous.gameName == next.gameName &&
+        listEquals(previous.memberIds, next.memberIds) &&
+        previous.isReadOnly == next.isReadOnly &&
+        previous.pinnedMessage == next.pinnedMessage &&
+        previous.archivedAt == next.archivedAt;
+  }
+
+  void _updateChatUiState(Chat? chat) {
+    if (chat == null) {
+      setState(() {
+        _chatLoaded = true;
+        _chatError = null;
+        _chatUi = null;
+        _canSend = false;
+        _bannerText = '';
+        _isArchived = false;
+      });
+      return;
+    }
+
+    final isArchived = chat.archivedAt != null &&
+        chat.archivedAt!.isBefore(DateTime.now());
+    final bannerText = chat.pinnedMessage.isNotEmpty
+        ? chat.pinnedMessage
+        : chat.isReadOnly
+            ? 'This chat is read-only.'
+            : '';
+    final canSend = !chat.isReadOnly && !isArchived;
+
+    setState(() {
+      _chatLoaded = true;
+      _chatError = null;
+      _chatUi = chat;
+      _isArchived = isArchived;
+      _bannerText = bannerText;
+      _canSend = canSend;
+    });
   }
 
   bool _shouldShowDateDivider(int index, List<ChatMessage> messages) {
@@ -677,112 +772,103 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final backgroundGreen = AppTheme.of(context).secondary;
+    if (kDebugMode) {
+      debugPrint(
+        '🧱 UI: ChatDetails build chatId=${widget.chatId} '
+        'chatLoaded=$_chatLoaded chatUi=${_chatUi?.id} '
+        'chatError=${_chatError?.runtimeType} '
+        'msgCtrl=${_messageController.hashCode} '
+        'focus=${_messageFocusNode.hashCode} '
+        'msgStream=${identityHashCode(_messagesStream)}',
+      );
+    }
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
         FocusManager.instance.primaryFocus?.unfocus();
       },
-      child: StreamBuilder<Chat?>(
-        stream:
-            context.read<ChatProvider>().chatStream(widget.chatId),
-        builder: (context, chatSnapshot) {
-          if (chatSnapshot.hasError) {
-            return Scaffold(
-              backgroundColor: AppTheme.of(context).secondaryBackground,
-              body: const Center(
-                child: Text('Unable to load chat.'),
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+        ),
+        child: Scaffold(
+          extendBodyBehindAppBar: true,
+          backgroundColor: backgroundGreen,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            scrolledUnderElevation: 0,
+            foregroundColor: AppTheme.of(context).primaryBtnText,
+            elevation: 0.0,
+            shadowColor: Colors.transparent,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_rounded,
+                color: AppTheme.of(context).primaryBtnText,
               ),
-            );
-          }
-          if (!chatSnapshot.hasData) {
-            return Scaffold(
-              backgroundColor: AppTheme.of(context).secondaryBackground,
-              body: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
-          final chat = chatSnapshot.data;
-          if (chat == null) {
-            return Scaffold(
-              backgroundColor: AppTheme.of(context).secondaryBackground,
-              body: const Center(
-                child: Text('Chat not found.'),
-              ),
-            );
-          }
-
-          final isArchived = chat.archivedAt != null &&
-              chat.archivedAt!.isBefore(DateTime.now());
-          final canSend = !chat.isReadOnly && !isArchived;
-          final bannerText = chat.pinnedMessage.isNotEmpty
-              ? chat.pinnedMessage
-              : chat.isReadOnly
-                  ? 'This chat is read-only.'
-                  : '';
-
-          return Scaffold(
-            backgroundColor: AppTheme.of(context).secondaryBackground,
-            appBar: AppBar(
-              backgroundColor: AppTheme.of(context).primaryBackground,
-              leading: IconButton(
-                icon: Icon(
-                  Icons.arrow_back_rounded,
-                  color: AppTheme.of(context).primaryText,
-                ),
-                tooltip: 'Back',
-                onPressed: () => Navigator.of(context).maybePop(),
-              ),
-              title: ChatHeaderTitle(
-                chat: chat,
-                currentUserId: _currentUserId,
-              ),
-              centerTitle: false,
-              elevation: 0.0,
-              actions: [
-                PopupMenuButton<String>(
-                  icon: Icon(
-                    Icons.more_vert,
-                    color: AppTheme.of(context).primaryText,
-                  ),
-                  tooltip: 'More options',
-                  onSelected: (String value) {
-                    if (value == 'delete') {
-                      _showDeleteConfirmation();
-                    }
-                  },
-                  itemBuilder: (BuildContext context) => [
-                    PopupMenuItem<String>(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.delete_outline,
-                            color: Colors.red,
-                            size: 20.0,
-                          ),
-                          SizedBox(width: 12.0),
-                          Text(
-                            'Delete Chat',
-                            style: AppTheme.of(context).bodyMedium.override(
-                                              color: Colors.red,
-                                  letterSpacing: 0.0,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              tooltip: 'Back',
+              onPressed: () => Navigator.of(context).maybePop(),
             ),
-            body: FairwayBackgroundDark(
-              child: Stack(
-                children: [
-                  Column(
-                    children: [
-                      if (bannerText.isNotEmpty || isArchived)
-                        Container(
+            title: _chatUi != null
+                ? ChatHeaderTitle(
+                    chat: _chatUi!,
+                    currentUserId: _currentUserId,
+                  )
+                : AppText.cardTitle('Chat'),
+            centerTitle: false,
+            actions: [
+              PopupMenuButton<String>(
+                icon: Icon(
+                  Icons.more_vert,
+                  color: AppTheme.of(context).primaryBtnText,
+                ),
+                tooltip: 'More options',
+                onSelected: (String value) {
+                  if (value == 'delete') {
+                    _showDeleteConfirmation();
+                  }
+                },
+                itemBuilder: (BuildContext context) => [
+                  PopupMenuItem<String>(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.delete_outline,
+                          color: Colors.red,
+                          size: 20.0,
+                        ),
+                        SizedBox(width: 12.0),
+                        Text(
+                          'Delete Chat',
+                          style: AppTheme.of(context).bodyMedium.override(
+                                            color: Colors.red,
+                                letterSpacing: 0.0,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          body: FairwayBackgroundDark(
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + kToolbarHeight,
+                ),
+                child: Stack(
+                  children: [
+                    Column(
+                      children: [
+                  if (_bannerText.isNotEmpty || _isArchived)
+                    Container(
                       width: double.infinity,
                       margin: EdgeInsets.fromLTRB(
                         AppSpacing.md,
@@ -814,8 +900,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  bannerText.isNotEmpty
-                                      ? bannerText
+                                  _bannerText.isNotEmpty
+                                      ? _bannerText
                                       : 'This chat is archived.',
                                   style: AppTheme.of(context)
                                       .bodyMedium
@@ -823,7 +909,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                                                           letterSpacing: 0.0,
                                       ),
                                 ),
-                                if (isArchived)
+                                if (_isArchived)
                                   Padding(
                                     padding: EdgeInsets.only(
                                       top: AppSpacing.xs,
@@ -844,279 +930,321 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                       ),
                     ),
                   // Typing Indicator
-                  StreamBuilder<Chat?>(
-                    stream:
-                        context.read<ChatProvider>().chatStream(widget.chatId),
-                    builder: (context, chatSnapshot) {
-                      if (!chatSnapshot.hasData) return SizedBox.shrink();
-
-                      final typingUserIds =
-                          _getTypingUserNames(chatSnapshot.data!);
-                      if (typingUserIds.isEmpty) return SizedBox.shrink();
-
-                      final typingProfilesFuture =
-                          context.read<ProfileProvider>().batchGetProfiles(
-                                typingUserIds,
-                              );
-
-                      return FutureBuilder<Map<String, UsersRecord>>(
-                        future: typingProfilesFuture,
-                        builder: (context, usersSnapshot) {
-                          final profileMap =
-                              usersSnapshot.data ?? <String, UsersRecord>{};
-                          final names = typingUserIds
-                              .map((uid) => profileMap[uid]?.displayName ?? 'Someone')
-                              .toList();
-
-                          String typingText;
-                          if (names.length == 1) {
-                            typingText = '${names[0]} is typing...';
-                          } else if (names.length == 2) {
-                            typingText = '${names[0]} and ${names[1]} are typing...';
-                          } else {
-                            typingText = 'Several people are typing...';
+                  ClipRect(
+                    child: AnimatedSize(
+                      duration: const Duration(milliseconds: 150),
+                      curve: Curves.easeOut,
+                      alignment: Alignment.topCenter,
+                      child: StreamBuilder<Chat?>(
+                        stream: _chatStream,
+                        builder: (context, chatSnapshot) {
+                          if (!chatSnapshot.hasData) {
+                            return const SizedBox(height: 0);
                           }
 
-                          return Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: AppSpacing.md,
-                              vertical: AppSpacing.xs,
-                            ),
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white.withOpacity(0.6),
-                                    ),
-                                  ),
+                          final typingUserIds =
+                              _getTypingUserNames(chatSnapshot.data!);
+                          if (typingUserIds.isEmpty) {
+                            return const SizedBox(height: 0);
+                          }
+
+                          final typingProfilesFuture =
+                              context.read<ProfileProvider>().batchGetProfiles(
+                                    typingUserIds,
+                                  );
+
+                          return FutureBuilder<Map<String, UsersRecord>>(
+                            future: typingProfilesFuture,
+                            builder: (context, usersSnapshot) {
+                              final profileMap =
+                                  usersSnapshot.data ?? <String, UsersRecord>{};
+                              final names = typingUserIds
+                                  .map((uid) =>
+                                      profileMap[uid]?.displayName ?? 'Someone')
+                                  .toList();
+
+                              String typingText;
+                              if (names.length == 1) {
+                                typingText = '${names[0]} is typing...';
+                              } else if (names.length == 2) {
+                                typingText =
+                                    '${names[0]} and ${names[1]} are typing...';
+                              } else {
+                                typingText = 'Several people are typing...';
+                              }
+
+                              return Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md,
+                                  vertical: AppSpacing.xs,
                                 ),
-                                SizedBox(width: AppSpacing.sm),
-                                Text(
-                                  typingText,
-                                  style: AppTheme.of(context).bodySmall.override(
-                                                          color: Colors.white.withOpacity(0.6),
-                                        fontStyle: FontStyle.italic,
-                                        letterSpacing: 0.0,
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white.withOpacity(0.6),
+                                        ),
                                       ),
+                                    ),
+                                    SizedBox(width: AppSpacing.sm),
+                                    Text(
+                                      typingText,
+                                      style: AppTheme.of(context).bodySmall.override(
+                                                          color: Colors.white.withOpacity(0.6),
+                                            fontStyle: FontStyle.italic,
+                                            letterSpacing: 0.0,
+                                          ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              );
+                            },
                           );
                         },
-                      );
-                    },
+                      ),
+                    ),
                   ),
                   Expanded(
-                    child: StreamBuilder<QuerySnapshot>(
-                      stream: context.read<ChatProvider>().messagesSnapshotStream(
-                            chatId: widget.chatId,
-                            limit: _initialPageSize,
-                          ),
-                      builder: (context, snapshot) {
-                        if (kDebugMode) {
-                          debugPrint(
-                              '📨 UI: StreamBuilder called for chatId: ${widget.chatId}');
-                          debugPrint(
-                              '📨 UI: snapshot.connectionState = ${snapshot.connectionState}');
-                          debugPrint(
-                              '📨 UI: snapshot.hasError = ${snapshot.hasError}');
-                          debugPrint(
-                              '📨 UI: snapshot.hasData = ${snapshot.hasData}');
-                        }
-
-                        if (snapshot.hasError) {
-                          if (kDebugMode) {
-                            debugPrint(
-                                '❌ UI: StreamBuilder error: ${snapshot.error}');
-                          }
-                          return Center(
+                    child: _chatError != null
+                        ? Center(
                             child: AppText.body(
-                              'Unable to load messages.',
+                              'Unable to load chat.',
                               color: AppTheme.of(context).secondaryText,
                             ),
-                          );
-                        }
-                        if (!snapshot.hasData) {
-                          if (kDebugMode) {
-                            debugPrint(
-                                '📨 UI: No data yet, showing loading indicator');
-                          }
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        final docs = snapshot.data!.docs;
-                        if (kDebugMode) {
-                          debugPrint(
-                              '📨 UI: Received ${docs.length} document(s)');
-                        }
-
-                        if (docs.isEmpty) {
-                          if (kDebugMode) {
-                            debugPrint(
-                                '📨 UI: Docs array is empty - showing "No messages yet"');
-                          }
-                          return Center(
-                            child: AppText.body(
-                              'No messages yet.',
-                              color: AppTheme.of(context).secondaryText,
-                            ),
-                          );
-                        }
-
-                        _lastStreamDoc =
-                            docs.isNotEmpty ? docs.last : _lastStreamDoc;
-                        final latestMessages =
-                            docs.map(ChatMessage.fromDoc).toList();
-                        if (kDebugMode) {
-                          debugPrint(
-                              '📨 UI: Converted ${latestMessages.length} ChatMessage objects');
-                        }
-                        final messages = _mergeMessages(latestMessages);
-                        if (kDebugMode) {
-                          debugPrint(
-                              '📨 UI: After merging: ${messages.length} messages');
-                        }
-                        final itemCount =
-                            messages.length + (_hasMoreOlder ? 1 : 0);
-                        if (kDebugMode) {
-                          debugPrint(
-                              '📨 UI: Rendering ListView with $itemCount items');
-                        }
-
-                        if (messages.isNotEmpty && kDebugMode) {
-                          final firstMessageText = messages.first.text;
-                          final previewLength = firstMessageText.length < 30
-                              ? firstMessageText.length
-                              : 30;
-                          debugPrint(
-                              '📨 UI: First message text: ${firstMessageText.substring(0, previewLength)}');
-                        }
-
-                        final senderIds = messages
-                            .map((message) => message.senderId)
-                            .where((id) => id != _currentUserId)
-                            .toSet()
-                            .toList();
-                        final profileFuture = senderIds.isEmpty
-                            ? Future.value(<String, UsersRecord>{})
-                            : context
-                                .read<ProfileProvider>()
-                                .batchGetProfiles(senderIds);
-
-                        return FutureBuilder<Map<String, UsersRecord>>(
-                          future: profileFuture,
-                          builder: (context, profileSnapshot) {
-                            final profileMap =
-                                profileSnapshot.data ?? <String, UsersRecord>{};
-
-                            return ListView.builder(
-                              controller: _scrollController,
-                              padding: EdgeInsets.symmetric(
-                                vertical: AppSpacing.md,
-                              ),
-                              reverse: true,
-                              itemCount: itemCount,
-                              itemBuilder: (context, index) {
-                                if (_hasMoreOlder &&
-                                    index == messages.length) {
-                                  return Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: AppSpacing.sm,
-                                      horizontal: AppSpacing.md,
+                          )
+                        : !_chatLoaded
+                            ? const Center(
+                                child: CircularProgressIndicator(),
+                              )
+                            : _chatUi == null
+                                ? Center(
+                                    child: AppText.body(
+                                      'Chat not found.',
+                                      color: AppTheme.of(context).secondaryText,
                                     ),
-                                    child: Center(
-                                      child: TextButton(
-                                        onPressed: _isLoadingOlder
-                                            ? null
-                                            : _loadOlderMessages,
-                                        child: _isLoadingOlder
-                                            ? const SizedBox(
-                                                width: 18,
-                                                height: 18,
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                ),
-                                              )
-                                            : const Text('Load earlier messages'),
-                                      ),
-                                    ),
-                                  );
-                                }
-                                final message = messages[index];
-                                final isMe =
-                                    message.senderId == _currentUserId;
-                                final showDateDivider =
-                                    _shouldShowDateDivider(index, messages);
-                                final isFirstInGroup =
-                                    _isFirstInGroup(index, messages);
-                                final isLastInGroup =
-                                    _isLastInGroup(index, messages);
-                                final isGroupChat = chat.type == 'game';
-                                final senderProfile =
-                                    profileMap[message.senderId];
-                                final senderName = isMe
-                                    ? null
-                                    : (senderProfile?.displayName ?? '').trim().isNotEmpty
-                                        ? senderProfile!.displayName
-                                        : 'Golfer';
-                                final senderPhotoUrl =
-                                    isMe ? null : senderProfile?.photoUrl;
+                                  )
+                                : StreamBuilder<QuerySnapshot>(
+                                    stream: _messagesStream,
+                                    builder: (context, snapshot) {
+                                  if (kDebugMode) {
+                                    debugPrint(
+                                        '📨 UI: StreamBuilder called for chatId: ${widget.chatId}');
+                                    debugPrint(
+                                        '📨 UI: messagesStream=${identityHashCode(_messagesStream)}');
+                                    debugPrint(
+                                        '📨 UI: snapshot.connectionState = ${snapshot.connectionState}');
+                                    debugPrint(
+                                        '📨 UI: snapshot.hasError = ${snapshot.hasError}');
+                                        debugPrint(
+                                            '📨 UI: snapshot.hasData = ${snapshot.hasData}');
+                                      }
 
-                                return Column(
-                                  children: [
-                                    ChatMessageBubble(
-                                      isSentByCurrentUser: isMe,
-                                      messageText: message.text,
-                                      imageUrl: message.imageUrl,
-                                      timestamp: message.createdAt,
-                                      isFirstInGroup: isFirstInGroup,
-                                      isLastInGroup: isLastInGroup,
-                                      senderId: message.senderId,
-                                      senderName: senderName,
-                                      senderPhotoUrl: senderPhotoUrl,
-                                      isGroupChat: isGroupChat,
-                                      message: message,
-                                      totalMembers: chat.memberIds.length,
-                                      currentUserId: _currentUserId,
-                                      onLongPress: () =>
-                                          _showReactionPicker(message),
-                                      onReplySwipe: () {
-                                        setState(() {
-                                          _replyToMessage = message;
-                                        });
-                                        _messageFocusNode.requestFocus();
-                                      },
-                                      onImageTap: message.imageUrl.isNotEmpty
-                                          ? () => _showImageFullscreen(
-                                              message.imageUrl)
-                                          : null,
-                                      onReactionTap: (emoji, hasReacted) =>
-                                          _handleReaction(
-                                              message, emoji, hasReacted),
-                                    ),
-                                    if (showDateDivider &&
-                                        message.createdAt != null)
-                                      ChatDateDivider(
-                                        date: message.createdAt!,
-                                      ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                        );
-                      },
-                    ),
+                                      if (snapshot.hasError) {
+                                        if (kDebugMode) {
+                                          debugPrint(
+                                              '❌ UI: StreamBuilder error: ${snapshot.error}');
+                                        }
+                                        return Center(
+                                          child: AppText.body(
+                                            'Unable to load messages.',
+                                            color: AppTheme.of(context).secondaryText,
+                                          ),
+                                        );
+                                      }
+                                      final hasCachedMessages =
+                                          _latestMessages.isNotEmpty ||
+                                              _olderMessages.isNotEmpty;
+                                      if (!snapshot.hasData) {
+                                        if (kDebugMode) {
+                                          debugPrint(
+                                              '📨 UI: No data yet, showing loading indicator');
+                                        }
+                                        if (!hasCachedMessages) {
+                                          return const Center(
+                                            child: CircularProgressIndicator(),
+                                          );
+                                        }
+                                      }
+                                      final docs = snapshot.data?.docs ?? [];
+                                      if (kDebugMode) {
+                                        debugPrint(
+                                            '📨 UI: Received ${docs.length} document(s)');
+                                      }
+
+                                      if (docs.isEmpty && !hasCachedMessages) {
+                                        if (kDebugMode) {
+                                          debugPrint(
+                                              '📨 UI: Docs array is empty - showing "No messages yet"');
+                                        }
+                                        return Center(
+                                          child: AppText.body(
+                                            'No messages yet.',
+                                            color: AppTheme.of(context).secondaryText,
+                                          ),
+                                        );
+                                      }
+
+                                      _lastStreamDoc =
+                                          docs.isNotEmpty ? docs.last : _lastStreamDoc;
+                                      final latestMessages = docs.isNotEmpty
+                                          ? docs.map(ChatMessage.fromDoc).toList()
+                                          : _latestMessages;
+                                      if (docs.isNotEmpty) {
+                                        _latestMessages
+                                          ..clear()
+                                          ..addAll(latestMessages);
+                                      }
+                                      if (kDebugMode) {
+                                        debugPrint(
+                                            '📨 UI: Converted ${latestMessages.length} ChatMessage objects');
+                                      }
+                                      final messages = _mergeMessages(latestMessages);
+                                      if (kDebugMode) {
+                                        debugPrint(
+                                            '📨 UI: After merging: ${messages.length} messages');
+                                      }
+                                      final itemCount =
+                                          messages.length + (_hasMoreOlder ? 1 : 0);
+                                      if (kDebugMode) {
+                                        debugPrint(
+                                            '📨 UI: Rendering ListView with $itemCount items');
+                                      }
+
+                                      if (messages.isNotEmpty && kDebugMode) {
+                                        final firstMessageText = messages.first.text;
+                                        final previewLength = firstMessageText.length < 30
+                                            ? firstMessageText.length
+                                            : 30;
+                                        debugPrint(
+                                            '📨 UI: First message text: ${firstMessageText.substring(0, previewLength)}');
+                                      }
+
+                                      final senderIds = messages
+                                          .map((message) => message.senderId)
+                                          .where((id) => id != _currentUserId)
+                                          .toSet()
+                                          .toList();
+                                      final profileFuture = senderIds.isEmpty
+                                          ? Future.value(<String, UsersRecord>{})
+                                          : context
+                                              .read<ProfileProvider>()
+                                              .batchGetProfiles(senderIds);
+
+                                      return FutureBuilder<Map<String, UsersRecord>>(
+                                        future: profileFuture,
+                                        builder: (context, profileSnapshot) {
+                                          final profileMap =
+                                              profileSnapshot.data ?? <String, UsersRecord>{};
+                                          final chat = _chatUi!;
+                                          final totalMembers = chat.memberIds.length;
+                                          final isGroupChat = chat.type == 'game';
+
+                                          return ListView.builder(
+                                            controller: _scrollController,
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: AppSpacing.md,
+                                            ),
+                                            reverse: true,
+                                            itemCount: itemCount,
+                                            itemBuilder: (context, index) {
+                                              if (_hasMoreOlder &&
+                                                  index == messages.length) {
+                                                return Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: AppSpacing.sm,
+                                                    horizontal: AppSpacing.md,
+                                                  ),
+                                                  child: Center(
+                                                    child: TextButton(
+                                                      onPressed: _isLoadingOlder
+                                                          ? null
+                                                          : _loadOlderMessages,
+                                                      child: _isLoadingOlder
+                                                          ? const SizedBox(
+                                                              width: 18,
+                                                              height: 18,
+                                                              child: CircularProgressIndicator(
+                                                                strokeWidth: 2,
+                                                              ),
+                                                            )
+                                                          : const Text('Load earlier messages'),
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                              final message = messages[index];
+                                              final isMe =
+                                                  message.senderId == _currentUserId;
+                                              final showDateDivider =
+                                                  _shouldShowDateDivider(index, messages);
+                                              final isFirstInGroup =
+                                                  _isFirstInGroup(index, messages);
+                                              final isLastInGroup =
+                                                  _isLastInGroup(index, messages);
+                                              final senderProfile =
+                                                  profileMap[message.senderId];
+                                              final senderName = isMe
+                                                  ? null
+                                                  : (senderProfile?.displayName ?? '').trim().isNotEmpty
+                                                      ? senderProfile!.displayName
+                                                      : 'Golfer';
+                                              final senderPhotoUrl =
+                                                  isMe ? null : senderProfile?.photoUrl;
+
+                                              return Column(
+                                                children: [
+                                                  ChatMessageBubble(
+                                                    isSentByCurrentUser: isMe,
+                                                    messageText: message.text,
+                                                    imageUrl: message.imageUrl,
+                                                    timestamp: message.createdAt,
+                                                    isFirstInGroup: isFirstInGroup,
+                                                    isLastInGroup: isLastInGroup,
+                                                    senderId: message.senderId,
+                                                    senderName: senderName,
+                                                    senderPhotoUrl: senderPhotoUrl,
+                                                    isGroupChat: isGroupChat,
+                                                    message: message,
+                                                    totalMembers: totalMembers,
+                                                    currentUserId: _currentUserId,
+                                                    onLongPress: () =>
+                                                        _showReactionPicker(message),
+                                                    onReplySwipe: () {
+                                                      setState(() {
+                                                        _replyToMessage = message;
+                                                      });
+                                                      _messageFocusNode.requestFocus();
+                                                    },
+                                                    onImageTap: message.imageUrl.isNotEmpty
+                                                        ? () => _showImageFullscreen(
+                                                            message.imageUrl)
+                                                        : null,
+                                                    onReactionTap: (emoji, hasReacted) =>
+                                                        _handleReaction(
+                                                            message, emoji, hasReacted),
+                                                  ),
+                                                  if (showDateDivider &&
+                                                      message.createdAt != null)
+                                                    ChatDateDivider(
+                                                      date: message.createdAt!,
+                                                    ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
                   ),
                   ChatInputBar(
                     messageController: _messageController,
                     messageFocusNode: _messageFocusNode,
-                    enabled: canSend,
+                    enabled: _canSend && _chatUi != null && _chatError == null,
                     onSendMessage: _sendMessage,
                     replyToMessage: _replyToMessage,
                     onCancelReply: () {
@@ -1125,61 +1253,62 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget> {
                       });
                     },
                   ),
-                    ],
-                  ),
-                  // Scroll to Bottom FAB
-                  if (_showScrollToBottom)
-                    Positioned(
-                      bottom: 90,
-                      right: 16,
-                      child: Semantics(
-                        button: true,
-                        label: 'Scroll to bottom',
-                        child: Material(
-                          elevation: 4,
+                ],
+              ),
+              // Scroll to Bottom FAB
+              if (_showScrollToBottom)
+                Positioned(
+                  bottom: 90,
+                  right: 16,
+                  child: Semantics(
+                    button: true,
+                    label: 'Scroll to bottom',
+                    child: Material(
+                      elevation: 4,
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.transparent,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppTheme.of(context).primary,
+                              AppTheme.of(context).primary.withOpacity(0.8),
+                            ],
+                          ),
                           borderRadius: BorderRadius.circular(16),
-                          color: Colors.transparent,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppTheme.of(context).primary,
-                                  AppTheme.of(context).primary.withOpacity(0.8),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.of(context)
-                                      .primary
-                                      .withOpacity(0.4),
-                                  blurRadius: 8,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.of(context)
+                                  .primary
+                                  .withOpacity(0.4),
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
                             ),
-                            child: InkWell(
-                              onTap: _scrollToBottom,
-                              borderRadius: BorderRadius.circular(16),
-                              child: Padding(
-                                padding: EdgeInsets.all(12),
-                                child: Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  color: Colors.white,
-                                  size: 28,
-                                ),
-                              ),
+                          ],
+                        ),
+                        child: InkWell(
+                          onTap: _scrollToBottom,
+                          borderRadius: BorderRadius.circular(16),
+                          child: Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: Colors.white,
+                              size: 28,
                             ),
                           ),
                         ),
                       ),
                     ),
+                  ),
+                ),
                 ],
               ),
             ),
-          );
-        },
+          ),
+        ),
       ),
-    );
+    ),
+  );
   }
 }

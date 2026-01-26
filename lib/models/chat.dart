@@ -41,6 +41,20 @@ class Chat {
 
   static Chat fromDoc(DocumentSnapshot doc) {
     final data = (doc.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
+    final rawTypingUsers = data['typingUsers'];
+    final typingUsers = <String, DateTime>{};
+    if (rawTypingUsers is Map) {
+      rawTypingUsers.forEach((key, value) {
+        if (value is Timestamp) {
+          typingUsers[key.toString()] = value.toDate();
+        } else {
+          assert(
+            value == null || value is Timestamp,
+            'Chat.fromDoc: typingUsers[$key] expected Timestamp or null, got ${value.runtimeType}',
+          );
+        }
+      });
+    }
     return Chat(
       id: doc.id,
       memberIds: (data['memberIds'] as List<dynamic>?)
@@ -68,12 +82,7 @@ class Chat {
       pinnedMessage: (data['pinnedMessage'] as String?) ?? '',
       pinnedAt: (data['pinnedAt'] as Timestamp?)?.toDate(),
       archivedAt: (data['archivedAt'] as Timestamp?)?.toDate(),
-      typingUsers: (data['typingUsers'] as Map<String, dynamic>?)
-              ?.map(
-                (key, value) =>
-                    MapEntry(key, (value as Timestamp).toDate()),
-              ) ??
-          <String, DateTime>{},
+      typingUsers: typingUsers,
     );
   }
 }

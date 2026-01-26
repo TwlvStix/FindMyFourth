@@ -69,7 +69,9 @@ Theme wrapInMaterialDatePickerTheme(
     data: baseTheme.copyWith(
       colorScheme: baseTheme.colorScheme.copyWith(
         onSurface: pickerForegroundColor,
+        surface: pickerBackgroundColor,
       ),
+      dialogBackgroundColor: pickerBackgroundColor,
       disabledColor: pickerForegroundColor.applyAlpha(0.3),
       textTheme: baseTheme.textTheme.copyWith(
         headlineSmall: headerTextStyle,
@@ -96,6 +98,7 @@ Theme wrapInMaterialDatePickerTheme(
       ),
       datePickerTheme: DatePickerThemeData(
         backgroundColor: pickerBackgroundColor,
+        surfaceTintColor: pickerBackgroundColor,
         headerBackgroundColor: headerBackgroundColor,
         headerForegroundColor: headerForegroundColor,
         weekdayStyle: baseTheme.textTheme.labelMedium!.copyWith(

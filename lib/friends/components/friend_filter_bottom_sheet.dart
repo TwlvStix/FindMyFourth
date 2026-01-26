@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import '/auth/firebase_auth/auth_util.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/models/vibe_profile.dart';
+import '/services/vibe_matcher.dart';
 
 /// Filter bottom sheet for friends search
 class FriendFilterBottomSheet extends StatefulWidget {
@@ -94,6 +97,13 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
                     _buildSectionHeader('Handicap Range'),
                     SizedBox(height: AppSpacing.sm),
                     _buildHandicapRange(),
+
+                    SizedBox(height: AppSpacing.xl),
+
+                    // Vibe score
+                    _buildSectionHeader('Vibe score'),
+                    SizedBox(height: AppSpacing.sm),
+                    _buildVibeRange(),
 
                     SizedBox(height: AppSpacing.xl),
 
@@ -220,6 +230,73 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
     );
   }
 
+  Widget _buildVibeRange() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildVibeChip('Any', null),
+            ),
+            SizedBox(width: AppSpacing.xs),
+            Expanded(
+              child: _buildVibeChip('50-70', VibeRange.low),
+            ),
+          ],
+        ),
+        SizedBox(height: AppSpacing.xs),
+        Row(
+          children: [
+            Expanded(
+              child: _buildVibeChip('71-80', VibeRange.mid),
+            ),
+            SizedBox(width: AppSpacing.xs),
+            Expanded(
+              child: _buildVibeChip('81-100', VibeRange.high),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVibeChip(String label, VibeRange? range) {
+    final isSelected = _filters.vibeRange == range;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _filters.vibeRange = range;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.fairway.withOpacity(0.1)
+              : Colors.transparent,
+          border: Border.all(
+            color: isSelected ? AppColors.fairway : AppColors.cloud,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: AppTypography.bodyMedium.copyWith(
+              color: isSelected ? AppColors.fairway : AppColors.stone,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildCourseFilter() {
     return Container(
       padding: EdgeInsets.symmetric(
@@ -259,17 +336,6 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
   Widget _buildAdditionalFilters() {
     return Column(
       children: [
-        _buildFilterToggle(
-          'Friends only',
-          _filters.friendsOnly,
-          Icons.people_rounded,
-          (value) {
-            setState(() {
-              _filters.friendsOnly = value;
-            });
-          },
-        ),
-        SizedBox(height: AppSpacing.sm),
         _buildFilterToggle(
           'Has Golf Canada number',
           _filters.hasGolfCanadaNumber,
@@ -347,30 +413,30 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
 /// Friend filter options
 class FriendFilters {
   HandicapRange? handicapRange;
+  VibeRange? vibeRange;
   String? homeCourse;
-  bool friendsOnly;
   bool hasGolfCanadaNumber;
 
   FriendFilters({
     this.handicapRange,
+    this.vibeRange,
     this.homeCourse,
-    this.friendsOnly = false,
     this.hasGolfCanadaNumber = false,
   });
 
   FriendFilters copy() {
     return FriendFilters(
       handicapRange: handicapRange,
+      vibeRange: vibeRange,
       homeCourse: homeCourse,
-      friendsOnly: friendsOnly,
       hasGolfCanadaNumber: hasGolfCanadaNumber,
     );
   }
 
   bool get hasActiveFilters {
     return handicapRange != null ||
+        vibeRange != null ||
         homeCourse != null ||
-        friendsOnly ||
         hasGolfCanadaNumber;
   }
 
@@ -387,6 +453,33 @@ class FriendFilters {
           break;
         case HandicapRange.high:
           if (handicap < 21) return false;
+          break;
+      }
+    }
+
+    // Vibe score filter (match against current user)
+    if (vibeRange != null) {
+      final currentUser = currentUserDocument;
+      final myVibes = currentUser?.vibeProfile ?? const <String, dynamic>{};
+      final theirVibes = user.vibeProfile ?? const <String, dynamic>{};
+      if (currentUser == null || myVibes.isEmpty || theirVibes.isEmpty) {
+        return false;
+      }
+
+      final myProfile = VibeProfile.fromFirestore(myVibes);
+      final theirProfile = VibeProfile.fromFirestore(theirVibes);
+      final result = VibeMatcher.score(myProfile, theirProfile);
+      final score = (result.cappedScore ?? result.totalScore).round();
+
+      switch (vibeRange!) {
+        case VibeRange.low:
+          if (score < 50 || score > 70) return false;
+          break;
+        case VibeRange.mid:
+          if (score < 71 || score > 80) return false;
+          break;
+        case VibeRange.high:
+          if (score < 81 || score > 100) return false;
           break;
       }
     }
@@ -413,4 +506,10 @@ enum HandicapRange {
   low, // 0-10
   mid, // 11-20
   high, // 21+
+}
+
+enum VibeRange {
+  low, // 50-70
+  mid, // 71-80
+  high, // 81-100
 }

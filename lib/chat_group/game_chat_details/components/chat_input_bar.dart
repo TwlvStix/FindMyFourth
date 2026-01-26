@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '/models/chat_message.dart';
 import '/core/app_theme.dart';
@@ -34,8 +35,13 @@ class ChatInputBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasText = messageController.text.trim().isNotEmpty;
-
+    if (kDebugMode) {
+      debugPrint(
+        '🧩 UI: ChatInputBar build enabled=$enabled '
+        'ctrl=${messageController.hashCode} '
+        'focus=${messageFocusNode.hashCode}',
+      );
+    }
     return Container(
       padding: EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -123,6 +129,13 @@ class ChatInputBar extends StatelessWidget {
                   minLines: 1,
                   maxLines: 5,
                   enabled: enabled,
+                  onChanged: (value) {
+                    if (kDebugMode) {
+                      debugPrint(
+                        '✍️ UI: ChatInputBar onChanged len=${value.length}',
+                      );
+                    }
+                  },
                   style: AppTheme.of(context).bodyMedium.override(
                         letterSpacing: 0.0,
                       ),
@@ -159,22 +172,28 @@ class ChatInputBar extends StatelessWidget {
                 ),
               ),
               SizedBox(width: AppSpacing.sm),
-              Container(
-                decoration: BoxDecoration(
-                  color: enabled && hasText
-                      ? AppTheme.of(context).primary
-                      : AppTheme.of(context).secondaryBackground,
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.send_rounded,
-                    color: enabled && hasText
-                        ? Colors.white
-                        : AppTheme.of(context).secondaryText,
-                  ),
-                  onPressed: enabled && hasText ? onSendMessage : null,
-                ),
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: messageController,
+                builder: (context, value, child) {
+                  final hasText = value.text.trim().isNotEmpty;
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: enabled && hasText
+                          ? AppTheme.of(context).primary
+                          : AppTheme.of(context).secondaryBackground,
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.send_rounded,
+                        color: enabled && hasText
+                            ? Colors.white
+                            : AppTheme.of(context).secondaryText,
+                      ),
+                      onPressed: enabled && hasText ? onSendMessage : null,
+                    ),
+                  );
+                },
               ),
             ],
           ),

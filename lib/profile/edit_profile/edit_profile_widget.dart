@@ -733,10 +733,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                           ),
                         ),
                         countBuilder: (count) => Container(
-                          width: 48,
+                          constraints: BoxConstraints(minWidth: 56),
                           alignment: Alignment.center,
                           child: Text(
                             count.toString(),
+                            maxLines: 1,
+                            softWrap: false,
+                            overflow: TextOverflow.clip,
+                            textAlign: TextAlign.center,
                             style: AppTypography.monoLarge.copyWith(
                               color: AppColors.onyx,
                               fontWeight: FontWeight.w700,

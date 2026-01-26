@@ -1,8 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/core/autocomplete_options_list.dart';
 import '/core/button_tabbar.dart';
-import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/fairway_background.dart';
@@ -21,6 +19,7 @@ import '/providers/user_provider.dart';
 import '/friends/components/premium_friend_card.dart';
 import '/friends/components/empty_state.dart';
 import '/friends/components/friend_section_header.dart';
+import '/friends/components/golfer_search_section.dart';
 import '/friends/components/grouped_friends_list.dart';
 import '/friends/components/friend_filter_bottom_sheet.dart';
 import '/friends/components/friend_card_skeleton.dart';
@@ -138,12 +137,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
       ? tabBarController!.previousIndex
       : 0;
 
-  final textFieldKey = GlobalKey();
-  FocusNode? textFieldFocusNode;
-  TextEditingController? textController;
-  String? textFieldSelectedOption;
-  String? Function(BuildContext, String?)? textControllerValidator;
-
   Future<void> _openDirectChat(UsersRecord user) async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
@@ -216,8 +209,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
         }
       });
 
-    textController = TextEditingController();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -228,7 +219,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
   @override
   void dispose() {
     tabBarController?.dispose();
-    textController?.dispose();
 
     super.dispose();
   }
@@ -369,661 +359,108 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                 backgroundColor: Colors.white,
                                 child: SingleChildScrollView(
                                   physics: AlwaysScrollableScrollPhysics(),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: EdgeInsets.only(
-                                            left: AppSpacing.md,
-                                            top: AppSpacing.md,
-                                            right: AppSpacing.md,
-                                            bottom: AppSpacing.md),
-                                        child: Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: AppSpacing.xs),
-                                              child: Autocomplete<String>(
-                                                initialValue:
-                                                    TextEditingValue(),
-                                                optionsBuilder:
-                                                    (textEditingValue) {
-                                                  if (textEditingValue.text ==
-                                                      '') {
-                                                    return const Iterable<
-                                                        String>.empty();
-                                                  }
-                                                  return ['Option 1']
-                                                      .where((option) {
-                                                    final lowercaseOption =
-                                                        option.toLowerCase();
-                                                    return lowercaseOption
-                                                        .contains(
-                                                            textEditingValue
-                                                                .text
-                                                                .toLowerCase());
-                                                  });
-                                                },
-                                                optionsViewBuilder: (context,
-                                                    onSelected, options) {
-                                                  return AutocompleteOptionsList(
-                                                    textFieldKey: textFieldKey,
-                                                    textController:
-                                                        textController!,
-                                                    options: options.toList(),
-                                                    onSelected: onSelected,
-                                                    textStyle:
-                                                        AppTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .override(
-                                                              font: GoogleFonts
-                                                                  .outfit(
-                                                                fontWeight: AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                                fontStyle: AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                              letterSpacing:
-                                                                  0.0,
-                                                              fontWeight:
-                                                                  AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                    textHighlightStyle:
-                                                        TextStyle(),
-                                                    elevation: 4.0,
-                                                    optionBackgroundColor:
-                                                        AppTheme.of(
-                                                                context)
-                                                            .primaryBackground,
-                                                    optionHighlightColor:
-                                                        AppTheme.of(
-                                                                context)
-                                                            .secondaryBackground,
-                                                    maxHeight: 200.0,
-                                                  );
-                                                },
-                                                onSelected: (String selection) {
-                                                  if (mounted) {
-                                                    setState(() =>
-                                                        textFieldSelectedOption =
-                                                            selection);
-                                                  }
-                                                  FocusScope.of(context)
-                                                      .unfocus();
-                                                },
-                                                fieldViewBuilder: (
-                                                  context,
-                                                  textEditingController,
-                                                  focusNode,
-                                                  onEditingComplete,
-                                                ) {
-                                                  textFieldFocusNode =
-                                                      focusNode;
-
-                                                  textController =
-                                                      textEditingController;
-                                                  return TextFormField(
-                                                    key: textFieldKey,
-                                                    controller:
-                                                        textEditingController,
-                                                    focusNode: focusNode,
-                                                    onChanged: (_) {
-                                                      if (mounted) {
-                                                        setState(() {});
-                                                      }
-                                                    },
-                                                    onEditingComplete:
-                                                        onEditingComplete,
-                                                    autofocus: true,
-                                                    obscureText: false,
-                                                    decoration: InputDecoration(
-                                                      labelStyle:
-                                                          AppTheme.of(
-                                                                  context)
-                                                              .labelMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .outfit(
-                                                                  fontWeight: AppTheme.of(
-                                                                          context)
-                                                                      .labelMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: AppTheme.of(
-                                                                          context)
-                                                                      .labelMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                color: AppTheme.of(
-                                                                        context)
-                                                                    .primaryBtnText,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: AppTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontWeight,
-                                                                fontStyle: AppTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                      hintStyle:
-                                                          AppTheme.of(
-                                                                  context)
-                                                              .labelMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .outfit(
-                                                                  fontWeight: AppTheme.of(
-                                                                          context)
-                                                                      .labelMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: AppTheme.of(
-                                                                          context)
-                                                                      .labelMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                color: AppTheme.of(
-                                                                        context)
-                                                                    .primaryBtnText,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: AppTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontWeight,
-                                                                fontStyle: AppTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                      enabledBorder:
-                                                          OutlineInputBorder(
-                                                        borderSide: BorderSide(
-                                                          color: AppTheme
-                                                                  .of(context)
-                                                              .primaryBtnText,
-                                                          width: 2.0,
-                                                        ),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(8.0),
-                                                      ),
-                                                      focusedBorder:
-                                                          OutlineInputBorder(
-                                                        borderSide: BorderSide(
-                                                          color: AppTheme
-                                                                  .of(context)
-                                                              .primaryBtnText,
-                                                          width: 2.0,
-                                                        ),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(8.0),
-                                                      ),
-                                                      errorBorder:
-                                                          OutlineInputBorder(
-                                                        borderSide: BorderSide(
-                                                          color: AppTheme
-                                                                  .of(context)
-                                                              .error,
-                                                          width: 2.0,
-                                                        ),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(8.0),
-                                                      ),
-                                                      focusedErrorBorder:
-                                                          OutlineInputBorder(
-                                                        borderSide: BorderSide(
-                                                          color: AppTheme
-                                                                  .of(context)
-                                                              .error,
-                                                          width: 2.0,
-                                                        ),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(8.0),
-                                                      ),
-                                                      prefixIcon: Icon(
-                                                        Icons.search_rounded,
-                                                        color:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .primaryBtnText,
-                                                      ),
-                                                    ),
-                                                    style: AppTheme.of(
-                                                            context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .outfit(
-                                                            fontWeight:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: AppTheme
-                                                                  .of(context)
-                                                              .secondaryBackground,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                    validator: textControllerValidator
-                                                        .asValidator(context),
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsets.only(
-                                                    left: AppSpacing.sm),
-                                            child: AppIconButton(
-                                              borderColor: friendFilters.hasActiveFilters
-                                                  ? AppColors.fairway.withOpacity(0.2)
-                                                  : Colors.transparent,
-                                              borderRadius: 30.0,
-                                              borderWidth: friendFilters.hasActiveFilters ? 2.0 : 1.0,
-                                              buttonSize: 44.0,
-                                              fillColor: friendFilters.hasActiveFilters
-                                                  ? AppColors.fairway.withOpacity(0.1)
-                                                  : Colors.transparent,
-                                              tooltip: 'Filters',
-                                              icon: Icon(
-                                                Icons.tune_rounded,
-                                                color: friendFilters.hasActiveFilters
-                                                    ? AppColors.fairway
-                                                    : AppTheme.of(context).primaryBtnText,
-                                                size: 24.0,
-                                              ),
-                                              onPressed: _showFilterBottomSheet,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsets.only(
-                                                    left: AppSpacing.sm),
-                                            child: AppIconButton(
-                                              borderColor: Colors.transparent,
-                                              borderRadius: 30.0,
-                                              borderWidth: 1.0,
-                                              buttonSize: 44.0,
-                                              tooltip: 'Clear search',
-                                              icon: Icon(
-                                                Icons.clear_sharp,
-                                                color:
-                                                    AppTheme.of(context)
-                                                        .primaryBtnText,
-                                                size: 24.0,
-                                              ),
-                                              onPressed: () {
-                                                textController?.clear();
-                                                FocusScope.of(context)
-                                                    .unfocus();
-                                                if (mounted) {
-                                                  setState(() {});
-                                                }
-                                              },
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                          left: AppSpacing.lg,
-                                          bottom: AppSpacing.xs),
-                                      child: Text(
-                                        'Search Results',
-                                        style: AppTypography.labelMedium.copyWith(
-                                          color: AppTheme.of(context).primaryBtnText,
-                                          fontWeight: FontWeight.w700,
-                                          letterSpacing: 0.8,
-                                        ),
-                                      ),
-                                    ),
-                                    StreamBuilder<List<UsersRecord>>(
-                                      stream: (() {
-                                        final term = textController?.text
-                                                .trim()
-                                                .toLowerCase() ??
-                                            '';
-                                        if (term.isEmpty) {
-                                          return Stream.value(<UsersRecord>[]);
-                                        }
-                                        return queryUsersRecord(
-                                          queryBuilder: (usersRecord) =>
-                                              usersRecord
-                                                  .orderBy('display_name_lower')
-                                                  .startAt([term])
-                                                  .endAt(['${term}\uf8ff'])
-                                                  .limit(25),
-                                        );
-                                      })(),
-                                      builder: (context, snapshot) {
-                                        // Skeleton loading state
-                                        if (!snapshot.hasData) {
-                                          return Padding(
-                                            padding: EdgeInsets.only(top: AppSpacing.md),
-                                            child: Column(
-                                              children: [
-                                                FriendCardSkeleton(),
-                                                FriendCardSkeleton(),
-                                                FriendCardSkeleton(),
-                                              ],
-                                            ),
+                                  child: GolferSearchSection(
+                                    currentUserId: currentUserUid,
+                                    friendFilters: friendFilters,
+                                    onFilterPressed: _showFilterBottomSheet,
+                                    itemBuilder: (context, listViewUsersRecord) {
+                                      return AuthUserStreamWidget(
+                                        builder: (context) {
+                                          final isFriend =
+                                              (currentUserDocument?.friends.toList() ?? [])
+                                                  .contains(
+                                            listViewUsersRecord.reference,
                                           );
-                                        }
-                                        final searchTerm = textController?.text
-                                                .trim()
-                                                .toLowerCase() ??
-                                            '';
-                                        List<UsersRecord>
-                                            listViewUsersRecordList = snapshot
-                                                .data!
-                                                .where((u) =>
-                                                    u.uid != currentUserUid)
-                                                .where((user) {
-                                          if (searchTerm.isEmpty) {
-                                            return true;
+                                          final isOutgoingPending =
+                                              listViewUsersRecord.friendRequests
+                                                  .contains(currentUserReference);
+                                          final isIncomingPending =
+                                              (currentUserDocument
+                                                          ?.friendRequests
+                                                          .toList() ??
+                                                      [])
+                                                  .contains(
+                                            listViewUsersRecord.reference,
+                                          );
+                                          final hasPending =
+                                              isOutgoingPending || isIncomingPending;
+
+                                          String actionLabel;
+                                          IconData actionIcon;
+                                          bool showActionButton;
+
+                                          if (isFriend) {
+                                            actionLabel = 'Friends';
+                                            actionIcon = Icons.people_rounded;
+                                            showActionButton = true;
+                                          } else if (hasPending) {
+                                            actionLabel =
+                                                isOutgoingPending ? 'Cancel' : 'Pending';
+                                            actionIcon = isOutgoingPending
+                                                ? Icons.close_rounded
+                                                : Icons.pending_rounded;
+                                            showActionButton = true;
+                                          } else {
+                                            actionLabel = 'Add';
+                                            actionIcon = Icons.person_add_rounded;
+                                            showActionButton = true;
                                           }
-                                          final displayName =
-                                              user.displayName.toLowerCase();
-                                          final firstName =
-                                              user.firstName.toLowerCase();
-                                          final lastName =
-                                              user.lastName.toLowerCase();
-                                          return displayName
-                                                  .contains(searchTerm) ||
-                                              firstName.contains(searchTerm) ||
-                                              lastName.contains(searchTerm);
-                                        })
-                                                .where((user) =>
-                                                    friendFilters.matchesUser(user))
-                                                .toList();
 
-                                        // Show empty state if no results and user has searched
-                                        if (listViewUsersRecordList.isEmpty &&
-                                            searchTerm.isNotEmpty) {
-                                          return FriendsEmptyState(
-                                            type: FriendsEmptyStateType
-                                                .noSearchResults,
-                                            onActionPressed: () {
-                                              textController?.clear();
-                                              FocusScope.of(context).unfocus();
-                                              if (mounted) {
-                                                setState(() {});
-                                              }
+                                          return PremiumFriendCard(
+                                            user: listViewUsersRecord,
+                                            currentUser: currentUserDocument,
+                                            onViewProfile: () {
+                                              context.pushNamed(
+                                                'ProfileUser',
+                                                extra: <String, dynamic>{
+                                                  'userRef':
+                                                      listViewUsersRecord.reference,
+                                                },
+                                              );
                                             },
-                                          );
-                                        }
-
-                                        return ListView.separated(
-                                          padding: EdgeInsets.fromLTRB(
-                                            0,
-                                            AppSpacing.xs,
-                                            0,
-                                            AppSpacing.xxl,
-                                          ),
-                                          primary: false,
-                                          shrinkWrap: true,
-                                          scrollDirection: Axis.vertical,
-                                          itemCount:
-                                              listViewUsersRecordList.length,
-                                          separatorBuilder: (_, __) =>
-                                              SizedBox(height: 0),
-                                          itemBuilder:
-                                              (context, listViewIndex) {
-                                            final listViewUsersRecord =
-                                                listViewUsersRecordList[
-                                                    listViewIndex];
-                                            return AuthUserStreamWidget(
-                                              builder: (context) {
-                                                final isFriend =
-                                                    (currentUserDocument
-                                                                ?.friends
-                                                                .toList() ??
-                                                            [])
-                                                        .contains(
-                                                  listViewUsersRecord.reference,
-                                                );
-                                                final isOutgoingPending =
-                                                    listViewUsersRecord
-                                                        .friendRequests
-                                                        .contains(
-                                                            currentUserReference);
-                                                final isIncomingPending =
-                                                    (currentUserDocument
-                                                                ?.friendRequests
-                                                                .toList() ??
-                                                            [])
-                                                        .contains(
-                                                  listViewUsersRecord.reference,
-                                                );
-                                                final hasPending =
-                                                    isOutgoingPending ||
-                                                        isIncomingPending;
-
-                                                String actionLabel;
-                                                IconData actionIcon;
-                                                bool showActionButton;
-
-                                                if (isFriend) {
-                                                  actionLabel = 'Friends';
-                                                  actionIcon = Icons.people_rounded;
-                                                  showActionButton = true;
-                                                } else if (hasPending) {
-                                                  actionLabel = isOutgoingPending
-                                                      ? 'Cancel'
-                                                      : 'Pending';
-                                                  actionIcon = isOutgoingPending
-                                                      ? Icons.close_rounded
-                                                      : Icons.pending_rounded;
-                                                  showActionButton = true;
-                                                } else {
-                                                  actionLabel = 'Add';
-                                                  actionIcon = Icons.person_add_rounded;
-                                                  showActionButton = true;
-                                                }
-
-                                                return PremiumFriendCard(
-                                                  user: listViewUsersRecord,
-                                                  currentUser: currentUserDocument,
-                                                  onViewProfile: () {
-                                                    context.pushNamed(
-                                                      'ProfileUser',
-                                                      extra: <String, dynamic>{
-                                                        'userRef':
-                                                            listViewUsersRecord
-                                                                .reference,
-                                                      },
-                                                    );
-                                                  },
-                                                  onMessage: () async {
-                                                    await _openDirectChat(
-                                                        listViewUsersRecord);
-                                                  },
-                                                  onAction: isFriend
-                                                      ? null
-                                                      : hasPending
-                                                          ? (isOutgoingPending
-                                                              ? () async {
-                                                                  try {
-                                                                    await context
-                                                                        .read<UserProvider>()
-                                                                        .cancelFriendRequest(
-                                                                      listViewUsersRecord
-                                                                          .reference,
-                                                                    );
-                                                                    if (mounted) {
-                                                                      setState(
-                                                                          () {});
-                                                                    }
-                                                                    if (!mounted) {
-                                                                      return;
-                                                                    }
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .clearSnackBars();
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .showSnackBar(
-                                                                      SnackBar(
-                                                                        content: Text(
-                                                                          'Request cancelled.',
-                                                                          style: AppTheme.of(context)
-                                                                              .titleMedium
-                                                                              .override(
-                                                                                font: GoogleFonts
-                                                                                    .outfit(
-                                                                                  fontWeight: AppTheme.of(context)
-                                                                                      .titleMedium
-                                                                                      .fontWeight,
-                                                                                  fontStyle: AppTheme.of(context)
-                                                                                      .titleMedium
-                                                                                      .fontStyle,
-                                                                                ),
-                                                                                color: AppTheme.of(context)
-                                                                                    .primaryBtnText,
-                                                                                letterSpacing:
-                                                                                    0.0,
-                                                                                fontWeight: AppTheme.of(context)
-                                                                                    .titleMedium
-                                                                                    .fontWeight,
-                                                                                fontStyle: AppTheme.of(context)
-                                                                                    .titleMedium
-                                                                                    .fontStyle,
-                                                                              ),
-                                                                        ),
-                                                                        duration: Duration(
-                                                                            milliseconds:
-                                                                                1500),
-                                                                        backgroundColor:
-                                                                            AppTheme.of(context)
-                                                                                .primary,
-                                                                      ),
-                                                                    );
-                                                                  } catch (_) {
-                                                                    if (!mounted) {
-                                                                      return;
-                                                                    }
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .clearSnackBars();
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .showSnackBar(
-                                                                      SnackBar(
-                                                                        content: Text(
-                                                                          'Unable to cancel request.',
-                                                                          style: AppTheme.of(context)
-                                                                              .titleMedium
-                                                                              .override(
-                                                                                font: GoogleFonts
-                                                                                    .outfit(
-                                                                                  fontWeight: AppTheme.of(context)
-                                                                                      .titleMedium
-                                                                                      .fontWeight,
-                                                                                  fontStyle: AppTheme.of(context)
-                                                                                      .titleMedium
-                                                                                      .fontStyle,
-                                                                                ),
-                                                                                color: AppTheme.of(context)
-                                                                                    .primaryBtnText,
-                                                                                letterSpacing:
-                                                                                    0.0,
-                                                                                fontWeight: AppTheme.of(context)
-                                                                                    .titleMedium
-                                                                                    .fontWeight,
-                                                                                fontStyle: AppTheme.of(context)
-                                                                                    .titleMedium
-                                                                                    .fontStyle,
-                                                                              ),
-                                                                        ),
-                                                                        duration: Duration(
-                                                                            milliseconds:
-                                                                                1500),
-                                                                        backgroundColor:
-                                                                            AppTheme.of(context)
-                                                                                .error,
-                                                                      ),
-                                                                    );
-                                                                  }
-                                                                }
-                                                              : null)
-                                                          : () async {
-                                                          try {
-                                                            await context
-                                                                .read<
-                                                                    UserProvider>()
-                                                                .sendFriendRequest(
-                                                              listViewUsersRecord
-                                                                  .reference,
-                                                            );
-                                                            addToReqUserList(
-                                                                valueOrDefault<
-                                                                    String>(
-                                                              listViewUsersRecord
-                                                                  .uid,
-                                                              '007',
-                                                            ));
-                                                            if (mounted) {
-                                                              setState(() {});
-                                                            }
-                                                            if (!mounted) {
-                                                              return;
-                                                            }
-                                                            ScaffoldMessenger.of(
-                                                                    context)
-                                                                .clearSnackBars();
-                                                            ScaffoldMessenger.of(
-                                                                    context)
-                                                                .showSnackBar(
-                                                              SnackBar(
-                                                                content: Text(
-                                                                  'Friend request sent!',
-                                                                  style: AppTheme.of(
-                                                                          context)
-                                                                      .titleMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .outfit(
+                                            onMessage: () async {
+                                              await _openDirectChat(listViewUsersRecord);
+                                            },
+                                            onAction: isFriend
+                                                ? null
+                                                : hasPending
+                                                    ? (isOutgoingPending
+                                                        ? () async {
+                                                            try {
+                                                              await context
+                                                                  .read<UserProvider>()
+                                                                  .cancelFriendRequest(
+                                                                listViewUsersRecord
+                                                                    .reference,
+                                                              );
+                                                              if (mounted) {
+                                                                setState(() {});
+                                                              }
+                                                              if (!mounted) {
+                                                                return;
+                                                              }
+                                                              ScaffoldMessenger.of(context)
+                                                                  .clearSnackBars();
+                                                              ScaffoldMessenger.of(context)
+                                                                  .showSnackBar(
+                                                                SnackBar(
+                                                                  content: Text(
+                                                                    'Request cancelled.',
+                                                                    style: AppTheme.of(context)
+                                                                        .titleMedium
+                                                                        .override(
+                                                                          font: GoogleFonts
+                                                                              .outfit(
+                                                                            fontWeight: AppTheme.of(context)
+                                                                                .titleMedium
+                                                                                .fontWeight,
+                                                                            fontStyle: AppTheme.of(context)
+                                                                                .titleMedium
+                                                                                .fontStyle,
+                                                                          ),
+                                                                          color: AppTheme.of(context)
+                                                                              .primaryBtnText,
+                                                                          letterSpacing: 0.0,
                                                                           fontWeight: AppTheme.of(context)
                                                                               .titleMedium
                                                                               .fontWeight,
@@ -1031,96 +468,101 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                               .titleMedium
                                                                               .fontStyle,
                                                                         ),
-                                                                        color: AppTheme.of(
-                                                                                context)
-                                                                            .primaryBtnText,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight: AppTheme.of(
-                                                                                context)
-                                                                            .titleMedium
-                                                                            .fontWeight,
-                                                                        fontStyle: AppTheme.of(
-                                                                                context)
-                                                                            .titleMedium
-                                                                            .fontStyle,
-                                                                      ),
+                                                                  ),
+                                                                  duration:
+                                                                      Duration(milliseconds: 1500),
+                                                                  backgroundColor:
+                                                                      AppTheme.of(context)
+                                                                          .primary,
                                                                 ),
-                                                                duration: Duration(
-                                                                    milliseconds:
-                                                                        1500),
-                                                                backgroundColor:
-                                                                    AppTheme.of(
-                                                                            context)
-                                                                        .primary,
-                                                              ),
-                                                            );
-                                                          } catch (_) {
-                                                            if (!mounted) {
-                                                              return;
+                                                              );
+                                                            } catch (_) {
+                                                              if (!mounted) {
+                                                                return;
+                                                              }
+                                                              showSnackbar(
+                                                                context,
+                                                                'Unable to cancel request. Please try again.',
+                                                              );
                                                             }
-                                                            ScaffoldMessenger.of(
-                                                                    context)
-                                                                .clearSnackBars();
-                                                            ScaffoldMessenger.of(
-                                                                    context)
-                                                                .showSnackBar(
-                                                              SnackBar(
-                                                                content: Text(
-                                                                  'Unable to send request.',
-                                                                  style: AppTheme.of(
-                                                                          context)
-                                                                      .titleMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .outfit(
-                                                                          fontWeight: AppTheme.of(context)
-                                                                              .titleMedium
-                                                                              .fontWeight,
-                                                                          fontStyle: AppTheme.of(context)
-                                                                              .titleMedium
-                                                                              .fontStyle,
-                                                                        ),
-                                                                        color: AppTheme.of(
-                                                                                context)
-                                                                            .primaryBtnText,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight: AppTheme.of(
-                                                                                context)
-                                                                            .titleMedium
-                                                                            .fontWeight,
-                                                                        fontStyle: AppTheme.of(
-                                                                                context)
-                                                                            .titleMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                ),
-                                                                duration: Duration(
-                                                                    milliseconds:
-                                                                        1500),
-                                                                backgroundColor:
-                                                                    AppTheme.of(
-                                                                            context)
-                                                                        .error,
-                                                              ),
-                                                            );
                                                           }
-                                                        },
-                                                  actionLabel: actionLabel,
-                                                  actionIcon: actionIcon,
-                                                  showActionButton:
-                                                      showActionButton,
-                                                );
-                                              },
-                                            );
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ],
+                                                        : () async {})
+                                                    : () async {
+                                                        try {
+                                                          await context
+                                                              .read<UserProvider>()
+                                                              .sendFriendRequest(
+                                                            listViewUsersRecord.reference,
+                                                          );
+                                                          addToReqUserList(
+                                                              valueOrDefault<String>(
+                                                            listViewUsersRecord.uid,
+                                                            '007',
+                                                          ));
+                                                          if (mounted) {
+                                                            setState(() {});
+                                                          }
+                                                          if (!mounted) {
+                                                            return;
+                                                          }
+                                                          ScaffoldMessenger.of(context)
+                                                              .clearSnackBars();
+                                                          ScaffoldMessenger.of(context)
+                                                              .showSnackBar(
+                                                            SnackBar(
+                                                              content: Text(
+                                                                'Friend request sent!',
+                                                                style: AppTheme.of(context)
+                                                                    .titleMedium
+                                                                    .override(
+                                                                      font: GoogleFonts.outfit(
+                                                                        fontWeight: AppTheme.of(context)
+                                                                            .titleMedium
+                                                                            .fontWeight,
+                                                                        fontStyle: AppTheme.of(context)
+                                                                            .titleMedium
+                                                                            .fontStyle,
+                                                                      ),
+                                                                      color: AppTheme.of(context)
+                                                                          .primaryBtnText,
+                                                                      letterSpacing: 0.0,
+                                                                      fontWeight: AppTheme.of(context)
+                                                                          .titleMedium
+                                                                          .fontWeight,
+                                                                      fontStyle: AppTheme.of(context)
+                                                                          .titleMedium
+                                                                          .fontStyle,
+                                                                    ),
+                                                              ),
+                                                              duration:
+                                                                  Duration(milliseconds: 1500),
+                                                              backgroundColor:
+                                                                  AppTheme.of(context)
+                                                                      .primary,
+                                                            ),
+                                                          );
+                                                        } catch (_) {
+                                                          if (!mounted) {
+                                                            return;
+                                                          }
+                                                          showSnackbar(
+                                                            context,
+                                                            'Unable to send request. Please try again.',
+                                                          );
+                                                        }
+                                                      },
+                                            actionLabel: actionLabel,
+                                            actionIcon: actionIcon,
+                                            actionColor: isOutgoingPending
+                                                ? AppColors.stone
+                                                : AppColors.fairway,
+                                            showActionButton: showActionButton,
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
                                 ),
-                              ),
                               ),
                             ),
                           ),
@@ -1138,7 +580,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                 backgroundColor: Colors.white,
                                 child: SingleChildScrollView(
                                   physics: AlwaysScrollableScrollPhysics(),
-                                child: Column(
+                                  child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [

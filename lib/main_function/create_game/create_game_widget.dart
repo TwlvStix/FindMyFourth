@@ -647,44 +647,53 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         FocusScope.of(context).unfocus();
         FocusManager.instance.primaryFocus?.unfocus();
       },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: AppTheme.of(context).primary,
-        appBar: AppBar(
-          backgroundColor: AppTheme.of(context).primaryBackground,
-          automaticallyImplyLeading: false,
-          leading: AppIconButton(
-            borderColor: Colors.transparent,
-            borderRadius: 30.0,
-            borderWidth: 1.0,
-            buttonSize: 55.0,
-            tooltip: 'Back',
-            icon: Icon(
-              Icons.arrow_back_sharp,
-              color: AppTheme.of(context).primary,
-              size: 25.0,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle(
+          statusBarColor: AppTheme.of(context).primary,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+        ),
+        child: Scaffold(
+          key: scaffoldKey,
+          backgroundColor: AppTheme.of(context).primary,
+          appBar: AppBar(
+            backgroundColor: AppTheme.of(context).primary,
+            surfaceTintColor: Colors.transparent,
+            scrolledUnderElevation: 0.0,
+            elevation: 0.0,
+            shadowColor: Colors.transparent,
+            automaticallyImplyLeading: false,
+            leading: AppIconButton(
+              borderColor: Colors.transparent,
+              borderRadius: 30.0,
+              borderWidth: 1.0,
+              buttonSize: 55.0,
+              tooltip: 'Back',
+              icon: Icon(
+                Icons.arrow_back_sharp,
+                color: AppTheme.of(context).primary,
+                size: 25.0,
+              ),
+              onPressed: () async {
+                context.pop();
+              },
             ),
-            onPressed: () async {
-              context.pop();
-            },
-          ),
-          title: Text(
-            'Create Game',
-            style: AppTheme.of(context).headlineLarge.override(
-                  font: GoogleFonts.outfit(
+            title: Text(
+              'Create Game',
+              style: AppTheme.of(context).headlineLarge.override(
+                    font: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w500,
+                      fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
+                    ),
+                    color: AppTheme.of(context).primary,
+                    fontSize: 24.0,
+                    letterSpacing: 0.0,
                     fontWeight: FontWeight.w500,
                     fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
                   ),
-                  color: AppTheme.of(context).primary,
-                  fontSize: 24.0,
-                  letterSpacing: 0.0,
-                  fontWeight: FontWeight.w500,
-                  fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
-                ),
+            ),
+            centerTitle: false,
           ),
-          centerTitle: false,
-          elevation: 10.0,
-        ),
         body: SafeArea(
           top: true,
           child: FairwayBackgroundDark(
@@ -772,8 +781,14 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         MediaQuery.sizeOf(context).width * 1.0,
                                     height: 100.0,
                                     decoration: BoxDecoration(
-                                      color: AppTheme.of(context).tertiary,
+                                      color: AppTheme.of(context).secondary,
                                       borderRadius: BorderRadius.circular(10.0),
+                                      border: Border.all(
+                                        color: AppTheme.of(context)
+                                            .accent4
+                                            .withValues(alpha: 0.35),
+                                        width: 1.0,
+                                      ),
                                     ),
                                     child: Padding(
                                       padding: EdgeInsets.only(
@@ -791,7 +806,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   0.65,
                                               height: 85.0,
                                               decoration: BoxDecoration(
-                                                color: Color(0xFFA0A0A0),
+                                                color: AppTheme.of(context)
+                                                    .secondaryBackground,
                                                 borderRadius:
                                                     BorderRadius.circular(20.0),
                                               ),
@@ -836,7 +852,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                                 ),
                                                                 color: AppTheme.of(
                                                                         context)
-                                                                    .primaryBtnText,
+                                                                    .primaryText,
                                                                 fontSize: 22.0,
                                                                 letterSpacing:
                                                                     0.0,
@@ -875,7 +891,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                                 ),
                                                                 color: AppTheme.of(
                                                                         context)
-                                                                    .primaryBtnText,
+                                                                    .primaryText,
                                                                 fontSize: 26.0,
                                                                 letterSpacing:
                                                                     0.0,
@@ -941,7 +957,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                                 ),
                                                                 color: AppTheme.of(
                                                                         context)
-                                                                    .primaryBtnText,
+                                                                    .primaryText,
                                                                 fontSize: 22.0,
                                                                 letterSpacing:
                                                                     0.0,
@@ -978,7 +994,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                                 ),
                                                                 color: AppTheme.of(
                                                                         context)
-                                                                    .primaryBtnText,
+                                                                    .primaryText,
                                                                 fontSize: 22.0,
                                                                 letterSpacing:
                                                                     0.0,
@@ -1023,10 +1039,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                       child!,
                                                       headerBackgroundColor:
                                                           AppTheme.of(context)
-                                                              .primary,
+                                                              .primaryBackground,
                                                       headerForegroundColor:
                                                           AppTheme.of(context)
-                                                              .info,
+                                                              .primaryText,
                                                       headerTextStyle:
                                                           AppTheme.of(context)
                                                               .headlineLarge
@@ -1055,7 +1071,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                               ),
                                                       pickerBackgroundColor:
                                                           AppTheme.of(context)
-                                                              .secondaryBackground,
+                                                              .primaryBackground,
                                                       pickerForegroundColor:
                                                           AppTheme.of(context)
                                                               .primaryText,
@@ -1064,7 +1080,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                               .primary,
                                                       selectedDateTimeForegroundColor:
                                                           AppTheme.of(context)
-                                                              .info,
+                                                              .primaryBtnText,
                                                       actionButtonForegroundColor:
                                                           AppTheme.of(context)
                                                               .primaryText,
@@ -1610,6 +1626,6 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           ),
         ),
       ),
-    );
+    ));
   }
 }
