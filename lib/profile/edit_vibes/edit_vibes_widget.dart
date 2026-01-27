@@ -8,9 +8,12 @@ import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/vibe_slider_card.dart';
 import '/models/vibe_profile.dart';
+import '/profile/edit_vibe_importance/edit_vibe_importance_widget.dart';
+import '/profile/main_profile/main_profile_widget.dart';
 import '/services/vibe_repository.dart';
 import '/utils/app_util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class EditVibesWidget extends StatefulWidget {
@@ -136,12 +139,12 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
       setState(() {
         _profile = _profile.confirmed(DateTime.now());
       });
-      showSnackbar(context, 'Vibe settings confirmed.');
+      context.goNamed(MainProfileWidget.routeName);
     } catch (error) {
       if (!mounted) {
         return;
       }
-      showSnackbar(context, 'Unable to confirm vibes. Please try again.');
+      showSnackbar(context, 'Vibes were not confirmed. Please try again.');
     } finally {
       if (!mounted) {
         return;
@@ -208,6 +211,69 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                             : 'Vibe settings: incomplete',
                         style: AppTypography.bodySmall.copyWith(
                           color: AppColors.stone,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          context.pushNamed(
+                            EditVibeImportanceWidget.routeName,
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          decoration: BoxDecoration(
+                            color: AppColors.sand,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: AppColors.cloud,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: AppColors.fairwayLight.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  Icons.star_rounded,
+                                  color: AppColors.fairway,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.md),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Set your priorities',
+                                      style: AppTypography.bodyMedium.copyWith(
+                                        color: AppColors.onyx,
+                                        fontWeight: AppTypography.semiBold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: AppSpacing.xxs),
+                                    Text(
+                                      'Pick the 2 things that matter most',
+                                      style: AppTypography.bodySmall.copyWith(
+                                        color: AppColors.stone,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: AppColors.stone,
+                                size: 16,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.lg),

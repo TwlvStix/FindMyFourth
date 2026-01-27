@@ -71,7 +71,12 @@ class StreamRequestManager<T> {
     final streamSubject = BehaviorSubject<T>();
     _requestSubscriptions[uniqueQueryKey] = requestFn()
         .asBroadcastStream()
-        .listen((result) => streamSubject.add(result));
+        .listen(
+          (result) => streamSubject.add(result),
+          onError: (Object error, StackTrace stackTrace) {
+            streamSubject.addError(error, stackTrace);
+          },
+        );
     _streamSubjects[uniqueQueryKey] = streamSubject;
 
     return streamSubject.stream;

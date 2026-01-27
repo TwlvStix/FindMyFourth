@@ -76,6 +76,25 @@ class VibeRepository {
     _cachedMyVibesUid = user.uid;
   }
 
+  void _updateCachedImportance(
+    Map<VibeCategory, VibeImportance> importance, {
+    DateTime? updatedAt,
+    int? version,
+  }) {
+    final user = _auth.currentUser;
+    if (user == null ||
+        _cachedMyVibes == null ||
+        _cachedMyVibesUid != user.uid) {
+      return;
+    }
+    _cachedMyVibes = _cachedMyVibes!.copyWith(
+      importance: importance,
+      importanceUpdatedAt: updatedAt ?? _cachedMyVibes!.importanceUpdatedAt,
+      importanceVersion: version ?? _cachedMyVibes!.importanceVersion,
+    );
+    _cachedMyVibesUid = user.uid;
+  }
+
   VibeProfile profileFromSnapshot(DocumentSnapshot snapshot) {
     if (!snapshot.exists) {
       return VibeProfile.defaults();
@@ -98,10 +117,19 @@ class VibeRepository {
 
   Future<void> updateCategory(VibeCategory category, int value) async {
     final normalizedValue = VibePreference.normalizeValue(value);
-    await _currentUserRef().update({
-      'vibe_profile.prefs.${category.key}.value': normalizedValue,
-      'vibe_profile.prefs.${category.key}.is_default': false,
-    });
+    await _currentUserRef().set(
+      {
+        'vibe_profile': {
+          'prefs': {
+            category.key: {
+              'value': normalizedValue,
+              'is_default': false,
+            },
+          },
+        },
+      },
+      SetOptions(merge: true),
+    );
     _updateCachedPreference(
       category,
       value: normalizedValue,
@@ -113,10 +141,19 @@ class VibeRepository {
     VibeCategory category,
     bool dealbreaker,
   ) async {
-    await _currentUserRef().update({
-      'vibe_profile.prefs.${category.key}.dealbreaker': dealbreaker,
-      'vibe_profile.prefs.${category.key}.is_default': false,
-    });
+    await _currentUserRef().set(
+      {
+        'vibe_profile': {
+          'prefs': {
+            category.key: {
+              'dealbreaker': dealbreaker,
+              'is_default': false,
+            },
+          },
+        },
+      },
+      SetOptions(merge: true),
+    );
     _updateCachedPreference(
       category,
       dealbreaker: dealbreaker,
@@ -142,6 +179,28 @@ class VibeRepository {
     );
     _cachedMyVibes = profile;
     _cachedMyVibesUid = _auth.currentUser?.uid;
+  }
+
+  Future<void> updateImportance(
+    Map<VibeCategory, VibeImportance> importance, {
+    int version = 1,
+  }) async {
+    final importanceMap = <String, dynamic>{
+      for (final entry in importance.entries) entry.key.key: entry.value.key,
+    };
+    await _currentUserRef().set(
+      {
+        'vibe_profile.importance': importanceMap,
+        'vibe_profile.importance_version': version,
+        'vibe_profile.importance_updated_at': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
+    );
+    _updateCachedImportance(
+      importance,
+      updatedAt: DateTime.now(),
+      version: version,
+    );
   }
 
   Future<void> setDefaults() async {

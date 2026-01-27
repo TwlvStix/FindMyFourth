@@ -10,6 +10,9 @@ import '/utils/app_util.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+const String _vibeQuizGlobalLine =
+    'This is about the vibe you enjoy being around, not what you personally do.';
+
 class VibeOnboardingWidget extends StatefulWidget {
   const VibeOnboardingWidget({super.key});
 
@@ -300,7 +303,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Your ${VibeLabels.titleFor(category)} vibe',
+                                  '$_vibeQuizGlobalLine\n${VibeLabels.promptFor(category)}',
                                   style: AppTheme.of(context)
                                       .headlineMedium
                                       .override(

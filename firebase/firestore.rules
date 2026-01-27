@@ -285,10 +285,29 @@ service cloud.firestore {
         'pace_of_play',
         'play_for_money',
         'vibe_profile',
+        'vibe_profile.importance',
+        'vibe_profile.importance_version',
+        'vibe_profile.importance_updated_at',
         'golf_canada_number'
       ];
       let changed = request.resource.data.diff(resource.data).changedKeys();
       return changed.hasOnly(allowedFields);
+    }
+
+    function allowedVibeProfileChangesOnly() {
+      let newVibe = request.resource.data.vibe_profile;
+      let oldVibe = resource.data.vibe_profile;
+      let vibeChanges =
+        newVibe is map
+          ? (oldVibe is map ? newVibe.diff(oldVibe).changedKeys() : newVibe.keys())
+          : [];
+      return vibeChanges.hasOnly([
+        'prefs',
+        'importance',
+        'importance_version',
+        'importance_updated_at',
+        'confirmed_at'
+      ]);
     }
 
     function roleUnchanged() {
@@ -455,6 +474,8 @@ service cloud.firestore {
       allow update: if roleUnchanged() &&
         ((request.auth.uid == document &&
           allowedUserFieldChangesOnly() &&
+          (!request.resource.data.diff(resource.data).changedKeys().hasAny(['vibe_profile']) ||
+            allowedVibeProfileChangesOnly()) &&
           (displayNameChangeAllowed() ||
            !request.resource.data.diff(resource.data).changedKeys().hasAny(['display_name']))) ||
           isSelfFriendRequestChange(document) ||

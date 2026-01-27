@@ -2,6 +2,8 @@ import 'dart:math';
 
 import '/models/vibe_profile.dart';
 import '/services/vibe_matcher.dart';
+import '/vibe/vibe_scoring.dart';
+import '/vibe/vibe_tuning.dart';
 
 class GroupVibeMember {
   const GroupVibeMember({
@@ -65,6 +67,7 @@ class GroupVibeMatchResult {
     required this.groupAverages,
     required this.confidence,
     required this.confidenceLabel,
+    required this.confidenceScore,
     required this.defaultCount,
     required this.defaultPercent,
   });
@@ -77,6 +80,7 @@ class GroupVibeMatchResult {
   final Map<VibeCategory, double> groupAverages;
   final VibeConfidence confidence;
   final String confidenceLabel;
+  final double confidenceScore;
   final int defaultCount;
   final double defaultPercent;
 
@@ -92,35 +96,64 @@ class GroupVibeMatcher {
     final groupAverages = <VibeCategory, double>{};
     final differences = <GroupVibeDifference>[];
     var weightedSum = 0.0;
+    var weightTotal = 0.0;
     var defaultCount = 0;
+    var completenessSum = 0.0;
 
     for (final category in VibeCategory.values) {
       final myPref = mine.preferenceFor(category);
       final average = others.isEmpty
           ? myPref.value.toDouble()
           : _averageValue(category, others);
+      final averageThreshold = others.isEmpty
+          ? myPref.threshold.toDouble()
+          : _averageThreshold(category, others);
       final distance = (myPref.value - average).abs();
+
+      final myIsDefault = isDefault(
+        category,
+        myPref.value,
+        isDefaultFlag: myPref.isDefault,
+      );
+      final otherIsDefault = _groupHasDefault(category, others);
+      final importanceMultiplierValue = _groupImportanceMultiplier(
+        category,
+        mine,
+        others,
+      );
+      if (myIsDefault || otherIsDefault) {
+        defaultCount += 1;
+      }
+      completenessSum += defaultCompleteness(myIsDefault, otherIsDefault);
 
       groupAverages[category] = average;
       differences.add(
         GroupVibeDifference(category: category, distance: distance),
       );
 
-      final categoryMatch = (1 - (distance / 5)) * 100;
-      final weight = VibeMatcher.weights[category] ?? 0;
-      weightedSum += categoryMatch * weight;
-
-      if (myPref.isDefault ||
-          others.any((member) =>
-              member.profile.preferenceFor(category).isDefault)) {
-        defaultCount += 1;
-      }
+      final matchScore = categoryMatch(
+        myPref.value,
+        average,
+        myTolerance: myPref.threshold,
+        theirTolerance: averageThreshold.round(),
+        gamma: VibeTuning.gamma,
+        scaleMax: VibeTuning.scaleMax,
+      );
+      final baseWeight = VibeMatcher.weights[category] ?? 0;
+      final weight = baseWeight *
+          getDefaultMultiplier(myIsDefault, otherIsDefault) *
+          importanceMultiplierValue;
+      weightedSum += matchScore * weight;
+      weightTotal += weight;
     }
 
-    final groupFitScore = weightedSum / 100;
+    final groupFitScore =
+        (weightTotal > 0 ? weightedSum / weightTotal : 0).toDouble();
     final topDifferences = _topDifferences(differences);
     final defaultPercent = defaultCount / VibeCategory.values.length;
-    final confidence = _confidenceFromDefaults(defaultCount);
+    final completeness =
+        (completenessSum / max(1, VibeCategory.values.length)).toDouble();
+    final confidence = _confidenceFromCompleteness(completeness);
 
     final memberResults = _memberResults(mine, others);
     final conflicts = _collectConflicts(memberResults);
@@ -135,6 +168,7 @@ class GroupVibeMatcher {
       groupAverages: groupAverages,
       confidence: confidence,
       confidenceLabel: _confidenceLabel(confidence),
+      confidenceScore: completeness,
       defaultCount: defaultCount,
       defaultPercent: defaultPercent,
     );
@@ -151,12 +185,63 @@ class GroupVibeMatcher {
     return total / others.length;
   }
 
+  static double _averageThreshold(
+    VibeCategory category,
+    List<GroupVibeMember> others,
+  ) {
+    final total = others.fold<double>(
+      0,
+      (sum, member) => sum + member.profile.preferenceFor(category).threshold,
+    );
+    return total / others.length;
+  }
+
   static List<GroupVibeDifference> _topDifferences(
     List<GroupVibeDifference> differences,
   ) {
     final sorted = List<GroupVibeDifference>.from(differences)
       ..sort((a, b) => b.distance.compareTo(a.distance));
     return sorted.take(min(2, sorted.length)).toList();
+  }
+
+  static bool _groupHasDefault(
+    VibeCategory category,
+    List<GroupVibeMember> others,
+  ) {
+    for (final member in others) {
+      final pref = member.profile.preferenceFor(category);
+      if (isDefault(category, pref.value, isDefaultFlag: pref.isDefault)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static double _groupImportanceMultiplier(
+    VibeCategory category,
+    VibeProfile mine,
+    List<GroupVibeMember> others,
+  ) {
+    final myMult = importanceMultiplier(mine.importanceFor(category));
+    final theirMult = others.isEmpty
+        ? myMult
+        : _averageImportanceMultiplier(category, others);
+    return ((myMult + theirMult) / 2).toDouble();
+  }
+
+  static double _averageImportanceMultiplier(
+    VibeCategory category,
+    List<GroupVibeMember> others,
+  ) {
+    if (others.isEmpty) {
+      return VibeTuning.importanceNormalMultiplier;
+    }
+    final total = others.fold<double>(
+      0,
+      (sum, member) =>
+          sum + importanceMultiplier(member.profile.importanceFor(category)),
+    );
+    return total / others.length;
   }
 
   static List<GroupVibeMemberResult> _memberResults(
@@ -206,24 +291,24 @@ class GroupVibeMatcher {
     return conflicts;
   }
 
-  static VibeConfidence _confidenceFromDefaults(int defaultCount) {
-    if (defaultCount >= 3) {
-      return VibeConfidence.low;
+  static VibeConfidence _confidenceFromCompleteness(double completeness) {
+    if (completeness >= 0.8) {
+      return VibeConfidence.high;
     }
-    if (defaultCount == 2) {
+    if (completeness >= 0.6) {
       return VibeConfidence.medium;
     }
-    return VibeConfidence.high;
+    return VibeConfidence.low;
   }
 
   static String _confidenceLabel(VibeConfidence confidence) {
     switch (confidence) {
       case VibeConfidence.high:
-        return 'high confidence';
+        return 'high';
       case VibeConfidence.medium:
-        return 'medium confidence';
+        return 'medium';
       case VibeConfidence.low:
-        return 'low confidence';
+        return 'low';
     }
   }
 }

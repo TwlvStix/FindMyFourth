@@ -23,6 +23,24 @@
           "arrayConfig": "CONTAINS"
         },
         {
+          "fieldPath": "date",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "games",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "joined_players",
+          "arrayConfig": "CONTAINS"
+        },
+        {
           "fieldPath": "isCancelled",
           "order": "ASCENDING"
         },

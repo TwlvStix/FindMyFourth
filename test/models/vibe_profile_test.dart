@@ -16,7 +16,9 @@ void main() {
         expect(pref.dealbreaker, isFalse);
         expect(pref.threshold, VibePreference.defaultThreshold);
         expect(pref.isDefault, isTrue);
+        expect(profile.importanceFor(category), VibeImportance.normal);
       }
+      expect(profile.importanceVersion, 1);
     });
 
     test('serialization round-trip', () {
@@ -39,6 +41,14 @@ void main() {
 
       final original = VibeProfile(
         prefs: prefs,
+        importance: {
+          for (final category in VibeCategory.values)
+            category: VibeImportance.normal,
+          VibeCategory.music: VibeImportance.top,
+          VibeCategory.money: VibeImportance.bottom,
+        },
+        importanceVersion: 1,
+        importanceUpdatedAt: DateTime.utc(2024, 2, 3, 4, 5, 6),
         confirmedAt: DateTime.utc(2024, 1, 2, 3, 4, 5),
       );
 
@@ -58,6 +68,17 @@ void main() {
       expect(chat.dealbreaker, isFalse);
       expect(chat.threshold, 2);
       expect(chat.isDefault, isFalse);
+
+      expect(
+        restored.importanceFor(VibeCategory.music),
+        VibeImportance.top,
+      );
+      expect(
+        restored.importanceFor(VibeCategory.money),
+        VibeImportance.bottom,
+      );
+      expect(restored.importanceVersion, 1);
+      expect(restored.importanceUpdatedAt, original.importanceUpdatedAt);
     });
 
     test('clamps values to valid ranges', () {

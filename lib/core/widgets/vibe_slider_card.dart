@@ -39,6 +39,7 @@ class _VibeSliderCardState extends State<VibeSliderCard> {
   int? _pendingCommitValue;
   int _currentValue = VibePreference.defaultValue;
   bool _currentDealbreaker = false;
+  bool _didChange = false;
 
   @override
   void initState() {
@@ -108,6 +109,7 @@ class _VibeSliderCardState extends State<VibeSliderCard> {
     if (updatedValue == _currentValue) {
       return;
     }
+    _didChange = true;
     setState(() {
       _currentValue = updatedValue;
     });
@@ -117,7 +119,14 @@ class _VibeSliderCardState extends State<VibeSliderCard> {
 
   void _handleValueChangeEnd(double raw) {
     final updatedValue = raw.round();
-    _flushValueUpdate(updatedValue);
+    if (!_didChange && widget.pref.isDefault) {
+      // Mark as answered even if user kept the default value.
+      widget.onValueChanged(updatedValue);
+      widget.onValueCommitted?.call(updatedValue);
+    } else {
+      _flushValueUpdate(updatedValue);
+    }
+    _didChange = false;
   }
 
   void _handleDealbreakerChanged(bool value) {
@@ -150,7 +159,7 @@ class _VibeSliderCardState extends State<VibeSliderCard> {
           ),
           const SizedBox(height: AppSpacing.xxs),
           Text(
-            'Your usual vibe',
+            VibeLabels.helperFor(widget.category),
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.stone,
             ),

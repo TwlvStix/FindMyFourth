@@ -27,6 +27,7 @@ import '/notifications/notification_page/notification_page_widget.dart';
 import '/notifications/notifications_list/notifications_list_widget.dart';
 import '/profile/create_profile/create_profile_widget.dart';
 import '/profile/edit_profile/edit_profile_widget.dart';
+import '/profile/edit_vibe_importance/edit_vibe_importance_widget.dart';
 import '/profile/edit_vibes/edit_vibes_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 import '/profile/profile_user/profile_user_firebase_widget.dart';
@@ -318,6 +319,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             state,
             appStateNotifier,
             EditVibesWidget(),
+          ),
+        ),
+        GoRoute(
+          name: EditVibeImportanceWidget.routeName,
+          path: EditVibeImportanceWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            EditVibeImportanceWidget(),
           ),
         ),
         GoRoute(

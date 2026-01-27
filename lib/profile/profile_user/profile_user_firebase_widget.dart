@@ -17,8 +17,12 @@ import '/providers/chat_provider.dart';
 import '/providers/user_provider.dart';
 import '/providers/profile_provider.dart';
 import '/backend/schema/users_record.dart';
+import '/profile/edit_vibes/edit_vibes_widget.dart';
+import '/services/vibe_match_explanation.dart';
 import '/services/vibe_matcher.dart';
 import '/services/vibe_repository.dart';
+import '/vibe/vibe_scoring.dart';
+import '/vibe/vibe_tuning.dart';
 
 class ProfileUserFirebaseWidget extends StatefulWidget {
   const ProfileUserFirebaseWidget({
@@ -168,6 +172,12 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         final displayScore =
             (result.cappedScore ?? result.totalScore).round();
         final isCapped = result.cappedScore != null;
+        final explanation = buildMatchExplanation(
+          matchResult: result,
+          a: myVibes,
+          b: theirVibes,
+        );
+        final subtitle = _matchSubtitle(explanation);
         final sheetNavigator = Navigator.of(context, rootNavigator: true);
         void closeSheet() => sheetNavigator.maybePop();
         return SafeArea(
@@ -232,6 +242,16 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                       color: AppColors.fairwayDark,
                     ),
                   ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      subtitle,
+                      textAlign: TextAlign.center,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.slate,
+                      ),
+                    ),
+                  ],
                   if (isCapped || !result.isRecommended) ...[
                     const SizedBox(height: AppSpacing.xs),
                     Text(
@@ -242,70 +262,108 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                       ),
                     ),
                   ],
+                  const SizedBox(height: AppSpacing.lg),
+                  _buildConfidenceMeter(explanation),
                   if (result.confidence == VibeConfidence.low) ...[
                     const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      'Vibe score: $displayScore% (low confidence)',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.stone,
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        context.pushNamed(
+                          EditVibesWidget.routeName,
+                          extra: <String, dynamic>{
+                            kTransitionInfoKey:
+                                TransitionStandards.detailTransition,
+                          },
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.sm),
+                        decoration: BoxDecoration(
+                          color: AppColors.sand,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.cloud,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.tune_rounded,
+                              color: AppColors.fairway,
+                              size: 18,
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: Text(
+                                'Finish your VIBE to improve match accuracy',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.slate,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: AppColors.stone,
+                              size: 14,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
                   const SizedBox(height: AppSpacing.lg),
-                  if (result.conflicts.isNotEmpty) ...[
-                    Text(
-                      'Potential conflicts',
-                      style: AppTypography.titleSmall.copyWith(
-                        color: AppColors.onyx,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    ...result.conflicts.map(
-                      (conflict) => Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-                        child: Text(
-                          _conflictSummary(conflict),
-                          style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.stone,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                  ],
                   Text(
-                    'Top differences',
+                    'Per-category breakdown',
                     style: AppTypography.titleSmall.copyWith(
                       color: AppColors.onyx,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  Wrap(
-                    spacing: AppSpacing.xs,
-                    runSpacing: AppSpacing.xs,
-                    children: result.topDifferences.map((difference) {
-                      return Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.sand,
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: AppColors.cloud,
-                          ),
-                        ),
-                        child: Text(
-                          '${VibeLabels.titleFor(difference.category)} • gap ${difference.distance}',
-                          style: AppTypography.labelSmall.copyWith(
-                            color: AppColors.slate,
-                            letterSpacing: AppTypography.letterSpacingNormal,
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                  _buildCategoryBreakdown(explanation),
+                  const SizedBox(height: AppSpacing.lg),
+                  if (explanation.whyThisMatchWorks.isNotEmpty) ...[
+                    Text(
+                      'Why this match works',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: AppColors.onyx,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    ...explanation.whyThisMatchWorks.map(
+                      (item) => _buildInsightRow(
+                        icon: Icons.check_circle_rounded,
+                        title: item.title,
+                        description: item.description,
+                        iconColor: AppColors.fairway,
+                        showActivityBadge: item.isActivityBased,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
+                  Text(
+                    'Top differences that matter',
+                    style: AppTypography.titleSmall.copyWith(
+                      color: AppColors.onyx,
+                    ),
                   ),
+                  const SizedBox(height: AppSpacing.sm),
+                  if (explanation.topDifferencesThatMatter.isEmpty)
+                    Text(
+                      'No major differences found.',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.stone,
+                      ),
+                    )
+                  else
+                    ...explanation.topDifferencesThatMatter.map(
+                      (item) => _buildInsightRow(
+                        icon: Icons.priority_high_rounded,
+                        title: item.title,
+                        description: item.description,
+                        iconColor: AppColors.stone,
+                      ),
+                    ),
                   const SizedBox(height: AppSpacing.lg),
                   Text(
                     'You vs Them',
@@ -321,6 +379,15 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                       theirVibes.preferenceFor(category),
                     );
                   }),
+                  if (explanation.defaultCategoryCount > 0) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      'Defaults reduce certainty. You can update any category anytime.',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.stone,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: AppSpacing.lg),
                   AppButtonEnhanced(
                     text: 'Close',
@@ -338,6 +405,324 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     );
   }
 
+  String? _matchSubtitle(MatchExplanation explanation) {
+    if (explanation.whatHelpedThisMatch.isEmpty) {
+      return null;
+    }
+    final titles = explanation.whatHelpedThisMatch
+        .map((item) => item.title)
+        .take(2)
+        .toList();
+    if (titles.length == 1) {
+      return 'Strong fit on ${titles.first}.';
+    }
+    return 'Strong fit on ${titles.first} and ${titles.last}.';
+  }
+
+  Widget _buildConfidenceMeter(MatchExplanation explanation) {
+    final label = _confidenceLabelText(explanation.confidenceLevel);
+    final color = _confidenceColor(explanation.confidenceLevel);
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.sand,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.cloud),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _buildPill(
+                label,
+                background: color.withOpacity(0.12),
+                border: color.withOpacity(0.4),
+                textColor: color,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  explanation.confidenceReason,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.slate,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (explanation.defaultCategoryCount > 0) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              '${explanation.defaultCategoryCount} categories still default',
+              style: AppTypography.labelSmall.copyWith(
+                color: AppColors.stone,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryBreakdown(MatchExplanation explanation) {
+    return Column(
+      children: explanation.categories.map((breakdown) {
+        final matchPct = breakdown.matchPercent.round();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: AppColors.pure,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.cloud),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        breakdown.label,
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: AppColors.onyx,
+                          fontWeight: AppTypography.semiBold,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '$matchPct%',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.fairwayDark,
+                        fontWeight: AppTypography.semiBold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Wrap(
+                  spacing: AppSpacing.xs,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    _buildWeightLevelPill(breakdown.weightLevel),
+                    _buildStatusBadge(breakdown.statusBadge),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildInsightRow({
+    required IconData icon,
+    required String title,
+    required String description,
+    required Color iconColor,
+    bool showActivityBadge = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: iconColor, size: 18),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.onyx,
+                    fontWeight: AppTypography.semiBold,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (showActivityBadge) ...[
+                      _buildActivityBadge(),
+                      const SizedBox(width: AppSpacing.xs),
+                    ],
+                    Expanded(
+                      child: Text(
+                        description,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.stone,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivityBadge() {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.xs,
+        vertical: AppSpacing.xxs,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.cloud.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.cloud),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Based on activity',
+            style: AppTypography.labelSmall.copyWith(
+              color: AppColors.stone,
+              letterSpacing: AppTypography.letterSpacingNormal,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xxs),
+          Tooltip(
+            message:
+                'Derived from in-app behavior signals (e.g., response time, invites, follow-through).',
+            child: Icon(
+              Icons.info_outline_rounded,
+              size: 12,
+              color: AppColors.stone,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeightLevelPill(VibeWeightLevel level) {
+    final text = _weightLevelLabel(level);
+    final color = _weightLevelColor(level);
+    return _buildPill(
+      text,
+      background: color.withOpacity(0.12),
+      border: color.withOpacity(0.4),
+      textColor: color,
+    );
+  }
+
+  Widget _buildStatusBadge(VibeStatusBadge badge) {
+    final text = _statusLabel(badge);
+    final color = _statusColor(badge);
+    return _buildPill(
+      text,
+      background: color.withOpacity(0.12),
+      border: color.withOpacity(0.4),
+      textColor: color,
+    );
+  }
+
+  Widget _buildPill(
+    String text, {
+    required Color background,
+    required Color border,
+    required Color textColor,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: border),
+      ),
+      child: Text(
+        text,
+        style: AppTypography.labelSmall.copyWith(
+          color: textColor,
+          letterSpacing: AppTypography.letterSpacingNormal,
+        ),
+      ),
+    );
+  }
+
+  String _weightLevelLabel(VibeWeightLevel level) {
+    switch (level) {
+      case VibeWeightLevel.high:
+        return 'High';
+      case VibeWeightLevel.medium:
+        return 'Medium';
+      case VibeWeightLevel.low:
+        return 'Low';
+    }
+  }
+
+  String _statusLabel(VibeStatusBadge badge) {
+    switch (badge) {
+      case VibeStatusBadge.aligned:
+        return 'Aligned';
+      case VibeStatusBadge.withinTolerance:
+        return 'Within tolerance';
+      case VibeStatusBadge.watchPoint:
+        return 'Watch point';
+      case VibeStatusBadge.dealbreakerRisk:
+        return 'Dealbreaker risk';
+    }
+  }
+
+  Color _weightLevelColor(VibeWeightLevel level) {
+    switch (level) {
+      case VibeWeightLevel.high:
+        return AppColors.fairway;
+      case VibeWeightLevel.medium:
+        return AppColors.stone;
+      case VibeWeightLevel.low:
+        return AppColors.slate;
+    }
+  }
+
+  Color _statusColor(VibeStatusBadge badge) {
+    switch (badge) {
+      case VibeStatusBadge.aligned:
+        return AppColors.fairway;
+      case VibeStatusBadge.withinTolerance:
+        return AppColors.slate;
+      case VibeStatusBadge.watchPoint:
+        return AppColors.stone;
+      case VibeStatusBadge.dealbreakerRisk:
+        return AppColors.error;
+    }
+  }
+
+  String _confidenceLabelText(VibeConfidence confidence) {
+    switch (confidence) {
+      case VibeConfidence.high:
+        return 'High';
+      case VibeConfidence.medium:
+        return 'Medium';
+      case VibeConfidence.low:
+        return 'Low';
+    }
+  }
+
+  Color _confidenceColor(VibeConfidence confidence) {
+    switch (confidence) {
+      case VibeConfidence.high:
+        return AppColors.fairway;
+      case VibeConfidence.medium:
+        return AppColors.stone;
+      case VibeConfidence.low:
+        return AppColors.error;
+    }
+  }
+
   Widget _buildVibeComparisonRow(
     VibeCategory category,
     VibePreference mine,
@@ -347,6 +732,21 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         VibeLabels.labelFor(category, mine.value) ?? mine.value.toString();
     final theirLabel =
         VibeLabels.labelFor(category, theirs.value) ?? theirs.value.toString();
+    final distance = (mine.value - theirs.value).abs();
+    final myFit = oneSidedCategoryScore(
+      distance: distance,
+      tolerance: mine.threshold,
+      gamma: VibeTuning.gamma,
+      scaleMax: VibeTuning.scaleMax,
+    );
+    final theirFit = oneSidedCategoryScore(
+      distance: distance,
+      tolerance: theirs.threshold,
+      gamma: VibeTuning.gamma,
+      scaleMax: VibeTuning.scaleMax,
+    );
+    final myFitPct = (myFit * 100).round();
+    final theirFitPct = (theirFit * 100).round();
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -358,6 +758,14 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             style: AppTypography.bodyMedium.copyWith(
               color: AppColors.onyx,
               fontWeight: AppTypography.semiBold,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xxs),
+          Text(
+            'You: $myFitPct% · Them: $theirFitPct%',
+            style: AppTypography.labelSmall.copyWith(
+              color: AppColors.stone,
+              letterSpacing: AppTypography.letterSpacingNormal,
             ),
           ),
           const SizedBox(height: AppSpacing.xs),

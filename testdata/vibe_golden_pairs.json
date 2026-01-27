@@ -1,0 +1,283 @@
+{
+  "profiles": [
+    {
+      "id": "p1",
+      "prefs": {
+        "pace": {"value": 4},
+        "money": {"value": 4},
+        "drinking": {"value": 4},
+        "weed": {"value": 4},
+        "music": {"value": 4},
+        "chat": {"value": 4},
+        "competitive": {"value": 4}
+      }
+    },
+    {
+      "id": "p2",
+      "prefs": {
+        "pace": {"value": 4},
+        "money": {"value": 4},
+        "drinking": {"value": 4},
+        "weed": {"value": 4},
+        "music": {"value": 4},
+        "chat": {"value": 4},
+        "competitive": {"value": 4}
+      }
+    },
+    {
+      "id": "p3",
+      "prefs": {
+        "pace": {"value": 3},
+        "money": {"value": 3},
+        "drinking": {"value": 3},
+        "weed": {"value": 3},
+        "music": {"value": 3},
+        "chat": {"value": 3},
+        "competitive": {"value": 3}
+      }
+    },
+    {
+      "id": "p4",
+      "prefs": {
+        "pace": {"value": 0},
+        "money": {"value": 0},
+        "drinking": {"value": 2},
+        "weed": {"value": 2},
+        "music": {"value": 2},
+        "chat": {"value": 2},
+        "competitive": {"value": 0}
+      }
+    },
+    {
+      "id": "p5",
+      "prefs": {
+        "pace": {"value": 5},
+        "money": {"value": 5},
+        "drinking": {"value": 4},
+        "weed": {"value": 4},
+        "music": {"value": 4},
+        "chat": {"value": 4},
+        "competitive": {"value": 5}
+      }
+    },
+    {
+      "id": "p6",
+      "prefs": {
+        "pace": {"value": 4},
+        "money": {"value": 3},
+        "drinking": {"value": 0},
+        "weed": {"value": 0},
+        "music": {"value": 0},
+        "chat": {"value": 0},
+        "competitive": {"value": 2}
+      }
+    },
+    {
+      "id": "p7",
+      "prefs": {
+        "pace": {"value": 4},
+        "money": {"value": 3},
+        "drinking": {"value": 5},
+        "weed": {"value": 4},
+        "music": {"value": 5},
+        "chat": {"value": 5},
+        "competitive": {"value": 2}
+      }
+    },
+    {
+      "id": "p8",
+      "prefs": {
+        "pace": {"value": 2},
+        "money": {"value": 2},
+        "drinking": {"value": 2},
+        "weed": {"value": 2},
+        "music": {"value": 2},
+        "chat": {"value": 2},
+        "competitive": {"value": 2}
+      }
+    },
+    {
+      "id": "p9",
+      "prefs": {
+        "pace": {"value": 5},
+        "money": {"value": 4},
+        "drinking": {"value": 1},
+        "weed": {"value": 1},
+        "music": {"value": 1},
+        "chat": {"value": 1},
+        "competitive": {"value": 4}
+      }
+    },
+    {
+      "id": "p10",
+      "prefs": {
+        "pace": {"value": 1},
+        "money": {"value": 1},
+        "drinking": {"value": 4},
+        "weed": {"value": 4},
+        "music": {"value": 5},
+        "chat": {"value": 5},
+        "competitive": {"value": 1}
+      }
+    },
+    {
+      "id": "p11",
+      "prefs": {
+        "pace": {"value": 4},
+        "money": {"value": 0},
+        "drinking": {"value": 4},
+        "weed": {"value": 4},
+        "music": {"value": 4},
+        "chat": {"value": 4},
+        "competitive": {"value": 0}
+      }
+    },
+    {
+      "id": "p12",
+      "prefs": {
+        "pace": {"value": 4},
+        "money": {"value": 5},
+        "drinking": {"value": 3},
+        "weed": {"value": 3},
+        "music": {"value": 3},
+        "chat": {"value": 3},
+        "competitive": {"value": 5}
+      }
+    },
+    {
+      "id": "p13",
+      "prefs": {
+        "pace": {"value": 0},
+        "money": {"value": 0},
+        "drinking": {"value": 0},
+        "weed": {"value": 0},
+        "music": {"value": 0},
+        "chat": {"value": 0},
+        "competitive": {"value": 0}
+      }
+    },
+    {
+      "id": "p14",
+      "prefs": {
+        "pace": {"value": 5},
+        "money": {"value": 5},
+        "drinking": {"value": 5},
+        "weed": {"value": 5},
+        "music": {"value": 5},
+        "chat": {"value": 5},
+        "competitive": {"value": 5}
+      }
+    },
+    {
+      "id": "p15",
+      "prefs": {
+        "pace": {"value": 4},
+        "money": {"value": 4},
+        "drinking": {"value": 2},
+        "weed": {"value": 1},
+        "music": {"value": 2},
+        "chat": {"value": 4},
+        "competitive": {"value": 1}
+      }
+    },
+    {
+      "id": "p16",
+      "prefs": {
+        "pace": {"value": 4},
+        "money": {"value": 4},
+        "drinking": {"value": 2},
+        "weed": {"value": 1},
+        "music": {"value": 2},
+        "chat": {"value": 4},
+        "competitive": {"value": 1}
+      }
+    },
+    {
+      "id": "p17",
+      "prefs": {
+        "pace": {"value": 3},
+        "money": {"value": 3},
+        "drinking": {"value": 5},
+        "weed": {"value": 5},
+        "music": {"value": 5},
+        "chat": {"value": 3},
+        "competitive": {"value": 3}
+      }
+    },
+    {
+      "id": "p18",
+      "prefs": {
+        "pace": {"value": 0, "dealbreaker": true, "threshold": 1},
+        "money": {"value": 4},
+        "drinking": {"value": 4},
+        "weed": {"value": 4},
+        "music": {"value": 4},
+        "chat": {"value": 4},
+        "competitive": {"value": 4}
+      }
+    },
+    {
+      "id": "p19",
+      "prefs": {
+        "pace": {"value": 5},
+        "money": {"value": 4},
+        "drinking": {"value": 4},
+        "weed": {"value": 4},
+        "music": {"value": 4},
+        "chat": {"value": 4},
+        "competitive": {"value": 4}
+      }
+    },
+    {
+      "id": "p20",
+      "prefs": {
+        "pace": {"value": 2},
+        "money": {"value": 2},
+        "drinking": {"value": 0},
+        "weed": {"value": 0},
+        "music": {"value": 0},
+        "chat": {"value": 0},
+        "competitive": {"value": 4}
+      }
+    },
+    {
+      "id": "p21",
+      "prefs": {
+        "pace": {"value": 0},
+        "money": {"value": 5},
+        "drinking": {"value": 4},
+        "weed": {"value": 4},
+        "music": {"value": 4},
+        "chat": {"value": 4},
+        "competitive": {"value": 5}
+      }
+    }
+  ],
+  "expectations": [
+    {"a": "p1", "b": "p2", "bucket": "great"},
+    {"a": "p1", "b": "p5", "bucket": "great"},
+    {"a": "p1", "b": "p7", "bucket": "great"},
+    {"a": "p15", "b": "p16", "bucket": "great"},
+    {"a": "p1", "b": "p4", "bucket": "okay"},
+    {"a": "p1", "b": "p13", "bucket": "okay"},
+    {"a": "p5", "b": "p21", "bucket": "okay"},
+    {"a": "p4", "b": "p9", "bucket": "okay"},
+    {"a": "p4", "b": "p5", "bucket": "bad"},
+    {"a": "p13", "b": "p14", "bucket": "bad"},
+    {"a": "p18", "b": "p19", "bucket": "bad"}
+  ],
+  "orderings": [
+    {
+      "anchor": "p1",
+      "highToLow": ["p2", "p4", "p13"]
+    },
+    {
+      "anchor": "p5",
+      "highToLow": ["p7", "p21", "p4"]
+    },
+    {
+      "anchor": "p13",
+      "highToLow": ["p4", "p1", "p14"]
+    }
+  ]
+}
