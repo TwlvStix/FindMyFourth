@@ -93,6 +93,15 @@ class UserProvider extends ChangeNotifier {
     });
   }
 
+  /// Force immediate notify (bypass debounce)
+  ///
+  /// Use for critical state changes that require instant UI updates,
+  /// such as friend removal where users expect immediate visual feedback.
+  void forceNotify() {
+    _notifyDebounce?.cancel();
+    notifyListeners();
+  }
+
   // ========================================
   // USER DATA ACCESSORS
   // ========================================
@@ -326,13 +335,31 @@ class UserProvider extends ChangeNotifier {
 
   /// Remove a friend (bidirectional - removes both users from each other's friends list)
   Future<void> removeFriend(DocumentReference friendRef) async {
-    if (!isLoggedIn) return;
+    debugPrint('UserProvider.removeFriend: Called with friendRef: ${friendRef.id}');
+
+    // Use Firebase Auth directly instead of UserProvider's internal state
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    debugPrint('UserProvider.removeFriend: Firebase Auth user = ${firebaseUser?.uid}');
+
+    if (firebaseUser == null) {
+      debugPrint('UserProvider.removeFriend: Returning early - Firebase user is null');
+      return;
+    }
 
     try {
-      final currentUserRef = currentUserReference;
-      if (currentUserRef == null) return;
+      final currentUserRef = UsersRecord.collection.doc(firebaseUser.uid);
+      debugPrint('UserProvider.removeFriend: currentUserRef = ${currentUserRef.path}');
+
+      if (currentUserRef == null) {
+        debugPrint('UserProvider.removeFriend: Returning early - currentUserRef is null');
+        return;
+      }
+
       final currentUserPath = currentUserRef.path;
       final friendPath = friendRef.path;
+      debugPrint('UserProvider.removeFriend: currentUserPath = $currentUserPath, friendPath = $friendPath');
+
+      // Perform Firestore batch update (bidirectional removal)
       final batch = FirebaseFirestore.instance.batch();
       // Current user list can safely remove legacy variants.
       batch.update(currentUserRef, {
@@ -352,11 +379,15 @@ class UserProvider extends ChangeNotifier {
           '/$currentUserPath',
         ]),
       });
+      debugPrint('UserProvider: Starting batch commit to remove friend: ${friendRef.id}');
       await batch.commit();
+      debugPrint('UserProvider: Batch commit completed successfully');
 
+      // Clear cache to ensure fresh data on next query
       refreshFriends();
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('Error removing friend: $e');
+      debugPrint('Stack trace: $stackTrace');
       rethrow;
     }
   }

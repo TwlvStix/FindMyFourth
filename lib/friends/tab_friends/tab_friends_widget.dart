@@ -79,6 +79,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
   // Filter tracking
   FriendFilters friendFilters = FriendFilters();
 
+  // Optimistic friends list for immediate UI updates
+  List<DocumentReference>? _optimisticFriendsList;
+
   Future<void> _showFilterBottomSheet() async {
     final result = await showModalBottomSheet<FriendFilters>(
       context: context,
@@ -170,10 +173,26 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
 
   Future<void> _removeFriend(UsersRecord user) async {
     try {
+      print('TabFriendsWidget: Starting to remove friend: ${user.reference.id}');
+
+      // Optimistically update local state for immediate UI feedback
+      // Use existing optimistic state if available, otherwise use server state
+      setState(() {
+        final currentList = _optimisticFriendsList ??
+            (currentUserDocument?.friends ?? []);
+        _optimisticFriendsList = currentList
+            .where((ref) => ref.id != user.reference.id)
+            .toList();
+      });
+
+      print('TabFriendsWidget: Calling UserProvider.removeFriend()');
       await context.read<UserProvider>().removeFriend(user.reference);
+      print('TabFriendsWidget: UserProvider.removeFriend() completed successfully');
+
       if (!mounted) {
         return;
       }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -186,7 +205,18 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
           backgroundColor: AppTheme.of(context).primary,
         ),
       );
-    } catch (_) {
+
+      // Keep optimistic state until Firestore stream updates or user navigates away
+      // The state will be cleared naturally when the widget rebuilds with updated data
+    } catch (e) {
+      print('TabFriendsWidget: Error removing friend: $e');
+      // Revert optimistic update on error
+      if (mounted) {
+        setState(() {
+          _optimisticFriendsList = null;
+        });
+      }
+
       if (!mounted) {
         return;
       }
@@ -810,10 +840,32 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                               child: AuthUserStreamWidget(
                                 builder: (context) => Builder(
                                   builder: (context) {
+                                    final serverFriendsList =
+                                        (currentUserDocument?.friends.toList() ?? []).toList();
+
+                                    // Check if optimistic state matches server state
+                                    if (_optimisticFriendsList != null) {
+                                      final optimisticIds =
+                                          _optimisticFriendsList!.map((ref) => ref.id).toSet();
+                                      final serverIds =
+                                          serverFriendsList.map((ref) => ref.id).toSet();
+
+                                      // If server state matches optimistic state, clear optimistic state
+                                      if (optimisticIds.length == serverIds.length &&
+                                          optimisticIds.difference(serverIds).isEmpty) {
+                                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                                          if (mounted) {
+                                            setState(() {
+                                              _optimisticFriendsList = null;
+                                            });
+                                          }
+                                        });
+                                      }
+                                    }
+
+                                    // Use optimistic state if available, otherwise use server state
                                     final friendsList =
-                                        (currentUserDocument?.friends.toList() ??
-                                                [])
-                                            .toList();
+                                        _optimisticFriendsList ?? serverFriendsList;
 
                                     // Show empty state if no friends
                                     if (friendsList.isEmpty) {

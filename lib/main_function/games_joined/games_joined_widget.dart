@@ -406,6 +406,27 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                         GestureDetector(
                           onTap: () {
                             HapticFeedback.lightImpact();
+                            if (currentUserUid.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Please sign in to open the chat.'),
+                                ),
+                              );
+                              return;
+                            }
+                            final isMember = game.joinedPlayers.any(
+                              (player) => player.id == currentUserUid,
+                            );
+                            if (!isMember) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Join the game to access the group chat.',
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
                             context.pushNamed(
                               'ChatDetails',
                               pathParameters: {

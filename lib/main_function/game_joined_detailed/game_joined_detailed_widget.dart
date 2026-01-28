@@ -369,30 +369,18 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                               }
                               return;
                             }
-                            try {
-                              await context.read<ChatProvider>().addMember(
-                                    chatId: chatRef.id,
-                                    uid: currentUser.uid,
-                                  );
-                            } on FirebaseException catch (error) {
+                            final currentUserRef = FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(currentUser.uid);
+                            final isMember = gameJoinedDetailedGamesRecord
+                                .joinedPlayers
+                                .any((player) => player.id == currentUserRef.id);
+                            if (!isMember) {
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
+                                  const SnackBar(
                                     content: Text(
-                                      error.code == 'permission-denied'
-                                          ? 'Chat access is not available right now.'
-                                          : 'Unable to open the chat. Please try again.',
-                                    ),
-                                  ),
-                                );
-                              }
-                              return;
-                            } catch (_) {
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Unable to open the chat. Please try again.',
+                                      'Join the game to access the group chat.',
                                     ),
                                   ),
                                 );

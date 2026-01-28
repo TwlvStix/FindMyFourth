@@ -63,6 +63,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   String _bannerText = '';
   String? _gameIdForOwnerLookup;
   Future<GamesRecord?>? _gameOwnerFuture;
+  bool _didMarkSeen = false;
 
   String? get _currentUserId => FirebaseAuth.instance.currentUser?.uid;
 
@@ -98,7 +99,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         });
       },
     );
-    _ensureChatMember().whenComplete(_markChatSeen);
     _messageController.addListener(_onTextChanged);
     _scrollController.addListener(_onScroll);
   }
@@ -433,6 +433,14 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       _bannerText = bannerText;
       _canSend = canSend;
     });
+
+    final currentUserId = _currentUserId;
+    if (!_didMarkSeen &&
+        currentUserId != null &&
+        chat.memberIds.contains(currentUserId)) {
+      _didMarkSeen = true;
+      _markChatSeen();
+    }
   }
 
   PopupMenuButton<String> _buildDeleteMenu() {
@@ -578,22 +586,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     }
 
     return false;
-  }
-
-  Future<void> _ensureChatMember() async {
-    final currentUserId = _currentUserId;
-    if (currentUserId == null) {
-      return;
-    }
-    try {
-      await context
-          .read<ChatProvider>()
-          .addMember(chatId: widget.chatId, uid: currentUserId);
-    } catch (error, stackTrace) {
-      context
-          .read<ChatProvider>()
-          .logError('addMember failed', error, stackTrace);
-    }
   }
 
   Future<void> _markChatSeen() async {
