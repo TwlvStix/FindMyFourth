@@ -41,3 +41,9 @@ ios/Flutter/ephemeral/
 # Flutter build output
 build/
 .dart_tool/
+
+# secrets
+keys/*.json
+*.key
+*.pem
+.env
