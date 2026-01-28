@@ -61,6 +61,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   bool _canSend = false;
   bool _isArchived = false;
   String _bannerText = '';
+  String? _gameIdForOwnerLookup;
+  Future<GamesRecord?>? _gameOwnerFuture;
 
   String? get _currentUserId => FirebaseAuth.instance.currentUser?.uid;
 
@@ -395,6 +397,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         _canSend = false;
         _bannerText = '';
         _isArchived = false;
+        _gameIdForOwnerLookup = null;
+        _gameOwnerFuture = null;
       });
       return;
     }
@@ -408,6 +412,19 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
             : '';
     final canSend = !chat.isReadOnly && !isArchived;
 
+    final chatGameId = (chat.gameId ?? '').trim();
+    if (chat.type == 'game' && chatGameId.isNotEmpty) {
+      if (_gameIdForOwnerLookup != chatGameId) {
+        _gameIdForOwnerLookup = chatGameId;
+        _gameOwnerFuture = GamesRecord.getDocumentOnce(
+          FirebaseFirestore.instance.collection('games').doc(chatGameId),
+        );
+      }
+    } else {
+      _gameIdForOwnerLookup = null;
+      _gameOwnerFuture = null;
+    }
+
     setState(() {
       _chatLoaded = true;
       _chatError = null;
@@ -416,6 +433,77 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       _bannerText = bannerText;
       _canSend = canSend;
     });
+  }
+
+  PopupMenuButton<String> _buildDeleteMenu() {
+    return PopupMenuButton<String>(
+      icon: Icon(
+        Icons.more_vert,
+        color: AppTheme.of(context).primaryBtnText,
+      ),
+      tooltip: 'More options',
+      onSelected: (String value) {
+        if (value == 'delete') {
+          _showDeleteConfirmation();
+        }
+      },
+      itemBuilder: (BuildContext context) => [
+        PopupMenuItem<String>(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(
+                Icons.delete_outline,
+                color: Colors.red,
+                size: 20.0,
+              ),
+              SizedBox(width: 12.0),
+              Text(
+                'Delete Chat',
+                style: AppTheme.of(context).bodyMedium.override(
+                      color: Colors.red,
+                      letterSpacing: 0.0,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _buildChatActions() {
+    final chat = _chatUi;
+    if (chat == null) {
+      return const [];
+    }
+
+    if (chat.type != 'game') {
+      return [_buildDeleteMenu()];
+    }
+
+    final currentUserId = _currentUserId;
+    if (currentUserId == null || _gameOwnerFuture == null) {
+      return const [];
+    }
+
+    return [
+      FutureBuilder<GamesRecord?>(
+        future: _gameOwnerFuture,
+        builder: (context, snapshot) {
+          final game = snapshot.data;
+          final ownerUid = game?.uid;
+          final ownerRefId = game?.userRef?.id;
+          final isOwner =
+              ownerUid == currentUserId || ownerRefId == currentUserId;
+
+          if (!isOwner) {
+            return const SizedBox.shrink();
+          }
+          return _buildDeleteMenu();
+        },
+      ),
+    ];
   }
 
   bool _shouldShowDateDivider(int index, List<ChatMessage> messages) {
@@ -819,42 +907,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                   )
                 : AppText.cardTitle('Chat'),
             centerTitle: false,
-            actions: [
-              PopupMenuButton<String>(
-                icon: Icon(
-                  Icons.more_vert,
-                  color: AppTheme.of(context).primaryBtnText,
-                ),
-                tooltip: 'More options',
-                onSelected: (String value) {
-                  if (value == 'delete') {
-                    _showDeleteConfirmation();
-                  }
-                },
-                itemBuilder: (BuildContext context) => [
-                  PopupMenuItem<String>(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.delete_outline,
-                          color: Colors.red,
-                          size: 20.0,
-                        ),
-                        SizedBox(width: 12.0),
-                        Text(
-                          'Delete Chat',
-                          style: AppTheme.of(context).bodyMedium.override(
-                                            color: Colors.red,
-                                letterSpacing: 0.0,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            actions: _buildChatActions(),
           ),
           body: FairwayBackgroundDark(
             child: SafeArea(

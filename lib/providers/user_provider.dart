@@ -331,21 +331,28 @@ class UserProvider extends ChangeNotifier {
     try {
       final currentUserRef = currentUserReference;
       if (currentUserRef == null) return;
-      // Remove friend from current user's friends list
-      await currentUserReference!.update({
+      final currentUserPath = currentUserRef.path;
+      final friendPath = friendRef.path;
+      final batch = FirebaseFirestore.instance.batch();
+      // Current user list can safely remove legacy variants.
+      batch.update(currentUserRef, {
         'friends': FieldValue.arrayRemove([
           friendRef,
           friendRef.id,
+          friendPath,
+          '/$friendPath',
         ]),
       });
-
-      // Remove current user from friend's friends list (bidirectional)
-      await friendRef.update({
+      // Friend list should remove legacy variants too for symmetric cleanup.
+      batch.update(friendRef, {
         'friends': FieldValue.arrayRemove([
           currentUserRef,
           currentUserRef.id,
+          currentUserPath,
+          '/$currentUserPath',
         ]),
       });
+      await batch.commit();
 
       refreshFriends();
     } catch (e) {

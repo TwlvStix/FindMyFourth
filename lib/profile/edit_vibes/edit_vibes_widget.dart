@@ -161,7 +161,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
 
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: AppTheme.of(context).secondaryBackground,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         automaticallyImplyLeading: false,
@@ -174,7 +174,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
           tooltip: 'Back',
           icon: Icon(
             Icons.arrow_back_rounded,
-            color: AppTheme.of(context).primary,
+            color: AppColors.pure,
             size: 30.0,
           ),
           onPressed: () async {
@@ -183,25 +183,28 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
         ),
         title: AppText.sectionHeader(
           'Edit Vibes',
-          color: AppTheme.of(context).primary,
+          color: AppColors.pure,
         ),
       ),
       body: FairwayBackgroundDark(
         showOrganic: true,
-        child: _isLoading
-            ? Center(
-                child: CircularProgressIndicator(
-                  color: AppTheme.of(context).primary,
-                ),
-              )
-            : SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    AppSpacing.md,
-                    AppSpacing.md,
-                    AppSpacing.md,
-                    AppSpacing.xxl,
+        showTexture: true,
+        child: SafeArea(
+          top: false,
+          child: _isLoading
+              ? Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.pure,
                   ),
+                )
+              : SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      MediaQuery.of(context).padding.top + 56 + AppSpacing.md,
+                      AppSpacing.md,
+                      AppSpacing.xxl,
+                    ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -389,6 +392,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                   ),
                 ),
               ),
+        ),
       ),
     );
   }

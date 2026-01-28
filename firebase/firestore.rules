@@ -68,6 +68,18 @@ service cloud.firestore {
       );
     }
 
+    function chatDataById(chatId) {
+      let chatPath = /databases/$(database)/documents/chats/$(chatId);
+      return exists(chatPath) ? get(chatPath).data : null;
+    }
+
+    function isGameChatOwnerById(chatId) {
+      let chatData = chatDataById(chatId);
+      return chatData != null &&
+        chatData.type == 'game' &&
+        isGameOwnerForChat(chatData);
+    }
+
     function listHasSelf(listValue) {
       return listValue.hasAny([userRef(request.auth.uid), request.auth.uid]);
     }
@@ -530,8 +542,11 @@ service cloud.firestore {
         canGameOwnerUpdateChatManagement(resource.data, request.resource.data)
       );
 
-      // Allow delete if user is a member of the chat
-      allow delete: if isSignedIn() && isChatMember(resource.data);
+      // Allow delete: game owner for game chats; members for direct chats
+      allow delete: if isSignedIn() && (
+        (resource.data.type == 'game' && isGameOwnerForChat(resource.data)) ||
+        (resource.data.type != 'game' && isChatMember(resource.data))
+      );
 
       match /messages/{messageId} {
         allow read: if isSignedIn() && isChatMemberById(chatId);
@@ -545,8 +560,10 @@ service cloud.firestore {
           readByChangeAllowed(resource.data, request.resource.data)
         );
         allow delete: if isSignedIn() &&
-          isChatMemberById(chatId) &&
-          resource.data.senderId == request.auth.uid;
+          isChatMemberById(chatId) && (
+            resource.data.senderId == request.auth.uid ||
+            isGameChatOwnerById(chatId)
+          );
       }
     }
 
@@ -568,7 +585,14 @@ service cloud.firestore {
         maxPlayers(request.resource.data) >= totalPlayers(request.resource.data) &&
         isValidStatus(request.resource.data) &&
         isCancelStatusConsistent(request.resource.data);
-      allow read: if isSignedIn();
+      // All reads require auth. Public games are visible to any signed-in user.
+      // Friends-only games are visible only to the owner, participants, or friends of the owner.
+      allow read: if isSignedIn() && (
+        isPublicGame(resource.data) ||
+        isOwner(resource.data) ||
+        isParticipant(resource.data) ||
+        isFriendOfOwner(resource.data)
+      );
       allow update: if ownerUpdateAllowed() ||
         participantJoinAllowed() ||
         participantLeaveAllowed();

@@ -13,6 +13,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
+import '/backend/backend.dart';
 
 class JoinGameWidget extends StatefulWidget {
   const JoinGameWidget({
@@ -164,6 +165,56 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                 );
                                 return;
                               }
+                              final friendGameValue =
+                                  widget.gameRef.friendGame.trim();
+                              final friendGameLower = friendGameValue.toLowerCase();
+                              final isFriendsOnly = friendGameLower == 'friends';
+                              bool isCreatorFriend = false;
+                              if (isFriendsOnly) {
+                                try {
+                                  final ownerRef = widget.gameRef.userRef;
+                                  if (ownerRef != null) {
+                                    final ownerSnap = await ownerRef.get();
+                                    final ownerData =
+                                        ownerSnap.data() as Map<String, dynamic>? ?? {};
+                                    final friends = ownerData['friends'];
+                                    if (friends is List) {
+                                      final currentUserRef = FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(currentUser.uid);
+                                      final currentUserId = currentUserRef.id;
+                                      String? normalizeFriendEntry(Object? entry) {
+                                        if (entry is DocumentReference) {
+                                          return entry.id;
+                                        }
+                                        if (entry is String) {
+                                          if (entry.contains('/')) {
+                                            final parts = entry.split('/');
+                                            return parts.isNotEmpty ? parts.last : entry;
+                                          }
+                                          return entry;
+                                        }
+                                        return null;
+                                      }
+                                      isCreatorFriend = friends.any(
+                                        (entry) =>
+                                            normalizeFriendEntry(entry) == currentUserId,
+                                      );
+                                    }
+                                  }
+                                } catch (error) {
+                                  debugPrint(
+                                    'JoinGame: friend check failed $error',
+                                  );
+                                }
+                                if (!isCreatorFriend) {
+                                  showSnackbar(
+                                    context,
+                                    'You must be friends with the game creator to join this game.',
+                                  );
+                                  return;
+                                }
+                              }
                               final currentUserRef = FirebaseFirestore.instance
                                   .collection('users')
                                   .doc(currentUser.uid);
@@ -186,7 +237,9 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                   return;
                                 }
                                 final message = error.code == 'permission-denied'
-                                    ? 'You do not have permission to join this game.'
+                                    ? (isFriendsOnly && !isCreatorFriend
+                                        ? 'You must be friends with the game creator to join this game.'
+                                        : 'You do not have permission to join this game.')
                                     : 'Unable to join the game right now. Please try again.';
                                 showSnackbar(context, message);
                                 return;

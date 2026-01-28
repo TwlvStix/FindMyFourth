@@ -16,6 +16,40 @@ const kPushNotificationRuntimeOpts = {
   memory: "2GB",
 };
 
+function extractUidFromJoinedEntry(entry) {
+  if (!entry) {
+    return null;
+  }
+  if (typeof entry === "string") {
+    return entry;
+  }
+  if (entry instanceof admin.firestore.DocumentReference) {
+    return entry.id;
+  }
+  if (typeof entry === "object" && typeof entry.id === "string") {
+    return entry.id;
+  }
+  return null;
+}
+
+function extractJoinedUids(list) {
+  if (!Array.isArray(list)) {
+    return [];
+  }
+  const uids = [];
+  for (const entry of list) {
+    const uid = extractUidFromJoinedEntry(entry);
+    if (uid) {
+      uids.push(uid);
+    }
+  }
+  return uids;
+}
+
+function userRefsFromUids(uids) {
+  return uids.map((uid) => firestore.collection("users").doc(uid));
+}
+
 function normalizeStyleToken(value) {
   if (typeof value !== "string") {
     return "";
@@ -1088,6 +1122,75 @@ exports.onUserDeleted = functions
           await doc.ref.delete();
         }
       });
+  });
+
+exports.syncGameChatMembers = functions
+  .region("us-west2")
+  .firestore.document("games/{gameId}")
+  .onUpdate(async (change, context) => {
+    const before = change.before.data() || {};
+    const after = change.after.data() || {};
+
+    const beforeJoined = extractJoinedUids(before.joined_players);
+    const afterJoined = extractJoinedUids(after.joined_players);
+
+    const beforeSet = new Set(beforeJoined);
+    const afterSet = new Set(afterJoined);
+
+    const added = afterJoined.filter((uid) => !beforeSet.has(uid));
+    const removed = beforeJoined.filter((uid) => !afterSet.has(uid));
+
+    if (added.length === 0 && removed.length === 0) {
+      return;
+    }
+
+    const chatRef = after.chatRef;
+    if (!(chatRef instanceof admin.firestore.DocumentReference)) {
+      console.log(
+        `syncGameChatMembers: missing chatRef for game ${context.params.gameId}`,
+      );
+      return;
+    }
+
+    const chatDocRef = firestore.collection("chats").doc(chatRef.id);
+    const updates = [];
+
+    if (removed.length > 0) {
+      const removeUpdate = {
+        memberIds: admin.firestore.FieldValue.arrayRemove(...removed),
+        users: admin.firestore.FieldValue.arrayRemove(
+          ...userRefsFromUids(removed),
+        ),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+      for (const uid of removed) {
+        removeUpdate[`unreadCountByUser.${uid}`] =
+          admin.firestore.FieldValue.delete();
+      }
+      updates.push(chatDocRef.update(removeUpdate));
+    }
+
+    if (added.length > 0) {
+      const addUpdate = {
+        memberIds: admin.firestore.FieldValue.arrayUnion(...added),
+        users: admin.firestore.FieldValue.arrayUnion(
+          ...userRefsFromUids(added),
+        ),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+      for (const uid of added) {
+        addUpdate[`unreadCountByUser.${uid}`] = 0;
+      }
+      updates.push(chatDocRef.update(addUpdate));
+    }
+
+    try {
+      await Promise.all(updates);
+    } catch (error) {
+      console.log(
+        `syncGameChatMembers: failed for game ${context.params.gameId}: ${error}`,
+      );
+    }
   });
 
 exports.monitorUsernameChanges = functions

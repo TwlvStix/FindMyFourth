@@ -168,7 +168,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: AppTheme.of(context).secondaryBackground,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         automaticallyImplyLeading: false,
@@ -181,7 +181,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
           tooltip: 'Back',
           icon: Icon(
             Icons.arrow_back_rounded,
-            color: AppTheme.of(context).primary,
+            color: AppColors.pure,
             size: 30.0,
           ),
           onPressed: () async {
@@ -190,25 +190,28 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
         ),
         title: AppText.sectionHeader(
           'Vibe Priorities',
-          color: AppTheme.of(context).primary,
+          color: AppColors.pure,
         ),
       ),
       body: FairwayBackgroundDark(
         showOrganic: true,
-        child: _isLoading
-            ? Center(
-                child: CircularProgressIndicator(
-                  color: AppTheme.of(context).primary,
-                ),
-              )
-            : SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    AppSpacing.md,
-                    AppSpacing.md,
-                    AppSpacing.md,
-                    AppSpacing.xxl,
+        showTexture: true,
+        child: SafeArea(
+          top: false,
+          child: _isLoading
+              ? Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.pure,
                   ),
+                )
+              : SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      MediaQuery.of(context).padding.top + 56 + AppSpacing.md,
+                      AppSpacing.md,
+                      AppSpacing.xxl,
+                    ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -240,8 +243,8 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
                             label: 'Bottom',
                             count: _bottomCount,
                             max: 1,
-                            color: AppColors.sunsetRose,
-                            background: AppColors.sunsetRose.withOpacity(0.15),
+                            color: AppColors.sunsetGold,
+                            background: AppColors.sunsetGold.withOpacity(0.15),
                           ),
                         ],
                       ),
@@ -283,6 +286,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
                   ),
                 ),
               ),
+        ),
       ),
     );
   }
@@ -337,12 +341,12 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
     final background = isTop
         ? AppColors.fairwayLight.withOpacity(0.18)
         : isBottom
-            ? AppColors.sunsetRose.withOpacity(0.14)
+            ? AppColors.sunsetGold.withOpacity(0.14)
             : AppColors.sand;
     final borderColor = isTop
         ? AppColors.fairway
         : isBottom
-            ? AppColors.sunsetRose
+            ? AppColors.sunsetGold
             : AppColors.cloud;
     final label = isTop
         ? 'Top priority'
@@ -352,7 +356,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
     final labelColor = isTop
         ? AppColors.fairway
         : isBottom
-            ? AppColors.sunsetRose
+            ? AppColors.sunsetGold
             : AppColors.stone;
 
     return GestureDetector(

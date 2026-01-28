@@ -14,6 +14,7 @@ import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
 import '/models/game.dart';
 import '/providers/game_provider.dart';
+import '/backend/backend.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -45,6 +46,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   late final Stream<List<Game>> _gamesStream;
   GameListFilters _filters = GameListFilters();
   Set<String> _availableGameTypes = {};
+  bool _showLockedGames = false;
   static const Map<CancelledGameHandling, String>
       _cancelledHandlingStorageMap = {
     CancelledGameHandling.removeNow: 'removeNow',
@@ -192,6 +194,51 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       case GameDateRange.any:
         return true;
     }
+  }
+
+  bool _isPublicGame(Game game) {
+    final value = game.friendGame.trim().toLowerCase();
+    return value.isEmpty || value == 'public';
+  }
+
+  bool _isFriendsOnlyGame(Game game) {
+    return game.friendGame.trim().toLowerCase() == 'friends';
+  }
+
+  Set<String> _friendIdsFromRecord(UsersRecord? record) {
+    final friends = record?.friends ?? const <DocumentReference>[];
+    final ids = <String>{};
+    for (final entry in friends) {
+      ids.add(entry.id);
+    }
+    return ids;
+  }
+
+  bool _isUserGame(Game game, DocumentReference? currentUserReference) {
+    return currentUserReference != null &&
+        (game.userRef == currentUserReference ||
+            game.joinedPlayers.contains(currentUserReference));
+  }
+
+  bool _isJoinableGame(
+    Game game,
+    DocumentReference? currentUserReference,
+    Set<String> friendIds,
+  ) {
+    if (_isUserGame(game, currentUserReference)) {
+      return true;
+    }
+    if (_isPublicGame(game)) {
+      return true;
+    }
+    if (_isFriendsOnlyGame(game)) {
+      final ownerRef = game.userRef;
+      if (ownerRef == null) {
+        return false;
+      }
+      return friendIds.contains(ownerRef.id) || friendIds.contains(game.uid);
+    }
+    return true;
   }
 
   List<Game> _applyFilters(List<Game> gamesList, GameListFilters filters) {
@@ -420,145 +467,303 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                     debugPrint('  ✓ ${game.nameGame} at ${game.coursePlay}');
                   });
 
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      context.read<GameProvider>().invalidateAllGameCache();
-                      await Future.delayed(Duration(milliseconds: 500));
-                      if (mounted) {
-                        setState(() {});
+                  return StreamBuilder<UsersRecord?>(
+                    stream: currentUserReference == null
+                        ? null
+                        : UsersRecord.getDocument(currentUserReference),
+                    builder: (context, userSnapshot) {
+                      final friendIds =
+                          _friendIdsFromRecord(userSnapshot.data);
+                      final joinableGames = <Game>[];
+                      final lockedGames = <Game>[];
+                      for (final game in visibleGames) {
+                        if (_isJoinableGame(
+                            game, currentUserReference, friendIds)) {
+                          joinableGames.add(game);
+                        } else if (_isFriendsOnlyGame(game)) {
+                          lockedGames.add(game);
+                        } else {
+                          joinableGames.add(game);
+                        }
                       }
-                    },
-                    child: CustomScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      slivers: [
-                        SliverPadding(
-                          padding: EdgeInsets.only(
-                            top: AppSpacing.md,
-                            bottom: 44.0,
-                          ),
-                          sliver: visibleGames.isEmpty
-                              ? SliverToBoxAdapter(
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: AppSpacing.lg,
-                                      vertical: AppSpacing.xl,
+
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          context.read<GameProvider>().invalidateAllGameCache();
+                          await Future.delayed(Duration(milliseconds: 500));
+                          if (mounted) {
+                            setState(() {});
+                          }
+                        },
+                        child: CustomScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          slivers: [
+                            SliverPadding(
+                              padding: EdgeInsets.only(
+                                top: AppSpacing.md,
+                                bottom: 44.0,
+                              ),
+                              sliver: joinableGames.isEmpty
+                                  ? SliverToBoxAdapter(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: AppSpacing.lg,
+                                          vertical: AppSpacing.xl,
+                                        ),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              width: 120,
+                                              height: 120,
+                                              decoration: BoxDecoration(
+                                                color: AppColors.fairway.withOpacity(0.3),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons.golf_course_rounded,
+                                                size: 56,
+                                                color: Colors.white.withOpacity(0.5),
+                                              ),
+                                            ),
+                                            SizedBox(height: AppSpacing.lg),
+                                            if (_filters.hasActiveFilters) ...[
+                                              Text(
+                                                'No games match these filters',
+                                                style: AppTypography.titleMedium.copyWith(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              SizedBox(height: AppSpacing.xs),
+                                              Text(
+                                                'Try adjusting or clearing your filters.',
+                                                style: AppTypography.bodyMedium.copyWith(
+                                                  color: Colors.white.withOpacity(0.7),
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              SizedBox(height: AppSpacing.lg),
+                                              SizedBox(
+                                                width: 220,
+                                                child: AppButtonEnhanced(
+                                                  text: 'Clear filters',
+                                                  variant: AppButtonVariant.secondary,
+                                                  size: AppButtonSize.medium,
+                                                  onPressed: () {
+                                                    if (mounted) {
+                                                      setState(() {
+                                                        _filters = GameListFilters();
+                                                      });
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                            ] else if (lockedGames.isNotEmpty) ...[
+                                              Text(
+                                                'No joinable games right now',
+                                                style: AppTypography.titleMedium.copyWith(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              SizedBox(height: AppSpacing.xs),
+                                              Text(
+                                                'There are friends-only games you can view below.',
+                                                style: AppTypography.bodyMedium.copyWith(
+                                                  color: Colors.white.withOpacity(0.7),
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              SizedBox(height: AppSpacing.lg),
+                                              SizedBox(
+                                                width: 220,
+                                                child: AppButtonEnhanced(
+                                                  text: _showLockedGames
+                                                      ? 'Hide locked games'
+                                                      : 'Show locked games',
+                                                  variant: AppButtonVariant.secondary,
+                                                  size: AppButtonSize.medium,
+                                                  onPressed: () {
+                                                    if (mounted) {
+                                                      setState(() {
+                                                        _showLockedGames =
+                                                            !_showLockedGames;
+                                                      });
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                            ] else ...[
+                                              Text(
+                                                'No games yet',
+                                                style: AppTypography.titleMedium.copyWith(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              SizedBox(height: AppSpacing.xs),
+                                              Text(
+                                                'Be the first to create a game.',
+                                                style: AppTypography.bodyMedium.copyWith(
+                                                  color: Colors.white.withOpacity(0.7),
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              SizedBox(height: AppSpacing.lg),
+                                              SizedBox(
+                                                width: 220,
+                                                child: AppButtonEnhanced(
+                                                  text: 'Create a game',
+                                                  variant: AppButtonVariant.primary,
+                                                  size: AppButtonSize.medium,
+                                                  onPressed: () {
+                                                    context.pushNamed(
+                                                      CreateGameWidget.routeName,
+                                                      extra: <String, dynamic>{
+                                                        kTransitionInfoKey:
+                                                            TransitionStandards.detailTransition,
+                                                      },
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  : SliverList(
+                                      delegate: SliverChildBuilderDelegate(
+                                        (context, index) {
+                                          final containerVarItem = joinableGames[index];
+                                          final isLast =
+                                              index == joinableGames.length - 1;
+                                          return Padding(
+                                            padding: EdgeInsets.only(
+                                              bottom: isLast ? 0.0 : AppSpacing.sm,
+                                            ),
+                                            child: _buildPremiumGameCard(
+                                              context,
+                                              containerVarItem,
+                                              currentUserReference,
+                                            ),
+                                          );
+                                        },
+                                        childCount: joinableGames.length,
+                                      ),
+                                    ),
+                            ),
+                            if (lockedGames.isNotEmpty)
+                              SliverToBoxAdapter(
+                                child: Padding(
+                                  padding: EdgeInsets.fromLTRB(
+                                    AppSpacing.sm,
+                                    AppSpacing.md,
+                                    AppSpacing.sm,
+                                    AppSpacing.sm,
+                                  ),
+                                  child: Container(
+                                    padding: EdgeInsets.all(AppSpacing.md),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.fairway.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.08),
+                                      ),
                                     ),
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Container(
-                                          width: 120,
-                                          height: 120,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.fairway.withOpacity(0.3),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Icon(
-                                            Icons.golf_course_rounded,
-                                            size: 56,
-                                            color: Colors.white.withOpacity(0.5),
-                                          ),
-                                        ),
-                                        SizedBox(height: AppSpacing.lg),
-                                        if (_filters.hasActiveFilters) ...[
-                                          Text(
-                                            'No games match these filters',
-                                            style:
-                                                AppTypography.titleMedium.copyWith(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600,
+                                        Row(
+                                          children: [
+                                            Container(
+                                              width: 32,
+                                              height: 32,
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withOpacity(0.12),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: Icon(
+                                                Icons.lock_rounded,
+                                                color: Colors.white.withOpacity(0.8),
+                                                size: 18,
+                                              ),
                                             ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          SizedBox(height: AppSpacing.xs),
-                                          Text(
-                                            'Try adjusting or clearing your filters.',
-                                            style:
-                                                AppTypography.bodyMedium.copyWith(
-                                              color: Colors.white.withOpacity(0.7),
+                                            SizedBox(width: AppSpacing.sm),
+                                            Expanded(
+                                              child: Text(
+                                                'Friends-only games',
+                                                style: AppTypography.titleSmall.copyWith(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
                                             ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          SizedBox(height: AppSpacing.lg),
-                                          SizedBox(
-                                            width: 220,
-                                            child: AppButtonEnhanced(
-                                              text: 'Clear filters',
-                                              variant: AppButtonVariant.secondary,
-                                              size: AppButtonSize.medium,
+                                            TextButton(
                                               onPressed: () {
                                                 if (mounted) {
                                                   setState(() {
-                                                    _filters = GameListFilters();
+                                                    _showLockedGames = !_showLockedGames;
                                                   });
                                                 }
                                               },
+                                              child: Text(
+                                                _showLockedGames ? 'Hide' : 'Show',
+                                                style: AppTypography.labelMedium.copyWith(
+                                                  color: AppColors.sunsetGold,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
                                             ),
+                                          ],
+                                        ),
+                                        SizedBox(height: AppSpacing.xs),
+                                        Text(
+                                          'Become friends with the host to join.',
+                                          style: AppTypography.bodySmall.copyWith(
+                                            color: Colors.white.withOpacity(0.7),
                                           ),
-                                        ] else ...[
-                                          Text(
-                                            'No games yet',
-                                            style:
-                                                AppTypography.titleMedium.copyWith(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          SizedBox(height: AppSpacing.xs),
-                                          Text(
-                                            'Be the first to create a game.',
-                                            style:
-                                                AppTypography.bodyMedium.copyWith(
-                                              color: Colors.white.withOpacity(0.7),
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          SizedBox(height: AppSpacing.lg),
-                                          SizedBox(
-                                            width: 220,
-                                            child: AppButtonEnhanced(
-                                              text: 'Create a game',
-                                              variant: AppButtonVariant.primary,
-                                              size: AppButtonSize.medium,
-                                              onPressed: () {
-                                                context.pushNamed(
-                                                  CreateGameWidget.routeName,
-                                                  extra: <String, dynamic>{
-                                                    kTransitionInfoKey:
-                                                        TransitionStandards.detailTransition,
-                                                  },
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ],
+                                        ),
                                       ],
                                     ),
                                   ),
-                                )
-                              : SliverList(
+                                ),
+                              ),
+                            if (_showLockedGames && lockedGames.isNotEmpty)
+                              SliverPadding(
+                                padding: EdgeInsets.only(
+                                  top: AppSpacing.sm,
+                                  bottom: 44.0,
+                                ),
+                                sliver: SliverList(
                                   delegate: SliverChildBuilderDelegate(
                                     (context, index) {
-                                      final containerVarItem = visibleGames[index];
-                                      final isLast = index == visibleGames.length - 1;
+                                      final lockedGame = lockedGames[index];
+                                      final isLast = index == lockedGames.length - 1;
                                       return Padding(
                                         padding: EdgeInsets.only(
                                           bottom: isLast ? 0.0 : AppSpacing.sm,
                                         ),
                                         child: _buildPremiumGameCard(
                                           context,
-                                          containerVarItem,
+                                          lockedGame,
                                           currentUserReference,
+                                          isLocked: true,
                                         ),
                                       );
                                     },
-                                    childCount: visibleGames.length,
+                                    childCount: lockedGames.length,
                                   ),
                                 ),
+                              ),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   );
                 },
               ),
@@ -576,6 +781,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     BuildContext context,
     Game game,
     DocumentReference? currentUserReference,
+    {bool isLocked = false}
   ) {
     final isUserGame = currentUserReference != null &&
         (game.userRef == currentUserReference ||
@@ -641,6 +847,36 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   // Top row: Game Type Badge + Status + Spots indicator
                   Row(
                     children: [
+                      if (isLocked)
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xxs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(20.0),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.lock_rounded,
+                                size: 12,
+                                color: Colors.white.withOpacity(0.85),
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'Locked',
+                                style: AppTypography.labelSmall.copyWith(
+                                  color: Colors.white.withOpacity(0.85),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (isLocked) SizedBox(width: AppSpacing.xs),
                       // Game Type Badge with gradient
                       if (game.gameType.isNotEmpty)
                         Container(

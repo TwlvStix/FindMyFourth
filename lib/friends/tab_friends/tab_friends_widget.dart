@@ -262,6 +262,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                 Expanded(
                   child: Column(
                     children: [
+                      SizedBox(height: AppSpacing.md),
                       // Enhanced tab bar with shadow
                       Container(
                         decoration: BoxDecoration(

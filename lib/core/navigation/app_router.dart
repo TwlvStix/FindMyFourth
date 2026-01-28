@@ -131,7 +131,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: GamesListWidget.routeName,
           path: GamesListWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -147,7 +147,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: CreateGameWidget.routeName,
           path: CreateGameWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -158,7 +158,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: CommunityWidget.routeName,
           path: CommunityWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -174,7 +174,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: 'Golfers',
           path: '/golfers',
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -193,7 +193,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: JoinGameDetailedWidget.routeName,
           path: JoinGameDetailedWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -209,7 +209,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: MainProfileWidget.routeName,
           path: MainProfileWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -291,7 +291,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: CreateProfileWidget.routeName,
           path: CreateProfileWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -302,7 +302,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: EditProfileWidget.routeName,
           path: EditProfileWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -313,7 +313,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: EditVibesWidget.routeName,
           path: EditVibesWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -324,7 +324,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: EditVibeImportanceWidget.routeName,
           path: EditVibeImportanceWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -335,7 +335,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: GamesJoinedWidget.routeName,
           path: GamesJoinedWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -351,7 +351,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: NotificationPageWidget.routeName,
           path: NotificationPageWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -362,7 +362,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: ChatWidget.routeName,
           path: ChatWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -373,7 +373,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: 'ChatDetails',
           path: '/chat/:chatId',
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -386,7 +386,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: SuccessPageWidget.routeName,
           path: SuccessPageWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -397,7 +397,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: SuccessLeaveWidget.routeName,
           path: SuccessLeaveWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -408,7 +408,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: PlayerListWidget.routeName,
           path: PlayerListWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -447,7 +447,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: NotificationsListWidget.routeName,
           path: NotificationsListWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -458,7 +458,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: TabFriendsWidget.routeName,
           path: TabFriendsWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
@@ -477,7 +477,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         GoRoute(
           name: GameJoinedDetailedWidget.routeName,
           path: GameJoinedDetailedWidget.routePath,
-          redirect: _buildRedirect(appStateNotifier),
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,

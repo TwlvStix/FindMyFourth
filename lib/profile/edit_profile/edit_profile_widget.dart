@@ -650,7 +650,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         borderColor: Colors.transparent,
                         borderWidth: 0,
                         borderRadius: 12,
-                        margin: EdgeInsetsDirectional.zero,
+                        margin: EdgeInsetsDirectional.only(start: AppSpacing.md),
                       ),
                     );
                   },

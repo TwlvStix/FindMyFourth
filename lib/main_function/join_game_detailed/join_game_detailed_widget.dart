@@ -1160,14 +1160,55 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 size: AppButtonSize.large,
                                 onPressed: () async {
                                   // Check permission before attempting join
-                                  if (!((joinGameDetailedGamesRecord.friendGame == 'Public') ||
-                                      ((joinGameDetailedGamesRecord.friendGame == 'Friends') && isCreatorFriend))) {
+                                  final friendGameValue =
+                                      joinGameDetailedGamesRecord.friendGame.trim();
+                                  final friendGameLower = friendGameValue.toLowerCase();
+                                  final isFriendsOnly = friendGameLower == 'friends';
+                                  final isPublic = friendGameLower == 'public';
+                                  bool isOwnerFriendsWithUser = isCreatorFriend;
+                                  if (isFriendsOnly) {
+                                    try {
+                                      final ownerRef = joinGameDetailedGamesRecord.userRef;
+                                      if (ownerRef != null && currentUserRef != null) {
+                                        final ownerSnap = await ownerRef.get();
+                                        final ownerData = ownerSnap.data() as Map<String, dynamic>? ?? {};
+                                        final ownerFriends = ownerData['friends'];
+                                        final currentUserId = currentUserRef.id;
+                                        String? normalizeFriendEntry(Object? entry) {
+                                          if (entry is DocumentReference) {
+                                            return entry.id;
+                                          }
+                                          if (entry is String) {
+                                            if (entry.contains('/')) {
+                                              final parts = entry.split('/');
+                                              return parts.isNotEmpty ? parts.last : entry;
+                                            }
+                                            return entry;
+                                          }
+                                          return null;
+                                        }
+                                        if (ownerFriends is List) {
+                                          isOwnerFriendsWithUser = ownerFriends.any(
+                                            (entry) =>
+                                                normalizeFriendEntry(entry) == currentUserId,
+                                          );
+                                        } else {
+                                          isOwnerFriendsWithUser = false;
+                                        }
+                                      }
+                                    } catch (error) {
+                                      debugPrint('JoinGameDetailed: owner friend check failed $error');
+                                    }
+                                  }
+                                  if (!(isPublic || (isFriendsOnly && isOwnerFriendsWithUser))) {
                                     await showDialog(
                                       context: context,
                                       builder: (alertDialogContext) {
                                         return AlertDialog(
                                           title: Text('Sorry!'),
-                                          content: Text('You are not friends with the game creator.'),
+                                          content: Text(
+                                            'You must be friends with the game creator to join this game.',
+                                          ),
                                           actions: [
                                             TextButton(
                                               onPressed: () => Navigator.pop(alertDialogContext),
@@ -1223,8 +1264,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                     if (!mounted) {
                                       return;
                                     }
+                                    final friendGameValue =
+                                        joinGameDetailedGamesRecord.friendGame.trim();
+                                    final friendGameLower = friendGameValue.toLowerCase();
+                                    final isFriendsOnly = friendGameLower == 'friends';
                                     final message = error.code == 'permission-denied'
-                                        ? 'You do not have permission to join this game.'
+                                        ? (isFriendsOnly && !isOwnerFriendsWithUser
+                                            ? 'You must be friends with the game creator to join this game.'
+                                            : 'You do not have permission to join this game.')
                                         : 'Unable to join the game right now. Please try again.';
                                     showSnackbar(context, message);
                                     return;
@@ -1250,7 +1297,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                   .id,
                                               uid: currentUser.uid,
                                             );
-                                      } catch (_) {
+                                      } on FirebaseException catch (error) {
+                                        if (mounted) {
+                                          showSnackbar(
+                                            context,
+                                            'Joined the game, but chat access is unavailable right now.',
+                                          );
+                                        }
+                                      } catch (error) {
                                         if (mounted) {
                                           showSnackbar(
                                             context,

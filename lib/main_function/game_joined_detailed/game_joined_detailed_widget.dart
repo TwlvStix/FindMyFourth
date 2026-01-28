@@ -1009,6 +1009,17 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                               'joined_players':
                                   FieldValue.arrayRemove(removeValues),
                             });
+                            final chatRef = gameJoinedDetailedGamesRecord.chatRef;
+                            if (chatRef != null) {
+                              try {
+                                await context.read<ChatProvider>().removeMember(
+                                  chatId: chatRef.id,
+                                  uid: currentUserRef.id,
+                                );
+                              } catch (chatError) {
+                                debugPrint('LeaveGame: chat removal failed $chatError');
+                              }
+                            }
                           } on FirebaseException catch (error) {
                             if (!mounted) {
                               return;

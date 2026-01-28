@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '/backend/api_requests/game_service.dart';
 import '/backend/backend.dart';
 import '/core/request_manager.dart';
+import '/services/chat_service.dart';
 
 /// GameProvider manages global game state and provides cached access to game data
 ///
@@ -166,6 +168,7 @@ class GameProvider extends ChangeNotifier {
   Future<void> joinGame(String gameId, String userId) async {
     try {
       await GameService.joinGame(gameId, userId);
+      await _ensureChatMembership(gameId, userId);
       // Invalidate game cache to force refresh
       invalidateGameCache(gameId);
       // Invalidate user games cache to refresh joined games list
@@ -229,6 +232,37 @@ class GameProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('GameProvider.createGame error: $e');
       rethrow;
+    }
+  }
+
+  Future<void> _ensureChatMembership(String gameId, String userId) async {
+    try {
+      final userRef =
+          FirebaseFirestore.instance.collection('users').doc(userId);
+      final gameRef =
+          FirebaseFirestore.instance.collection('games').doc(gameId);
+
+      for (var attempt = 0; attempt < 3; attempt += 1) {
+        final gameSnap = await gameRef.get();
+        if (!gameSnap.exists) {
+          return;
+        }
+
+        final data = gameSnap.data() as Map<String, dynamic>? ?? {};
+        final joinedPlayers = data['joined_players'];
+        final inGame = joinedPlayers is List &&
+            joinedPlayers.any((entry) => entry == userRef || entry == userId);
+        final chatRef = data['chatRef'];
+
+        if (inGame && chatRef is DocumentReference) {
+          await ChatService().addMember(chatId: chatRef.id, uid: userId);
+          return;
+        }
+
+        await Future.delayed(const Duration(milliseconds: 250));
+      }
+    } catch (error) {
+      debugPrint('GameProvider: chat membership sync failed: $error');
     }
   }
 

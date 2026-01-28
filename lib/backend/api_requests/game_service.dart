@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '/backend/backend.dart';
 import '/core/exceptions/app_exceptions.dart';
@@ -32,24 +34,62 @@ class GameService {
     DateTime? dateFilter,
   }) {
     try {
-      Query query = FirebaseFirestore.instance
-          .collection('games');
+      Query baseQuery = FirebaseFirestore.instance.collection('games');
 
       if (courseFilter != null && courseFilter.isNotEmpty) {
-        query = query.where('course', isEqualTo: courseFilter);
+        baseQuery = baseQuery.where('course', isEqualTo: courseFilter);
       }
       if (styleFilter != null && styleFilter.isNotEmpty) {
-        query = query.where('style_game', isEqualTo: styleFilter);
+        baseQuery = baseQuery.where('style_game', isEqualTo: styleFilter);
       }
       if (dateFilter != null) {
-        query = query.where('date', isGreaterThanOrEqualTo: dateFilter);
+        baseQuery = baseQuery.where('date', isGreaterThanOrEqualTo: dateFilter);
       }
 
-      // Order by date ascending (soonest games first)
-      query = query.orderBy('date');
+      Stream<List<GamesRecord>> streamFromQuery(Query query) {
+        final ordered = query.orderBy('date');
+        return ordered.snapshots().map((snapshot) =>
+            snapshot.docs.map((doc) => GamesRecord.fromSnapshot(doc)).toList());
+      }
 
-      return query.snapshots().map((snapshot) =>
-          snapshot.docs.map((doc) => GamesRecord.fromSnapshot(doc)).toList());
+      Stream<List<GamesRecord>> publicOnlyStream() {
+        final publicValuesQuery = baseQuery.where(
+          'friend_game',
+          whereIn: ['Public', 'public'],
+        );
+        final publicNullQuery = baseQuery.where(
+          'friend_game',
+          isNull: true,
+        );
+
+        return Rx.combineLatest2(
+          streamFromQuery(publicValuesQuery),
+          streamFromQuery(publicNullQuery),
+          (List<GamesRecord> a, List<GamesRecord> b) {
+            final merged = <String, GamesRecord>{};
+            for (final record in a) {
+              merged[record.reference.id] = record;
+            }
+            for (final record in b) {
+              merged[record.reference.id] = record;
+            }
+            final mergedList = merged.values.toList();
+            mergedList.sort((left, right) {
+              final leftDate = left.date ?? DateTime(1970);
+              final rightDate = right.date ?? DateTime(1970);
+              return leftDate.compareTo(rightDate);
+            });
+            return mergedList;
+          },
+        );
+      }
+
+      return FirebaseAuth.instance.authStateChanges().switchMap((user) {
+        if (user == null) {
+          return publicOnlyStream();
+        }
+        return streamFromQuery(baseQuery);
+      });
     } on FirebaseException catch (e) {
       debugPrint(
           'GameService.queryAvailableGames error: ${e.code} - ${e.message}');
