@@ -655,9 +655,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         ),
         child: Scaffold(
           key: scaffoldKey,
-          backgroundColor: AppTheme.of(context).primary,
+          extendBodyBehindAppBar: true,
           appBar: AppBar(
-            backgroundColor: AppTheme.of(context).primary,
+            backgroundColor: Colors.transparent,
             surfaceTintColor: Colors.transparent,
             scrolledUnderElevation: 0.0,
             elevation: 0.0,
@@ -671,7 +671,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               tooltip: 'Back',
               icon: Icon(
                 Icons.arrow_back_sharp,
-                color: AppTheme.of(context).primary,
+                color: AppColors.pure,
                 size: 25.0,
               ),
               onPressed: () async {
@@ -685,7 +685,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                       fontWeight: FontWeight.w500,
                       fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
                     ),
-                    color: AppTheme.of(context).primary,
+                    color: AppColors.pure,
                     fontSize: 24.0,
                     letterSpacing: 0.0,
                     fontWeight: FontWeight.w500,
@@ -694,9 +694,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             ),
             centerTitle: false,
           ),
-        body: SafeArea(
-          top: true,
-          child: FairwayBackgroundDark(
+        body: FairwayBackgroundDark(
+          showOrganic: true,
+          showTexture: true,
+          child: SafeArea(
+            top: false,
             child: _isLoading
                 ? Center(
                     child: Column(
@@ -719,7 +721,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                     ),
                   )
                 : Padding(
-                    padding: EdgeInsets.all(AppSpacing.lg),
+                    padding: EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      MediaQuery.of(context).padding.top + 56 + AppSpacing.lg,
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                    ),
                     child: SingleChildScrollView(
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
@@ -1372,9 +1379,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             AppTheme.of(context).primary,
                                         borderWidth: 1.0,
                                         borderRadius: 10.0,
-                                        margin: EdgeInsets.symmetric(
-                                            horizontal: AppSpacing.md,
-                                            vertical: AppSpacing.xxs),
+                                        margin: EdgeInsetsDirectional.only(start: AppSpacing.md),
                                         hidesUnderline: true,
                                         isOverButton: true,
                                         isSearchable: true,

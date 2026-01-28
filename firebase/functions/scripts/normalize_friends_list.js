@@ -1,6 +1,18 @@
 const admin = require("firebase-admin");
+const path = require("path");
 
-admin.initializeApp();
+const serviceAccountPath = path.join(
+  __dirname,
+  "..",
+  "..",
+  "..",
+  "keys",
+  "find-my-fourth-firebase-adminsdk-qmz8q-0d658a8ace.json",
+);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccountPath),
+});
 
 const firestore = admin.firestore();
 const USERS_COLLECTION = "users";

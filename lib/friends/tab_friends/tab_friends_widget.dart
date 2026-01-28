@@ -173,8 +173,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
 
   Future<void> _removeFriend(UsersRecord user) async {
     try {
-      print('TabFriendsWidget: Starting to remove friend: ${user.reference.id}');
-
       // Optimistically update local state for immediate UI feedback
       // Use existing optimistic state if available, otherwise use server state
       setState(() {
@@ -185,9 +183,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
             .toList();
       });
 
-      print('TabFriendsWidget: Calling UserProvider.removeFriend()');
       await context.read<UserProvider>().removeFriend(user.reference);
-      print('TabFriendsWidget: UserProvider.removeFriend() completed successfully');
 
       if (!mounted) {
         return;
@@ -209,7 +205,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
       // Keep optimistic state until Firestore stream updates or user navigates away
       // The state will be cleared naturally when the widget rebuilds with updated data
     } catch (e) {
-      print('TabFriendsWidget: Error removing friend: $e');
       // Revert optimistic update on error
       if (mounted) {
         setState(() {

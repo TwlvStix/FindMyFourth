@@ -6,9 +6,9 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
-import '/core/widgets/vibe_slider_card.dart';
 import '/models/vibe_profile.dart';
 import '/profile/edit_vibe_importance/edit_vibe_importance_widget.dart';
+import '/profile/edit_vibes/vibe_category_slider.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 import '/services/vibe_repository.dart';
 import '/utils/app_util.dart';
@@ -208,6 +208,54 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // How this works header
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: AppColors.fairwayLight.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.fairway.withOpacity(0.2),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.lightbulb_outline_rounded,
+                                  size: 18,
+                                  color: AppColors.fairway,
+                                ),
+                                const SizedBox(width: AppSpacing.xs),
+                                Text(
+                                  'How this works',
+                                  style: AppTypography.bodyMedium.copyWith(
+                                    color: AppColors.pure,
+                                    fontWeight: AppTypography.semiBold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: AppSpacing.xs),
+                            Text(
+                              'Set what you enjoy being around. This helps match you with compatible groups.',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.sand,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.xxs),
+                            Text(
+                              'Slide left = prefer less, right = prefer more',
+                              style: AppTypography.labelSmall.copyWith(
+                                color: AppColors.stone,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
                       Text(
                         _profile.isComplete
                             ? 'Vibe settings: up to date'
@@ -283,11 +331,11 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                       Text(
                         'Social Vibes',
                         style: AppTypography.headlineSmall.copyWith(
-                          color: AppColors.onyx,
+                          color: AppColors.pure,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
-                      VibeSliderCard(
+                      VibeCategorySlider(
                         category: VibeCategory.chat,
                         pref: _profile.preferenceFor(VibeCategory.chat),
                         onValueChanged: (value) =>
@@ -298,7 +346,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                             _handleDealbreakerChanged(VibeCategory.chat, value),
                         margin: const EdgeInsets.only(bottom: AppSpacing.md),
                       ),
-                      VibeSliderCard(
+                      VibeCategorySlider(
                         category: VibeCategory.music,
                         pref: _profile.preferenceFor(VibeCategory.music),
                         onValueChanged: (value) =>
@@ -311,7 +359,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                         ),
                         margin: const EdgeInsets.only(bottom: AppSpacing.md),
                       ),
-                      VibeSliderCard(
+                      VibeCategorySlider(
                         category: VibeCategory.drinking,
                         pref: _profile.preferenceFor(VibeCategory.drinking),
                         onValueChanged: (value) =>
@@ -324,7 +372,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                         ),
                         margin: const EdgeInsets.only(bottom: AppSpacing.md),
                       ),
-                      VibeSliderCard(
+                      VibeCategorySlider(
                         category: VibeCategory.weed,
                         pref: _profile.preferenceFor(VibeCategory.weed),
                         onValueChanged: (value) =>
@@ -338,11 +386,11 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                       Text(
                         'Play Style',
                         style: AppTypography.headlineSmall.copyWith(
-                          color: AppColors.onyx,
+                          color: AppColors.pure,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
-                      VibeSliderCard(
+                      VibeCategorySlider(
                         category: VibeCategory.pace,
                         pref: _profile.preferenceFor(VibeCategory.pace),
                         onValueChanged: (value) =>
@@ -353,7 +401,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                             _handleDealbreakerChanged(VibeCategory.pace, value),
                         margin: const EdgeInsets.only(bottom: AppSpacing.md),
                       ),
-                      VibeSliderCard(
+                      VibeCategorySlider(
                         category: VibeCategory.money,
                         pref: _profile.preferenceFor(VibeCategory.money),
                         onValueChanged: (value) =>
@@ -364,7 +412,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                             _handleDealbreakerChanged(VibeCategory.money, value),
                         margin: const EdgeInsets.only(bottom: AppSpacing.md),
                       ),
-                      VibeSliderCard(
+                      VibeCategorySlider(
                         category: VibeCategory.competitive,
                         pref: _profile.preferenceFor(VibeCategory.competitive),
                         onValueChanged: (value) => _handleValueChanged(

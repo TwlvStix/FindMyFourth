@@ -76,28 +76,40 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
     );
   }
 
-  void _toggleImportance(VibeCategory category) {
+  void _setImportance(VibeCategory category, VibeImportance next) {
     final current = _importance[category] ?? VibeImportance.normal;
-    final next = current == VibeImportance.normal
-        ? VibeImportance.top
-        : current == VibeImportance.top
-            ? VibeImportance.bottom
-            : VibeImportance.normal;
-
-    if (next == VibeImportance.top && current != VibeImportance.top) {
-      if (_topCount >= 2) {
-        return;
-      }
+    if (current == next) {
+      setState(() {
+        _importance = Map<VibeCategory, VibeImportance>.from(_importance)
+          ..[category] = VibeImportance.normal;
+      });
+      return;
     }
-    if (next == VibeImportance.bottom && current != VibeImportance.bottom) {
-      if (_bottomCount >= 1) {
-        return;
-      }
-    }
-
     setState(() {
-      _importance = Map<VibeCategory, VibeImportance>.from(_importance)
-        ..[category] = next;
+      final updated = Map<VibeCategory, VibeImportance>.from(_importance);
+      if (next == VibeImportance.top && _topCount >= 2) {
+        // Auto-clear another top to allow this selection.
+        final otherTop = _orderedCategories.firstWhere(
+          (entry) => entry != category && updated[entry] == VibeImportance.top,
+          orElse: () => category,
+        );
+        if (otherTop != category) {
+          updated[otherTop] = VibeImportance.normal;
+        }
+      }
+      if (next == VibeImportance.bottom && _bottomCount >= 1) {
+        // Auto-clear the existing bottom to allow this selection.
+        final otherBottom = _orderedCategories.firstWhere(
+          (entry) =>
+              entry != category && updated[entry] == VibeImportance.bottom,
+          orElse: () => category,
+        );
+        if (otherBottom != category) {
+          updated[otherBottom] = VibeImportance.normal;
+        }
+      }
+      updated[category] = next;
+      _importance = updated;
     });
   }
 
@@ -218,14 +230,14 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
                       Text(
                         'What makes or breaks your round?',
                         style: AppTypography.headlineSmall.copyWith(
-                          color: AppColors.onyx,
+                          color: AppColors.pure,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
                         'Pick the 2 things that matter most. Optional: pick 1 that matters least. You can change this anytime.',
                         style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.stone,
+                          color: AppColors.sand,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.md),
@@ -314,7 +326,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
           Text(
             label,
             style: AppTypography.labelSmall.copyWith(
-              color: color,
+              color: AppColors.pure,
               letterSpacing: AppTypography.letterSpacingNormal,
               fontWeight: AppTypography.semiBold,
             ),
@@ -323,7 +335,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
           Text(
             '$count/$max',
             style: AppTypography.labelSmall.copyWith(
-              color: AppColors.slate,
+              color: AppColors.sand,
               letterSpacing: AppTypography.letterSpacingNormal,
             ),
           ),
@@ -339,10 +351,10 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
     final isTop = importance == VibeImportance.top;
     final isBottom = importance == VibeImportance.bottom;
     final background = isTop
-        ? AppColors.fairwayLight.withOpacity(0.18)
+        ? AppColors.fairwayDark.withOpacity(0.3)
         : isBottom
-            ? AppColors.sunsetGold.withOpacity(0.14)
-            : AppColors.sand;
+            ? AppColors.sunsetGold.withOpacity(0.2)
+            : AppColors.slate.withOpacity(0.15);
     final borderColor = isTop
         ? AppColors.fairway
         : isBottom
@@ -354,58 +366,123 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
             ? 'Least important'
             : 'Normal';
     final labelColor = isTop
-        ? AppColors.fairway
+        ? AppColors.fairwayLight
         : isBottom
             ? AppColors.sunsetGold
             : AppColors.stone;
+    final titleColor = isTop || isBottom ? AppColors.pure : AppColors.sand;
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        HapticFeedback.lightImpact();
-        _toggleImportance(category);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: background,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: borderColor.withOpacity(0.5)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.onyx,
-                      fontWeight: AppTypography.semiBold,
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: borderColor.withOpacity(0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: titleColor,
+                        fontWeight: AppTypography.semiBold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.xxs),
-                  Text(
-                    label,
-                    style: AppTypography.labelSmall.copyWith(
-                      color: labelColor,
-                      letterSpacing: AppTypography.letterSpacingNormal,
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      label,
+                      style: AppTypography.labelSmall.copyWith(
+                        color: isTop || isBottom ? AppColors.sand : AppColors.stone,
+                        letterSpacing: AppTypography.letterSpacingNormal,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Icon(
-              isTop
-                  ? Icons.arrow_upward_rounded
-                  : isBottom
-                      ? Icons.arrow_downward_rounded
-                      : Icons.swap_vert_rounded,
-              color: labelColor,
-              size: 22,
-            ),
-          ],
+              Icon(
+                isTop
+                    ? Icons.arrow_upward_rounded
+                    : isBottom
+                        ? Icons.arrow_downward_rounded
+                        : Icons.radio_button_unchecked_rounded,
+                color: isTop || isBottom ? AppColors.pure : AppColors.stone,
+                size: 22,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.xs,
+            children: [
+              _buildSelectorChip(
+                label: 'Matters most',
+                selected: isTop,
+                color: AppColors.fairway,
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _setImportance(category, VibeImportance.top);
+                },
+              ),
+              _buildSelectorChip(
+                label: 'Does not matter',
+                selected: isBottom,
+                color: AppColors.sunsetGold,
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _setImportance(category, VibeImportance.bottom);
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelectorChip({
+    required String label,
+    required bool selected,
+    required Color color,
+    required VoidCallback? onTap,
+  }) {
+    // Use white text on colored background for better contrast when selected
+    final textColor = selected
+        ? AppColors.pure
+        : (onTap == null ? AppColors.slate : AppColors.onyx);
+    final bgColor = selected ? color : AppColors.sand.withOpacity(0.5);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: selected ? color : AppColors.cloud,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.labelSmall.copyWith(
+            color: textColor,
+            letterSpacing: AppTypography.letterSpacingNormal,
+            fontWeight:
+                selected ? AppTypography.semiBold : AppTypography.regular,
+          ),
         ),
       ),
     );

@@ -335,53 +335,57 @@ class UserProvider extends ChangeNotifier {
 
   /// Remove a friend (bidirectional - removes both users from each other's friends list)
   Future<void> removeFriend(DocumentReference friendRef) async {
-    debugPrint('UserProvider.removeFriend: Called with friendRef: ${friendRef.id}');
-
     // Use Firebase Auth directly instead of UserProvider's internal state
     final firebaseUser = FirebaseAuth.instance.currentUser;
-    debugPrint('UserProvider.removeFriend: Firebase Auth user = ${firebaseUser?.uid}');
 
     if (firebaseUser == null) {
-      debugPrint('UserProvider.removeFriend: Returning early - Firebase user is null');
       return;
     }
 
     try {
       final currentUserRef = UsersRecord.collection.doc(firebaseUser.uid);
-      debugPrint('UserProvider.removeFriend: currentUserRef = ${currentUserRef.path}');
-
-      if (currentUserRef == null) {
-        debugPrint('UserProvider.removeFriend: Returning early - currentUserRef is null');
-        return;
-      }
-
       final currentUserPath = currentUserRef.path;
       final friendPath = friendRef.path;
-      debugPrint('UserProvider.removeFriend: currentUserPath = $currentUserPath, friendPath = $friendPath');
 
-      // Perform Firestore batch update (bidirectional removal)
-      final batch = FirebaseFirestore.instance.batch();
-      // Current user list can safely remove legacy variants.
-      batch.update(currentUserRef, {
-        'friends': FieldValue.arrayRemove([
-          friendRef,
-          friendRef.id,
-          friendPath,
-          '/$friendPath',
-        ]),
-      });
-      // Friend list should remove legacy variants too for symmetric cleanup.
-      batch.update(friendRef, {
-        'friends': FieldValue.arrayRemove([
-          currentUserRef,
-          currentUserRef.id,
-          currentUserPath,
-          '/$currentUserPath',
-        ]),
-      });
-      debugPrint('UserProvider: Starting batch commit to remove friend: ${friendRef.id}');
-      await batch.commit();
-      debugPrint('UserProvider: Batch commit completed successfully');
+      // Try bidirectional removal first
+      try {
+        final batch = FirebaseFirestore.instance.batch();
+
+        // Current user list: remove friend in all legacy formats
+        batch.update(currentUserRef, {
+          'friends': FieldValue.arrayRemove([
+            friendRef,
+            friendRef.id,
+            friendPath,
+            '/$friendPath',
+          ]),
+        });
+
+        // Friend list: ONLY remove formats that security rule can validate
+        // Security rule checks: userRef(auth.uid) and auth.uid
+        // So we can only remove: DocumentReference and UID string
+        batch.update(friendRef, {
+          'friends': FieldValue.arrayRemove([
+            currentUserRef,      // DocumentReference format
+            currentUserRef.id,   // UID string format
+          ]),
+        });
+
+        await batch.commit();
+      } catch (e) {
+        // If batch fails (likely due to permission error on friend's document),
+        // fallback to one-way removal (only from current user's list)
+        debugPrint('UserProvider: Bidirectional removal failed, using one-way fallback: $e');
+
+        await currentUserRef.update({
+          'friends': FieldValue.arrayRemove([
+            friendRef,
+            friendRef.id,
+            friendPath,
+            '/$friendPath',
+          ]),
+        });
+      }
 
       // Clear cache to ensure fresh data on next query
       refreshFriends();

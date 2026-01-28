@@ -602,6 +602,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             .guestPlayers
                             .where((name) => name.trim().isNotEmpty)
                             .toList();
+                        final gameOwner = gameJoinedDetailedGamesRecord.userRef;
 
                         final playerIds =
                             groupPlayers.map((playerRef) => playerRef.id).toList();
@@ -625,6 +626,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                     (groupPlayersIndex) {
                                   final groupPlayersItem =
                                       groupPlayers[groupPlayersIndex];
+                                  final isOwner = gameOwner != null &&
+                                      groupPlayersItem == gameOwner;
                                   final friendRecord =
                                       profileMap[groupPlayersItem.id];
                                   final displayName =
@@ -700,34 +703,48 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                     CrossAxisAlignment.start,
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  Text(
-                                                    displayName,
-                                                    style: AppTheme.of(context)
-                                                        .bodyLarge
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .outfit(
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodyLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: Colors.white,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyLarge
-                                                                  .fontStyle,
+                                                  Row(
+                                                    children: [
+                                                      Flexible(
+                                                        child: Text(
+                                                          displayName,
+                                                          style: AppTheme.of(context)
+                                                              .bodyLarge
+                                                              .override(
+                                                                font: GoogleFonts
+                                                                    .outfit(
+                                                                  fontWeight:
+                                                                      FontWeight.w500,
+                                                                  fontStyle:
+                                                                      AppTheme.of(
+                                                                              context)
+                                                                          .bodyLarge
+                                                                          .fontStyle,
+                                                                ),
+                                                                color: Colors.white,
+                                                                letterSpacing: 0.0,
+                                                                fontWeight:
+                                                                    FontWeight.w500,
+                                                                fontStyle:
+                                                                    AppTheme.of(
+                                                                            context)
+                                                                        .bodyLarge
+                                                                        .fontStyle,
+                                                              ),
+                                                          maxLines: 1,
+                                                          overflow:
+                                                              TextOverflow.ellipsis,
                                                         ),
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
+                                                      ),
+                                                      if (isOwner) ...[
+                                                        SizedBox(width: 6),
+                                                        Icon(
+                                                          Icons.star_rounded,
+                                                          color: AppColors.sunsetGold,
+                                                          size: 16,
+                                                        ),
+                                                      ],
+                                                    ],
                                                   ),
                                                   SizedBox(height: AppSpacing.xxs),
                                                   Text(

@@ -5,6 +5,7 @@ import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/form_field_controller.dart';
 import '/main_function/games_list/games_list_widget.dart';
@@ -330,91 +331,69 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
           },
           child: Scaffold(
             key: scaffoldKey,
-            backgroundColor: AppTheme.of(context).primaryBtnText,
+            extendBodyBehindAppBar: true,
             appBar: AppBar(
-              backgroundColor: AppTheme.of(context).primaryBackground,
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              scrolledUnderElevation: 0.0,
+              elevation: 0.0,
+              shadowColor: Colors.transparent,
               automaticallyImplyLeading: false,
-              title: Align(
-                alignment: AlignmentDirectional(-1.0, 0.0),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(10.0, 0.0, 0.0, 0.0),
-                  child: Text(
-                    'Add Your Group',
-                    style: AppTheme.of(context).headlineSmall.override(
-                          font: GoogleFonts.outfit(
-                            fontWeight: FontWeight.w500,
-                            fontStyle:
-                                AppTheme.of(context).headlineSmall.fontStyle,
-                          ),
-                          fontSize: 24.0,
-                          letterSpacing: 0.0,
-                          fontWeight: FontWeight.w500,
-                          fontStyle:
-                              AppTheme.of(context).headlineSmall.fontStyle,
-                        ),
-                  ),
+              title: Text(
+                'Add Your Group',
+                style: GoogleFonts.outfit(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  letterSpacing: 0.0,
                 ),
               ),
               actions: [],
               centerTitle: true,
-              elevation: 10.0,
             ),
-            body: Column(
-              children: [
-                // Green header section
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFF1A4D2E),
-                        Color(0xFF2A5F3E),
-                      ],
-                    ),
-                  ),
-                  child: SafeArea(
-                    bottom: false,
-                    child: Padding(
+            body: FairwayBackgroundDark(
+              showOrganic: true,
+              showTexture: true,
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  children: [
+                    // Top spacing for AppBar
+                    SizedBox(height: MediaQuery.of(context).padding.top + 56),
+                    // Subtitle section
+                    Padding(
                       padding: EdgeInsets.all(AppSpacing.md),
                       child: Text(
                         'Select your friends who are already playing',
                         style: GoogleFonts.outfit(
-                          fontSize: 15.0,
+                          fontSize: 14.0,
                           color: Colors.white.withValues(alpha: 0.9),
                           letterSpacing: 0.0,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                  ),
-                ),
-                // White content area
-                Expanded(
-                  child: Container(
-                    color: Color(0xFFF5F5F5),
-                    child: SafeArea(
-                      top: false,
+                    // Content area
+                    Expanded(
                       child: SingleChildScrollView(
-                        child: Padding(
-                          padding: AppSpacing.allMd,
-                          child: Column(
-                            children: [
-                              // Main content card
-                              Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color:
-                                          Colors.black.withValues(alpha: 0.06),
-                                      blurRadius: 12.0,
-                                      offset: Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
+                        padding: AppSpacing.allMd,
+                        child: Column(
+                          children: [
+                            // Main content card
+                            Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color:
+                                        Colors.black.withValues(alpha: 0.06),
+                                    blurRadius: 12.0,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                              ),
                                 child: Padding(
                                   padding: AppSpacing.allLg,
                                   child: Form(
@@ -427,19 +406,72 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                       children: [
                                         Text(
                                           'Search Players',
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 16.0,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF4A5568),
-                                          ),
+                                          style: AppTheme.of(context)
+                                              .bodyMedium
+                                              .override(
+                                                font: GoogleFonts.outfit(
+                                                  fontWeight: AppTheme.of(context)
+                                                      .bodyMedium
+                                                      .fontWeight,
+                                                  fontStyle: AppTheme.of(context)
+                                                      .bodyMedium
+                                                      .fontStyle,
+                                                ),
+                                                color: Color(0xFF1A4D2E),
+                                                letterSpacing: 0.0,
+                                                fontWeight: AppTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontWeight,
+                                                fontStyle: AppTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
+                                              ),
                                         ),
                                         SizedBox(height: AppSpacing.sm),
                                         TextField(
                                           controller: _searchController,
                                           onChanged: _onSearchChanged,
+                                          style: AppTheme.of(context)
+                                              .bodyMedium
+                                              .override(
+                                                font: GoogleFonts.outfit(
+                                                  fontWeight: AppTheme.of(context)
+                                                      .bodyMedium
+                                                      .fontWeight,
+                                                  fontStyle: AppTheme.of(context)
+                                                      .bodyMedium
+                                                      .fontStyle,
+                                                ),
+                                                letterSpacing: 0.0,
+                                                fontWeight: AppTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontWeight,
+                                                fontStyle: AppTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
+                                              ),
                                           decoration: InputDecoration(
                                             hintText:
                                                 'Type at least $_minSearchChars characters',
+                                            hintStyle: AppTheme.of(context)
+                                                .bodyMedium
+                                                .override(
+                                                  font: GoogleFonts.outfit(
+                                                    fontWeight: AppTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontWeight,
+                                                    fontStyle: AppTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontStyle,
+                                                  ),
+                                                  letterSpacing: 0.0,
+                                                  fontWeight: AppTheme.of(context)
+                                                      .bodyMedium
+                                                      .fontWeight,
+                                                  fontStyle: AppTheme.of(context)
+                                                      .bodyMedium
+                                                      .fontStyle,
+                                                ),
                                             prefixIcon:
                                                 Icon(Icons.search, size: 20.0),
                                             filled: true,
@@ -485,7 +517,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                           Text(
                                             'Type at least $_minSearchChars characters to search all players.',
                                             style: GoogleFonts.outfit(
-                                              fontSize: 12.0,
+                                              fontSize: 13.0,
                                               color: Color(0xFF718096),
                                             ),
                                           )
@@ -506,7 +538,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                               Text(
                                                 'Searching...',
                                                 style: GoogleFonts.outfit(
-                                                  fontSize: 12.0,
+                                                  fontSize: 13.0,
                                                   color: Color(0xFF718096),
                                                 ),
                                               ),
@@ -516,7 +548,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                           Text(
                                             '${_searchResults.length} result${_searchResults.length == 1 ? '' : 's'}',
                                             style: GoogleFonts.outfit(
-                                              fontSize: 12.0,
+                                              fontSize: 13.0,
                                               color: Color(0xFF718096),
                                             ),
                                           ),
@@ -607,7 +639,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                                     : 'Selected',
                                                                 style: GoogleFonts
                                                                     .outfit(
-                                                                  fontSize: 12.0,
+                                                                  fontSize: 13.0,
                                                                   color: Color(
                                                                       0xFF718096),
                                                                 ),
@@ -635,7 +667,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                             Text(
                                               'No players found.',
                                               style: GoogleFonts.outfit(
-                                                fontSize: 12.0,
+                                                fontSize: 13.0,
                                                 color: Color(0xFF718096),
                                               ),
                                             ),
@@ -653,7 +685,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         Text(
                                           'Your Group',
                                           style: GoogleFonts.outfit(
-                                            fontSize: 18.0,
+                                            fontSize: 16.0,
                                             fontWeight: FontWeight.w600,
                                             color: Color(0xFF1A4D2E),
                                           ),
@@ -748,7 +780,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                     child: Text(
                                                       'You',
                                                       style: GoogleFonts.outfit(
-                                                        fontSize: 12.0,
+                                                        fontSize: 13.0,
                                                         fontWeight:
                                                             FontWeight.w600,
                                                         color: Colors.white,
@@ -768,7 +800,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                             style: GoogleFonts.outfit(
                                               fontSize: 16.0,
                                               fontWeight: FontWeight.w600,
-                                              color: Color(0xFF4A5568),
+                                              color: Color(0xFF1A4D2E),
                                             ),
                                           ),
                                           SizedBox(height: AppSpacing.sm),
@@ -938,9 +970,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                                   .fontStyle,
                                                             ),
                                                     hintText:
-                                                        'Find Player ${currentPlayerCount + i + 1}....',
+                                                        'Find Player ${currentPlayerCount + i + 1}',
                                                     searchHintText:
-                                                        'Search Players....',
+                                                        'Search Players',
                                                     icon: Icon(
                                                       Icons
                                                           .keyboard_arrow_down_rounded,
@@ -956,10 +988,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                             .alternate,
                                                     borderWidth: 2.0,
                                                     borderRadius: 8.0,
-                                                    margin: AppSpacing.symmetric(
-                                                      horizontal: AppSpacing.md,
-                                                      vertical: AppSpacing.xxs,
-                                                    ),
+                                                    margin: EdgeInsetsDirectional.only(start: AppSpacing.md),
                                                     hidesUnderline: true,
                                                     isOverButton: true,
                                                     isSearchable: false,
@@ -976,7 +1005,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                           Text(
                                             'This game is already full.',
                                             style: GoogleFonts.outfit(
-                                              fontSize: 14.0,
+                                              fontSize: 13.0,
                                               color: Color(0xFF718096),
                                             ),
                                           ),
@@ -1188,15 +1217,14 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                     ],
                                   ],
                                 ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );

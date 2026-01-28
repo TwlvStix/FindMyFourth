@@ -15,6 +15,7 @@ import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart'
 import '/models/game.dart';
 import '/providers/game_provider.dart';
 import '/backend/backend.dart';
+import '/friends/tab_friends/tab_friends_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -790,6 +791,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     final isExpired = game.status == 'expired';
     final spotsLeft = game.maxPlayers - (game.joinedPlayers.length + game.guestPlayers.length);
     final isFull = spotsLeft <= 0;
+    final ownerRef = game.userRef;
 
     return GestureDetector(
       onTap: () async {
@@ -1043,6 +1045,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
+                            if (isLocked)
+                              _LockedGameHostLabel(ownerRef: ownerRef),
                           ],
                         ),
                       ),
@@ -1189,62 +1193,135 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       ),
                     Spacer(),
                     // Action button
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: isUserGame
-                            ? LinearGradient(
-                                colors: [AppColors.fairwayLight, AppColors.fairway],
-                              )
-                            : LinearGradient(
-                                colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                    isLocked
+                        ? InkWell(
+                            onTap: () {
+                              context.pushNamed(TabFriendsWidget.routeName);
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppSpacing.md,
+                                vertical: AppSpacing.xs,
                               ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: (isUserGame
-                                    ? AppColors.fairway
-                                    : AppColors.sunsetGold)
-                                .withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            isUserGame
-                                ? Icons.visibility_rounded
-                                : (isFull
-                                    ? Icons.hourglass_empty_rounded
-                                    : Icons.add_rounded),
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            isUserGame
-                                ? 'View Details'
-                                : (isFull ? 'Full' : 'Join Game'),
-                            style: AppTypography.labelSmall.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.sunsetGold.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.person_add_rounded,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Add Friend',
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                              vertical: AppSpacing.xs,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: isUserGame
+                                  ? LinearGradient(
+                                      colors: [AppColors.fairwayLight, AppColors.fairway],
+                                    )
+                                  : LinearGradient(
+                                      colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                    ),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (isUserGame
+                                          ? AppColors.fairway
+                                          : AppColors.sunsetGold)
+                                      .withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isUserGame
+                                      ? Icons.visibility_rounded
+                                      : (isFull
+                                          ? Icons.hourglass_empty_rounded
+                                          : Icons.add_rounded),
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                                SizedBox(width: 6),
+                                Text(
+                                  isUserGame
+                                      ? 'View Details'
+                                      : (isFull ? 'Full' : 'Join Game'),
+                                  style: AppTypography.labelSmall.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
               ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _LockedGameHostLabel extends StatelessWidget {
+  const _LockedGameHostLabel({required this.ownerRef});
+
+  final DocumentReference? ownerRef;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = AppTypography.labelSmall.copyWith(
+      color: Colors.white.withOpacity(0.7),
+      fontWeight: FontWeight.w500,
+    );
+
+    if (ownerRef == null) {
+      return Text('Host: Unknown', style: style);
+    }
+
+    return StreamBuilder<UsersRecord>(
+      stream: UsersRecord.getDocument(ownerRef!),
+      builder: (context, snapshot) {
+        final hostName = snapshot.data?.displayName;
+        final label = hostName != null && hostName.trim().isNotEmpty
+            ? hostName.trim()
+            : 'Unknown';
+        return Text('Host: $label', style: style);
+      },
     );
   }
 }

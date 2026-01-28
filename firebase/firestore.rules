@@ -84,6 +84,14 @@ service cloud.firestore {
       return listValue.hasAny([userRef(request.auth.uid), request.auth.uid]);
     }
 
+    function listHasSelfRef(listValue) {
+      return listValue.hasAny([userRef(request.auth.uid)]);
+    }
+
+    function listHasSelfUid(listValue) {
+      return listValue.hasAny([request.auth.uid]);
+    }
+
     function isSelfOnlyAdded(oldList, newList) {
       return !listHasSelf(oldList) &&
         listHasSelf(newList) &&
@@ -92,9 +100,12 @@ service cloud.firestore {
     }
 
     function isSelfOnlyRemoved(oldList, newList) {
-      return listHasSelf(oldList) &&
+      let removedRef = listHasSelfRef(oldList) && !listHasSelfRef(newList);
+      let removedUid = listHasSelfUid(oldList) && !listHasSelfUid(newList);
+      let removedCount = (removedRef ? 1 : 0) + (removedUid ? 1 : 0);
+      return (removedRef || removedUid) &&
         !listHasSelf(newList) &&
-        oldList.size() == newList.size() + 1 &&
+        oldList.size() == newList.size() + removedCount &&
         oldList.hasAll(newList);
     }
 

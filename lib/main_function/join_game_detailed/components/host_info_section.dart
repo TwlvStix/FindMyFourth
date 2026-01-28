@@ -86,7 +86,6 @@ class HostInfoSection extends StatelessWidget {
                 'ProfileUser',
                 extra: <String, dynamic>{
                   'userRef': hostUser.reference,
-                  kTransitionInfoKey: TransitionStandards.detailTransition,
                 },
               );
             },
