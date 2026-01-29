@@ -36,7 +36,7 @@ void main() {
     expect(symmetric, lessThan(1.0));
   });
 
-  test('dealbreaker cap applies to total score', () {
+  test('aggregate score does not cap on dealbreakers', () {
     final result = aggregateVibeScore([
       const VibeWeightedScore(
         scorePercent: 92,
@@ -45,8 +45,8 @@ void main() {
       ),
     ]);
 
-    expect(result.cappedScore, VibeTuning.dealbreakerCap);
-    expect(result.isCapped, isTrue);
+    expect(result.cappedScore, isNull);
+    expect(result.isCapped, isFalse);
   });
 
   test('default multiplier reduces effective weight', () {

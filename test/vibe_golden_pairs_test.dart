@@ -5,6 +5,7 @@ import 'package:test/test.dart';
 
 import 'package:find_my_fourth/models/vibe_profile.dart';
 import 'package:find_my_fourth/services/vibe_matcher.dart';
+import 'package:find_my_fourth/vibe/vibe_match_types.dart';
 
 const double _greatMin = 80;
 const double _okayMin = 55;
@@ -30,8 +31,9 @@ void main() {
       expect(b, isNotNull, reason: 'Missing profile $bId');
 
       final result = VibeMatcher.score(a!, b!);
-      final score = result.cappedScore ?? result.totalScore;
-      final capped = result.cappedScore != null;
+      final score = result.baseScorePercent;
+      final notRecommended =
+          result.recommendation == VibeRecommendation.notRecommended;
 
       if (bucket == 'great') {
         expect(score, greaterThanOrEqualTo(_greatMin));
@@ -39,8 +41,8 @@ void main() {
         expect(score, inInclusiveRange(_okayMin, _okayMax));
       } else if (bucket == 'bad') {
         final inRange = score <= _badMax;
-        expect(inRange || capped, isTrue,
-            reason: 'Bad bucket expects <= $_badMax or capped');
+        expect(inRange || notRecommended, isTrue,
+            reason: 'Bad bucket expects <= $_badMax or not recommended');
       } else {
         fail('Unknown bucket: $bucket');
       }
@@ -58,18 +60,27 @@ void main() {
       final anchor = profiles[anchorId];
       expect(anchor, isNotNull, reason: 'Missing anchor $anchorId');
 
+      VibeRecommendation? lastRecommendation;
       double? lastScore;
       for (final otherId in ordering) {
         final other = profiles[otherId];
         expect(other, isNotNull, reason: 'Missing profile $otherId');
         final result = VibeMatcher.score(anchor!, other!);
-        final score = result.cappedScore ?? result.totalScore;
+        final score = result.finalScorePercent;
 
-        if (lastScore != null) {
-          expect(lastScore, greaterThan(score),
-              reason: 'Expected $anchorId > $otherId ordering');
+        if (lastScore != null && lastRecommendation != null) {
+          final rank = _recommendationRank(result.recommendation);
+          final lastRank = _recommendationRank(lastRecommendation);
+          if (lastRank != rank) {
+            expect(lastRank, lessThan(rank),
+                reason: 'Expected $anchorId > $otherId ordering');
+          } else {
+            expect(lastScore, greaterThan(score),
+                reason: 'Expected $anchorId > $otherId ordering');
+          }
         }
         lastScore = score;
+        lastRecommendation = result.recommendation;
       }
     }
   });
@@ -79,6 +90,17 @@ Map<String, dynamic> _loadDataset() {
   final file = File('testdata/vibe_golden_pairs.json');
   final raw = file.readAsStringSync();
   return jsonDecode(raw) as Map<String, dynamic>;
+}
+
+int _recommendationRank(VibeRecommendation recommendation) {
+  switch (recommendation) {
+    case VibeRecommendation.recommended:
+      return 0;
+    case VibeRecommendation.caution:
+      return 1;
+    case VibeRecommendation.notRecommended:
+      return 2;
+  }
 }
 
 Map<String, VibeProfile> _buildProfiles(List<dynamic> rawProfiles) {

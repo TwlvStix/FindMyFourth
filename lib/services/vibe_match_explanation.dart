@@ -2,6 +2,7 @@ import 'dart:math';
 
 import '/models/vibe_profile.dart';
 import '/services/vibe_matcher.dart';
+import '/vibe/vibe_match_types.dart';
 import '/vibe/vibe_scoring.dart';
 
 enum VibeWeightLevel {
@@ -73,6 +74,9 @@ class InsightItem {
 class MatchExplanation {
   const MatchExplanation({
     required this.totalScore,
+    required this.recommendation,
+    required this.hardConflictReasons,
+    required this.softRiskReasons,
     required this.confidenceLevel,
     required this.confidenceReason,
     required this.defaultCategoryCount,
@@ -83,6 +87,9 @@ class MatchExplanation {
   });
 
   final int totalScore;
+  final VibeRecommendation recommendation;
+  final List<InsightItem> hardConflictReasons;
+  final List<InsightItem> softRiskReasons;
   final VibeConfidence confidenceLevel;
   final String confidenceReason;
   final int defaultCategoryCount;
@@ -98,9 +105,31 @@ MatchExplanation buildMatchExplanation({
   required VibeProfile b,
 }) {
   final perCategory = matchResult.perCategory;
-  final conflictsByCategory = <VibeCategory>{
-    for (final conflict in matchResult.conflicts) conflict.category,
+  final hardConflictsByCategory = <VibeCategory>{
+    for (final conflict in matchResult.hardConflicts) conflict.category,
   };
+  final hardConflictReasons = matchResult.hardConflicts.map((conflict) {
+    return InsightItem(
+      title: VibeLabels.titleFor(conflict.category),
+      description: conflict.reason,
+      type: VibeInsightType.difference,
+      categoryKey: conflict.category,
+      isActivityBased: false,
+    );
+  }).toList();
+  final softRiskReasons =
+      List<VibeSoftRisk>.from(matchResult.softRisks)..sort(
+          (a, b) => b.severity01.compareTo(a.severity01),
+        );
+  final topSoftRisks = softRiskReasons.take(3).map((risk) {
+    return InsightItem(
+      title: VibeLabels.titleFor(risk.category),
+      description: risk.reason,
+      type: VibeInsightType.difference,
+      categoryKey: risk.category,
+      isActivityBased: false,
+    );
+  }).toList();
 
   final rawBreakdowns = <_BreakdownSeed>[];
   for (final category in VibeCategory.values) {
@@ -121,7 +150,7 @@ MatchExplanation buildMatchExplanation({
       prefB.value,
       isDefaultFlag: prefB.isDefault,
     );
-    final dealbreakerRisk = conflictsByCategory.contains(category);
+    final dealbreakerRisk = hardConflictsByCategory.contains(category);
 
     rawBreakdowns.add(
       _BreakdownSeed(
@@ -309,8 +338,7 @@ MatchExplanation buildMatchExplanation({
     defaultCategoryCount,
   );
 
-  final displayScore =
-      (matchResult.cappedScore ?? matchResult.totalScore).round();
+  final displayScore = matchResult.finalScorePercent.round();
 
   final whyThisMatchWorks = <InsightItem>[];
   if (confidence != VibeConfidence.low) {
@@ -342,6 +370,9 @@ MatchExplanation buildMatchExplanation({
 
   return MatchExplanation(
     totalScore: displayScore,
+    recommendation: matchResult.recommendation,
+    hardConflictReasons: hardConflictReasons,
+    softRiskReasons: topSoftRisks,
     confidenceLevel: confidence,
     confidenceReason: confidenceReason,
     defaultCategoryCount: defaultCategoryCount,

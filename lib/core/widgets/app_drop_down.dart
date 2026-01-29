@@ -295,7 +295,7 @@ class _AppDropDownState<T> extends State<AppDropDown<T>> {
       ),
       menuItemStyleData: MenuItemStyleData(
         overlayColor: overlayColor,
-        padding: EdgeInsets.zero,
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
       ),
       dropdownStyleData: DropdownStyleData(
         elevation: widget.elevation.toInt(),

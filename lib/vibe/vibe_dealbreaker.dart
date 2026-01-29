@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import '/models/vibe_profile.dart';
+import '/vibe/vibe_match_types.dart';
 import '/vibe/vibe_tuning.dart';
 
 int dealbreakerConflictThreshold({
@@ -21,15 +22,56 @@ int dealbreakerConflictThreshold({
   return min(myThreshold, theirThreshold);
 }
 
-double? dealbreakerCappedScore({
-  required double score,
-  required bool isDealbreaker,
-  required double cap,
-}) {
-  if (!isDealbreaker) {
-    return null;
+class HardBlockResult {
+  const HardBlockResult({
+    required this.isHardBlocked,
+    required this.conflicts,
+  });
+
+  final bool isHardBlocked;
+  final List<VibeHardConflict> conflicts;
+}
+
+HardBlockResult evaluateHardBlocks(VibeProfile a, VibeProfile b) {
+  final conflicts = <VibeHardConflict>[];
+
+  for (final category in VibeCategory.values) {
+    final aPref = a.preferenceFor(category);
+    final bPref = b.preferenceFor(category);
+    if (!aPref.dealbreaker && !bPref.dealbreaker) {
+      continue;
+    }
+
+    final distance = (aPref.value - bPref.value).abs();
+    // Use the same threshold selection as the existing dealbreaker logic.
+    final tolerance = dealbreakerConflictThreshold(
+      mineDealbreaker: aPref.dealbreaker,
+      theirsDealbreaker: bPref.dealbreaker,
+      myThreshold: aPref.threshold,
+      theirThreshold: bPref.threshold,
+    );
+    final hardLimit = tolerance + VibeTuning.hardMargin;
+
+    if (distance >= hardLimit) {
+      conflicts.add(
+        VibeHardConflict(
+          category: category,
+          myValue: aPref.value.toDouble(),
+          theirValue: bPref.value.toDouble(),
+          distance: distance.toDouble(),
+          thresholdOrLimit: hardLimit.toDouble(),
+          reason: _hardBlockReason(category, distance, hardLimit),
+          myDealbreaker: aPref.dealbreaker,
+          theirDealbreaker: bPref.dealbreaker,
+        ),
+      );
+    }
   }
-  return min(score, cap).toDouble();
+
+  return HardBlockResult(
+    isHardBlocked: conflicts.isNotEmpty,
+    conflicts: conflicts,
+  );
 }
 
 bool dealbreakerTriggeredForCategory({
@@ -85,4 +127,17 @@ bool dealbreakerTriggeredForCategory({
         myDealbreaker: bDealbreaker,
         theirValue: aValue,
       );
+}
+
+String _hardBlockReason(
+  VibeCategory category,
+  int distance,
+  double hardLimit,
+) {
+  final label = VibeLabels.titleFor(category);
+  final overBy = (distance - hardLimit).toDouble();
+  if (overBy.abs() < 1e-6) {
+    return '$label mismatch exceeds the dealbreaker limit.';
+  }
+  return '$label mismatch exceeds the dealbreaker limit by ${overBy.toStringAsFixed(1)}.';
 }

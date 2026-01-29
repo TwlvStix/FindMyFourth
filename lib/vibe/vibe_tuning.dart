@@ -26,7 +26,11 @@ class VibeTuning {
   static const double confidenceHighThreshold = 0.8;
   static const double confidenceMediumThreshold = 0.6;
 
-  static const double dealbreakerCap = 39.0;
+  static const double hardMargin = 2.0;
+  static const double riskScale = 1.75;
+  static const double riskCurveP = 2.0;
+  static const double riskMaxDefault = 0.45;
+  static const double riskCautionThreshold = 0.25;
 
   static const double importanceTopMultiplier = 1.30;
   static const double importanceBottomMultiplier = 0.80;

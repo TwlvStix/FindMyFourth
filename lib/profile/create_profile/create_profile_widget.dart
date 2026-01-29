@@ -239,6 +239,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       });
       try {
         final golfCanadaRaw = golfCanadaTextController?.text.trim() ?? '';
+        debugPrint('Creating user document with friend fields initialized...');
         await userRef.set(
           createUsersRecordData(
             photoUrl: currentUserPhoto,
@@ -250,9 +251,12 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
             firstName: firstNameTextController!.text,
             lastName: lastNameTextController!.text,
             displayName: desiredUsername,
+            friends: [],
+            friendRequests: [],
           ),
           SetOptions(merge: true),
         );
+        debugPrint('User document created with friend fields initialized');
       } catch (e) {
         try {
           final usernameDoc = await usernamesRef.get();
@@ -589,7 +593,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                 borderColor: AppColors.cloud,
                                 borderWidth: 1.5,
                                 borderRadius: 12,
-                                margin: EdgeInsetsDirectional.zero,
+                                margin: EdgeInsetsDirectional.only(start: AppSpacing.md),
                               );
                             },
                           ),

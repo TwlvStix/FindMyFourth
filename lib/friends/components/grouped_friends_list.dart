@@ -131,23 +131,9 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
                 ...clubMembers.map((friend) => _buildFriendCard(friend, false)),
             ],
 
-            // All Friends Section
+            // Other friends (no section header since it's redundant on Friends tab)
             if (otherFriends.isNotEmpty) ...[
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                child: FriendSectionHeader(
-                  icon: Icons.people_rounded,
-                  title: 'All Friends',
-                  count: otherFriends.length,
-                  color: AppColors.sunsetPeach,
-                  isCollapsed: allFriendsCollapsed,
-                  onTap: () {
-                    setState(() => allFriendsCollapsed = !allFriendsCollapsed);
-                  },
-                ),
-              ),
-              if (!allFriendsCollapsed)
-                ...otherFriends.map((friend) => _buildFriendCard(friend, false)),
+              ...otherFriends.map((friend) => _buildFriendCard(friend, false)),
             ],
 
             SizedBox(height: AppSpacing.md),

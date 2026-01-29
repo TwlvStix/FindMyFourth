@@ -832,67 +832,75 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                 minWidth: double.infinity,
                                 minHeight: double.infinity,
                               ),
-                              child: AuthUserStreamWidget(
-                                builder: (context) => Builder(
-                                  builder: (context) {
-                                    final serverFriendsList =
-                                        (currentUserDocument?.friends.toList() ?? []).toList();
+                              child: RefreshIndicator(
+                                onRefresh: _refreshFriendsTab,
+                                color: AppColors.fairway,
+                                backgroundColor: Colors.white,
+                                child: SingleChildScrollView(
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  child: AuthUserStreamWidget(
+                                    builder: (context) => Builder(
+                                      builder: (context) {
+                                        final serverFriendsList =
+                                            (currentUserDocument?.friends.toList() ?? []).toList();
 
-                                    // Check if optimistic state matches server state
-                                    if (_optimisticFriendsList != null) {
-                                      final optimisticIds =
-                                          _optimisticFriendsList!.map((ref) => ref.id).toSet();
-                                      final serverIds =
-                                          serverFriendsList.map((ref) => ref.id).toSet();
+                                        // Check if optimistic state matches server state
+                                        if (_optimisticFriendsList != null) {
+                                          final optimisticIds =
+                                              _optimisticFriendsList!.map((ref) => ref.id).toSet();
+                                          final serverIds =
+                                              serverFriendsList.map((ref) => ref.id).toSet();
 
-                                      // If server state matches optimistic state, clear optimistic state
-                                      if (optimisticIds.length == serverIds.length &&
-                                          optimisticIds.difference(serverIds).isEmpty) {
-                                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                                          if (mounted) {
-                                            setState(() {
-                                              _optimisticFriendsList = null;
+                                          // If server state matches optimistic state, clear optimistic state
+                                          if (optimisticIds.length == serverIds.length &&
+                                              optimisticIds.difference(serverIds).isEmpty) {
+                                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                                              if (mounted) {
+                                                setState(() {
+                                                  _optimisticFriendsList = null;
+                                                });
+                                              }
                                             });
                                           }
-                                        });
-                                      }
-                                    }
+                                        }
 
-                                    // Use optimistic state if available, otherwise use server state
-                                    final friendsList =
-                                        _optimisticFriendsList ?? serverFriendsList;
+                                        // Use optimistic state if available, otherwise use server state
+                                        final friendsList =
+                                            _optimisticFriendsList ?? serverFriendsList;
 
-                                    // Show empty state if no friends
-                                    if (friendsList.isEmpty) {
-                                      return FriendsEmptyState(
-                                        type: FriendsEmptyStateType.noFriends,
-                                        onActionPressed: () {
-                                          tabBarController?.animateTo(0);
-                                        },
-                                      );
-                                    }
+                                        // Show empty state if no friends
+                                        if (friendsList.isEmpty) {
+                                          return FriendsEmptyState(
+                                            type: FriendsEmptyStateType.noFriends,
+                                            onActionPressed: () {
+                                              tabBarController?.animateTo(0);
+                                            },
+                                          );
+                                        }
 
-                                    return GroupedFriendsList(
-                                      friendRefs: friendsList,
-                                      favoriteFriends: favoriteFriends,
-                                      currentUserHomeCourse:
-                                          currentUserDocument?.homeCourse,
-                                      currentUser: currentUserDocument,
-                                      onToggleFavorite: toggleFavorite,
-                                      onViewProfile: (user) {
-                                        context.pushNamed(
-                                          'ProfileUser',
-                                          extra: <String, dynamic>{
-                                            'userRef': user.reference,
+                                        return GroupedFriendsList(
+                                          friendRefs: friendsList,
+                                          favoriteFriends: favoriteFriends,
+                                          currentUserHomeCourse:
+                                              currentUserDocument?.homeCourse,
+                                          currentUser: currentUserDocument,
+                                          onToggleFavorite: toggleFavorite,
+                                          onViewProfile: (user) {
+                                            context.pushNamed(
+                                              'ProfileUser',
+                                              extra: <String, dynamic>{
+                                                'userRef': user.reference,
+                                              },
+                                            );
+                                          },
+                                          onMessage: _openDirectChat,
+                                          onRemove: (user) async {
+                                            await _removeFriend(user);
                                           },
                                         );
                                       },
-                                      onMessage: _openDirectChat,
-                                      onRemove: (user) async {
-                                        await _removeFriend(user);
-                                      },
-                                    );
-                                  },
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),

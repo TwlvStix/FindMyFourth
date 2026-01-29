@@ -1,0 +1,3914 @@
+{
+  "meta": {
+    "version": "1.0",
+    "generatedAt": "2026-01-28T21:56:02.376859Z",
+    "scale": "0-5 per category; scores 0-100",
+    "categories": [
+      "pace",
+      "chat",
+      "music",
+      "weed",
+      "money",
+      "competitive",
+      "alcohol"
+    ],
+    "notes": "Expected ordering is asserted via buckets and rankGroups below. Exact numeric scores are not required."
+  },
+  "profilesLibrary": {
+    "TightCompetitive": {
+      "pace": {
+        "value": 4.5,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 2.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 2.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 0.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 3.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 5.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "RelaxedSocial": {
+      "pace": {
+        "value": 2.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 4.5,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 4.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 1.5,
+        "tolerance": 3.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 3.5,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "FastQuiet": {
+      "pace": {
+        "value": 5.0,
+        "tolerance": 1.5,
+        "dealbreaker": true,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 1.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 1.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 0.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 4.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 0.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "SlowChatty": {
+      "pace": {
+        "value": 1.0,
+        "tolerance": 2.0,
+        "dealbreaker": true,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 5.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 3.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 2.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "NoWeedNoAlc": {
+      "pace": {
+        "value": 3.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 3.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 2.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 0.0,
+        "tolerance": 1.5,
+        "dealbreaker": true,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 3.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 0.0,
+        "tolerance": 1.5,
+        "dealbreaker": true,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "WeedAndBeers": {
+      "pace": {
+        "value": 2.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 3.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 4.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 4.0,
+        "tolerance": 2.0,
+        "dealbreaker": true,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 4.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "SkinsGambler": {
+      "pace": {
+        "value": 3.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 3.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 5.0,
+        "tolerance": 1.5,
+        "dealbreaker": true,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 3.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "NoGambling": {
+      "pace": {
+        "value": 3.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 3.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 2.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 0.0,
+        "tolerance": 1.5,
+        "dealbreaker": true,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 3.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 1.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "DefaultsHeavy": {
+      "pace": {
+        "value": 3.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": true,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 3.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": true,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 3.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": true,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 3.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": true,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 3.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": true,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 3.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": true,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 3.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": true,
+        "weight": 1.0
+      }
+    },
+    "TightCompetitive_Pace4": {
+      "pace": {
+        "value": 4.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 2.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 2.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 0.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 3.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 5.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "TightCompetitive_Pace3": {
+      "pace": {
+        "value": 3.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 2.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 2.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 0.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 3.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 5.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "TightCompetitive_Pace2": {
+      "pace": {
+        "value": 2.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 2.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 2.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 0.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 3.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 5.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "TightCompetitive_Chat4": {
+      "pace": {
+        "value": 4.5,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 4.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 2.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 0.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 3.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 5.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "TightCompetitive_Comp2": {
+      "pace": {
+        "value": 4.5,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 2.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 2.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 0.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 3.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 2.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "RelaxedSocial_Comp2_5": {
+      "pace": {
+        "value": 2.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 4.5,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 4.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 2.5,
+        "tolerance": 3.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 3.5,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "RelaxedSocial_Pace4": {
+      "pace": {
+        "value": 4.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 4.5,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 4.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 1.5,
+        "tolerance": 3.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 3.5,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "RelaxedSocial_Pace1": {
+      "pace": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 4.5,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 4.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 1.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 1.5,
+        "tolerance": 3.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 3.5,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "WeedAndBeers_Weed2": {
+      "pace": {
+        "value": 2.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 3.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 4.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 2.0,
+        "tolerance": 2.0,
+        "dealbreaker": true,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 4.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    },
+    "WeedAndBeers_Alc2": {
+      "pace": {
+        "value": 2.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "chat": {
+        "value": 3.5,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "music": {
+        "value": 4.0,
+        "tolerance": 2.5,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "weed": {
+        "value": 4.0,
+        "tolerance": 2.0,
+        "dealbreaker": true,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "money": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "competitive": {
+        "value": 2.0,
+        "tolerance": 3.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      },
+      "alcohol": {
+        "value": 2.0,
+        "tolerance": 2.0,
+        "dealbreaker": false,
+        "isDefault": false,
+        "weight": 1.0
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "P01",
+      "aProfileId": "TightCompetitive",
+      "bProfileId": "TightCompetitive",
+      "a": {
+        "pace": {
+          "value": 4.5,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 4.5,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Recommended",
+        "hardConflicts": [],
+        "topSoftRisks": [],
+        "expectedBucket": "Great"
+      }
+    },
+    {
+      "id": "P02",
+      "aProfileId": "TightCompetitive",
+      "bProfileId": "RelaxedSocial",
+      "a": {
+        "pace": {
+          "value": 4.5,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 4.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 1.5,
+          "tolerance": 3.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "competitive",
+          "chat",
+          "music"
+        ],
+        "expectedBucket": "Okay"
+      }
+    },
+    {
+      "id": "P03",
+      "aProfileId": "FastQuiet",
+      "bProfileId": "SlowChatty",
+      "a": {
+        "pace": {
+          "value": 5.0,
+          "tolerance": 1.5,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 1.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 1.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 0.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 1.0,
+          "tolerance": 2.0,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 5.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "NotRecommended",
+        "hardConflicts": [
+          "pace"
+        ],
+        "topSoftRisks": [
+          "chat"
+        ],
+        "expectedBucket": "HardBlock"
+      }
+    },
+    {
+      "id": "P04",
+      "aProfileId": "NoWeedNoAlc",
+      "bProfileId": "WeedAndBeers",
+      "a": {
+        "pace": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 1.5,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 0.0,
+          "tolerance": 1.5,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "NotRecommended",
+        "hardConflicts": [
+          "weed",
+          "alcohol"
+        ],
+        "topSoftRisks": [
+          "music"
+        ],
+        "expectedBucket": "HardBlock"
+      }
+    },
+    {
+      "id": "P05",
+      "aProfileId": "SkinsGambler",
+      "bProfileId": "NoGambling",
+      "a": {
+        "pace": {
+          "value": 3.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 5.0,
+          "tolerance": 1.5,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 3.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 0.0,
+          "tolerance": 1.5,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "NotRecommended",
+        "hardConflicts": [
+          "money"
+        ],
+        "topSoftRisks": [
+          "competitive"
+        ],
+        "expectedBucket": "HardBlock"
+      }
+    },
+    {
+      "id": "P06",
+      "aProfileId": "RelaxedSocial",
+      "bProfileId": "SlowChatty",
+      "a": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 4.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 1.5,
+          "tolerance": 3.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 1.0,
+          "tolerance": 2.0,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 5.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Recommended",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "pace"
+        ],
+        "expectedBucket": "Good"
+      }
+    },
+    {
+      "id": "P07",
+      "aProfileId": "RelaxedSocial",
+      "bProfileId": "WeedAndBeers",
+      "a": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 4.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 1.5,
+          "tolerance": 3.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "weed",
+          "alcohol"
+        ],
+        "expectedBucket": "Okay"
+      }
+    },
+    {
+      "id": "P08",
+      "aProfileId": "TightCompetitive",
+      "bProfileId": "FastQuiet",
+      "a": {
+        "pace": {
+          "value": 4.5,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 5.0,
+          "tolerance": 1.5,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 1.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 1.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 0.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "chat",
+          "music"
+        ],
+        "expectedBucket": "Good"
+      }
+    },
+    {
+      "id": "P09",
+      "aProfileId": "DefaultsHeavy",
+      "bProfileId": "TightCompetitive",
+      "a": {
+        "pace": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 4.5,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [],
+        "expectedBucket": "Okay",
+        "expectedConfidenceMax": 0.8
+      }
+    },
+    {
+      "id": "P10",
+      "aProfileId": "DefaultsHeavy",
+      "bProfileId": "DefaultsHeavy",
+      "a": {
+        "pace": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": true,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [],
+        "expectedBucket": "Okay",
+        "expectedConfidenceMax": 0.7
+      }
+    },
+    {
+      "id": "P11",
+      "aProfileId": "TightCompetitive",
+      "bProfileId": "TightCompetitive_Pace4",
+      "a": {
+        "pace": {
+          "value": 4.5,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Recommended",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "pace"
+        ],
+        "expectedBucket": "Great"
+      }
+    },
+    {
+      "id": "P12",
+      "aProfileId": "TightCompetitive",
+      "bProfileId": "TightCompetitive_Pace3",
+      "a": {
+        "pace": {
+          "value": 4.5,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 3.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Recommended",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "pace"
+        ],
+        "expectedBucket": "Good"
+      }
+    },
+    {
+      "id": "P13",
+      "aProfileId": "TightCompetitive",
+      "bProfileId": "TightCompetitive_Pace2",
+      "a": {
+        "pace": {
+          "value": 4.5,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 2.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "pace"
+        ],
+        "expectedBucket": "Okay"
+      }
+    },
+    {
+      "id": "P14",
+      "aProfileId": "TightCompetitive",
+      "bProfileId": "TightCompetitive_Chat4",
+      "a": {
+        "pace": {
+          "value": 4.5,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 4.5,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "chat"
+        ],
+        "expectedBucket": "Good"
+      }
+    },
+    {
+      "id": "P15",
+      "aProfileId": "TightCompetitive",
+      "bProfileId": "TightCompetitive_Comp2",
+      "a": {
+        "pace": {
+          "value": 4.5,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 4.5,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 2.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "competitive"
+        ],
+        "expectedBucket": "Okay"
+      }
+    },
+    {
+      "id": "P16",
+      "aProfileId": "RelaxedSocial",
+      "bProfileId": "RelaxedSocial_Comp2_5",
+      "a": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 4.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 1.5,
+          "tolerance": 3.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 4.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 2.5,
+          "tolerance": 3.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Recommended",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "competitive"
+        ],
+        "expectedBucket": "Great"
+      }
+    },
+    {
+      "id": "P17",
+      "aProfileId": "RelaxedSocial",
+      "bProfileId": "RelaxedSocial_Pace4",
+      "a": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 4.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 1.5,
+          "tolerance": 3.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 4.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 4.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 1.5,
+          "tolerance": 3.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "pace"
+        ],
+        "expectedBucket": "Good"
+      }
+    },
+    {
+      "id": "P18",
+      "aProfileId": "RelaxedSocial",
+      "bProfileId": "RelaxedSocial_Pace1",
+      "a": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 4.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 1.5,
+          "tolerance": 3.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 4.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 1.5,
+          "tolerance": 3.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "pace"
+        ],
+        "expectedBucket": "Okay"
+      }
+    },
+    {
+      "id": "P19",
+      "aProfileId": "WeedAndBeers",
+      "bProfileId": "WeedAndBeers_Weed2",
+      "a": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 2.0,
+          "tolerance": 2.0,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "weed"
+        ],
+        "expectedBucket": "Good"
+      }
+    },
+    {
+      "id": "P20",
+      "aProfileId": "WeedAndBeers",
+      "bProfileId": "WeedAndBeers_Alc2",
+      "a": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 2.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "alcohol"
+        ],
+        "expectedBucket": "Good"
+      }
+    },
+    {
+      "id": "P21",
+      "aProfileId": "NoWeedNoAlc",
+      "bProfileId": "RelaxedSocial",
+      "a": {
+        "pace": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 1.5,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 0.0,
+          "tolerance": 1.5,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 4.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 1.5,
+          "tolerance": 3.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "alcohol"
+        ],
+        "expectedBucket": "Okay"
+      }
+    },
+    {
+      "id": "P22",
+      "aProfileId": "NoGambling",
+      "bProfileId": "RelaxedSocial",
+      "a": {
+        "pace": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 0.0,
+          "tolerance": 1.5,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 4.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 1.5,
+          "tolerance": 3.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Recommended",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "money"
+        ],
+        "expectedBucket": "Good"
+      }
+    },
+    {
+      "id": "P23",
+      "aProfileId": "SkinsGambler",
+      "bProfileId": "RelaxedSocial",
+      "a": {
+        "pace": {
+          "value": 3.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 5.0,
+          "tolerance": 1.5,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 3.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 4.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 1.5,
+          "tolerance": 3.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 3.5,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "money"
+        ],
+        "expectedBucket": "Okay"
+      }
+    },
+    {
+      "id": "P24",
+      "aProfileId": "FastQuiet",
+      "bProfileId": "TightCompetitive",
+      "a": {
+        "pace": {
+          "value": 5.0,
+          "tolerance": 1.5,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 1.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 1.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 0.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 4.5,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 2.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 0.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 3.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 5.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Caution",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "chat",
+          "music"
+        ],
+        "expectedBucket": "Good"
+      }
+    },
+    {
+      "id": "P25",
+      "aProfileId": "SlowChatty",
+      "bProfileId": "WeedAndBeers",
+      "a": {
+        "pace": {
+          "value": 1.0,
+          "tolerance": 2.0,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 5.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 3.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 1.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "b": {
+        "pace": {
+          "value": 2.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "chat": {
+          "value": 3.5,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "music": {
+          "value": 4.0,
+          "tolerance": 2.5,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "weed": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": true,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "money": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "competitive": {
+          "value": 2.0,
+          "tolerance": 3.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        },
+        "alcohol": {
+          "value": 4.0,
+          "tolerance": 2.0,
+          "dealbreaker": false,
+          "isDefault": false,
+          "weight": 1.0
+        }
+      },
+      "expected": {
+        "recommendation": "Recommended",
+        "hardConflicts": [],
+        "topSoftRisks": [
+          "weed",
+          "alcohol"
+        ],
+        "expectedBucket": "Good"
+      }
+    }
+  ],
+  "expectedOrdering": {
+    "bucketOrder": [
+      "Great",
+      "Good",
+      "Okay",
+      "Bad",
+      "HardBlock"
+    ],
+    "notes": "Within bucket, ordering may be asserted by expectedRankGroups if provided."
+  },
+  "expectedRankGroups": [
+    [
+      "P01",
+      "P11",
+      "P16"
+    ],
+    [
+      "P06",
+      "P12",
+      "P17",
+      "P20",
+      "P24"
+    ],
+    [
+      "P02",
+      "P07",
+      "P13",
+      "P15",
+      "P18",
+      "P21",
+      "P23",
+      "P09",
+      "P10"
+    ],
+    [
+      "P03",
+      "P04",
+      "P05"
+    ]
+  ]
+}

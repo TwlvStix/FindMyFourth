@@ -39,6 +39,7 @@ class VibeAggregateScore {
     required this.isCapped,
   });
 
+  /// Legacy fields preserved for backward compatibility; dealbreaker caps are removed.
   final double totalScore;
   final double? cappedScore;
   final bool isCapped;
@@ -190,6 +191,24 @@ double categoryEffectiveWeight(VibePref a, VibePref b) {
   return baseWeight * getDefaultMultiplier(a.isDefault, b.isDefault);
 }
 
+double combinedTolerance(double aTol, double bTol) {
+  final minTol = min(aTol, bTol);
+  final avgTol = (aTol + bTol) / 2;
+  var minW = VibeTuning.asymmetricMinWeight.clamp(0, 1).toDouble();
+  var avgW = VibeTuning.asymmetricAvgWeight.clamp(0, 1).toDouble();
+  final weightSum = minW + avgW;
+  if ((weightSum - 1).abs() > 1e-6) {
+    if (weightSum <= 0) {
+      minW = VibeTuning.asymmetricMinWeight;
+      avgW = VibeTuning.asymmetricAvgWeight;
+    } else {
+      minW /= weightSum;
+      avgW /= weightSum;
+    }
+  }
+  return (minW * minTol) + (avgW * avgTol);
+}
+
 bool dealbreakerTriggered(
   VibeCategory category,
   VibePref a,
@@ -211,12 +230,10 @@ VibeAggregateScore aggregateVibeScore(
 ) {
   var weightedSum = 0.0;
   var weightTotal = 0.0;
-  var hasDealbreaker = false;
 
   for (final entry in categories) {
     weightedSum += entry.scorePercent * entry.weight;
     weightTotal += entry.weight;
-    hasDealbreaker = hasDealbreaker || entry.dealbreakerTriggered;
   }
 
   final baseScore =
@@ -224,16 +241,11 @@ VibeAggregateScore aggregateVibeScore(
   final totalScore = baseScore
       .clamp(VibeTuning.minScore, VibeTuning.maxScore)
       .toDouble();
-  final cappedScore = dealbreakerCappedScore(
-    score: totalScore,
-    isDealbreaker: hasDealbreaker,
-    cap: VibeTuning.dealbreakerCap,
-  );
 
   return VibeAggregateScore(
     totalScore: totalScore,
-    cappedScore: cappedScore,
-    isCapped: hasDealbreaker,
+    cappedScore: null,
+    isCapped: false,
   );
 }
 

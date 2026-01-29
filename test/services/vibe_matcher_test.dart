@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:find_my_fourth/models/vibe_profile.dart';
 import 'package:find_my_fourth/services/vibe_matcher.dart';
+import 'package:find_my_fourth/vibe/vibe_match_types.dart';
 import 'package:find_my_fourth/vibe/vibe_scoring.dart';
 import 'package:find_my_fourth/vibe/vibe_tuning.dart';
 
@@ -219,6 +222,12 @@ void main() {
       expect(result.totalScore, closeTo(100, 0.01));
       expect(result.isRecommended, isTrue);
       expect(result.conflicts, isEmpty);
+      expect(result.recommendation, VibeRecommendation.recommended);
+      expect(result.hardConflicts, isEmpty);
+      expect(result.softRisks, isEmpty);
+      expect(result.softRiskPenalty01, 0);
+      expect(result.baseScorePercent, closeTo(result.totalScore, 0.0001));
+      expect(result.finalScorePercent, closeTo(result.totalScore, 0.0001));
     });
 
     test('max difference yields 0 for that category', () {
@@ -287,7 +296,7 @@ void main() {
       expect(result.totalScore, closeTo(88.89, 0.01));
     });
 
-    test('dealbreaker conflict caps score and flags not recommended', () {
+    test('dealbreaker conflict triggers hard block without capping score', () {
       final myProfile = _buildProfile(
         values: {
           for (final category in VibeCategory.values) category: 4,
@@ -310,9 +319,140 @@ void main() {
       final result = VibeMatcher.score(myProfile, theirProfile);
 
       expect(result.isRecommended, isFalse);
-      expect(result.cappedScore, isNotNull);
-      expect(result.cappedScore!, closeTo(39, 0.01));
-      expect(result.conflicts, isNotEmpty);
+      expect(result.recommendation, VibeRecommendation.notRecommended);
+      expect(result.hardConflicts, isNotEmpty);
+      expect(result.cappedScore, isNull);
+      expect(result.totalScore, greaterThan(0));
+    });
+
+    test('soft risk reduces score when over tolerance', () {
+      final myProfile = _buildProfile(
+        values: {
+          for (final category in VibeCategory.values) category: 4,
+          VibeCategory.pace: 1,
+        },
+        thresholds: {
+          VibeCategory.pace: 2,
+        },
+      );
+      final theirProfile = _buildProfile(
+        values: {
+          for (final category in VibeCategory.values) category: 4,
+          VibeCategory.pace: 4,
+        },
+        thresholds: {
+          VibeCategory.pace: 2,
+        },
+      );
+
+      final result = VibeMatcher.score(myProfile, theirProfile);
+
+      expect(result.finalScorePercent, lessThan(result.baseScorePercent));
+      final expectedSeverity =
+          pow((1 / VibeTuning.riskScale), VibeTuning.riskCurveP)
+              .clamp(0, 1)
+              .toDouble();
+      final expectedPenalty = expectedSeverity *
+          VibeTuning.riskMaxDefault *
+          ((VibeMatcher.weights[VibeCategory.pace] ?? 0) / 100);
+      final expectedFinal = result.baseScorePercent * (1 - expectedPenalty);
+      expect(result.finalScorePercent, closeTo(expectedFinal, 0.5));
+    });
+
+    test('larger overage yields larger penalty', () {
+      final smallOver = VibeMatcher.score(
+        _buildProfile(
+          values: {
+            for (final category in VibeCategory.values) category: 4,
+            VibeCategory.pace: 1,
+          },
+          thresholds: {
+            VibeCategory.pace: 2,
+          },
+        ),
+        _buildProfile(
+          values: {
+            for (final category in VibeCategory.values) category: 4,
+            VibeCategory.pace: 4,
+          },
+          thresholds: {
+            VibeCategory.pace: 2,
+          },
+        ),
+      );
+      final largeOver = VibeMatcher.score(
+        _buildProfile(
+          values: {
+            for (final category in VibeCategory.values) category: 4,
+            VibeCategory.pace: 0,
+          },
+          thresholds: {
+            VibeCategory.pace: 1,
+          },
+        ),
+        _buildProfile(
+          values: {
+            for (final category in VibeCategory.values) category: 4,
+            VibeCategory.pace: 5,
+          },
+          thresholds: {
+            VibeCategory.pace: 1,
+          },
+        ),
+      );
+
+      expect(
+        largeOver.softRiskPenalty01,
+        greaterThan(smallOver.softRiskPenalty01),
+      );
+    });
+
+    test('higher tolerance reduces penalty for same distance', () {
+      final strict = VibeMatcher.score(
+        _buildProfile(
+          values: {
+            for (final category in VibeCategory.values) category: 4,
+            VibeCategory.pace: 1,
+          },
+          thresholds: {
+            VibeCategory.pace: 1,
+          },
+        ),
+        _buildProfile(
+          values: {
+            for (final category in VibeCategory.values) category: 4,
+            VibeCategory.pace: 4,
+          },
+          thresholds: {
+            VibeCategory.pace: 1,
+          },
+        ),
+      );
+      final lenient = VibeMatcher.score(
+        _buildProfile(
+          values: {
+            for (final category in VibeCategory.values) category: 4,
+            VibeCategory.pace: 1,
+          },
+          thresholds: {
+            VibeCategory.pace: 3,
+          },
+        ),
+        _buildProfile(
+          values: {
+            for (final category in VibeCategory.values) category: 4,
+            VibeCategory.pace: 4,
+          },
+          thresholds: {
+            VibeCategory.pace: 3,
+          },
+        ),
+      );
+
+      expect(
+        lenient.softRiskPenalty01,
+        lessThan(strict.softRiskPenalty01),
+      );
     });
 
     test('importance weighting shifts match impact', () {

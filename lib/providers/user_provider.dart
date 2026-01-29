@@ -49,12 +49,18 @@ class UserProvider extends ChangeNotifier {
   /// Initialize the provider by listening to auth changes
   void _init() {
     _userSubscription = authenticatedUserStream.listen(
-      (user) {
+      (user) async {
         final wasLoggedIn = _currentUser != null;
         final isNowLoggedIn = user != null;
 
         _currentUser = user;
         _isLoading = false;
+
+        // Ensure friend_requests field exists for logged-in user
+        if (isNowLoggedIn && user != null) {
+          // Run in background, don't block the login flow
+          _ensureFriendRequestsFieldExists(user);
+        }
 
         // If user logged out, clear all caches
         if (wasLoggedIn && !isNowLoggedIn) {
@@ -69,6 +75,27 @@ class UserProvider extends ChangeNotifier {
         notifyListeners();
       },
     );
+  }
+
+  /// Ensure friend_requests field exists for the current user
+  Future<void> _ensureFriendRequestsFieldExists(UsersRecord user) async {
+    try {
+      final userRef = user.reference;
+      final snapshot = await userRef.get();
+      final data = snapshot.data() as Map<String, dynamic>?;
+
+      // If friend_requests field doesn't exist, initialize it
+      if (data != null && !data.containsKey('friend_requests')) {
+        debugPrint('Initializing friend_requests field for user ${user.uid}');
+        await userRef.update({
+          'friend_requests': [],
+        });
+        debugPrint('friend_requests field initialized');
+      }
+    } catch (e) {
+      debugPrint('Error ensuring friend_requests field: $e');
+      // Don't rethrow - this is a non-critical operation
+    }
   }
 
   @override
@@ -402,20 +429,81 @@ class UserProvider extends ChangeNotifier {
     if (authUser == null) return;
     final currentUserRef = UsersRecord.collection.doc(authUser.uid);
     if (targetUserRef.path == currentUserRef.path) return;
-    if (friends.contains(targetUserRef)) return;
-    if (friendRequests.contains(targetUserRef)) return;
+
+    // Check current user's lists for target
+    final currentUserFriends = friends;
+    if (currentUserFriends.any((ref) => ref.id == targetUserRef.id)) {
+      return;
+    }
+
+    final currentUserRequests = friendRequests;
+    if (currentUserRequests.any((ref) => ref.id == targetUserRef.id)) {
+      return;
+    }
 
     try {
-      final targetUser = await UsersRecord.getDocumentOnce(targetUserRef);
-      if (targetUser.friends.contains(currentUserRef) ||
-          targetUser.friendRequests.contains(currentUserRef)) {
+      // Force fresh read from server, not cache
+      final targetSnapshot = await targetUserRef.get();
+      debugPrint('Target user exists: ${targetSnapshot.exists}');
+
+      if (!targetSnapshot.exists) {
+        debugPrint('Target user document does not exist');
         return;
       }
+
+      // Check raw Firestore data to see actual format
+      final rawData = targetSnapshot.data() as Map<String, dynamic>?;
+      final rawRequests = rawData?['friend_requests'];
+      debugPrint('Raw friend_requests from Firestore: $rawRequests');
+      debugPrint('Type: ${rawRequests.runtimeType}');
+
+      final targetUser = await UsersRecord.getDocumentOnce(targetUserRef);
+
+      // Check target user's lists for current user
+      final targetFriends = targetUser.friends;
+      if (targetFriends.any((ref) => ref.id == currentUserRef.id)) {
+        debugPrint('Friend request not sent: Already friends');
+        return;
+      }
+
+      final targetRequests = targetUser.friendRequests;
+      if (targetRequests.any((ref) => ref.id == currentUserRef.id)) {
+        debugPrint('Friend request not sent: Request already exists');
+        debugPrint('Existing requests: ${targetRequests.map((r) => r.id).toList()}');
+        debugPrint('Trying to add: ${currentUserRef.id}');
+        return;
+      }
+
+      debugPrint('=== FRIEND REQUEST DEBUG ===');
+      debugPrint('Authenticated user (sender): ${authUser.uid}');
+      debugPrint('Target user (receiver): ${targetUserRef.id}');
+      debugPrint('Existing friend_requests in target: $rawRequests');
+
+      // If friend_requests field doesn't exist, initialize it as empty array first
+      if (rawRequests == null) {
+        debugPrint('friend_requests field is null - initializing for target user');
+        // This will fail with permission-denied, but let's try anyway
+        try {
+          await targetUserRef.update({
+            'friend_requests': [],
+          });
+          debugPrint('Initialized friend_requests field');
+        } catch (e) {
+          debugPrint('Failed to initialize field (expected): $e');
+          // Expected to fail - security rules don't allow us to modify other user's document
+          // except for friend_requests changes that add ourselves
+        }
+      }
+
+      // Now try to add the friend request
+      debugPrint('Adding friend request using arrayUnion');
       await targetUserRef.update({
         'friend_requests': FieldValue.arrayUnion([currentUserRef.id]),
       });
+      debugPrint('✓ Friend request sent successfully!');
     } catch (e) {
       debugPrint('Error sending friend request: $e');
+      debugPrint('CurrentUser: ${currentUserRef.id}, TargetUser: ${targetUserRef.id}');
       rethrow;
     }
   }

@@ -326,7 +326,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   Widget _buildVibeBadge() {
     if (_vibeMatch == null) return SizedBox.shrink();
 
-    final score = (_vibeMatch!.cappedScore ?? _vibeMatch!.totalScore).round();
+    final score = _vibeMatch!.finalScorePercent.round();
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),

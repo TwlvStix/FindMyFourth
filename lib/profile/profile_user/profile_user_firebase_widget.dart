@@ -169,8 +169,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
       enableDrag: true,
       useRootNavigator: true,
       builder: (context) {
-        final displayScore =
-            (result.cappedScore ?? result.totalScore).round();
+        final displayScore = result.finalScorePercent.round();
         final isCapped = result.cappedScore != null;
         final explanation = buildMatchExplanation(
           matchResult: result,
@@ -869,7 +868,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     final result = _vibeMatchResult;
     final displayScore = result == null
         ? '--'
-        : '${(result.cappedScore ?? result.totalScore).round()}%';
+        : '${result.finalScorePercent.round()}%';
     final label = 'Vibe Match $displayScore';
     final canOpenSheet = result != null;
 
@@ -1249,7 +1248,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           final result = showVibeMatch ? _vibeMatchResult : null;
           final vibeScore = result == null
               ? null
-              : (result.cappedScore ?? result.totalScore).round();
+              : result.finalScorePercent.round();
           final vibeLabel =
               vibeScore == null ? 'Vibe Match' : 'Vibe $vibeScore%';
           final canOpenVibe = vibeScore != null;

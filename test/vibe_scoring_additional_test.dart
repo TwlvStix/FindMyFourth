@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:find_my_fourth/models/vibe_profile.dart';
 import 'package:find_my_fourth/services/vibe_interaction_adjustments.dart';
 import 'package:find_my_fourth/services/vibe_matcher.dart';
+import 'package:find_my_fourth/vibe/vibe_match_types.dart';
 import 'package:find_my_fourth/vibe/vibe_scoring.dart';
-import 'package:find_my_fourth/vibe/vibe_tuning.dart';
 
 VibeProfile _buildProfile({
   Map<VibeCategory, int>? values,
@@ -171,7 +171,7 @@ void main() {
       expect(paceDistance, lessThan(musicDistance));
     });
 
-    test('dealbreaker cap triggers when distance >= threshold', () {
+    test('hard block triggers when distance exceeds tolerance + margin', () {
       final mine = _buildProfile(
         values: {
           VibeCategory.chat: 0,
@@ -195,7 +195,9 @@ void main() {
       final result = VibeMatcher.score(mine, theirs, enableInteractionLayer: false);
 
       expect(result.isRecommended, isFalse);
-      expect(result.cappedScore, VibeTuning.dealbreakerCap);
+      expect(result.recommendation, VibeRecommendation.notRecommended);
+      expect(result.hardConflicts, isNotEmpty);
+      expect(result.cappedScore, isNull);
     });
   });
 }

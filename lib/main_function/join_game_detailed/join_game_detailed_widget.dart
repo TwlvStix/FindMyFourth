@@ -9,6 +9,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/models/game.dart';
 import '/models/vibe_profile.dart';
+import '/vibe/vibe_match_types.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
@@ -280,6 +281,20 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                       );
                     }).toList(),
                   ),
+                  if (result.softRisks.isNotEmpty) ...[
+                    SizedBox(height: AppSpacing.sm),
+                    ...result.softRisks.map(
+                      (risk) => Padding(
+                        padding: EdgeInsets.only(bottom: AppSpacing.xs),
+                        child: Text(
+                          risk.reason,
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.stone,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                   SizedBox(height: AppSpacing.lg),
                   Text(
                     'Player matches',
@@ -342,7 +357,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     GroupVibeMatchResult result,
   ) {
     final sorted = result.memberResults.toList()
-      ..sort((a, b) => a.displayScore.compareTo(b.displayScore));
+      ..sort((a, b) {
+        final rankA = _recommendationRank(a.matchResult.recommendation);
+        final rankB = _recommendationRank(b.matchResult.recommendation);
+        if (rankA != rankB) {
+          return rankA.compareTo(rankB);
+        }
+        return b.displayScore.compareTo(a.displayScore);
+      });
     return sorted;
   }
 
@@ -357,12 +379,35 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     return joinedCount + guestCount + ownerCount;
   }
 
-  double _memberScoreForId(String memberId) {
-    final match = _memberMatchesById[memberId];
-    if (match == null) {
-      return double.infinity;
+  int _compareMemberIds(String aId, String bId) {
+    final aMatch = _memberMatchesById[aId];
+    final bMatch = _memberMatchesById[bId];
+    if (aMatch == null && bMatch == null) {
+      return 0;
     }
-    return match.displayScore;
+    if (aMatch == null) {
+      return 1;
+    }
+    if (bMatch == null) {
+      return -1;
+    }
+    final rankA = _recommendationRank(aMatch.matchResult.recommendation);
+    final rankB = _recommendationRank(bMatch.matchResult.recommendation);
+    if (rankA != rankB) {
+      return rankA.compareTo(rankB);
+    }
+    return bMatch.displayScore.compareTo(aMatch.displayScore);
+  }
+
+  int _recommendationRank(VibeRecommendation recommendation) {
+    switch (recommendation) {
+      case VibeRecommendation.recommended:
+        return 0;
+      case VibeRecommendation.caution:
+        return 1;
+      case VibeRecommendation.notRecommended:
+        return 2;
+    }
   }
 
   Widget _buildPlayerMatchChip(String userId, String name) {
@@ -820,8 +865,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 .toList();
                             if (_memberMatchesById.isNotEmpty) {
                               groupPlayers.sort(
-                                (a, b) => _memberScoreForId(a.id)
-                                    .compareTo(_memberScoreForId(b.id)),
+                                (a, b) => _compareMemberIds(a.id, b.id),
                               );
                             }
                             final guestPlayers = joinGameDetailedGamesRecord

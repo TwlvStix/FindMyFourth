@@ -3,6 +3,7 @@ import 'dart:math';
 import '/models/vibe_profile.dart';
 import '/services/vibe_interaction_adjustments.dart';
 import '/vibe/vibe_dealbreaker.dart';
+import '/vibe/vibe_match_types.dart';
 import '/vibe/vibe_scoring.dart';
 import '/vibe/vibe_tuning.dart';
 
@@ -69,6 +70,12 @@ class VibeMatchResult {
     required this.conflicts,
     required this.topDifferences,
     required this.perCategory,
+    required this.recommendation,
+    required this.hardConflicts,
+    required this.softRisks,
+    required this.softRiskPenalty01,
+    required this.baseScorePercent,
+    required this.finalScorePercent,
     required this.confidence,
     required this.confidenceLabel,
     required this.confidenceScore,
@@ -85,6 +92,12 @@ class VibeMatchResult {
   final List<VibeConflict> conflicts;
   final List<VibeDifference> topDifferences;
   final Map<VibeCategory, VibeCategoryScore> perCategory;
+  final VibeRecommendation recommendation;
+  final List<VibeHardConflict> hardConflicts;
+  final List<VibeSoftRisk> softRisks;
+  final double softRiskPenalty01;
+  final double baseScorePercent;
+  final double finalScorePercent;
   final VibeConfidence confidence;
   final String confidenceLabel;
   final double confidenceScore;
@@ -215,12 +228,10 @@ class VibeMatcher {
       1,
     );
     final totalScore = (adjustedScore * 100).toDouble();
-    final isRecommended = conflicts.isEmpty;
-    final cappedScore = dealbreakerCappedScore(
-      score: totalScore,
-      isDealbreaker: !isRecommended,
-      cap: VibeTuning.dealbreakerCap,
-    );
+    // Decision layers: hard blocks mark not recommended, soft risks apply penalties.
+    final hardBlockResult = evaluateHardBlocks(mine, theirs);
+    final isRecommended = !hardBlockResult.isHardBlocked;
+    final cappedScore = null;
     final topDifferences = _topDifferences(
       differences,
       perCategory,
@@ -231,10 +242,61 @@ class VibeMatcher {
         (completenessSum / max(1, VibeCategory.values.length)).toDouble();
     final confidence = _confidenceFromCompleteness(completeness);
 
+    final softRisks = <VibeSoftRisk>[];
+    var softRiskPenalty01 = 0.0;
+    if (!hardBlockResult.isHardBlocked) {
+      var weightedPenaltySum = 0.0;
+      for (final category in VibeCategory.values) {
+        final myPref = mine.preferenceFor(category);
+        final theirPref = theirs.preferenceFor(category);
+        final distance = (myPref.value - theirPref.value).abs().toDouble();
+        final tolerance = combinedTolerance(
+          myPref.threshold.toDouble(),
+          theirPref.threshold.toDouble(),
+        );
+        final overBy = max(0.0, distance - tolerance).toDouble();
+        if (overBy <= 0) {
+          continue;
+        }
+        final normalized = (overBy / VibeTuning.riskScale).clamp(0, 1);
+        final severity01 =
+            pow(normalized, VibeTuning.riskCurveP).clamp(0, 1).toDouble();
+        final riskMax = VibeTuning.riskMaxDefault;
+        final weight = weightsByCategory[category] ?? 0;
+        weightedPenaltySum += weight * severity01 * riskMax;
+        softRisks.add(
+          VibeSoftRisk(
+            category: category,
+            distance: distance,
+            tolerance: tolerance,
+            overBy: overBy,
+            severity01: severity01,
+            weight: weight,
+            reason:
+                '${VibeLabels.titleFor(category)} mismatch is ${overBy.toStringAsFixed(1)} past tolerance.',
+          ),
+        );
+      }
+      if (weightTotal > 0) {
+        softRiskPenalty01 = (weightedPenaltySum / weightTotal)
+            .clamp(0, 1)
+            .toDouble();
+      }
+    }
+    final baseScorePercent = totalScore;
+    final finalScorePercent = (baseScorePercent * (1 - softRiskPenalty01))
+        .clamp(VibeTuning.minScore, VibeTuning.maxScore)
+        .toDouble();
+    final recommendation = hardBlockResult.isHardBlocked
+        ? VibeRecommendation.notRecommended
+        : softRiskPenalty01 >= VibeTuning.riskCautionThreshold
+            ? VibeRecommendation.caution
+            : VibeRecommendation.recommended;
+
     VibeAnalytics.logMatchScore(
       VibeAnalyticsPayload(
-        score: cappedScore ?? totalScore,
-        isCapped: cappedScore != null,
+        score: finalScorePercent,
+        isCapped: false,
         perCategoryScores: scoresByCategory,
         effectiveWeights: weightsByCategory,
       ),
@@ -250,6 +312,12 @@ class VibeMatcher {
       conflicts: conflicts,
       topDifferences: topDifferences,
       perCategory: perCategory,
+      recommendation: recommendation,
+      hardConflicts: hardBlockResult.conflicts,
+      softRisks: softRisks,
+      softRiskPenalty01: softRiskPenalty01,
+      baseScorePercent: baseScorePercent,
+      finalScorePercent: finalScorePercent,
       confidence: confidence,
       confidenceLabel: _confidenceLabel(confidence),
       confidenceScore: completeness,

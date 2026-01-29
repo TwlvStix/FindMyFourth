@@ -469,7 +469,7 @@ class FriendFilters {
       final myProfile = VibeProfile.fromFirestore(myVibes);
       final theirProfile = VibeProfile.fromFirestore(theirVibes);
       final result = VibeMatcher.score(myProfile, theirProfile);
-      final score = (result.cappedScore ?? result.totalScore).round();
+      final score = result.finalScorePercent.round();
 
       switch (vibeRange!) {
         case VibeRange.low:

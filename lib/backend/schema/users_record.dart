@@ -303,6 +303,8 @@ Map<String, dynamic> createUsersRecordData({
   int? playForMoney,
   Map<String, dynamic>? vibeProfile,
   bool? onboardingCompleted,
+  List<String>? friends,
+  List<String>? friendRequests,
 }) {
   final displayNameLower = displayName?.toLowerCase();
   final firestoreData = mapToFirestore(
@@ -338,6 +340,8 @@ Map<String, dynamic> createUsersRecordData({
       'play_for_money': playForMoney,
       'vibe_profile': vibeProfile,
       'onboarding_completed': onboardingCompleted,
+      'friends': friends,
+      'friend_requests': friendRequests,
     }.withoutNulls,
   );
 
