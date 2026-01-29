@@ -373,6 +373,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                     currentUserId: currentUserUid,
                                     friendFilters: friendFilters,
                                     onFilterPressed: _showFilterBottomSheet,
+                                    showDefaultsWhenBelowThreshold: true,
+                                    searchDebounce:
+                                        Duration(milliseconds: 300),
                                     itemBuilder: (context, listViewUsersRecord) {
                                       return AuthUserStreamWidget(
                                         builder: (context) {

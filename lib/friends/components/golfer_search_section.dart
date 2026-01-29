@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,6 +13,7 @@ import '/core/widgets/app_icon_button.dart';
 import '/friends/components/empty_state.dart';
 import '/friends/components/friend_card_skeleton.dart';
 import '/friends/components/friend_filter_bottom_sheet.dart';
+import '/friends/components/default_explore_content.dart';
 
 typedef GolferSearchItemBuilder = Widget Function(
   BuildContext context,
@@ -27,6 +30,8 @@ class GolferSearchSection extends StatefulWidget {
     this.friendFilters,
     this.onFilterPressed,
     this.minimumSearchCharacters = 2,
+    this.showDefaultsWhenBelowThreshold = false,
+    this.searchDebounce = Duration.zero,
     this.autofocus = true,
     this.resultsLabel = 'Search Results',
     this.emptyStateBuilder,
@@ -38,6 +43,8 @@ class GolferSearchSection extends StatefulWidget {
   final FriendFilters? friendFilters;
   final VoidCallback? onFilterPressed;
   final int minimumSearchCharacters;
+  final bool showDefaultsWhenBelowThreshold;
+  final Duration searchDebounce;
   final bool autofocus;
   final String resultsLabel;
   final GolferSearchEmptyBuilder? emptyStateBuilder;
@@ -52,6 +59,8 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
   FocusNode? _textFieldFocusNode;
   TextEditingController? _textController;
   late final ValueNotifier<String> _searchTerm;
+  Timer? _debounceTimer;
+  String _debouncedTerm = '';
 
   @override
   void initState() {
@@ -67,12 +76,51 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
     _textController?.removeListener(_handleTextChanged);
     _textController?.dispose();
     _textFieldFocusNode?.dispose();
+    _debounceTimer?.cancel();
     _searchTerm.dispose();
     super.dispose();
   }
 
   void _handleTextChanged() {
-    _searchTerm.value = _textController?.text ?? '';
+    final text = _textController?.text ?? '';
+    _searchTerm.value = text;
+    final trimmed = text.trim();
+    if (trimmed.length < widget.minimumSearchCharacters) {
+      _debounceTimer?.cancel();
+      if (_debouncedTerm.isNotEmpty) {
+        setState(() {
+          _debouncedTerm = '';
+        });
+      }
+      return;
+    }
+
+    if (widget.searchDebounce == Duration.zero) {
+      if (_debouncedTerm != trimmed) {
+        setState(() {
+          _debouncedTerm = trimmed;
+        });
+      }
+    } else {
+      _debounceTimer?.cancel();
+      _debounceTimer = Timer(widget.searchDebounce, () {
+        if (!mounted) return;
+        final latest = _textController?.text.trim() ?? '';
+        if (latest.length < widget.minimumSearchCharacters) {
+          if (_debouncedTerm.isNotEmpty) {
+            setState(() {
+              _debouncedTerm = '';
+            });
+          }
+          return;
+        }
+        if (_debouncedTerm != latest) {
+          setState(() {
+            _debouncedTerm = latest;
+          });
+        }
+      });
+    }
     if (kDebugMode) {
       debugPrint('🔍 UI: Golfer search text="${_searchTerm.value}"');
     }
@@ -81,6 +129,71 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
   void _clearSearch() {
     _textController?.clear();
     FocusScope.of(context).unfocus();
+  }
+
+  Widget _buildLoading() {
+    return Padding(
+      padding: EdgeInsets.only(top: AppSpacing.md),
+      child: widget.loadingWidget ??
+          Column(
+            children: [
+              FriendCardSkeleton(),
+              FriendCardSkeleton(),
+              FriendCardSkeleton(),
+            ],
+          ),
+    );
+  }
+
+  List<UsersRecord> _filterResults(
+    List<UsersRecord> users, {
+    String? searchTerm,
+  }) {
+    final filters = widget.friendFilters;
+    return users
+        .where((user) => user.reference.id != widget.currentUserId)
+        .where((user) {
+          if (searchTerm == null || searchTerm.isEmpty) {
+            return true;
+          }
+          final displayName = user.displayName.toLowerCase();
+          final firstName = user.firstName.toLowerCase();
+          final lastName = user.lastName.toLowerCase();
+          return displayName.contains(searchTerm) ||
+              firstName.contains(searchTerm) ||
+              lastName.contains(searchTerm);
+        })
+        .where((user) => filters == null || filters.matchesUser(user))
+        .toList();
+  }
+
+  Widget _buildResultsList(List<UsersRecord> results) {
+    if (results.isEmpty) {
+      return widget.emptyStateBuilder?.call(_clearSearch) ??
+          FriendsEmptyState(
+            type: FriendsEmptyStateType.noSearchResults,
+            onActionPressed: _clearSearch,
+          );
+    }
+
+    return ListView.separated(
+      padding: EdgeInsets.fromLTRB(
+        0,
+        AppSpacing.xs,
+        0,
+        AppSpacing.xxl,
+      ),
+      primary: false,
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      scrollDirection: Axis.vertical,
+      itemCount: results.length,
+      separatorBuilder: (_, __) => SizedBox(height: 0),
+      itemBuilder: (context, index) {
+        final user = results[index];
+        return widget.itemBuilder(context, user);
+      },
+    );
   }
 
   @override
@@ -108,7 +221,6 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                     focusNode: _textFieldFocusNode,
                     autofocus: widget.autofocus,
                     obscureText: false,
-                    onChanged: (_) => _handleTextChanged(),
                     decoration: InputDecoration(
                       labelStyle: AppTheme.of(context).labelMedium.override(
                             font: GoogleFonts.outfit(
@@ -233,99 +345,79 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
             ],
           ),
         ),
-        Padding(
-          padding: EdgeInsets.only(
-            left: AppSpacing.lg,
-            bottom: AppSpacing.xs,
-          ),
-          child: Text(
-            widget.resultsLabel,
-            style: AppTypography.labelMedium.copyWith(
-              color: AppTheme.of(context).primaryBtnText,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-            ),
-          ),
-        ),
         ValueListenableBuilder<String>(
           valueListenable: _searchTerm,
           builder: (context, term, _) {
-            final searchTerm = term.trim().toLowerCase();
+            final inputTerm = term.trim();
             final meetsThreshold =
-                searchTerm.length >= widget.minimumSearchCharacters;
+                inputTerm.length >= widget.minimumSearchCharacters;
 
             if (!meetsThreshold) {
-              return SizedBox.shrink();
+              if (!widget.showDefaultsWhenBelowThreshold) {
+                return SizedBox.shrink();
+              }
+              // Show explore content with VIBE recommendations + recently joined
+              return DefaultExploreContent(
+                currentUserId: widget.currentUserId,
+                itemBuilder: widget.itemBuilder,
+              );
             }
 
-            return StreamBuilder<List<UsersRecord>>(
-              stream: queryUsersRecord(
-                queryBuilder: (usersRecord) => usersRecord
-                    .orderBy('display_name_lower')
-                    .startAt([searchTerm])
-                    .endAt(['${searchTerm}\uf8ff'])
-                    .limit(25),
-              ),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Padding(
-                    padding: EdgeInsets.only(top: AppSpacing.md),
-                    child: widget.loadingWidget ??
-                        Column(
-                          children: [
-                            FriendCardSkeleton(),
-                            FriendCardSkeleton(),
-                            FriendCardSkeleton(),
-                          ],
-                        ),
-                  );
-                }
-
-                final filters = widget.friendFilters;
-                final results = snapshot.data!
-                    .where((user) => user.reference.id != widget.currentUserId)
-                    .where((user) {
-                      final displayName = user.displayName.toLowerCase();
-                      final firstName = user.firstName.toLowerCase();
-                      final lastName = user.lastName.toLowerCase();
-                      return displayName.contains(searchTerm) ||
-                          firstName.contains(searchTerm) ||
-                          lastName.contains(searchTerm);
-                    })
-                    .where((user) => filters == null || filters.matchesUser(user))
-                    .toList();
-
-                if (results.isEmpty) {
-                  return widget.emptyStateBuilder?.call(_clearSearch) ??
-                      FriendsEmptyState(
-                        type: FriendsEmptyStateType.noSearchResults,
-                        onActionPressed: _clearSearch,
-                      );
-                }
-
-                return ListView.separated(
-                  padding: EdgeInsets.fromLTRB(
-                    0,
-                    AppSpacing.xs,
-                    0,
-                    AppSpacing.xxl,
+            // Show "Search Results" label for active searches
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: AppSpacing.lg,
+                    bottom: AppSpacing.xs,
                   ),
-                  primary: false,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  scrollDirection: Axis.vertical,
-                  itemCount: results.length,
-                  separatorBuilder: (_, __) => SizedBox(height: 0),
-                  itemBuilder: (context, index) {
-                    final user = results[index];
-                    return widget.itemBuilder(context, user);
-                  },
-                );
-              },
+                  child: Text(
+                    widget.resultsLabel,
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppTheme.of(context).primaryBtnText,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ),
+                _buildSearchResults(inputTerm),
+              ],
             );
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildSearchResults(String inputTerm) {
+    final debouncedTerm = _debouncedTerm.trim();
+    final readyForSearch = debouncedTerm == inputTerm;
+
+    if (!readyForSearch) {
+      return _buildLoading();
+    }
+
+    final searchTerm = debouncedTerm.toLowerCase();
+    return StreamBuilder<List<UsersRecord>>(
+      stream: queryUsersRecord(
+        queryBuilder: (usersRecord) => usersRecord
+            .orderBy('display_name_lower')
+            .startAt([searchTerm])
+            .endAt(['${searchTerm}\uf8ff'])
+            .limit(25),
+      ),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return _buildLoading();
+        }
+
+        final results = _filterResults(
+          snapshot.data!,
+          searchTerm: searchTerm,
+        );
+        return _buildResultsList(results);
+      },
     );
   }
 }
