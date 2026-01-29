@@ -8,6 +8,7 @@ import '/models/vibe_profile.dart';
 import '/services/vibe_matcher.dart';
 import '/services/vibe_repository.dart';
 import '/vibe/vibe_match_types.dart';
+import '/vibe/vibe_recommendation_rank.dart';
 
 class SuggestedGolfersSection extends StatefulWidget {
   const SuggestedGolfersSection({
@@ -148,8 +149,8 @@ class _SuggestedGolfersSectionState extends State<SuggestedGolfersSection> {
     }
 
     suggestions.sort((a, b) {
-      final rankA = _recommendationRank(a.recommendation);
-      final rankB = _recommendationRank(b.recommendation);
+      final rankA = recommendationRank(a.recommendation);
+      final rankB = recommendationRank(b.recommendation);
       if (rankA != rankB) {
         return rankA.compareTo(rankB);
       }
@@ -205,17 +206,6 @@ class _SuggestedGolfer {
   final UsersRecord user;
   final int score;
   final VibeRecommendation recommendation;
-}
-
-int _recommendationRank(VibeRecommendation recommendation) {
-  switch (recommendation) {
-    case VibeRecommendation.recommended:
-      return 0;
-    case VibeRecommendation.caution:
-      return 1;
-    case VibeRecommendation.notRecommended:
-      return 2;
-  }
 }
 
 class _SuggestedGolferCard extends StatelessWidget {

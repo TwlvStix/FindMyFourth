@@ -12,7 +12,6 @@ import '/core/utils/formatting_utils.dart';
 import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
 import '/backend/backend.dart';
-import '/friends/components/golfer_search_section.dart';
 import '/chat_group/chat/components/suggested_golfers_section.dart';
 import '/models/chat.dart';
 import '/providers/chat_provider.dart';
@@ -173,61 +172,6 @@ class _ChatWidgetState extends State<ChatWidget> {
         SuggestedGolfersSection(
           currentUserId: currentUserId,
           onGolferTap: (user) => _openDirectChatForUser(user, currentUserId),
-        ),
-        SizedBox(height: AppSpacing.lg),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          child: Text(
-            'Search All Golfers',
-            style: AppTypography.titleSmall.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        GolferSearchSection(
-          currentUserId: currentUserId,
-          autofocus: false,
-          emptyStateBuilder: (clearSearch) => Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.lg,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'No golfers found',
-                  style: AppTypography.titleSmall.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Try a different name or clear your search.',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: Colors.white.withOpacity(0.6),
-                  ),
-                ),
-                SizedBox(height: AppSpacing.sm),
-                GestureDetector(
-                  onTap: clearSearch,
-                  child: Text(
-                    'Clear search',
-                    style: AppTypography.labelMedium.copyWith(
-                      color: AppColors.sunsetGold,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          itemBuilder: (context, user) => _ChatSearchResultTile(
-            user: user,
-            onTap: () => _openDirectChatForUser(user, currentUserId),
-          ),
         ),
         SizedBox(height: AppSpacing.lg),
         Padding(
@@ -564,114 +508,5 @@ class _ChatWidgetState extends State<ChatWidget> {
         );
       },
     );
-  }
-}
-
-class _ChatSearchResultTile extends StatelessWidget {
-  const _ChatSearchResultTile({
-    required this.user,
-    required this.onTap,
-  });
-
-  final UsersRecord user;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final displayName = _displayName(user);
-    final photoUrl = user.photoUrl;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.xs,
-        ),
-        padding: EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: AppColors.fairway.withOpacity(0.28),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.12),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppColors.fairwayLight, AppColors.fairway],
-                ),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 2,
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: photoUrl.isNotEmpty
-                    ? Image.network(
-                        photoUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Icon(
-                          Icons.person_rounded,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      )
-                    : Icon(
-                        Icons.person_rounded,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-              ),
-            ),
-            SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    displayName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.titleSmall.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Tap to message',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: Colors.white.withOpacity(0.6),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.chat_bubble_rounded,
-              color: Colors.white.withOpacity(0.5),
-              size: 20,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _displayName(UsersRecord user) {
-    final displayName = user.displayName.trim();
-    if (displayName.isNotEmpty) {
-      return displayName;
-    }
-    final combined = '${user.firstName} ${user.lastName}'.trim();
-    return combined.isNotEmpty ? combined : 'Golfer';
   }
 }

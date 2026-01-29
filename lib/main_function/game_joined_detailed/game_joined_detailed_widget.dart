@@ -674,25 +674,33 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                               width: 48.0,
                                               height: 48.0,
                                               decoration: BoxDecoration(
-                                                color: AppColors.fairwayLight,
-                                                shape: BoxShape.circle,
+                                                gradient: LinearGradient(
+                                                  colors: [AppColors.fairwayLight, AppColors.fairway],
+                                                ),
+                                                borderRadius: BorderRadius.circular(12),
                                                 border: Border.all(
-                                                  color: AppColors.sunsetGold,
-                                                  width: 2.0,
+                                                  color: Colors.white.withValues(alpha: 0.2),
+                                                  width: 2,
                                                 ),
                                               ),
-                                              clipBehavior: Clip.antiAlias,
-                                              child: Image.network(
-                                                photoUrl.isNotEmpty
-                                                    ? photoUrl
-                                                    : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (context, error,
-                                                        stackTrace) =>
-                                                    Image.asset(
-                                                  'assets/images/error_image.png',
-                                                  fit: BoxFit.cover,
-                                                ),
+                                              child: ClipRRect(
+                                                borderRadius: BorderRadius.circular(10),
+                                                child: photoUrl.isNotEmpty
+                                                    ? Image.network(
+                                                        photoUrl,
+                                                        fit: BoxFit.cover,
+                                                        errorBuilder: (context, error, stackTrace) =>
+                                                            Icon(
+                                                          Icons.person_rounded,
+                                                          color: Colors.white,
+                                                          size: 24,
+                                                        ),
+                                                      )
+                                                    : Icon(
+                                                        Icons.person_rounded,
+                                                        color: Colors.white,
+                                                        size: 24,
+                                                      ),
                                               ),
                                             ),
                                             SizedBox(width: AppSpacing.sm),

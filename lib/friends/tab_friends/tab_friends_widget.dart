@@ -376,6 +376,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                     showDefaultsWhenBelowThreshold: true,
                                     searchDebounce:
                                         Duration(milliseconds: 300),
+                                    showFocusHelperText: true,
                                     itemBuilder: (context, listViewUsersRecord) {
                                       return AuthUserStreamWidget(
                                         builder: (context) {

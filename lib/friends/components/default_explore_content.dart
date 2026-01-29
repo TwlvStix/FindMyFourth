@@ -8,6 +8,8 @@ import '/friends/components/friend_card_skeleton.dart';
 import '/models/vibe_profile.dart';
 import '/services/vibe_matcher.dart';
 import '/services/vibe_repository.dart';
+import '/vibe/vibe_match_types.dart';
+import '/vibe/vibe_recommendation_rank.dart';
 
 typedef DefaultExploreItemBuilder = Widget Function(
   BuildContext context,
@@ -46,94 +48,111 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section A: Recommended for you (VIBE-based)
-        _buildRecommendedSection(),
-
-        SizedBox(height: AppSpacing.lg),
-
-        // Section B: Recently joined
-        _buildRecentlyJoinedSection(),
-      ],
-    );
-  }
-
-  Widget _buildRecommendedSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.only(
-            left: AppSpacing.lg,
-            bottom: AppSpacing.xs,
-          ),
-          child: Text(
-            'RECOMMENDED FOR YOU',
-            style: AppTypography.labelMedium.copyWith(
-              color: AppColors.sunsetGold,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-            ),
-          ),
-        ),
-        FutureBuilder<VibeProfile>(
-          future: _myVibesFuture,
-          builder: (context, vibeSnapshot) {
-            if (vibeSnapshot.hasError || !vibeSnapshot.hasData) {
-              return _buildSectionEmpty(
+    return FutureBuilder<VibeProfile>(
+      future: _myVibesFuture,
+      builder: (context, vibeSnapshot) {
+        if (!vibeSnapshot.hasData || vibeSnapshot.hasError) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildRecommendedHeader(),
+              _buildSectionEmpty(
                 'Complete your VIBE profile to see personalized matches.',
+              ),
+              SizedBox(height: AppSpacing.lg),
+              _buildRecentlyJoinedSection(const <String>{}),
+            ],
+          );
+        }
+
+        return StreamBuilder<List<UsersRecord>>(
+          stream: queryUsersRecord(
+            queryBuilder: (users) => users.limit(widget.candidateLimit),
+          ),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildRecommendedHeader(),
+                  _buildSectionLoading(),
+                  SizedBox(height: AppSpacing.lg),
+                  _buildRecentlyJoinedSection(const <String>{}),
+                ],
               );
             }
 
-            return StreamBuilder<List<UsersRecord>>(
-              stream: queryUsersRecord(
-                queryBuilder: (users) => users.limit(widget.candidateLimit),
-              ),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return _buildSectionLoading();
-                }
+            final recommendations = _buildRecommendations(
+              vibeSnapshot.data!,
+              snapshot.data!,
+            );
+            final recommendedIds =
+                recommendations.map((user) => user.reference.id).toSet();
 
-                final recommendations = _buildRecommendations(
-                  vibeSnapshot.data!,
-                  snapshot.data!,
-                );
-
-                if (recommendations.isEmpty) {
-                  return _buildSectionEmpty(
-                    'No VIBE matches available yet.',
-                  );
-                }
-
-                return ListView.separated(
-                  padding: EdgeInsets.fromLTRB(
-                    0,
-                    AppSpacing.xs,
-                    0,
-                    0,
-                  ),
-                  primary: false,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  scrollDirection: Axis.vertical,
-                  itemCount: recommendations.length,
-                  separatorBuilder: (_, __) => SizedBox(height: 0),
-                  itemBuilder: (context, index) {
-                    final user = recommendations[index];
-                    return widget.itemBuilder(context, user);
-                  },
-                );
-              },
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildRecommendedSection(recommendations),
+                SizedBox(height: AppSpacing.lg),
+                _buildRecentlyJoinedSection(recommendedIds),
+              ],
             );
           },
-        ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRecommendedSection(List<UsersRecord> recommendations) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildRecommendedHeader(),
+        if (recommendations.isEmpty)
+          _buildSectionEmpty(
+            'No VIBE matches available yet.',
+          )
+        else
+          ListView.separated(
+            padding: EdgeInsets.fromLTRB(
+              0,
+              AppSpacing.xs,
+              0,
+              0,
+            ),
+            primary: false,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            scrollDirection: Axis.vertical,
+            itemCount: recommendations.length,
+            separatorBuilder: (_, __) => SizedBox(height: 0),
+            itemBuilder: (context, index) {
+              final user = recommendations[index];
+              return widget.itemBuilder(context, user);
+            },
+          ),
       ],
     );
   }
 
-  Widget _buildRecentlyJoinedSection() {
+  Widget _buildRecommendedHeader() {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: AppSpacing.lg,
+        bottom: AppSpacing.xs,
+      ),
+      child: Text(
+        'RECOMMENDED FOR YOU',
+        style: AppTypography.labelMedium.copyWith(
+          color: AppColors.sunsetGold,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentlyJoinedSection(Set<String> excludeIds) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -151,33 +170,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
             ),
           ),
         ),
-        FutureBuilder<VibeProfile>(
-          future: _myVibesFuture,
-          builder: (context, vibeSnapshot) {
-            // Get recommended user IDs for deduplication
-            final recommendedIds = <String>{};
-            if (vibeSnapshot.hasData) {
-              return StreamBuilder<List<UsersRecord>>(
-                stream: queryUsersRecord(
-                  queryBuilder: (users) => users.limit(widget.candidateLimit),
-                ),
-                builder: (context, candidatesSnapshot) {
-                  if (candidatesSnapshot.hasData) {
-                    final recs = _buildRecommendations(
-                      vibeSnapshot.data!,
-                      candidatesSnapshot.data!,
-                    );
-                    recommendedIds.addAll(recs.map((u) => u.reference.id));
-                  }
-
-                  return _buildRecentlyJoinedList(recommendedIds);
-                },
-              );
-            }
-
-            return _buildRecentlyJoinedList(recommendedIds);
-          },
-        ),
+        _buildRecentlyJoinedList(excludeIds),
       ],
     );
   }
@@ -262,8 +255,8 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
     }
 
     recommendations.sort((a, b) {
-      final rankA = _recommendationRank(a.recommendation);
-      final rankB = _recommendationRank(b.recommendation);
+      final rankA = recommendationRank(a.recommendation);
+      final rankB = recommendationRank(b.recommendation);
       if (rankA != rankB) {
         return rankA.compareTo(rankB);
       }
@@ -323,12 +316,5 @@ class _ScoredUser {
 
   final UsersRecord user;
   final int score;
-  final dynamic recommendation;
-}
-
-int _recommendationRank(dynamic recommendation) {
-  final recStr = recommendation.toString();
-  if (recStr.contains('recommended')) return 0;
-  if (recStr.contains('caution')) return 1;
-  return 2;
+  final VibeRecommendation recommendation;
 }

@@ -78,66 +78,59 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
                     u.homeCourse != widget.currentUserHomeCourse))
             .toList();
 
-        return RefreshIndicator(
-          onRefresh: () async {
-            // Refresh will be triggered automatically by the stream
-            await Future.delayed(Duration(milliseconds: 300));
-          },
-          color: AppColors.fairway,
-          backgroundColor: Colors.white,
-          child: ListView(
-            physics: AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.only(
-              top: AppSpacing.sm,
-              bottom: AppSpacing.xxl,
-            ),
+        return Padding(
+          padding: EdgeInsets.only(
+            top: AppSpacing.sm,
+            bottom: AppSpacing.xxl,
+          ),
+          child: Column(
             children: [
-            // Favorites Section
-            if (favorites.isNotEmpty) ...[
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                child: FriendSectionHeader(
-                  icon: Icons.star_rounded,
-                  title: 'Favorites',
-                  count: favorites.length,
-                  color: AppColors.sunsetGold,
-                  isCollapsed: favoritesCollapsed,
-                  onTap: () {
-                    setState(() => favoritesCollapsed = !favoritesCollapsed);
-                  },
+              // Favorites Section
+              if (favorites.isNotEmpty) ...[
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                  child: FriendSectionHeader(
+                    icon: Icons.star_rounded,
+                    title: 'Favorites',
+                    count: favorites.length,
+                    color: AppColors.sunsetGold,
+                    isCollapsed: favoritesCollapsed,
+                    onTap: () {
+                      setState(() => favoritesCollapsed = !favoritesCollapsed);
+                    },
+                  ),
                 ),
-              ),
-              if (!favoritesCollapsed)
-                ...favorites.map((friend) => _buildFriendCard(friend, true)),
-            ],
+                if (!favoritesCollapsed)
+                  ...favorites.map((friend) => _buildFriendCard(friend, true)),
+              ],
 
-            // Club Members Section
-            if (clubMembers.isNotEmpty) ...[
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                child: FriendSectionHeader(
-                  icon: Icons.golf_course_rounded,
-                  title: 'Club Members',
-                  count: clubMembers.length,
-                  color: AppColors.fairway,
-                  isCollapsed: clubMembersCollapsed,
-                  onTap: () {
-                    setState(
-                        () => clubMembersCollapsed = !clubMembersCollapsed);
-                  },
+              // Club Members Section
+              if (clubMembers.isNotEmpty) ...[
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                  child: FriendSectionHeader(
+                    icon: Icons.golf_course_rounded,
+                    title: 'Club Members',
+                    count: clubMembers.length,
+                    color: AppColors.fairway,
+                    isCollapsed: clubMembersCollapsed,
+                    onTap: () {
+                      setState(
+                          () => clubMembersCollapsed = !clubMembersCollapsed);
+                    },
+                  ),
                 ),
-              ),
-              if (!clubMembersCollapsed)
-                ...clubMembers.map((friend) => _buildFriendCard(friend, false)),
-            ],
+                if (!clubMembersCollapsed)
+                  ...clubMembers.map((friend) => _buildFriendCard(friend, false)),
+              ],
 
-            // Other friends (no section header since it's redundant on Friends tab)
-            if (otherFriends.isNotEmpty) ...[
-              ...otherFriends.map((friend) => _buildFriendCard(friend, false)),
-            ],
+              // Other friends (no section header since it's redundant on Friends tab)
+              if (otherFriends.isNotEmpty) ...[
+                ...otherFriends.map((friend) => _buildFriendCard(friend, false)),
+              ],
 
-            SizedBox(height: AppSpacing.md),
-          ],
+              SizedBox(height: AppSpacing.md),
+            ],
           ),
         );
       },

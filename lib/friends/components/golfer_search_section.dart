@@ -32,6 +32,7 @@ class GolferSearchSection extends StatefulWidget {
     this.minimumSearchCharacters = 2,
     this.showDefaultsWhenBelowThreshold = false,
     this.searchDebounce = Duration.zero,
+    this.showFocusHelperText = false,
     this.autofocus = true,
     this.resultsLabel = 'Search Results',
     this.emptyStateBuilder,
@@ -45,6 +46,7 @@ class GolferSearchSection extends StatefulWidget {
   final int minimumSearchCharacters;
   final bool showDefaultsWhenBelowThreshold;
   final Duration searchDebounce;
+  final bool showFocusHelperText;
   final bool autofocus;
   final String resultsLabel;
   final GolferSearchEmptyBuilder? emptyStateBuilder;
@@ -68,6 +70,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
     _searchTerm = ValueNotifier<String>('');
     _textController = TextEditingController();
     _textFieldFocusNode = FocusNode();
+    _textFieldFocusNode!.addListener(_handleFocusChanged);
     _textController!.addListener(_handleTextChanged);
   }
 
@@ -75,10 +78,17 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
   void dispose() {
     _textController?.removeListener(_handleTextChanged);
     _textController?.dispose();
+    _textFieldFocusNode?.removeListener(_handleFocusChanged);
     _textFieldFocusNode?.dispose();
     _debounceTimer?.cancel();
     _searchTerm.dispose();
     super.dispose();
+  }
+
+  void _handleFocusChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _handleTextChanged() {
@@ -222,6 +232,14 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                     autofocus: widget.autofocus,
                     obscureText: false,
                     decoration: InputDecoration(
+                      helperText: widget.showFocusHelperText &&
+                              (_textFieldFocusNode?.hasFocus ?? false) &&
+                              (_textController?.text.trim().isEmpty ?? true)
+                          ? 'Try filters if you don’t know a name'
+                          : null,
+                      helperStyle: AppTypography.labelSmall.copyWith(
+                        color: Colors.white,
+                      ),
                       labelStyle: AppTheme.of(context).labelMedium.override(
                             font: GoogleFonts.outfit(
                               fontWeight:

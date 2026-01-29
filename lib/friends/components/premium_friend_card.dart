@@ -275,11 +275,15 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
 
   Widget _buildAvatarFallback() {
     return Container(
-      color: AppColors.sand,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.fairwayLight, AppColors.fairway],
+        ),
+      ),
       child: Icon(
         Icons.person_rounded,
-        size: 28,
-        color: AppColors.stone,
+        size: 24,
+        color: Colors.white,
       ),
     );
   }
