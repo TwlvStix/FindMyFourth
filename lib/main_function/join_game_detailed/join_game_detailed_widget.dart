@@ -1,5 +1,6 @@
 import '/backend/backend.dart';
 import '/core/exceptions/app_exceptions.dart';
+import '/core/motion/motion_helpers.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
@@ -179,7 +180,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     if (result == null) {
       return;
     }
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -1269,7 +1270,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                     }
                                   }
                                   if (!(isPublic || (isFriendsOnly && isOwnerFriendsWithUser))) {
-                                    await showDialog(
+                                    await showAppDialog(
                                       context: context,
                                       builder: (alertDialogContext) {
                                         return AlertDialog(
@@ -1393,11 +1394,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                         'gameRef':
                                             joinGameDetailedGamesRecord.reference,
                                         kTransitionInfoKey: TransitionInfo(
-                                          hasTransition: true,
-                                          transitionType:
-                                              PageTransitionType.bottomToTop,
-                                          duration: Duration(milliseconds: 220),
-                                        ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: true,
+                ),
                                       },
                                     );
                                   },

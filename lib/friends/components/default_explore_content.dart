@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '/backend/backend.dart';
 import '/core/design_tokens/colors.dart';
@@ -6,6 +7,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/friends/components/friend_card_skeleton.dart';
 import '/models/vibe_profile.dart';
+import '/providers/user_provider.dart';
 import '/services/vibe_matcher.dart';
 import '/services/vibe_repository.dart';
 import '/vibe/vibe_match_types.dart';
@@ -48,8 +50,11 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
 
   @override
   Widget build(BuildContext context) {
+    final cachedVibeProfile = _vibeRepository.getCachedVibeProfileSync();
+
     return FutureBuilder<VibeProfile>(
       future: _myVibesFuture,
+      initialData: cachedVibeProfile,
       builder: (context, vibeSnapshot) {
         if (!vibeSnapshot.hasData || vibeSnapshot.hasError) {
           return Column(
@@ -65,10 +70,12 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
           );
         }
 
+        final userProvider = context.read<UserProvider>();
+        final cachedCandidates = userProvider.getCachedCandidateUsers(limit: widget.candidateLimit);
+
         return StreamBuilder<List<UsersRecord>>(
-          stream: queryUsersRecord(
-            queryBuilder: (users) => users.limit(widget.candidateLimit),
-          ),
+          stream: userProvider.queryCandidateUsers(limit: widget.candidateLimit),
+          initialData: cachedCandidates,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Column(
@@ -176,12 +183,16 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
   }
 
   Widget _buildRecentlyJoinedList(Set<String> excludeIds) {
+    final userProvider = context.read<UserProvider>();
+    final cachedRecent = userProvider.getCachedRecentlyJoinedUsers(
+      limit: widget.recentlyJoinedLimit + excludeIds.length,
+    );
+
     return StreamBuilder<List<UsersRecord>>(
-      stream: queryUsersRecord(
-        queryBuilder: (users) => users
-            .orderBy('created_time', descending: true)
-            .limit(widget.recentlyJoinedLimit + excludeIds.length),
+      stream: userProvider.queryRecentlyJoinedUsers(
+        limit: widget.recentlyJoinedLimit + excludeIds.length,
       ),
+      initialData: cachedRecent,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return _buildSectionLoading();

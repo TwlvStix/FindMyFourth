@@ -82,6 +82,19 @@ class StreamRequestManager<T> {
     return streamSubject.stream;
   }
 
+  /// Get the last cached value for a query if available
+  /// Returns null if query hasn't been performed or cache was cleared
+  T? getLastValue(String? uniqueQueryKey) {
+    uniqueQueryKey = _requestKey(uniqueQueryKey);
+    final subject = _streamSubjects[uniqueQueryKey];
+
+    // BehaviorSubject.hasValue returns true if at least one value was emitted
+    if (subject != null && subject.hasValue) {
+      return subject.value;
+    }
+    return null;
+  }
+
   void clearRequest(String? key) {
     key = _requestKey(key);
     _streamSubjects.remove(key)?.close();

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '/core/motion/motion_tokens.dart';
+import '/core/motion/reduced_motion.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/core/design_tokens/colors.dart';
 
@@ -46,7 +48,7 @@ class SegmentedControl extends StatelessWidget {
                 onChanged(option['value']);
               },
               child: AnimatedContainer(
-                duration: Duration(milliseconds: 200),
+                duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
                 padding: EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
                   gradient: isSelected

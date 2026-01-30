@@ -263,11 +263,12 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                 extra: <String, dynamic>{
                                   'gameRef': widget.gameRef.reference,
                                   kTransitionInfoKey: TransitionInfo(
-                                    hasTransition: true,
-                                    transitionType:
-                                        PageTransitionType.bottomToTop,
-                                    duration: Duration(milliseconds: 220),
-                                  ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: true,
+                ),
                                 },
                               );
                             },

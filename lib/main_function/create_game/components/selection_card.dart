@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '/core/motion/motion_tokens.dart';
+import '/core/motion/reduced_motion.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
@@ -38,7 +40,7 @@ class SelectionCard extends StatelessWidget {
         onTap();
       },
       child: AnimatedContainer(
-        duration: Duration(milliseconds: 200),
+        duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
         padding: EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
           gradient: isSelected

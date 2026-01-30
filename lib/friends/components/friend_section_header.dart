@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '/core/motion/motion_tokens.dart';
+import '/core/motion/reduced_motion.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
@@ -38,10 +40,10 @@ class _FriendSectionHeaderState extends State<FriendSectionHeader>
     super.initState();
     _pressController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 100),
+      duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
     );
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+      CurvedAnimation(parent: _pressController, curve: MotionTokens.curveEnter),
     );
   }
 
@@ -176,8 +178,8 @@ class _FriendSectionHeaderState extends State<FriendSectionHeader>
               if (widget.onTap != null)
                 AnimatedRotation(
                   turns: widget.isCollapsed ? 0 : 0.5,
-                  duration: Duration(milliseconds: 200),
-                  curve: Curves.easeInOut,
+                  duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
+                  curve: MotionTokens.curveEnter,
                   child: Icon(
                     Icons.keyboard_arrow_down_rounded,
                     color: widget.color,

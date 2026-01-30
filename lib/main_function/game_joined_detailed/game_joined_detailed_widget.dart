@@ -1,6 +1,7 @@
 import '/backend/backend.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
+import '/core/motion/motion_helpers.dart';
 import '/utils/app_util.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
@@ -1292,7 +1293,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     if (result == null) {
       return;
     }
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -1657,10 +1658,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
       extra: <String, dynamic>{
         'gameRef': widget.gameRef,
         kTransitionInfoKey: const TransitionInfo(
-          hasTransition: true,
-          transitionType: PageTransitionType.bottomToTop,
-          duration: Duration(milliseconds: 220),
-        ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: true,
+                ),
       },
     );
   }

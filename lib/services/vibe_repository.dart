@@ -46,6 +46,16 @@ class VibeRepository {
     return profile;
   }
 
+  /// Get cached VIBE profile synchronously (returns null if not cached)
+  VibeProfile? getCachedVibeProfileSync() {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+    if (_cachedMyVibes != null && _cachedMyVibesUid == user.uid) {
+      return _cachedMyVibes;
+    }
+    return null;
+  }
+
   void clearMyVibesCache() {
     _cachedMyVibes = null;
     _cachedMyVibesUid = null;

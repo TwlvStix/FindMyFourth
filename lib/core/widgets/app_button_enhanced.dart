@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '/core/motion/motion_tokens.dart';
+import '/core/motion/reduced_motion.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
 
@@ -126,7 +128,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
     _internalFocusNode = FocusNode();
 
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 150),
+      duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
       vsync: this,
     );
 
@@ -410,8 +412,8 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
           child: Focus(
             focusNode: _focusNode,
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOut,
+              duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
+              curve: MotionTokens.curveEnter,
               width: widget.fullWidth ? double.infinity : null,
               height: _height,
               decoration: BoxDecoration(

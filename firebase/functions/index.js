@@ -1045,14 +1045,79 @@ async function removeUserFromArrays(userRef) {
     }
   };
 
-  await batchUpdates(
-    firestore.collection("users").where("friends", "array-contains", userRef),
-  );
-  await batchUpdates(
-    firestore
-      .collection("users")
-      .where("friend_requests", "array-contains", userRef),
-  );
+  // Remove user from games they've joined
+  const removeFromGames = async () => {
+    const gamesSnap = await firestore
+      .collection("games")
+      .where("joined_players", "array-contains", userRef)
+      .get();
+
+    if (gamesSnap.empty) return;
+    let batch = firestore.batch();
+    let opCount = 0;
+
+    for (const doc of gamesSnap.docs) {
+      batch.update(doc.ref, {
+        joined_players: admin.firestore.FieldValue.arrayRemove(userRef),
+      });
+      opCount++;
+      if (opCount >= 450) {
+        await batch.commit();
+        batch = firestore.batch();
+        opCount = 0;
+      }
+    }
+    if (opCount > 0) {
+      await batch.commit();
+    }
+  };
+
+  // Remove user from chat memberIds and users arrays
+  const removeFromChats = async () => {
+    const chatsSnap = await firestore
+      .collection("chats")
+      .where("memberIds", "array-contains", userRef.id)
+      .get();
+
+    if (chatsSnap.empty) return;
+    let batch = firestore.batch();
+    let opCount = 0;
+
+    for (const doc of chatsSnap.docs) {
+      const updates = {
+        memberIds: admin.firestore.FieldValue.arrayRemove(userRef.id),
+        users: admin.firestore.FieldValue.arrayRemove(userRef),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+      // Remove user's unread count field
+      updates[`unreadCountByUser.${userRef.id}`] =
+        admin.firestore.FieldValue.delete();
+
+      batch.update(doc.ref, updates);
+      opCount++;
+      if (opCount >= 450) {
+        await batch.commit();
+        batch = firestore.batch();
+        opCount = 0;
+      }
+    }
+    if (opCount > 0) {
+      await batch.commit();
+    }
+  };
+
+  await Promise.all([
+    batchUpdates(
+      firestore.collection("users").where("friends", "array-contains", userRef),
+    ),
+    batchUpdates(
+      firestore
+        .collection("users")
+        .where("friend_requests", "array-contains", userRef),
+    ),
+    removeFromGames(),
+    removeFromChats(),
+  ]);
 }
 
 function getDocIdBound(index, numBatches) {

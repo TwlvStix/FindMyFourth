@@ -228,6 +228,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
       vsync: this,
       length: 3,
       initialIndex: 0,
+      animationDuration: Duration.zero, // Instant tab switching per premium motion system
     )..addListener(() {
         if (mounted) {
           setState(() {});
@@ -612,18 +613,20 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                             'Requests tab friend_requests raw: ${currentUserDocument?.snapshotData['friend_requests']}',
                                           );
 
-                                          // Show empty state if no friend requests
-                                          if (friendRequestList.isEmpty) {
-                                            return FriendsEmptyState(
-                                              type: FriendsEmptyStateType
-                                                  .noFriendRequests,
-                                              onActionPressed: () {
-                                                tabBarController?.animateTo(0);
-                                              },
-                                            );
-                                          }
-
-                                          return ListView.separated(
+                                          // AnimatedSwitcher ensures clean transition between empty state and list
+                                          return AnimatedSwitcher(
+                                            duration: Duration(milliseconds: 200),
+                                            child: friendRequestList.isEmpty
+                                                ? FriendsEmptyState(
+                                                    key: ValueKey('empty_requests_state'),
+                                                    type: FriendsEmptyStateType
+                                                        .noFriendRequests,
+                                                    onActionPressed: () {
+                                                      tabBarController?.animateTo(0);
+                                                    },
+                                                  )
+                                                : ListView.separated(
+                                            key: ValueKey('requests_list_${friendRequestList.length}'),
                                             padding: EdgeInsets.fromLTRB(
                                               0,
                                               AppSpacing.md,
@@ -634,6 +637,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                             shrinkWrap: true,
                                             scrollDirection: Axis.vertical,
                                             itemCount: friendRequestList.length,
+                                            addAutomaticKeepAlives: false,
+                                            addRepaintBoundaries: false,
                                             separatorBuilder: (_, __) =>
                                                 SizedBox(height: 0),
                                             itemBuilder: (context,
@@ -641,10 +646,12 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                               final friendRequestListItem =
                                                   friendRequestList[
                                                       friendRequestListIndex];
+                                              final cachedUser = context.read<UserProvider>().getCachedUser(friendRequestListItem.id);
                                               return StreamBuilder<UsersRecord>(
+                                                key: ValueKey(friendRequestListItem.id),
                                                 stream:
-                                                    UsersRecord.getDocument(
-                                                        friendRequestListItem),
+                                                    context.read<UserProvider>().watchUser(friendRequestListItem).where((user) => user != null).cast<UsersRecord>(),
+                                                initialData: cachedUser,
                                                 builder: (context, snapshot) {
                                                   if (!snapshot.hasData) {
                                                     return FriendCardSkeleton();
@@ -654,6 +661,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                       snapshot.data!;
 
                                                   return PremiumFriendCard(
+                                                    key: ValueKey('request_${userList5UsersRecord.reference.id}'),
                                                     user: userList5UsersRecord,
                                                     currentUser: currentUserDocument,
                                                     messageLabel: '+Add',
@@ -818,6 +826,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                 },
                                               );
                                             },
+                                          ),
                                           );
                                         },
                                       ),

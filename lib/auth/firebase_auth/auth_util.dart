@@ -66,6 +66,7 @@ class AuthUserStreamWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => StreamBuilder(
         stream: authenticatedUserStream,
+        initialData: currentUserDocument,
         builder: (context, _) => builder(context),
       );
 }

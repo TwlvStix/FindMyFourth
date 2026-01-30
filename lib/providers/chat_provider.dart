@@ -26,9 +26,16 @@ class ChatProvider extends ChangeNotifier {
   // StreamRequestManagers for message streams (by chat ID)
   final Map<String, StreamRequestManager<List<ChatMessage>>> _messageStreamManagers = {};
 
+  // StreamRequestManager for chat list streams (by user ID)
+  final Map<String, StreamRequestManager<List<Chat>>> _chatListStreamManagers = {};
+
+  // Query result cache for chat lists (by query key)
+  final Map<String, List<Chat>> _chatListCache = {};
+
   // Cache timestamps for TTL tracking
   final Map<String, DateTime> _chatCacheTimestamps = {};
   final Map<String, DateTime> _messagesCacheTimestamps = {};
+  final Map<String, DateTime> _chatListCacheTimestamps = {};
 
   // Cache TTL duration
   final Duration _cacheTTL = const Duration(minutes: 5);
@@ -60,11 +67,46 @@ class ChatProvider extends ChangeNotifier {
     return DateTime.now().difference(timestamp) < _cacheTTL;
   }
 
+  /// Check if chat list cache is valid (within TTL)
+  bool isChatListCacheValid(String queryKey) {
+    final timestamp = _chatListCacheTimestamps[queryKey];
+    if (timestamp == null) return false;
+    return DateTime.now().difference(timestamp) < _cacheTTL;
+  }
+
   Stream<List<Chat>> chatListStream({
     required String uid,
     int limit = 50,
   }) {
-    return _service.getChatListStream(uid: uid, limit: limit);
+    final queryKey = 'chat_list_${uid}_$limit';
+
+    // Get or create StreamRequestManager for this query
+    if (!_chatListStreamManagers.containsKey(queryKey)) {
+      _chatListStreamManagers[queryKey] = StreamRequestManager<List<Chat>>(5);
+    }
+
+    return _chatListStreamManagers[queryKey]!.performRequest(
+      uniqueQueryKey: queryKey,
+      requestFn: () => _service.getChatListStream(uid: uid, limit: limit),
+    ).map((chats) {
+      // Cache query results when they come through the stream
+      _chatListCache[queryKey] = chats;
+      _chatListCacheTimestamps[queryKey] = DateTime.now();
+      return chats;
+    });
+  }
+
+  /// Get cached chat list if available (no fetch)
+  List<Chat>? getCachedChatList(String uid, {int limit = 50}) {
+    final queryKey = 'chat_list_${uid}_$limit';
+
+    // Check query result cache first
+    if (isChatListCacheValid(queryKey)) {
+      return _chatListCache[queryKey];
+    }
+
+    // Fall back to BehaviorSubject cache
+    return _chatListStreamManagers[queryKey]?.getLastValue(queryKey);
   }
 
   Stream<Chat?> chatStream(String chatId) {

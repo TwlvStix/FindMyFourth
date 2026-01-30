@@ -8,6 +8,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/motion/motion_helpers.dart';
 import '/core/navigation/app_router.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon_button.dart';
@@ -161,7 +162,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
       return;
     }
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

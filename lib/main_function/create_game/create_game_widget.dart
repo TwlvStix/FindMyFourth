@@ -2,6 +2,7 @@ import '/core/widgets/app_count_controller.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_text_field.dart';
+import '/core/motion/motion_helpers.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -504,8 +505,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 'gameRef': gamesRecordReference,
                 kTransitionInfoKey: TransitionInfo(
                   hasTransition: true,
-                  transitionType: PageTransitionType.bottomToTop,
-                  duration: Duration(milliseconds: 220),
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: false,
                 ),
               },
             );
@@ -560,7 +563,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   // Show help dialog
   void _showHelpDialog(BuildContext context, String title, String message) {
     HapticFeedback.lightImpact();
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,

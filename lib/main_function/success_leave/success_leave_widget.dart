@@ -136,11 +136,12 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                                   MainProfileWidget.routeName,
                                   extra: <String, dynamic>{
                                     kTransitionInfoKey: TransitionInfo(
-                                      hasTransition: true,
-                                      transitionType:
-                                          PageTransitionType.topToBottom,
-                                      duration: Duration(milliseconds: 220),
-                                    ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: false,
+                ),
                                   },
                                 );
                               },

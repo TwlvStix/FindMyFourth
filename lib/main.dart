@@ -301,8 +301,10 @@ class _NavBarPageState extends State<NavBarPage> {
             extra: <String, dynamic>{
               kTransitionInfoKey: TransitionInfo(
                 hasTransition: true,
-                transitionType: PageTransitionType.bottomToTop,
-                duration: Duration(milliseconds: 250),
+                transitionType: PageTransitionType.fade,
+                enterDuration: Duration(milliseconds: 200),
+                exitDuration: Duration(milliseconds: 170),
+                scaleOnPush: true,
               ),
             },
           );
@@ -335,7 +337,7 @@ class _NavBarPageState extends State<NavBarPage> {
         padding: EdgeInsets.all(6.0),
         gap: 0.0,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        duration: Duration(milliseconds: 500),
+        duration: Duration.zero, // Instant tab switching per premium motion system
         haptic: false,
         tabs: [
           GButton(

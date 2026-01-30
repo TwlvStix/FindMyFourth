@@ -4,6 +4,9 @@ import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/widgets/app_count_controller.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/app_theme.dart';
+import '/core/motion/motion_helpers.dart';
+import '/core/motion/motion_tokens.dart';
+import '/core/motion/reduced_motion.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
@@ -82,25 +85,44 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     golfCanadaTextController = TextEditingController();
     golfCanadaFocusNode = FocusNode();
 
-    // Setup staggered fade-in animations
+    // Setup staggered fade-in animations (UPDATED: 800ms → 232ms per premium motion system)
     _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: ReducedMotionService.adjust(
+        MotionTokens.contentReveal + (MotionTokens.staggerDelay * 3),
+      ), // 160ms + 72ms = 232ms total
       vsync: this,
     );
 
-    _fadeAnimations = List.generate(
-      3,
-      (index) => Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(
-          parent: _fadeController,
-          curve: Interval(
-            index * 0.1,
-            0.4 + (index * 0.1),
-            curve: Curves.easeOut,
-          ),
-        ),
-      ),
-    );
+    _fadeAnimations = ReducedMotionService.shouldStagger
+        ? List.generate(
+            3,
+            (index) {
+              final totalMs = _fadeController.duration!.inMilliseconds.toDouble();
+              final staggerMs = MotionTokens.staggerDelay.inMilliseconds.toDouble();
+              final revealMs = MotionTokens.contentReveal.inMilliseconds.toDouble();
+
+              return Tween<double>(begin: 0.0, end: 1.0).animate(
+                CurvedAnimation(
+                  parent: _fadeController,
+                  curve: Interval(
+                    (index * staggerMs) / totalMs,
+                    (revealMs + (index * staggerMs)) / totalMs,
+                    curve: MotionTokens.curveEnter,
+                  ),
+                ),
+              );
+            },
+          )
+        : List.generate(
+            3,
+            // No stagger in reduced motion - all fade in together
+            (index) => Tween<double>(begin: 0.0, end: 1.0).animate(
+              CurvedAnimation(
+                parent: _fadeController,
+                curve: MotionTokens.curveEnter,
+              ),
+            ),
+          );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fadeController.forward();
@@ -368,10 +390,12 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       },
       extra: <String, dynamic>{
         kTransitionInfoKey: TransitionInfo(
-          hasTransition: true,
-          transitionType: PageTransitionType.bottomToTop,
-          duration: Duration(milliseconds: 300),
-        ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: true,
+                ),
       },
     );
 
@@ -466,7 +490,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                       photoUrl: currentUserPhoto,
                       displayName: usernameTextController?.text ?? '',
                       onEditPhoto: () async {
-                        await showModalBottomSheet(
+                        await showAppBottomSheet(
                           isScrollControlled: true,
                           backgroundColor: Colors.transparent,
                           enableDrag: false,

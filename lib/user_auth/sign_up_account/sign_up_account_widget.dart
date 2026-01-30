@@ -432,12 +432,12 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             CreateProfileWidget.routeName,
                                         fallbackExtra: <String, dynamic>{
                                           kTransitionInfoKey: TransitionInfo(
-                                            hasTransition: true,
-                                            transitionType:
-                                                PageTransitionType.bottomToTop,
-                                            duration:
-                                                Duration(milliseconds: 220),
-                                          ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: true,
+                ),
                                         },
                                         replaceRoute: true,
                                       );
@@ -517,12 +517,12 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         CreateProfileWidget.routeName,
                                         extra: <String, dynamic>{
                                           kTransitionInfoKey: TransitionInfo(
-                                            hasTransition: true,
-                                            transitionType:
-                                                PageTransitionType.bottomToTop,
-                                            duration:
-                                                Duration(milliseconds: 220),
-                                          ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: true,
+                ),
                                         },
                                       );
                                     },
@@ -563,10 +563,12 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                     TransitionInfo(
                                                   hasTransition: true,
                                                   transitionType:
-                                                      PageTransitionType
-                                                          .bottomToTop,
-                                                  duration: Duration(
-                                                      milliseconds: 220),
+                                                      PageTransitionType.fade,
+                                                  enterDuration:
+                                                      Duration(milliseconds: 200),
+                                                  exitDuration:
+                                                      Duration(milliseconds: 170),
+                                                  scaleOnPush: true,
                                                 ),
                                               },
                                             );
@@ -593,10 +595,13 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                           extra: <String, dynamic>{
                                             kTransitionInfoKey: TransitionInfo(
                                               hasTransition: true,
-                                              transitionType: PageTransitionType
-                                                  .bottomToTop,
-                                              duration:
-                                                  Duration(milliseconds: 220),
+                                              transitionType:
+                                                  PageTransitionType.fade,
+                                              enterDuration:
+                                                  Duration(milliseconds: 200),
+                                              exitDuration:
+                                                  Duration(milliseconds: 170),
+                                              scaleOnPush: true,
                                             ),
                                           },
                                         );

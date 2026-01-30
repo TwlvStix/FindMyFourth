@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '/core/design_tokens/colors.dart';
+import '/core/motion/motion_helpers.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_card.dart';
@@ -141,7 +142,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
   }
 
   void _showDealbreakerInfo(BuildContext context) {
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.sand,

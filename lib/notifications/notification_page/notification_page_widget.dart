@@ -264,13 +264,13 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               if (states.contains(WidgetState.selected)) {
                 return Colors.white;
               }
-              return null;
+              return Colors.white.withValues(alpha: 0.5);
             }),
             trackColor: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.selected)) {
-                return AppColors.fairway;
+                return AppColors.sunsetGold;
               }
-              return null;
+              return Colors.white.withValues(alpha: 0.2);
             }),
           ),
         ],
@@ -492,13 +492,13 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                             },
                             controller: _gameStyleController!,
                             selectedChipStyle: ChipStyle(
-                              backgroundColor: AppColors.fairway,
+                              backgroundColor: AppColors.sunsetGold,
                               textStyle: AppTypography.labelSmall.copyWith(
-                                color: Colors.white,
+                                color: AppColors.fairwayDark,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: AppTypography.letterSpacingNormal,
                               ),
-                              borderColor: AppColors.fairway,
+                              borderColor: AppColors.sunsetGold,
                               borderRadius: BorderRadius.circular(16),
                             ),
                             unselectedChipStyle: ChipStyle(
@@ -644,13 +644,13 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                         },
                         controller: _digestController!,
                         selectedChipStyle: ChipStyle(
-                          backgroundColor: AppColors.fairway,
+                          backgroundColor: AppColors.sunsetGold,
                           textStyle: AppTypography.labelSmall.copyWith(
-                            color: Colors.white,
+                            color: AppColors.fairwayDark,
                             fontWeight: FontWeight.w600,
                             letterSpacing: AppTypography.letterSpacingNormal,
                           ),
-                          borderColor: AppColors.fairway,
+                          borderColor: AppColors.sunsetGold,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         unselectedChipStyle: ChipStyle(

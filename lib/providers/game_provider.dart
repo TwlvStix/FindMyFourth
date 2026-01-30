@@ -31,6 +31,12 @@ class GameProvider extends ChangeNotifier {
   // Cache timestamps for TTL tracking
   final Map<String, DateTime> _gameCacheTimestamps = {};
 
+  // Query result cache (by query key)
+  final Map<String, List<GamesRecord>> _queryResultCache = {};
+
+  // Query cache timestamps for TTL tracking
+  final Map<String, DateTime> _queryResultCacheTimestamps = {};
+
   // StreamRequestManagers for game streams
   final Map<String, StreamRequestManager<List<GamesRecord>>>
       _gameStreamManagers = {};
@@ -54,6 +60,13 @@ class GameProvider extends ChangeNotifier {
   /// Check if game cache is valid (within TTL)
   bool isGameCacheValid(String gameId) {
     final timestamp = _gameCacheTimestamps[gameId];
+    if (timestamp == null) return false;
+    return DateTime.now().difference(timestamp) < _cacheTTL;
+  }
+
+  /// Check if query result cache is valid (within TTL)
+  bool isQueryCacheValid(String queryKey) {
+    final timestamp = _queryResultCacheTimestamps[queryKey];
     if (timestamp == null) return false;
     return DateTime.now().difference(timestamp) < _cacheTTL;
   }
@@ -135,7 +148,12 @@ class GameProvider extends ChangeNotifier {
         styleFilter: styleFilter,
         dateFilter: dateFilter,
       ),
-    );
+    ).map((games) {
+      // Cache query results when they come through the stream
+      _queryResultCache[queryKey] = games;
+      _queryResultCacheTimestamps[queryKey] = DateTime.now();
+      return games;
+    });
   }
 
   /// Stream user's joined games (cached with StreamRequestManager)
@@ -155,7 +173,43 @@ class GameProvider extends ChangeNotifier {
       uniqueQueryKey: queryKey,
       overrideCache: overrideCache,
       requestFn: () => GameService.queryUserGames(userId),
-    );
+    ).map((games) {
+      // Cache query results when they come through the stream
+      _queryResultCache[queryKey] = games;
+      _queryResultCacheTimestamps[queryKey] = DateTime.now();
+      return games;
+    });
+  }
+
+  /// Get cached available games list if available (no fetch)
+  List<GamesRecord>? getCachedAvailableGames({
+    String? courseFilter,
+    String? styleFilter,
+    DateTime? dateFilter,
+  }) {
+    final queryKey =
+        'available_${courseFilter ?? ''}_${styleFilter ?? ''}_${dateFilter?.toIso8601String() ?? ''}';
+
+    // Check query result cache first
+    if (isQueryCacheValid(queryKey)) {
+      return _queryResultCache[queryKey];
+    }
+
+    // Fall back to BehaviorSubject cache
+    return _gameStreamManagers[queryKey]?.getLastValue(queryKey);
+  }
+
+  /// Get cached user games list if available (no fetch)
+  List<GamesRecord>? getCachedUserGames(String userId) {
+    final queryKey = 'user_games_$userId';
+
+    // Check query result cache first
+    if (isQueryCacheValid(queryKey)) {
+      return _queryResultCache[queryKey];
+    }
+
+    // Fall back to BehaviorSubject cache
+    return _gameStreamManagers[queryKey]?.getLastValue(queryKey);
   }
 
   // ========================================
@@ -297,12 +351,14 @@ class GameProvider extends ChangeNotifier {
   void invalidateUserGamesCache(String userId) {
     final queryKey = 'user_games_$userId';
     _gameStreamManagers[queryKey]?.clear();
+    _queryResultCache.remove(queryKey);
+    _queryResultCacheTimestamps.remove(queryKey);
     _scheduleNotify();
   }
 
   /// Invalidate available games cache (when filters change)
   void invalidateAvailableGamesCache() {
-    // Clear all available_* stream managers
+    // Clear all available_* stream managers and query caches
     _gameStreamManagers.removeWhere((key, value) {
       if (key.startsWith('available_')) {
         value.clear();
@@ -310,6 +366,8 @@ class GameProvider extends ChangeNotifier {
       }
       return false;
     });
+    _queryResultCache.removeWhere((key, value) => key.startsWith('available_'));
+    _queryResultCacheTimestamps.removeWhere((key, value) => key.startsWith('available_'));
     _scheduleNotify();
   }
 
@@ -317,6 +375,8 @@ class GameProvider extends ChangeNotifier {
   void invalidateAllGameCache() {
     _gameCache.clear();
     _gameCacheTimestamps.clear();
+    _queryResultCache.clear();
+    _queryResultCacheTimestamps.clear();
     for (final manager in _gameStreamManagers.values) {
       manager.clear();
     }

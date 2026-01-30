@@ -13,6 +13,7 @@ import '/models/chat_message.dart';
 import '/providers/chat_provider.dart';
 import '/providers/profile_provider.dart';
 import '/core/app_theme.dart';
+import '/core/motion/motion_helpers.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
@@ -168,7 +169,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   }
 
   void _showImageFullscreen(String imageUrl) {
-    showDialog(
+    showAppDialog(
       context: context,
       barrierColor: Colors.black87,
       builder: (BuildContext context) {
@@ -261,7 +262,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
 
     final quickReactions = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
@@ -681,7 +682,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
 
     // Show loading indicator
     if (!mounted) return;
-    showDialog(
+    showAppDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {

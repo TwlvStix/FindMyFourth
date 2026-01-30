@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'app_router.dart';
+import '/core/motion/motion_tokens.dart';
 
 /// Standard transition configurations for consistent navigation throughout the app.
 ///
@@ -47,10 +48,11 @@ import 'app_router.dart';
 class TransitionStandards {
   /// Modal-like screens transition (create, edit, add players).
   ///
-  /// Bottom-to-top slide creates sense of new content layer appearing over current context.
+  /// UPDATED: Fade transition with optional micro-scale creates premium feel.
   /// Use for any screen where user is creating or editing content.
   ///
-  /// **Duration**: 220ms (slightly faster than Material's 300ms for modern feel)
+  /// **Duration**: 200ms enter, 170ms exit (snappier than previous 220ms)
+  /// **Scale**: 0.985→1.0 on push only
   ///
   /// **Examples**:
   /// ```dart
@@ -65,16 +67,19 @@ class TransitionStandards {
   /// ```
   static const modalTransition = TransitionInfo(
     hasTransition: true,
-    transitionType: PageTransitionType.bottomToTop,
-    duration: Duration(milliseconds: 220),
+    transitionType: PageTransitionType.fade,
+    enterDuration: MotionTokens.routeEnter,
+    exitDuration: MotionTokens.routeExit,
+    scaleOnPush: true,
   );
 
   /// Detail view transition (game details, chat details, profile views).
   ///
-  /// Bottom-to-top slide indicates drilling deeper into existing content.
+  /// UPDATED: Fade transition with optional micro-scale creates premium feel.
   /// Use when expanding from a list item into its full details.
   ///
-  /// **Duration**: 220ms (consistent with modal for unified feel)
+  /// **Duration**: 200ms enter, 170ms exit (snappier than previous 220ms)
+  /// **Scale**: 0.985→1.0 on push only
   ///
   /// **Examples**:
   /// ```dart
@@ -89,16 +94,19 @@ class TransitionStandards {
   /// ```
   static const detailTransition = TransitionInfo(
     hasTransition: true,
-    transitionType: PageTransitionType.bottomToTop,
-    duration: Duration(milliseconds: 220),
+    transitionType: PageTransitionType.fade,
+    enterDuration: MotionTokens.routeEnter,
+    exitDuration: MotionTokens.routeExit,
+    scaleOnPush: true,
   );
 
   /// Success/dismissal screen transition.
   ///
-  /// Top-to-bottom slide creates sense of temporary overlay that will dismiss.
+  /// UPDATED: Fade transition without scale creates clean dismissal feel.
   /// Use for confirmation screens, success messages, or temporary feedback.
   ///
-  /// **Duration**: 220ms (same as modal/detail for consistency)
+  /// **Duration**: 200ms enter, 170ms exit
+  /// **Scale**: None (dismissals should not have depth)
   ///
   /// **Examples**:
   /// ```dart
@@ -110,8 +118,10 @@ class TransitionStandards {
   /// ```
   static const dismissalTransition = TransitionInfo(
     hasTransition: true,
-    transitionType: PageTransitionType.topToBottom,
-    duration: Duration(milliseconds: 220),
+    transitionType: PageTransitionType.fade,
+    enterDuration: MotionTokens.routeEnter,
+    exitDuration: MotionTokens.routeExit,
+    scaleOnPush: false,
   );
 
   /// Tab-level navigation transition within bottom nav.
@@ -119,7 +129,8 @@ class TransitionStandards {
   /// Fade transition creates sense of lateral movement at same depth level.
   /// Use for switching between tabs or sibling screens at same hierarchy level.
   ///
-  /// **Duration**: 200ms (slightly faster for immediate feel of tab switching)
+  /// **Duration**: 200ms enter, 170ms exit
+  /// **Scale**: None (lateral movement should not have depth)
   ///
   /// **Examples**:
   /// ```dart
@@ -132,7 +143,9 @@ class TransitionStandards {
   static const tabTransition = TransitionInfo(
     hasTransition: true,
     transitionType: PageTransitionType.fade,
-    duration: Duration(milliseconds: 200),
+    enterDuration: MotionTokens.routeEnter,
+    exitDuration: MotionTokens.routeExit,
+    scaleOnPush: false,
   );
 
   /// No transition (instant navigation).

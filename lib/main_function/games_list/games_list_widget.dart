@@ -16,6 +16,7 @@ import '/models/game.dart';
 import '/providers/game_provider.dart';
 import '/backend/backend.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
+import '/auth/firebase_auth/auth_util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -45,6 +46,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   final Map<DocumentReference, CancelledGameHandling>
       _cancelledGameHandlingByGame = {};
   late final Stream<List<Game>> _gamesStream;
+  List<Game>? _cachedGames;
   GameListFilters _filters = GameListFilters();
   Set<String> _availableGameTypes = {};
   bool _showLockedGames = false;
@@ -60,15 +62,34 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   @override
   void initState() {
     super.initState();
-    final gameProvider = context.read<GameProvider>();
-    _gamesStream = gameProvider
-        .availableGamesStream()
-        .map((records) => records.map((record) => Game.fromRecord(record)).toList());
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Initialize streams and cache on first call (safe to access context here)
+    if (_cachedGames == null) {
+      final gameProvider = context.read<GameProvider>();
+
+      // Retrieve cached data (no filters initially)
+      final cachedRecords = gameProvider.getCachedAvailableGames();
+      if (cachedRecords != null) {
+        _cachedGames = cachedRecords
+            .map((record) => Game.fromRecord(record))
+            .toList();
+      }
+
+      _gamesStream = gameProvider
+          .availableGamesStream()
+          .map((records) => records.map((record) => Game.fromRecord(record)).toList());
+    }
   }
 
   @override
@@ -410,7 +431,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
               ),
               child: AppStreamBuilder<List<Game>>(
                 stream: _gamesStream,
-                initialData: const <Game>[],
+                initialData: _cachedGames ?? const <Game>[],
                 onRetry: () => setState(() {}),
                 builder: (context, gamesList) {
                   debugPrint('📋 GAME LIST: StreamBuilder triggered');

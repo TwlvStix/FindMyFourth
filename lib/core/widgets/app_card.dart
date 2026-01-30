@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '/core/motion/motion_tokens.dart';
+import '/core/motion/reduced_motion.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/spacing.dart';
 import '../design_tokens/typography.dart';
@@ -125,7 +127,7 @@ class _AppCardState extends State<AppCard>
   void initState() {
     super.initState();
     _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 100),
+      duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
       vsync: this,
     );
     _scaleAnimation = Tween<double>(
@@ -134,7 +136,7 @@ class _AppCardState extends State<AppCard>
     ).animate(
       CurvedAnimation(
         parent: _scaleController,
-        curve: Curves.easeInOut,
+        curve: MotionTokens.curveEnter,
       ),
     );
   }

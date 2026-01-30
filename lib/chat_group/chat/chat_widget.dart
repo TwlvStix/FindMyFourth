@@ -30,6 +30,25 @@ class ChatWidget extends StatefulWidget {
 
 class _ChatWidgetState extends State<ChatWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  List<Chat>? _cachedChats;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Retrieve cached chat list (safe to access context here)
+    if (_cachedChats == null) {
+      final currentUserId = _currentUserId();
+      if (currentUserId != null) {
+        _cachedChats = context.read<ChatProvider>().getCachedChatList(currentUserId);
+      }
+    }
+  }
 
   String? _currentUserId() {
     return FirebaseAuth.instance.currentUser?.uid;
@@ -196,6 +215,7 @@ class _ChatWidgetState extends State<ChatWidget> {
       stream: context.read<ChatProvider>().chatListStream(
             uid: currentUserId,
           ),
+      initialData: _cachedChats,
       builder: (context, snapshot) {
         debugPrint('💬 ChatList: StreamBuilder called');
         debugPrint('💬 ChatList: connectionState = ${snapshot.connectionState}');

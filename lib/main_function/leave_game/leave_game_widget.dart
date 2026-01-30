@@ -199,11 +199,12 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                                 SuccessPageWidget.routeName,
                                 extra: <String, dynamic>{
                                   kTransitionInfoKey: TransitionInfo(
-                                    hasTransition: true,
-                                    transitionType:
-                                        PageTransitionType.bottomToTop,
-                                    duration: Duration(milliseconds: 220),
-                                  ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: true,
+                ),
                                 },
                               );
                             },

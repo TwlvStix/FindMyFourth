@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '/core/motion/motion_tokens.dart';
+import '/core/motion/reduced_motion.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/spacing.dart';
@@ -66,10 +68,10 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
 
     _scaleController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 120),
+      duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
     );
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.easeOut),
+      CurvedAnimation(parent: _scaleController, curve: MotionTokens.curveEnter),
     );
 
     // Calculate vibe match if both profiles exist

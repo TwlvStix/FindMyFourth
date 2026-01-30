@@ -34,15 +34,28 @@ class GamesJoinedWidget extends StatefulWidget {
 
 class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  List<GamesRecord>? _cachedGames;
 
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Retrieve cached user games (safe to access context here)
+    if (_cachedGames == null && currentUserUid.isNotEmpty) {
+      final gameProvider = context.read<GameProvider>();
+      _cachedGames = gameProvider.getCachedUserGames(currentUserUid);
+    }
   }
 
   @override
@@ -84,7 +97,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
               ),
               child: AppStreamBuilder<List<GamesRecord>>(
               stream: context.read<GameProvider>().userGamesStream(currentUserUid),
-              initialData: const <GamesRecord>[],
+              initialData: _cachedGames ?? const <GamesRecord>[],
               onRetry: () => setState(() {}),
               builder: (context, listViewGamesRecordList) {
                 final visibleGames = listViewGamesRecordList.where((game) {
@@ -222,10 +235,12 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
           extra: <String, dynamic>{
             'gameRef': game.reference,
             kTransitionInfoKey: TransitionInfo(
-              hasTransition: true,
-              transitionType: PageTransitionType.bottomToTop,
-              duration: Duration(milliseconds: 220),
-            ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: true,
+                ),
           },
         );
       },

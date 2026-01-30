@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '/core/motion/motion_tokens.dart';
+import '/core/motion/reduced_motion.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
@@ -74,7 +76,7 @@ class ToggleSwitch extends StatelessWidget {
               onChanged(!value);
             },
             child: AnimatedContainer(
-              duration: Duration(milliseconds: 200),
+              duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
               width: 56,
               height: 32,
               decoration: BoxDecoration(
@@ -87,7 +89,7 @@ class ToggleSwitch extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: AnimatedAlign(
-                duration: Duration(milliseconds: 200),
+                duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
                 alignment:
                     value ? Alignment.centerRight : Alignment.centerLeft,
                 child: Container(

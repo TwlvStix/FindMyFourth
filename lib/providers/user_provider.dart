@@ -46,6 +46,16 @@ class UserProvider extends ChangeNotifier {
   final _friendRequestsManager = StreamRequestManager<List<UsersRecord>>(5);
   final _coursesManager = FutureRequestManager<List<CourseRecord>>(10);
 
+  // Individual user document cache
+  final Map<String, UsersRecord> _userCache = {};
+  final Map<String, StreamRequestManager<UsersRecord?>> _userStreamManagers = {};
+
+  // User query caching (for candidate users, recently joined, etc.)
+  final Map<String, StreamRequestManager<List<UsersRecord>>> _userQueryManagers = {};
+  final Map<String, List<UsersRecord>> _userQueryCache = {};
+  final Map<String, DateTime> _userQueryCacheTimestamps = {};
+  final Duration _userQueryCacheTTL = const Duration(minutes: 5);
+
   /// Initialize the provider by listening to auth changes
   void _init() {
     _userSubscription = authenticatedUserStream.listen(
@@ -159,6 +169,138 @@ class UserProvider extends ChangeNotifier {
   /// Check if user has pending friend request from someone
   bool hasFriendRequest(DocumentReference userRef) {
     return friendRequests.contains(userRef);
+  }
+
+  // ========================================
+  // USER DOCUMENT QUERIES (CACHED)
+  // ========================================
+
+  /// Get cached user by ID
+  UsersRecord? getCachedUser(String userId) {
+    // Check map cache first
+    if (_userCache.containsKey(userId)) {
+      return _userCache[userId];
+    }
+
+    // Fall back to BehaviorSubject cache
+    final streamManager = _userStreamManagers[userId];
+    if (streamManager != null) {
+      return streamManager.getLastValue(userId);
+    }
+
+    return null;
+  }
+
+  /// Watch a user document with caching
+  Stream<UsersRecord?> watchUser(DocumentReference userRef) {
+    final userId = userRef.id;
+
+    // Get or create StreamRequestManager for this user
+    if (!_userStreamManagers.containsKey(userId)) {
+      _userStreamManagers[userId] = StreamRequestManager<UsersRecord?>(10);
+    }
+
+    return _userStreamManagers[userId]!.performRequest(
+      uniqueQueryKey: userId,
+      requestFn: () => UsersRecord.getDocument(userRef),
+    ).map((user) {
+      if (user != null) {
+        // Cache the user when it comes through the stream
+        _userCache[userId] = user;
+      }
+      return user;
+    });
+  }
+
+  // ========================================
+  // USER QUERIES (CACHED)
+  // ========================================
+
+  /// Query candidate users for VIBE matching (cached)
+  Stream<List<UsersRecord>> queryCandidateUsers({
+    int limit = 60,
+    bool overrideCache = false,
+  }) {
+    final queryKey = 'candidate_users_$limit';
+
+    // Get or create StreamRequestManager
+    if (!_userQueryManagers.containsKey(queryKey)) {
+      _userQueryManagers[queryKey] = StreamRequestManager<List<UsersRecord>>(5);
+    }
+
+    return _userQueryManagers[queryKey]!.performRequest(
+      uniqueQueryKey: queryKey,
+      overrideCache: overrideCache,
+      requestFn: () => queryUsersRecord(
+        queryBuilder: (users) => users.limit(limit),
+      ),
+    ).map((users) {
+      // Cache query results
+      _userQueryCache[queryKey] = users;
+      _userQueryCacheTimestamps[queryKey] = DateTime.now();
+      return users;
+    });
+  }
+
+  /// Query recently joined users (cached)
+  Stream<List<UsersRecord>> queryRecentlyJoinedUsers({
+    int limit = 20,
+    bool overrideCache = false,
+  }) {
+    final queryKey = 'recently_joined_$limit';
+
+    // Get or create StreamRequestManager
+    if (!_userQueryManagers.containsKey(queryKey)) {
+      _userQueryManagers[queryKey] = StreamRequestManager<List<UsersRecord>>(5);
+    }
+
+    return _userQueryManagers[queryKey]!.performRequest(
+      uniqueQueryKey: queryKey,
+      overrideCache: overrideCache,
+      requestFn: () => queryUsersRecord(
+        queryBuilder: (users) => users
+            .orderBy('created_time', descending: true)
+            .limit(limit),
+      ),
+    ).map((users) {
+      // Cache query results
+      _userQueryCache[queryKey] = users;
+      _userQueryCacheTimestamps[queryKey] = DateTime.now();
+      return users;
+    });
+  }
+
+  /// Check if user query cache is valid (within TTL)
+  bool isUserQueryCacheValid(String queryKey) {
+    final timestamp = _userQueryCacheTimestamps[queryKey];
+    if (timestamp == null) return false;
+    return DateTime.now().difference(timestamp) < _userQueryCacheTTL;
+  }
+
+  /// Get cached candidate users if available (no fetch)
+  List<UsersRecord>? getCachedCandidateUsers({int limit = 60}) {
+    final queryKey = 'candidate_users_$limit';
+
+    // Check query result cache first
+    if (isUserQueryCacheValid(queryKey)) {
+      return _userQueryCache[queryKey];
+    }
+
+    // Fall back to BehaviorSubject cache
+    return _userQueryManagers[queryKey]?.getLastValue(queryKey);
+  }
+
+  /// Get cached recently joined users if available (no fetch)
+  List<UsersRecord>? getCachedRecentlyJoinedUsers({int limit = 20}) {
+    final queryKey = 'recently_joined_$limit';
+
+    // Check query result cache first
+    if (isUserQueryCacheValid(queryKey)) {
+      return _userQueryCache[queryKey];
+    }
+
+    // Fall back to BehaviorSubject cache
+    return _userQueryManagers[queryKey]?.getLastValue(queryKey);
   }
 
   // ========================================
@@ -578,6 +720,21 @@ class UserProvider extends ChangeNotifier {
     _friendsManager.clear();
     _friendRequestsManager.clear();
     _coursesManager.clear();
+
+    // Clear user caches
+    _userCache.clear();
+    for (final manager in _userStreamManagers.values) {
+      manager.clear();
+    }
+    _userStreamManagers.clear();
+
+    // Clear user query caches
+    _userQueryCache.clear();
+    _userQueryCacheTimestamps.clear();
+    for (final manager in _userQueryManagers.values) {
+      manager.clear();
+    }
+    _userQueryManagers.clear();
   }
 
   /// Clear game-related caches

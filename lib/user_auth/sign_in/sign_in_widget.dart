@@ -409,11 +409,12 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       fallbackRouteName: GamesListWidget.routeName,
                                       fallbackExtra: <String, dynamic>{
                                         kTransitionInfoKey: TransitionInfo(
-                                          hasTransition: true,
-                                          transitionType:
-                                              PageTransitionType.bottomToTop,
-                                          duration: Duration(milliseconds: 220),
-                                        ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: true,
+                ),
                                       },
                                       replaceRoute: true,
                                     );
@@ -522,11 +523,12 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       fallbackRouteName: GamesListWidget.routeName,
                                       fallbackExtra: <String, dynamic>{
                                         kTransitionInfoKey: TransitionInfo(
-                                          hasTransition: true,
-                                          transitionType:
-                                              PageTransitionType.bottomToTop,
-                                          duration: Duration(milliseconds: 220),
-                                        ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: true,
+                ),
                                       },
                                       replaceRoute: true,
                                     );
@@ -570,10 +572,12 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                   TransitionInfo(
                                                 hasTransition: true,
                                                 transitionType:
-                                                    PageTransitionType
-                                                        .bottomToTop,
-                                                duration:
-                                                    Duration(milliseconds: 220),
+                                                    PageTransitionType.fade,
+                                                enterDuration:
+                                                    Duration(milliseconds: 200),
+                                                exitDuration:
+                                                    Duration(milliseconds: 170),
+                                                scaleOnPush: true,
                                               ),
                                             },
                                             replaceRoute: true,
@@ -603,12 +607,12 @@ class _SignInWidgetState extends State<SignInWidget> {
                                         SignUpAccountWidget.routeName,
                                         extra: <String, dynamic>{
                                           kTransitionInfoKey: TransitionInfo(
-                                            hasTransition: true,
-                                            transitionType:
-                                                PageTransitionType.bottomToTop,
-                                            duration:
-                                                Duration(milliseconds: 220),
-                                          ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: true,
+                ),
                                         },
                                       );
                                     },
@@ -695,12 +699,12 @@ class _SignInWidgetState extends State<SignInWidget> {
                                         RecoverPasswordWidget.routeName,
                                         extra: <String, dynamic>{
                                           kTransitionInfoKey: TransitionInfo(
-                                            hasTransition: true,
-                                            transitionType:
-                                                PageTransitionType.bottomToTop,
-                                            duration:
-                                                Duration(milliseconds: 220),
-                                          ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: true,
+                ),
                                         },
                                       );
                                     },

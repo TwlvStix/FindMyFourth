@@ -8,6 +8,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
+import '/core/motion/motion_helpers.dart';
 import '/utils/app_util.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/notifications/notification_page/notification_page_widget.dart';
@@ -37,7 +38,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   late AnimationController _ringController;
 
   Future<void> _openChangePhotoSheet() async {
-    await showModalBottomSheet(
+    await showAppBottomSheet(
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       enableDrag: false,
@@ -605,10 +606,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 EditVibesWidget.routeName,
                 extra: <String, dynamic>{
                   kTransitionInfoKey: TransitionInfo(
-                    hasTransition: true,
-                    transitionType: PageTransitionType.fade,
-                    duration: Duration(milliseconds: 200),
-                  ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: false,
+                ),
                 },
               );
             },
@@ -699,10 +702,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   EditProfileWidget.routeName,
                   extra: <String, dynamic>{
                     kTransitionInfoKey: TransitionInfo(
-                      hasTransition: true,
-                      transitionType: PageTransitionType.fade,
-                      duration: Duration(milliseconds: 200),
-                    ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: false,
+                ),
                   },
                 );
               },
@@ -721,10 +726,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   EditVibesWidget.routeName,
                   extra: <String, dynamic>{
                     kTransitionInfoKey: TransitionInfo(
-                      hasTransition: true,
-                      transitionType: PageTransitionType.fade,
-                      duration: Duration(milliseconds: 200),
-                    ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: false,
+                ),
                   },
                 );
               },
@@ -743,10 +750,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   TabFriendsWidget.routeName,
                   extra: <String, dynamic>{
                     kTransitionInfoKey: TransitionInfo(
-                      hasTransition: true,
-                      transitionType: PageTransitionType.bottomToTop,
-                      duration: Duration(milliseconds: 220),
-                    ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: true,
+                ),
                   },
                 );
               },
@@ -956,10 +965,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       NotificationPageWidget.routeName,
                       extra: <String, dynamic>{
                         kTransitionInfoKey: TransitionInfo(
-                          hasTransition: true,
-                          transitionType: PageTransitionType.bottomToTop,
-                          duration: Duration(milliseconds: 220),
-                        ),
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  enterDuration: Duration(milliseconds: 200),
+                  exitDuration: Duration(milliseconds: 170),
+                  scaleOnPush: true,
+                ),
                       },
                     );
                   },

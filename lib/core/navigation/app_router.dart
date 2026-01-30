@@ -8,6 +8,8 @@ import '/backend/push_notifications/push_notifications_handler.dart'
     show PushNotificationsHandler;
 import '/main.dart';
 import '/core/app_theme.dart';
+import '/core/motion/motion_tokens.dart';
+import '/core/motion/reduced_motion.dart';
 import '/utils/app_util.dart';
 import '/utils/serialization_util.dart';
 
@@ -604,27 +606,56 @@ Page<dynamic> _buildPageWithTransition(
       : PushNotificationsHandler(child: page);
 
   final transitionInfo = _transitionInfo(state);
-  return transitionInfo.hasTransition
-      ? CustomTransitionPage(
-          key: state.pageKey,
-          child: child,
-          transitionDuration: transitionInfo.duration,
-          transitionsBuilder:
-              (context, animation, secondaryAnimation, child) =>
-                  PageTransition(
-            type: transitionInfo.transitionType,
-            duration: transitionInfo.duration,
-            reverseDuration: transitionInfo.duration,
-            alignment: transitionInfo.alignment,
-            child: child,
-          ).buildTransitions(
-            context,
-            animation,
-            secondaryAnimation,
-            child,
-          ),
-        )
-      : MaterialPage(key: state.pageKey, child: child);
+
+  if (!transitionInfo.hasTransition) {
+    return MaterialPage(key: state.pageKey, child: child);
+  }
+
+  return CustomTransitionPage(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: transitionInfo.getEnterDuration(),
+    reverseTransitionDuration: transitionInfo.getExitDuration(),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final isReverse = animation.status == AnimationStatus.reverse;
+
+      Widget result = child;
+
+      // Apply micro-scale on push only (if enabled and not in reduced motion mode)
+      if (transitionInfo.scaleOnPush &&
+          !isReverse &&
+          ReducedMotionService.shouldScale) {
+        final scaleAnimation = Tween<double>(
+          begin: MotionTokens.pageScaleStart,
+          end: MotionTokens.pageScaleEnd,
+        ).animate(CurvedAnimation(
+          parent: animation,
+          curve: MotionTokens.curveEnter,
+        ));
+
+        result = ScaleTransition(
+          scale: scaleAnimation,
+          child: result,
+        );
+      }
+
+      // Apply page transition (fade/slide from page_transition package)
+      final pageTransition = PageTransition(
+        type: transitionInfo.transitionType,
+        duration: transitionInfo.getEnterDuration(),
+        reverseDuration: transitionInfo.getExitDuration(),
+        alignment: transitionInfo.alignment,
+        child: result,
+      );
+
+      return pageTransition.buildTransitions(
+        context,
+        animation,
+        secondaryAnimation,
+        result,
+      );
+    },
+  );
 }
 
 Map<String, dynamic> _allParams(GoRouterState state) {
@@ -681,14 +712,37 @@ class TransitionInfo {
   const TransitionInfo({
     required this.hasTransition,
     this.transitionType = PageTransitionType.fade,
-    this.duration = const Duration(milliseconds: 300),
+    this.enterDuration,
+    this.exitDuration,
+    this.scaleOnPush = false,
     this.alignment,
   });
 
   final bool hasTransition;
   final PageTransitionType transitionType;
-  final Duration duration;
+  final Duration? enterDuration;
+  final Duration? exitDuration;
+  final bool scaleOnPush;
   final Alignment? alignment;
+
+  /// Backward compatibility getter for old duration field
+  /// Returns enterDuration if set, otherwise default 300ms
+  Duration get duration => enterDuration ?? const Duration(milliseconds: 300);
+
+  /// Get effective enter duration with reduced motion applied
+  Duration getEnterDuration() {
+    // Import will be added at top of file
+    return ReducedMotionService.adjust(
+      enterDuration ?? const Duration(milliseconds: 300),
+    );
+  }
+
+  /// Get effective exit duration with reduced motion applied
+  Duration getExitDuration() {
+    return ReducedMotionService.adjust(
+      exitDuration ?? enterDuration ?? const Duration(milliseconds: 300),
+    );
+  }
 
   /// Default transition (no transition).
   ///

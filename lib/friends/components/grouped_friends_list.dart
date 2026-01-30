@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:provider/provider.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/friends/components/premium_friend_card.dart';
 import '/friends/components/friend_section_header.dart';
 import '/friends/components/swipeable_friend_card.dart';
+import '/providers/user_provider.dart';
 
 /// Grouped friends list that organizes friends into sections
 class GroupedFriendsList extends StatefulWidget {
@@ -41,8 +43,17 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
 
   @override
   Widget build(BuildContext context) {
+    // Get cached friends for initialData
+    final userProvider = context.read<UserProvider>();
+    final cachedFriends = widget.friendRefs
+        .map((ref) => userProvider.getCachedUser(ref.id))
+        .where((user) => user != null)
+        .cast<UsersRecord>()
+        .toList();
+
     return StreamBuilder<List<UsersRecord>>(
-      stream: _getFriendsStream(),
+      stream: _getFriendsStream(context),
+      initialData: cachedFriends.isEmpty ? null : cachedFriends,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(
@@ -163,14 +174,16 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
     );
   }
 
-  Stream<List<UsersRecord>> _getFriendsStream() {
+  Stream<List<UsersRecord>> _getFriendsStream(BuildContext context) {
     if (widget.friendRefs.isEmpty) {
       return Stream.value([]);
     }
 
-    // Create streams for each friend reference
+    final userProvider = context.read<UserProvider>();
+
+    // Create streams for each friend reference using cached watchUser
     final streams =
-        widget.friendRefs.map((ref) => UsersRecord.getDocument(ref)).toList();
+        widget.friendRefs.map((ref) => userProvider.watchUser(ref).where((user) => user != null).cast<UsersRecord>()).toList();
 
     // Combine all streams
     return _combineStreams(streams);
