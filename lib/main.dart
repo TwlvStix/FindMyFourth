@@ -18,6 +18,7 @@ import '/providers/user_provider.dart';
 import '/providers/chat_provider.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
+import '/providers/notification_provider.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:find_my_fourth/friends/tab_friends/tab_friends_widget.dart';
 import '/main_function/community/community_widget.dart';
@@ -44,6 +45,7 @@ void main() async {
         ChangeNotifierProvider<ChatProvider>(create: (_) => ChatProvider()),
         ChangeNotifierProvider<GameProvider>(create: (_) => GameProvider()),
         ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider<NotificationProvider>(create: (_) => NotificationProvider()),
       ],
       child: MyApp(),
     ),

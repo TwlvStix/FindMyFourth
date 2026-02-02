@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
@@ -12,6 +13,7 @@ import '/core/widgets/app_choice_chips.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/fairway_background.dart';
 import '/models/notification_preferences.dart';
+import '/providers/notification_provider.dart';
 import '/services/notification_permission_service.dart';
 import '/utils/app_util.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +35,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   final NotificationPermissionService _notificationPermissionService =
       NotificationPermissionService();
 
-  NotificationPreferences _prefs = NotificationPreferences.defaults();
+  NotificationPreferences? _prefs; // Working copy for form
   bool _permissionDenied = false;
   bool _initialized = false;
   FormFieldController<List<String>>? _gameStyleController;
@@ -73,68 +75,49 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
     return false;
   }
 
-  void _ensureControllers() {
+  void _ensureControllers(NotificationPreferences prefs) {
     _gameStyleController ??= FormFieldController<List<String>>(
       _labelsForValues(
         _gameStyleOptions,
-        _prefs.gameAlerts.styles,
+        prefs.gameAlerts.styles,
       ),
     );
     _digestController ??= FormFieldController<List<String>>([
-      _labelForValue(_digestOptions, _prefs.digestMode),
+      _labelForValue(_digestOptions, prefs.digestMode),
     ]);
   }
 
-  Future<void> _savePreferences() async {
-    if (currentUserReference == null) {
+  Future<void> _savePreferences(NotificationProvider provider) async {
+    if (currentUserReference == null || _prefs == null) {
       return;
     }
-    final data = <String, dynamic>{
-      'notification_prefs': _prefs.toFirestore(),
-    };
-    data.addAll(_legacyNotificationFields(_prefs));
-    try {
-      await currentUserReference!.set(
-        data,
-        SetOptions(merge: true),
-      );
-      if (mounted) {
-        context.pop();
-      }
-    } on FirebaseException catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Unable to save notification settings (${error.code}).',
-            ),
-          ),
-        );
-      }
-    }
-  }
 
-  Map<String, dynamic> _legacyNotificationFields(
-    NotificationPreferences prefs,
-  ) {
-    final pushEnabled = prefs.pushEnabled;
-    final gameEnabled = pushEnabled && prefs.gameAlerts.enabled;
-    final styles = prefs.gameAlerts.styles.toSet();
-    return {
-      'notify_off': !pushEnabled,
-      'notify_all': pushEnabled,
-      'notify_money_game': gameEnabled && styles.contains('money'),
-      'notify_vegas_game': gameEnabled && styles.contains('vegas'),
-      'notify_competitive_game': gameEnabled && styles.contains('competitive'),
-      'notify_for_fun': gameEnabled && styles.contains('for_fun'),
-      'notify_only_from_friends': gameEnabled && styles.contains('friends'),
-      'notify_member_discount': gameEnabled && styles.contains('member_discount'),
-    };
+    // Save the local working copy to the provider
+    await provider.updatePreferences(_prefs!);
+
+    // Only pop if successfully synced (not offline)
+    if (mounted && provider.syncStatus != SyncStatus.offline) {
+      context.pop();
+    } else if (mounted && provider.syncStatus == SyncStatus.offline) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Changes saved offline. Will sync when connected.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    } else if (mounted && provider.syncStatus == SyncStatus.error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error saving: ${provider.errorMessage ?? "Unknown error"}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Future<void> _pickTime({required bool isStart}) async {
     final initialValue =
-        isStart ? _prefs.quietHours.start : _prefs.quietHours.end;
+        isStart ? _prefs!.quietHours.start : _prefs!.quietHours.end;
     final initialTime = _parseTime(initialValue) ?? TimeOfDay(hour: 22, minute: 0);
     final picked = await showTimePicker(
       context: context,
@@ -145,10 +128,10 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
     }
     final formatted = _formatTime(picked);
     setState(() {
-      _prefs = _prefs.copyWith(
-        quietHours: _prefs.quietHours.copyWith(
-          start: isStart ? formatted : _prefs.quietHours.start,
-          end: isStart ? _prefs.quietHours.end : formatted,
+      _prefs = _prefs!.copyWith(
+        quietHours: _prefs!.quietHours.copyWith(
+          start: isStart ? formatted : _prefs!.quietHours.start,
+          end: isStart ? _prefs!.quietHours.end : formatted,
         ),
       );
     });
@@ -321,46 +304,84 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
     );
   }
 
+  Widget _buildSyncStatus(SyncStatus status) {
+    switch (status) {
+      case SyncStatus.saving:
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+        );
+      case SyncStatus.synced:
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Icon(Icons.cloud_done, color: Colors.green, size: 24),
+        );
+      case SyncStatus.offline:
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Icon(Icons.cloud_off, color: Colors.orange, size: 24),
+        );
+      case SyncStatus.error:
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Icon(Icons.error, color: Colors.red, size: 24),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: scaffoldKey,
-      extendBodyBehindAppBar: true,
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        automaticallyImplyLeading: false,
-        elevation: 0.0,
-        leading: GestureDetector(
-          onTap: () async {
-            context.pop();
-          },
-          child: Container(
-            margin: EdgeInsets.only(left: AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: AppColors.fairway.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(12.0),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
+    return Consumer<NotificationProvider>(
+      builder: (context, notificationProvider, _) {
+        return Scaffold(
+          key: scaffoldKey,
+          extendBodyBehindAppBar: true,
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            automaticallyImplyLeading: false,
+            elevation: 0.0,
+            leading: GestureDetector(
+              onTap: () async {
+                context.pop();
+              },
+              child: Container(
+                margin: EdgeInsets.only(left: AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: AppColors.fairway.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(12.0),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
+                ),
+                child: Icon(
+                  Icons.chevron_left_rounded,
+                  color: Colors.white,
+                  size: 28.0,
+                ),
               ),
             ),
-            child: Icon(
-              Icons.chevron_left_rounded,
-              color: Colors.white,
-              size: 28.0,
+            title: Text(
+              'Notification Settings',
+              style: AppTypography.headlineMedium.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
             ),
+            actions: [
+              _buildSyncStatus(notificationProvider.syncStatus),
+            ],
+            centerTitle: false,
           ),
-        ),
-        title: Text(
-          'Notification Settings',
-          style: AppTypography.headlineMedium.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        actions: [],
-        centerTitle: false,
-      ),
       body: FairwayBackgroundDark(
         showOrganic: true,
         showTexture: true,
@@ -376,12 +397,15 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
               final data = snapshot.data!;
               if (!_initialized) {
-                final prefsMap = data.snapshotData['notification_prefs'];
-                _prefs = NotificationPreferences.fromMap(
-                  prefsMap is Map ? Map<String, dynamic>.from(prefsMap) : null,
-                );
-                _ensureControllers();
+                // Initialize from provider (which loads from Firestore)
+                _prefs = notificationProvider.preferences;
+                _ensureControllers(_prefs!);
                 _initialized = true;
+              }
+
+              // Safety check
+              if (_prefs == null) {
+                return const Center(child: CircularProgressIndicator());
               }
 
               return ListView(
@@ -409,7 +433,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                       context,
                       title: 'Push notifications',
                       subtitle: 'Allow alerts for games and chats',
-                      value: _prefs.pushEnabled,
+                      value: _prefs!.pushEnabled,
                       onChanged: (value) async {
                         if (value) {
                           final granted = await _ensureNotificationPermission();
@@ -418,7 +442,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                           }
                         }
                         setState(() {
-                          _prefs = _prefs.copyWith(pushEnabled: value);
+                          _prefs = _prefs!.copyWith(pushEnabled: value);
                           if (!value) {
                             _permissionDenied = false;
                           }
@@ -449,11 +473,11 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                     _buildPremiumRow(
                       context,
                       title: 'Enable game alerts',
-                      value: _prefs.gameAlerts.enabled,
+                      value: _prefs!.gameAlerts.enabled,
                       onChanged: (value) {
                         setState(() {
-                          _prefs = _prefs.copyWith(
-                            gameAlerts: _prefs.gameAlerts.copyWith(enabled: value),
+                          _prefs = _prefs!.copyWith(
+                            gameAlerts: _prefs!.gameAlerts.copyWith(enabled: value),
                           );
                         });
                       },
@@ -484,9 +508,9 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                               final values =
                                   _valuesForLabels(_gameStyleOptions, labels ?? []);
                               setState(() {
-                                _prefs = _prefs.copyWith(
+                                _prefs = _prefs!.copyWith(
                                   gameAlerts:
-                                      _prefs.gameAlerts.copyWith(styles: values),
+                                      _prefs!.gameAlerts.copyWith(styles: values),
                                 );
                               });
                             },
@@ -529,12 +553,12 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                     _buildPremiumRow(
                       context,
                       title: 'Enable chat alerts',
-                      value: _prefs.chatAlerts.enabled,
+                      value: _prefs!.chatAlerts.enabled,
                       onChanged: (value) {
                         setState(() {
-                          _prefs = _prefs.copyWith(
+                          _prefs = _prefs!.copyWith(
                             chatAlerts:
-                                _prefs.chatAlerts.copyWith(enabled: value),
+                                _prefs!.chatAlerts.copyWith(enabled: value),
                           );
                         });
                       },
@@ -547,11 +571,11 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                     _buildPremiumRow(
                       context,
                       title: 'Direct messages',
-                      value: _prefs.chatAlerts.direct,
+                      value: _prefs!.chatAlerts.direct,
                       onChanged: (value) {
                         setState(() {
-                          _prefs = _prefs.copyWith(
-                            chatAlerts: _prefs.chatAlerts.copyWith(direct: value),
+                          _prefs = _prefs!.copyWith(
+                            chatAlerts: _prefs!.chatAlerts.copyWith(direct: value),
                           );
                         });
                       },
@@ -564,11 +588,11 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                     _buildPremiumRow(
                       context,
                       title: 'Group chats',
-                      value: _prefs.chatAlerts.group,
+                      value: _prefs!.chatAlerts.group,
                       onChanged: (value) {
                         setState(() {
-                          _prefs = _prefs.copyWith(
-                            chatAlerts: _prefs.chatAlerts.copyWith(group: value),
+                          _prefs = _prefs!.copyWith(
+                            chatAlerts: _prefs!.chatAlerts.copyWith(group: value),
                           );
                         });
                       },
@@ -585,12 +609,12 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                     _buildPremiumRow(
                       context,
                       title: 'Enable quiet hours',
-                      value: _prefs.quietHours.enabled,
+                      value: _prefs!.quietHours.enabled,
                       onChanged: (value) {
                         setState(() {
-                          _prefs = _prefs.copyWith(
+                          _prefs = _prefs!.copyWith(
                             quietHours:
-                                _prefs.quietHours.copyWith(enabled: value),
+                                _prefs!.quietHours.copyWith(enabled: value),
                           );
                         });
                       },
@@ -603,7 +627,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                     _buildTimeRow(
                       context,
                       label: 'Start',
-                      time: _prefs.quietHours.start,
+                      time: _prefs!.quietHours.start,
                       onTap: () => _pickTime(isStart: true),
                     ),
                     Divider(
@@ -614,7 +638,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                     _buildTimeRow(
                       context,
                       label: 'End',
-                      time: _prefs.quietHours.end,
+                      time: _prefs!.quietHours.end,
                       onTap: () => _pickTime(isStart: false),
                     ),
                   ],
@@ -639,7 +663,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                   : 'Instant';
                           final value = _valueForLabel(_digestOptions, label);
                           setState(() {
-                            _prefs = _prefs.copyWith(digestMode: value);
+                            _prefs = _prefs!.copyWith(digestMode: value);
                           });
                         },
                         controller: _digestController!,
@@ -699,7 +723,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                   ),
                                   SizedBox(height: 2),
                                   Text(
-                                    '${_prefs.mutedThreads.length} muted',
+                                    '${_prefs!.mutedThreads.length} muted',
                                     style: AppTypography.bodySmall.copyWith(
                                       color: Colors.white.withValues(alpha: 0.6),
                                     ),
@@ -723,7 +747,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   text: 'Save settings',
                   variant: AppButtonVariant.primary,
                   size: AppButtonSize.large,
-                  onPressed: _savePreferences,
+                  onPressed: () => _savePreferences(notificationProvider),
                 ),
               ],
             );
@@ -731,6 +755,8 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
         ),
         ),
       ),
+        );
+      },
     );
   }
 }

@@ -114,11 +114,7 @@ function getUserNotificationPrefs(userData) {
   const chatAlerts = prefs.chat_alerts || {};
   const quietHours = prefs.quiet_hours || {};
   const pushEnabled =
-    typeof prefs.push_enabled === "boolean"
-      ? prefs.push_enabled
-      : userData.notify_off === true
-      ? false
-      : userData.notify_all === true;
+    typeof prefs.push_enabled === "boolean" ? prefs.push_enabled : false;
   const gameAlertsEnabled =
     typeof gameAlerts.enabled === "boolean" ? gameAlerts.enabled : true;
   const chatAlertsEnabled =
@@ -127,18 +123,9 @@ function getUserNotificationPrefs(userData) {
     typeof chatAlerts.direct === "boolean" ? chatAlerts.direct : true;
   const chatGroupEnabled =
     typeof chatAlerts.group === "boolean" ? chatAlerts.group : true;
-  let styles = Array.isArray(gameAlerts.styles)
+  const styles = Array.isArray(gameAlerts.styles)
     ? gameAlerts.styles.filter((style) => typeof style === "string")
     : [];
-  if (styles.length === 0) {
-    styles = [];
-    if (userData.notify_money_game) styles.push("money");
-    if (userData.notify_vegas_game) styles.push("vegas");
-    if (userData.notify_competitive_game) styles.push("competitive");
-    if (userData.notify_for_fun) styles.push("for_fun");
-    if (userData.notify_only_from_friends) styles.push("friends");
-    if (userData.notify_member_discount) styles.push("member_discount");
-  }
   const mutedThreads = Array.isArray(prefs.muted_threads)
     ? prefs.muted_threads.filter((threadId) => typeof threadId === "string")
     : [];
