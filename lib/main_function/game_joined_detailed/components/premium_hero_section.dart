@@ -3,7 +3,6 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/models/game.dart';
-import '/utils/app_util.dart';
 
 /// Premium hero section displaying game title, course, date/time with gradient background
 class PremiumHeroSection extends StatelessWidget {

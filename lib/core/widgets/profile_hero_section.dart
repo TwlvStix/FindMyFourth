@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
-import '/core/design_tokens/spacing.dart';
 
 /// Premium profile hero section with animated gradient ring around avatar.
 ///

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '/utils/app_util.dart';
 import '/backend/schema/util/firestore_util.dart';
 
 class FirestorePage<T> {
