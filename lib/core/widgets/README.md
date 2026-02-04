@@ -182,24 +182,6 @@ AppButtonEnhanced(
 
 ---
 
-### 📋 AppButtonExamples
-Showcase of all button variants and states.
-
-**File**: `app_button_examples.dart`
-
-**Usage**:
-```dart
-// Add to your router for testing/reference
-Navigator.push(
-  context,
-  MaterialPageRoute(builder: (context) => AppButtonExamples()),
-);
-```
-
-Shows all variants, sizes, states, and real-world examples.
-
----
-
 ### AppButton (LEGACY)
 Original button component - consider migrating to AppButtonEnhanced.
 
@@ -667,12 +649,9 @@ Column(
 ## Component Checklist
 
 - [x] FairwayBackground - Production ready ✅
-- [x] FairwayBackgroundExamples - Demo/reference ✅
 - [x] BrandedGolfHeader - Production ready ✅
 - [x] AppCard - Production ready ✅
-- [x] AppCardExamples - Demo/reference ✅
 - [x] AppButtonEnhanced - Production ready ✅
-- [x] AppButtonExamples - Demo/reference ✅
 - [x] AppIconButton - Legacy, works
 - [x] AppDropDown - Legacy, works
 - [x] AppChoiceChips - Legacy, works
@@ -682,6 +661,8 @@ Column(
 - [ ] AppLoadingIndicator - To be created
 - [ ] AppEmptyState - To be created
 - [ ] AppErrorState - To be created
+
+**Note**: Example/showcase widgets (AppButtonExamples, AppCardExamples, AppListTileExamples, FairwayBackgroundExamples) have been removed. For usage examples, refer to the component source files or the linked documentation (BUTTON_SYSTEM.md, CARD_SYSTEM.md, etc.).
 
 ---
 
