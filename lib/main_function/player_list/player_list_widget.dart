@@ -316,11 +316,6 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
           labelMap.putIfAbsent(uid, () => 'Player');
         }
 
-        final hasOpenSlot = _dropDownControllers.any((controller) {
-          final value = controller.value;
-          return value == null || value.isEmpty;
-        });
-
         debugPrint(
             'PlayerList: current=$currentPlayerCount/${game.maxPlayers}, remaining=$remainingSlots');
 

@@ -364,11 +364,6 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
         : isBottom
             ? 'Least important'
             : 'Normal';
-    final labelColor = isTop
-        ? AppColors.fairwayLight
-        : isBottom
-            ? AppColors.sunsetGold
-            : AppColors.stone;
     final titleColor = isTop || isBottom ? AppColors.pure : AppColors.sand;
 
     return Container(

@@ -39,7 +39,6 @@ class SwipeableFriendCard extends StatefulWidget {
 class _SwipeableFriendCardState extends State<SwipeableFriendCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<Offset> _slideAnimation;
   double _dragExtent = 0;
   bool _dragUnderway = false;
 
@@ -53,13 +52,6 @@ class _SwipeableFriendCardState extends State<SwipeableFriendCard>
       vsync: this,
       duration: Duration(milliseconds: 200),
     );
-    _slideAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: Offset(1.0, 0.0),
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
   }
 
   @override
@@ -126,7 +118,6 @@ class _SwipeableFriendCardState extends State<SwipeableFriendCard>
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
     final swipeProgress = (_dragExtent / _kMaxSwipeDistance).clamp(-1.0, 1.0);
 
     return GestureDetector(

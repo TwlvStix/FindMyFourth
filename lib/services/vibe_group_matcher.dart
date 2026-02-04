@@ -158,8 +158,6 @@ class GroupVibeMatcher {
       weightTotal += weight;
     }
 
-    final groupAvgFitScore =
-        (weightTotal > 0 ? weightedSum / weightTotal : 0).toDouble();
     final topDifferences = _topDifferences(differences);
     final defaultPercent = defaultCount / VibeCategory.values.length;
     final completeness =

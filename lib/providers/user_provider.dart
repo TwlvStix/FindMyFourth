@@ -513,7 +513,6 @@ class UserProvider extends ChangeNotifier {
 
     try {
       final currentUserRef = UsersRecord.collection.doc(firebaseUser.uid);
-      final currentUserPath = currentUserRef.path;
       final friendPath = friendRef.path;
 
       // Try bidirectional removal first
