@@ -292,8 +292,12 @@ void showSnackbar(
   bool loading = false,
   int duration = 4,
 }) {
-  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-  ScaffoldMessenger.of(context).showSnackBar(
+  final messenger = scaffoldMessengerKey.currentState;
+  if (messenger == null) {
+    return;
+  }
+  messenger.hideCurrentSnackBar();
+  messenger.showSnackBar(
     SnackBar(
       content: Row(
         children: [

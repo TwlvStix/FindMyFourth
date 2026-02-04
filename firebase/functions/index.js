@@ -497,26 +497,46 @@ exports.sendGameCreatedNotifications = functions
         tokens: deviceTokens.map((entry) => entry.token),
       };
 
-      const response = await admin.messaging().sendEachForMulticast(message);
-      const invalidRefs = [];
-      response.responses.forEach((resp, index) => {
-        if (resp.success) {
-          return;
+      try {
+        const response = await admin.messaging().sendEachForMulticast(message);
+
+        // Record success
+        await userRef.update({
+          "notification_state.last_send_success": admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        const invalidRefs = [];
+        response.responses.forEach((resp, index) => {
+          if (resp.success) {
+            return;
+          }
+          const code = resp.error?.code || "";
+          if (
+            code === "messaging/registration-token-not-registered" ||
+            code === "messaging/invalid-registration-token"
+          ) {
+            invalidRefs.push(deviceTokens[index]?.ref);
+          }
+        });
+        if (invalidRefs.length > 0) {
+          await Promise.all(
+            invalidRefs
+              .filter((ref) => ref)
+              .map((ref) => ref.delete()),
+          );
         }
-        const code = resp.error?.code || "";
-        if (
-          code === "messaging/registration-token-not-registered" ||
-          code === "messaging/invalid-registration-token"
-        ) {
-          invalidRefs.push(deviceTokens[index]?.ref);
-        }
-      });
-      if (invalidRefs.length > 0) {
-        await Promise.all(
-          invalidRefs
-            .filter((ref) => ref)
-            .map((ref) => ref.delete()),
-        );
+      } catch (error) {
+        console.error("Notification send failed", { uid, error: error.message });
+
+        // Store error for frontend to read
+        await userRef.update({
+          "notification_state.last_error": {
+            message: error.message || "Failed to send notification",
+            code: error.code || "unknown",
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            type: "notification_send",
+          },
+        });
       }
     }
   });
@@ -653,26 +673,46 @@ exports.sendChatMessageNotifications = functions
         tokens: deviceTokens.map((entry) => entry.token),
       };
 
-      const response = await admin.messaging().sendEachForMulticast(message);
-      const invalidRefs = [];
-      response.responses.forEach((resp, index) => {
-        if (resp.success) {
-          return;
+      try {
+        const response = await admin.messaging().sendEachForMulticast(message);
+
+        // Record success
+        await userRef.update({
+          "notification_state.last_send_success": admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        const invalidRefs = [];
+        response.responses.forEach((resp, index) => {
+          if (resp.success) {
+            return;
+          }
+          const code = resp.error?.code || "";
+          if (
+            code === "messaging/registration-token-not-registered" ||
+            code === "messaging/invalid-registration-token"
+          ) {
+            invalidRefs.push(deviceTokens[index]?.ref);
+          }
+        });
+        if (invalidRefs.length > 0) {
+          await Promise.all(
+            invalidRefs
+              .filter((ref) => ref)
+              .map((ref) => ref.delete()),
+          );
         }
-        const code = resp.error?.code || "";
-        if (
-          code === "messaging/registration-token-not-registered" ||
-          code === "messaging/invalid-registration-token"
-        ) {
-          invalidRefs.push(deviceTokens[index]?.ref);
-        }
-      });
-      if (invalidRefs.length > 0) {
-        await Promise.all(
-          invalidRefs
-            .filter((ref) => ref)
-            .map((ref) => ref.delete()),
-        );
+      } catch (error) {
+        console.error("Notification send failed", { uid, error: error.message });
+
+        // Store error for frontend to read
+        await userRef.update({
+          "notification_state.last_error": {
+            message: error.message || "Failed to send notification",
+            code: error.code || "unknown",
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            type: "notification_send",
+          },
+        });
       }
     }
   });

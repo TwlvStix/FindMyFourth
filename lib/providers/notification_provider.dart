@@ -13,6 +13,7 @@ import '/models/notification_preferences.dart';
 /// - Automatic sync when connectivity restored
 /// - Real-time sync status tracking
 /// - Error state management
+/// - Backend error monitoring
 enum SyncStatus { idle, saving, synced, offline, error }
 
 class PendingUpdate {
@@ -20,6 +21,29 @@ class PendingUpdate {
   final DateTime timestamp;
 
   PendingUpdate(this.prefs, this.timestamp);
+}
+
+class NotificationError {
+  final String message;
+  final String? code;
+  final DateTime timestamp;
+  final String type;
+
+  NotificationError({
+    required this.message,
+    this.code,
+    required this.timestamp,
+    required this.type,
+  });
+
+  factory NotificationError.fromMap(Map<String, dynamic> map) {
+    return NotificationError(
+      message: map['message'] as String? ?? 'Unknown error',
+      code: map['code'] as String?,
+      timestamp: (map['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      type: map['type'] as String? ?? 'unknown',
+    );
+  }
 }
 
 class NotificationProvider extends ChangeNotifier {
@@ -31,6 +55,7 @@ class NotificationProvider extends ChangeNotifier {
   NotificationPreferences _prefs = NotificationPreferences.defaults();
   SyncStatus _syncStatus = SyncStatus.idle;
   String? _errorMessage;
+  NotificationError? _lastBackendError;
 
   // Offline queue
   final Queue<PendingUpdate> _pendingUpdates = Queue();
@@ -42,11 +67,13 @@ class NotificationProvider extends ChangeNotifier {
   NotificationPreferences get preferences => _prefs;
   SyncStatus get syncStatus => _syncStatus;
   String? get errorMessage => _errorMessage;
+  NotificationError? get lastBackendError => _lastBackendError;
   bool get hasPendingUpdates => _pendingUpdates.isNotEmpty;
 
   void _init() {
     _listenToConnectivity();
     _loadPreferences();
+    checkBackendErrors();
   }
 
   /// Listen for connectivity changes and process queue when online
@@ -161,9 +188,40 @@ class NotificationProvider extends ChangeNotifier {
     }
   }
 
+  /// Check for backend errors (e.g., notification send failures)
+  Future<void> checkBackendErrors() async {
+    if (currentUserUid == null) return;
+
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserUid)
+          .get();
+
+      final errorData = userDoc.data()?['notification_state']?['last_error'];
+      if (errorData != null && errorData is Map) {
+        final error = NotificationError.fromMap(
+          Map<String, dynamic>.from(errorData),
+        );
+
+        // Only show if within last 24 hours
+        final hoursSinceError = DateTime.now().difference(error.timestamp).inHours;
+        if (hoursSinceError < 24) {
+          _lastBackendError = error;
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error checking backend errors: $e');
+      }
+    }
+  }
+
   /// Clear error state
   void clearError() {
     _errorMessage = null;
+    _lastBackendError = null;
     if (_syncStatus == SyncStatus.error) {
       _syncStatus = SyncStatus.idle;
     }
@@ -173,6 +231,7 @@ class NotificationProvider extends ChangeNotifier {
   /// Reload preferences from Firestore
   Future<void> reload() async {
     await _loadPreferences();
+    await checkBackendErrors();
   }
 
   @override

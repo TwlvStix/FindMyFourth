@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:app_settings/app_settings.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -12,7 +13,9 @@ import '/backend/cloud_functions/cloud_functions.dart';
 
 enum NotificationPermissionStatus {
   granted,
+  provisional,
   denied,
+  permanentlyDenied,
   unsupported,
   noUser,
   error,
@@ -30,6 +33,7 @@ class NotificationPermissionService {
         _prefs = prefs;
 
   static const String _deviceIdKey = 'notification_device_id';
+  static const String _permissionAskedKey = 'notification_permission_asked';
   static const String _appVersion = String.fromEnvironment(
     'APP_VERSION',
     defaultValue: 'unknown',
@@ -41,6 +45,56 @@ class NotificationPermissionService {
   SharedPreferences? _prefs;
   StreamSubscription<String>? _tokenRefreshSub;
 
+  /// Get detailed notification permission status
+  Future<NotificationPermissionStatus> getDetailedStatus() async {
+    if (kIsWeb) {
+      return NotificationPermissionStatus.unsupported;
+    }
+
+    final user = _auth.currentUser;
+    if (user == null) {
+      return NotificationPermissionStatus.noUser;
+    }
+
+    try {
+      final settings = await _messaging.getNotificationSettings();
+
+      switch (settings.authorizationStatus) {
+        case AuthorizationStatus.authorized:
+          return NotificationPermissionStatus.granted;
+        case AuthorizationStatus.provisional:
+          return NotificationPermissionStatus.provisional;
+        case AuthorizationStatus.denied:
+          // Check if we've asked before
+          _prefs ??= await SharedPreferences.getInstance();
+          final hasAsked = _prefs?.getBool(_permissionAskedKey) ?? false;
+          return hasAsked
+              ? NotificationPermissionStatus.permanentlyDenied
+              : NotificationPermissionStatus.denied;
+        case AuthorizationStatus.notDetermined:
+          return NotificationPermissionStatus.denied;
+        default:
+          return NotificationPermissionStatus.error;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting notification permission status: $e');
+      }
+      return NotificationPermissionStatus.error;
+    }
+  }
+
+  /// Open system settings for the app
+  Future<void> openSystemSettings() async {
+    try {
+      await AppSettings.openAppSettings(type: AppSettingsType.notification);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error opening system settings: $e');
+      }
+    }
+  }
+
   Future<NotificationPermissionStatus> requestPermissionAndRegister() async {
     if (kIsWeb) {
       return NotificationPermissionStatus.unsupported;
@@ -51,13 +105,24 @@ class NotificationPermissionService {
     }
 
     try {
+      // Mark that we've asked for permission
+      _prefs ??= await SharedPreferences.getInstance();
+      await _prefs?.setBool(_permissionAskedKey, true);
+
       final settings = await _messaging.requestPermission();
       final authorized =
           settings.authorizationStatus == AuthorizationStatus.authorized ||
               settings.authorizationStatus == AuthorizationStatus.provisional;
       if (!authorized) {
         await _markPermissionDenied(user.uid);
-        return NotificationPermissionStatus.denied;
+        return settings.authorizationStatus == AuthorizationStatus.denied
+            ? NotificationPermissionStatus.permanentlyDenied
+            : NotificationPermissionStatus.denied;
+      }
+
+      // Return provisional or granted based on status
+      if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+        return NotificationPermissionStatus.provisional;
       }
 
       _listenForTokenRefresh(user.uid);

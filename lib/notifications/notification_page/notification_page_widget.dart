@@ -1,23 +1,19 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/core/app_theme.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/form_field_controller.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_choice_chips.dart';
-import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/fairway_background.dart';
 import '/models/notification_preferences.dart';
 import '/providers/notification_provider.dart';
 import '/services/notification_permission_service.dart';
 import '/utils/app_util.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class NotificationPageWidget extends StatefulWidget {
   const NotificationPageWidget({super.key});
@@ -36,7 +32,6 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
       NotificationPermissionService();
 
   NotificationPreferences? _prefs; // Working copy for form
-  bool _permissionDenied = false;
   bool _initialized = false;
   FormFieldController<List<String>>? _gameStyleController;
   FormFieldController<List<String>>? _digestController;
@@ -60,19 +55,8 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   Future<bool> _ensureNotificationPermission() async {
     final status =
         await _notificationPermissionService.requestPermissionAndRegister();
-    if (status == NotificationPermissionStatus.granted) {
-      if (mounted) {
-        setState(() => _permissionDenied = false);
-      }
-      return true;
-    }
-    if (status == NotificationPermissionStatus.denied && mounted) {
-      setState(() => _permissionDenied = true);
-    }
-    if (status != NotificationPermissionStatus.denied && mounted) {
-      setState(() => _permissionDenied = false);
-    }
-    return false;
+    return status == NotificationPermissionStatus.granted ||
+        status == NotificationPermissionStatus.provisional;
   }
 
   void _ensureControllers(NotificationPreferences prefs) {
@@ -395,7 +379,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              final data = snapshot.data!;
+              final _ = snapshot.data!; // Unused but needed for StreamBuilder
               if (!_initialized) {
                 // Initialize from provider (which loads from Firestore)
                 _prefs = notificationProvider.preferences;
@@ -425,6 +409,72 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 ),
                 SizedBox(height: AppSpacing.lg),
 
+                // ERROR BANNER
+                if (notificationProvider.lastBackendError != null) ...[
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                    padding: EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: AppColors.error.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.error.withValues(alpha: 0.5),
+                        width: 1.0,
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: AppColors.error,
+                          size: 24,
+                        ),
+                        SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Notification Error',
+                                style: AppTypography.titleSmall.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                notificationProvider.lastBackendError!.message,
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                ),
+                              ),
+                              if (notificationProvider.lastBackendError!.code != null) ...[
+                                SizedBox(height: 2),
+                                Text(
+                                  'Error code: ${notificationProvider.lastBackendError!.code}',
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: AppSpacing.xs),
+                        IconButton(
+                          icon: Icon(Icons.close, color: Colors.white, size: 20),
+                          onPressed: () => notificationProvider.clearError(),
+                          padding: EdgeInsets.zero,
+                          constraints: BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.lg),
+                ],
+
                 // PUSH NOTIFICATIONS PANEL
                 _buildPremiumPanel(
                   context,
@@ -443,26 +493,140 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                         }
                         setState(() {
                           _prefs = _prefs!.copyWith(pushEnabled: value);
-                          if (!value) {
-                            _permissionDenied = false;
-                          }
                         });
                       },
                     ),
                   ],
                 ),
-                if (_permissionDenied) ...[
-                  SizedBox(height: AppSpacing.xs),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                    child: Text(
-                      'Push permissions are off in system settings.',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.error,
-                      ),
-                    ),
-                  ),
-                ],
+                // PERMISSION STATUS CARD
+                FutureBuilder<NotificationPermissionStatus>(
+                  future: _notificationPermissionService.getDetailedStatus(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Padding(
+                        padding: EdgeInsets.all(AppSpacing.sm),
+                        child: Center(
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      );
+                    }
+
+                    final status = snapshot.data!;
+
+                    if (status == NotificationPermissionStatus.granted ||
+                        status == NotificationPermissionStatus.provisional) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: Colors.green,
+                              size: 20,
+                            ),
+                            SizedBox(width: AppSpacing.xs),
+                            Text(
+                              status == NotificationPermissionStatus.provisional
+                                  ? 'Notifications enabled (provisional)'
+                                  : 'Notifications enabled',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: Colors.green,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    if (status == NotificationPermissionStatus.permanentlyDenied) {
+                      return Container(
+                        margin: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        padding: EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.orange.withValues(alpha: 0.5),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.settings,
+                              size: 48,
+                              color: Colors.orange,
+                            ),
+                            SizedBox(height: AppSpacing.sm),
+                            Text(
+                              'Notification permission required',
+                              style: AppTypography.titleSmall.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: AppSpacing.xs),
+                            Text(
+                              'Please enable notifications in Settings to receive alerts',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: Colors.white.withValues(alpha: 0.8),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: AppSpacing.md),
+                            AppButtonEnhanced(
+                              onPressed: () async {
+                                await _notificationPermissionService.openSystemSettings();
+                              },
+                              text: 'Open Settings',
+                              trailingIcon: Icons.open_in_new,
+                              size: AppButtonSize.small,
+                              variant: AppButtonVariant.primary,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    if (status == NotificationPermissionStatus.denied) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        child: AppButtonEnhanced(
+                          onPressed: () async {
+                            final result = await _notificationPermissionService
+                                .requestPermissionAndRegister();
+                            if (result == NotificationPermissionStatus.granted &&
+                                mounted) {
+                              setState(() {
+                                _prefs = _prefs!.copyWith(pushEnabled: true);
+                              });
+                            }
+                          },
+                          text: 'Enable Notifications',
+                          leadingIcon: Icons.notifications_active,
+                          size: AppButtonSize.small,
+                          fullWidth: true,
+                        ),
+                      );
+                    }
+
+                    return SizedBox.shrink();
+                  },
+                ),
                 SizedBox(height: AppSpacing.lg),
 
                 // GAME ALERTS PANEL
