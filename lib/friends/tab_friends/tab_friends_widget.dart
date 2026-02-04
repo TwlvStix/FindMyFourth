@@ -7,18 +7,14 @@ import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/widgets/app_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
 import '/providers/user_provider.dart';
 import '/friends/components/premium_friend_card.dart';
 import '/friends/components/empty_state.dart';
-import '/friends/components/friend_section_header.dart';
 import '/friends/components/golfer_search_section.dart';
 import '/friends/components/grouped_friends_list.dart';
 import '/friends/components/friend_filter_bottom_sheet.dart';

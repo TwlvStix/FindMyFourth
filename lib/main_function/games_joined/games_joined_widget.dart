@@ -1,9 +1,7 @@
 import '/backend/backend.dart';
-import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_stream_builder.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
-import '/core/app_theme.dart';
 import '/core/navigation/app_router.dart';
 import '/utils/app_util.dart';
 import '/core/design_tokens/spacing.dart';
@@ -11,15 +9,10 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/create_game/create_game_widget.dart';
-import '/models/game.dart';
-import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class GamesJoinedWidget extends StatefulWidget {

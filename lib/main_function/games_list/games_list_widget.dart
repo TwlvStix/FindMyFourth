@@ -7,7 +7,6 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
-import '/core/form_field_controller.dart';
 import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
@@ -16,13 +15,10 @@ import '/models/game.dart';
 import '/providers/game_provider.dart';
 import '/backend/backend.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
-import '/auth/firebase_auth/auth_util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 enum CancelledGameHandling {

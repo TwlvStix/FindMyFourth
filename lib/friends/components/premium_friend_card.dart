@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/widgets/app_icon_button.dart';
 import '/services/vibe_matcher.dart';
 import '/models/vibe_profile.dart';
 

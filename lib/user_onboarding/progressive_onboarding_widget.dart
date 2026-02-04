@@ -15,7 +15,6 @@ import '/profile/main_profile/main_profile_widget.dart';
 import '/user_onboarding/vibe_onboarding_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

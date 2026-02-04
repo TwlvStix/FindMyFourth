@@ -1,7 +1,4 @@
 import '/core/widgets/fairway_background.dart';
-import '/core/app_theme.dart';
-import '/core/design_tokens/spacing.dart';
-import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/chat_group/chat/chat_widget.dart';
 import 'package:flutter/material.dart';

@@ -1,0 +1,382 @@
+# BATCH 6: Remove Unused Schema Records (HIGH RISK)
+
+## ⚠️ CRITICAL: Database Verification Required
+
+**Risk Level**: ⭐⭐⭐⭐ Medium-High
+**DO NOT PROCEED** without completing all verification steps below.
+
+---
+
+## Summary
+- **Files to Delete**: 3 schema record files
+- **Files to Modify**: 2 (backend.dart, schema/index.dart)
+- **Lines Removed**: ~150-200
+- **Impact**: Removes unused Firestore collection schemas
+- **Risk**: HIGH - Could break if collections are used server-side or via string references
+
+---
+
+## Schema Records Identified as Unused
+
+### 1. AddPlayersRecord
+- **File**: `lib/backend/schema/add_players_record.dart`
+- **Collection**: `add_players`
+- **Query Functions**: `queryAddPlayersRecord()`, `queryAddPlayersRecordOnce()`, `queryAddPlayersRecordPage()`
+- **Usage in Codebase**: ZERO (only exported in backend.dart)
+
+### 2. RolesRecord
+- **File**: `lib/backend/schema/roles_record.dart`
+- **Collection**: `roles`
+- **Query Functions**: `queryRolesRecord()`, `queryRolesRecordOnce()`, `queryRolesRecordPage()`
+- **Usage in Codebase**: ZERO (only exported in backend.dart)
+
+### 3. VerificationDashRecord
+- **File**: `lib/backend/schema/verification_dash_record.dart`
+- **Collection**: `verification_dash`
+- **Query Functions**: `queryVerificationDashRecord()`, `queryVerificationDashRecordOnce()`, `queryVerificationDashRecordPage()`
+- **Usage in Codebase**: ZERO (only exported in backend.dart)
+
+---
+
+## ⚠️ MANDATORY PRE-DELETION VERIFICATION
+
+### Step 1: Check Firestore Database
+
+Log into Firebase Console and check if these collections exist and contain data:
+
+1. Navigate to: **Firebase Console > Firestore Database**
+2. Check for collections:
+   - `add_players` - Does it exist? How many documents?
+   - `roles` - Does it exist? How many documents?
+   - `verification_dash` - Does it exist? How many documents?
+
+**Decision Tree**:
+- ✅ **Collection empty or doesn't exist** → Safe to delete
+- ❌ **Collection has documents** → DO NOT DELETE (investigate usage first)
+
+---
+
+### Step 2: Check Firebase Security Rules
+
+```bash
+# Check firestore.rules for references to these collections
+cat firebase/firestore.rules | grep -E "(add_players|roles|verification_dash)"
+
+# Also check firebase.json
+cat firebase.json | grep -E "(add_players|roles|verification_dash)"
+```
+
+**If found**: The collections are referenced in security rules → DO NOT DELETE
+
+---
+
+### Step 3: Check Cloud Functions
+
+```bash
+# If you have Cloud Functions, check for string-based collection references
+find firebase/functions -name "*.js" -o -name "*.ts" | xargs grep -E "collection\(['\"]add_players" 2>/dev/null
+find firebase/functions -name "*.js" -o -name "*.ts" | xargs grep -E "collection\(['\"]roles" 2>/dev/null
+find firebase/functions -name "*.js" -o -name "*.ts" | xargs grep -E "collection\(['\"]verification_dash" 2>/dev/null
+```
+
+**If found**: Collections are used server-side → DO NOT DELETE
+
+---
+
+### Step 4: Check String-Based References in Dart Code
+
+```bash
+cd "/Users/ryanandrews/Twlv Stix Golf/Find My Fourth/find_my_fourth"
+
+# Check for string-based collection references that might bypass static analysis
+grep -r "'add_players'" lib/ --include="*.dart"
+grep -r '"add_players"' lib/ --include="*.dart"
+grep -r "'roles'" lib/ --include="*.dart" | grep -v "// " | grep -v "roles_record"
+grep -r '"roles"' lib/ --include="*.dart" | grep -v "// " | grep -v "roles_record"
+grep -r "'verification_dash'" lib/ --include="*.dart"
+grep -r '"verification_dash"' lib/ --include="*.dart"
+
+# Check for dynamic collection access
+grep -r "collection\(" lib/ --include="*.dart" | grep -E "(add_players|roles|verification_dash)"
+```
+
+**If found**: Collections used via strings → DO NOT DELETE
+
+---
+
+### Step 5: Ask Product/Team
+
+**Questions to answer**:
+1. Were these features planned but not yet implemented?
+2. Is "roles" for a role-based access control feature?
+3. Is "add_players" for a deprecated player invitation flow?
+4. Is "verification_dash" for an admin dashboard?
+
+**If any "yes"**: Consider keeping the schema files for future use
+
+---
+
+## Deletion Instructions (Only if ALL verifications pass)
+
+### Option A: Full Deletion (if collections are truly unused)
+
+#### Delete Schema Files:
+```bash
+cd "/Users/ryanandrews/Twlv Stix Golf/Find My Fourth/find_my_fourth"
+
+rm lib/backend/schema/add_players_record.dart
+rm lib/backend/schema/roles_record.dart
+rm lib/backend/schema/verification_dash_record.dart
+```
+
+#### Modify backend.dart:
+
+```diff
+--- a/lib/backend/backend.dart
++++ b/lib/backend/backend.dart
+@@ -12,9 +12,6 @@ import 'schema/chats_record.dart';
+ import 'schema/games_record.dart';
+ import 'schema/friend_request_record.dart';
+-import 'schema/roles_record.dart';
+-import 'schema/add_players_record.dart';
+-import 'schema/verification_dash_record.dart';
+ import 'dart:async';
+ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+
+@@ -31,9 +28,6 @@ export 'schema/chats_record.dart';
+ export 'schema/games_record.dart';
+ export 'schema/friend_request_record.dart';
+-export 'schema/roles_record.dart';
+-export 'schema/add_players_record.dart';
+-export 'schema/verification_dash_record.dart';
+
+ const FirestoreRepository firestoreRepository = FirestoreRepository();
+```
+
+#### Modify schema/index.dart:
+
+```diff
+--- a/lib/backend/schema/index.dart
++++ b/lib/backend/schema/index.dart
+@@ -3,6 +3,3 @@ export 'chat_messages_record.dart';
+ export 'chats_record.dart';
+ export 'games_record.dart';
+ export 'friend_request_record.dart';
+-export 'roles_record.dart';
+-export 'add_players_record.dart';
+-export 'verification_dash_record.dart';
+```
+
+---
+
+### Option B: Archive (if uncertain)
+
+Move to a safe location instead of deleting:
+
+```bash
+mkdir -p lib/backend/schema/archived
+
+mv lib/backend/schema/add_players_record.dart lib/backend/schema/archived/
+mv lib/backend/schema/roles_record.dart lib/backend/schema/archived/
+mv lib/backend/schema/verification_dash_record.dart lib/backend/schema/archived/
+
+# Still remove from backend.dart exports (as shown in Option A)
+```
+
+Add a README to the archived folder:
+
+```bash
+cat > lib/backend/schema/archived/README.md << 'EOF'
+# Archived Schema Records
+
+These schema records were moved here because they appear unused in the current codebase.
+
+**Archived on**: 2026-02-03
+**Reason**: Zero query usage found via static analysis
+
+## Collections:
+
+- **add_players** - Player invitation system (deprecated?)
+- **roles** - Role-based access control (planned feature?)
+- **verification_dash** - Admin verification dashboard (abandoned?)
+
+## Restoration:
+
+If these collections are needed in the future:
+1. Move the file back to `lib/backend/schema/`
+2. Re-add exports to `backend.dart` and `schema/index.dart`
+3. Run `flutter pub get` and `flutter analyze`
+
+EOF
+```
+
+---
+
+## Apply Batch 6 (Full Deletion Path)
+
+```bash
+cd "/Users/ryanandrews/Twlv Stix Golf/Find My Fourth/find_my_fourth"
+
+# Create feature branch
+git checkout -b cleanup/batch-6-remove-unused-schemas
+
+# Delete schema files (ONLY IF VERIFICATION PASSED)
+rm lib/backend/schema/add_players_record.dart
+rm lib/backend/schema/roles_record.dart
+rm lib/backend/schema/verification_dash_record.dart
+
+# Manually edit backend.dart to remove imports and exports
+# (Remove lines 15-17 and 34-36 as shown in diff above)
+
+# Manually edit schema/index.dart to remove exports
+# (Remove last 3 export lines)
+
+# Stage changes
+git add lib/backend/backend.dart
+git add lib/backend/schema/index.dart
+git add lib/backend/schema/add_players_record.dart
+git add lib/backend/schema/roles_record.dart
+git add lib/backend/schema/verification_dash_record.dart
+
+git commit -m "chore: remove unused Firestore schema records
+
+Remove three unused schema records with zero query usage:
+- add_players_record.dart (player invitation system - unused)
+- roles_record.dart (role-based access - unused)
+- verification_dash_record.dart (verification dashboard - unused)
+
+Verification completed:
+- ✅ Zero Dart code references found
+- ✅ Collections empty/non-existent in Firestore
+- ✅ Not referenced in security rules
+- ✅ Not used in Cloud Functions
+- ✅ No string-based collection references found
+
+Impact: -~200 lines, 0 behavioral changes
+Risk: Medium-High - thorough verification completed"
+
+# Verify
+flutter analyze
+flutter test
+flutter build apk --debug
+```
+
+---
+
+## Post-Deletion Verification
+
+### 1. Check for compilation errors:
+```bash
+flutter analyze 2>&1 | grep -i "error •"
+# Expected: No errors related to removed schemas
+```
+
+### 2. Check for missing references:
+```bash
+grep -r "AddPlayersRecord\|RolesRecord\|VerificationDashRecord" lib/ --include="*.dart"
+# Expected: No results (all references removed)
+```
+
+### 3. Run tests:
+```bash
+flutter test
+# Expected: All tests pass
+```
+
+### 4. Build the app:
+```bash
+flutter build apk --debug
+# Expected: Build succeeds
+```
+
+---
+
+## Rollback Plan
+
+### If issues arise:
+
+```bash
+# Rollback the commit
+git revert HEAD
+
+# Or reset to previous state
+git checkout main
+git branch -D cleanup/batch-6-remove-unused-schemas
+```
+
+### If you used archive option:
+
+```bash
+# Restore from archive
+mv lib/backend/schema/archived/*.dart lib/backend/schema/
+
+# Restore exports in backend.dart and schema/index.dart
+git checkout HEAD~1 -- lib/backend/backend.dart
+git checkout HEAD~1 -- lib/backend/schema/index.dart
+```
+
+---
+
+## Risk Mitigation
+
+**Why High Risk?**
+1. Database schema changes can have cascading effects
+2. Collections might be used in ways static analysis can't detect:
+   - Dynamic collection names
+   - String-based references
+   - Server-side (Cloud Functions) usage
+   - Security rules references
+3. Could break features if assumptions are wrong
+
+**Mitigations Applied**:
+- ✅ Comprehensive verification checklist
+- ✅ Manual Firestore console check
+- ✅ Security rules verification
+- ✅ Cloud Functions check
+- ✅ String reference search
+- ⚠️ Recommend archive over deletion if uncertain
+- ⚠️ Monitor production after deployment
+
+---
+
+## Monitoring Post-Deployment
+
+After deploying this change, monitor for:
+
+1. **Firestore Errors**: Check Firebase Console > Firestore > Errors
+2. **Client Errors**: Check crash reporting for schema-related errors
+3. **Cloud Function Errors**: Check Functions logs
+4. **User Reports**: Any features suddenly broken
+
+---
+
+## Alternative: Keep but Mark as Deprecated
+
+If uncertain, you can keep the files but add deprecation warnings:
+
+```dart
+// At top of each schema file:
+
+/// DEPRECATED: This collection appears unused in the codebase.
+/// Marked for removal after verification.
+/// Last checked: 2026-02-03
+/// If you're using this collection, please update this comment.
+@Deprecated('Collection appears unused - verify before using')
+class AddPlayersRecord extends FirestoreRecord {
+  // ... existing code ...
+}
+```
+
+This allows the schema to remain but signals to developers that it should be verified.
+
+---
+
+**Decision Required**: Choose one approach:
+- ❌ **Full Deletion** - If ALL verifications pass
+- ⚠️ **Archive** - If uncertain but likely unused
+- ✅ **Keep with Warning** - If uncertain and want to be safe
+- ⛔ **Do Nothing** - If any verification fails
+
+---
+
+**Recommended Approach**: Archive (Option B) until you can verify with team/product.
