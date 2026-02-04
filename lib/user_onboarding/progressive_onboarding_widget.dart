@@ -256,9 +256,6 @@ class _ProgressiveOnboardingWidgetState
           return;
         }
         try {
-          if (!profileUpdated) {
-            return;
-          }
           await makeCloudCall(
             'completeOnboarding',
             {'userDocPath': userRef.path},

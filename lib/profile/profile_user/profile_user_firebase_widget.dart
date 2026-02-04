@@ -820,13 +820,6 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     );
   }
 
-  String _conflictSummary(VibeConflict conflict) {
-    final title = VibeLabels.titleFor(conflict.category);
-    final owner = _dealbreakerOwnerLabel(conflict.whoHasDealbreaker);
-    return '$title: you ${conflict.myValue} vs them ${conflict.theirValue} '
-        '($owner, threshold ${conflict.threshold})';
-  }
-
   String _dealbreakerOwnerLabel(VibeDealbreakerOwner owner) {
     switch (owner) {
       case VibeDealbreakerOwner.me:
@@ -836,33 +829,6 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
       case VibeDealbreakerOwner.both:
         return 'both dealbreakers';
     }
-  }
-
-  String _stringValue(
-    Map<String, dynamic> data,
-    String key,
-    String fallback,
-  ) {
-    final value = data[key];
-    if (value is String && value.trim().isNotEmpty) {
-      return value;
-    }
-    return fallback;
-  }
-
-  String _numValue(
-    Map<String, dynamic> data,
-    String key,
-    String fallback,
-  ) {
-    final value = data[key];
-    if (value is num) {
-      return value.toString();
-    }
-    if (value is String && value.trim().isNotEmpty) {
-      return value;
-    }
-    return fallback;
   }
 
   Widget _buildVibeMatchRow() {

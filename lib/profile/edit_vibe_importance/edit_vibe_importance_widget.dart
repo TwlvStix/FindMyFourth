@@ -67,8 +67,6 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
       .where((value) => value == VibeImportance.bottom)
       .length;
 
-  bool get _canSave => _topCount == 2 && _bottomCount <= 1 && !_isSaving;
-
   void _showSnack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
