@@ -1,4 +1,3 @@
-import '/core/widgets/app_count_controller.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_text_field.dart';
@@ -20,7 +19,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,11 +27,13 @@ import 'dart:math';
 
 import '/providers/chat_provider.dart';
 import 'components/draft_banner.dart';
-import 'components/quick_create_banner.dart';
 import 'components/section_header.dart';
 import 'components/segmented_control.dart';
 import 'components/toggle_switch.dart';
 import 'components/card_grid.dart';
+import 'components/premium_date_picker.dart';
+import 'components/tee_time_picker.dart';
+import 'components/games_multi_select.dart';
 
 class CreateGameWidget extends StatefulWidget {
   const CreateGameWidget({super.key});
@@ -56,7 +56,6 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   Course? selectedCourse;
   String? memberValue;
   FormFieldController<String>? memberValueController;
-  int? countControllerValue;
   String? rulesSetValue;
   FormFieldController<String>? rulesSetValueController;
   String? styleGameValue;
@@ -68,6 +67,15 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   DocumentReference? chatRef;
   DocumentReference? gameRef;
   bool memberDiscount = false;
+
+  // Team Setup
+  bool _is2v2 = false;
+  String? _teamStyle;
+
+  // Games multi-select (max 3)
+  final Set<String> _selectedGames = {};
+  final TextEditingController _otherGameController = TextEditingController();
+  String? _otherGameText;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -174,9 +182,6 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           memberValue = draft['member'];
           memberValueController?.value = draft['member'];
         }
-        if (draft['count'] != null) {
-          countControllerValue = draft['count'];
-        }
         if (draft['rulesSet'] != null) {
           rulesSetValue = draft['rulesSet'];
           rulesSetValueController?.value = draft['rulesSet'];
@@ -192,6 +197,21 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         if (draft['scoring'] != null) {
           scoringValue = draft['scoring'];
           scoringValueController?.value = draft['scoring'];
+        }
+        if (draft['is2v2'] != null) {
+          _is2v2 = draft['is2v2'] as bool;
+        }
+        if (draft['teamStyle'] != null) {
+          _teamStyle = draft['teamStyle'];
+        }
+        if (draft['selectedGames'] != null) {
+          final games = draft['selectedGames'] as List<dynamic>;
+          _selectedGames.clear();
+          _selectedGames.addAll(games.cast<String>());
+        }
+        if (draft['otherGame'] != null) {
+          _otherGameText = draft['otherGame'];
+          _otherGameController.text = draft['otherGame'];
         }
         final draftName = draft['gameName'] as String?;
         if (draftName != null && draftName.trim().isNotEmpty) {
@@ -216,11 +236,14 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         'friends': friendsValue,
         'course': courseValue,
         'member': memberValue,
-        'count': countControllerValue,
         'rulesSet': rulesSetValue,
         'styleGame': styleGameValue,
         'gameType': gameTypeValue,
         'scoring': scoringValue,
+        'is2v2': _is2v2,
+        'teamStyle': _teamStyle,
+        'selectedGames': _selectedGames.toList(),
+        'otherGame': _otherGameText,
         'gameName': gameName.isEmpty ? null : gameName,
       };
 
@@ -245,66 +268,6 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   }
 
   // Quick create with defaults - creates game immediately
-  Future<void> _quickCreate() async {
-    HapticFeedback.mediumImpact();
-    _ensureGameName();
-
-    // Validate required step 1 fields first
-    if (datePicked == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please select a date and time first'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    if (courseValue == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please select a course first'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    // Set smart defaults for all game settings
-    setState(() {
-      // Visibility
-      friendsValue = 'Friends';
-      friendsValueController?.value = 'Friends';
-
-      // Member discount
-      memberDiscount = false;
-      memberValue = 'No';
-      memberValueController?.value = 'No';
-
-      // Player count
-      countControllerValue = 1;
-
-      // Rules
-      rulesSetValue = 'Relaxed';
-      rulesSetValueController?.value = 'Relaxed';
-
-      // Style
-      styleGameValue = 'All Fun';
-      styleGameValueController?.value = 'All Fun';
-
-      // Game type
-      gameTypeValue = 'Stroke Play';
-      gameTypeValueController?.value = 'Stroke Play';
-
-      // Scoring
-      scoringValue = 'Gross';
-      scoringValueController?.value = 'Gross';
-    });
-
-    // Now create the game immediately
-    await _submitGame();
-  }
-
   // Shared game submission logic
   Future<void> _submitGame() async {
     debugPrint('🎮 CREATE GAME: Submit triggered');
@@ -378,6 +341,30 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       return;
     }
 
+    // Validate Team Style is required if 2v2 is enabled
+    if (_is2v2 && (_teamStyle == null || _teamStyle!.isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please select a team style for 2v2 games.'),
+          duration: Duration(milliseconds: 4000),
+          backgroundColor: AppTheme.of(context).primary,
+        ),
+      );
+      return;
+    }
+
+    // Validate "Other" game requires description if selected
+    if (_selectedGames.contains('Other') && (_otherGameText == null || _otherGameText!.trim().isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please describe the other game.'),
+          duration: Duration(milliseconds: 4000),
+          backgroundColor: AppTheme.of(context).primary,
+        ),
+      );
+      return;
+    }
+
     debugPrint('✅ CREATE GAME: Date validation passed');
     debugPrint('🎮 CREATE GAME: Starting game creation...');
     final gameName = _ensureGameName();
@@ -388,7 +375,6 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     debugPrint('🎮 CREATE GAME: Type: $gameTypeValue');
     debugPrint('🎮 CREATE GAME: Friends: $friendsValue');
     debugPrint('🎮 CREATE GAME: Rules: $rulesSetValue');
-    debugPrint('🎮 CREATE GAME: Player count: ${countControllerValue ?? 0}');
 
     try {
       debugPrint('🎮 CREATE GAME: Checking authentication...');
@@ -409,10 +395,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       final currentUserRef = FirebaseFirestore.instance
           .collection('users')
           .doc(currentUser.uid);
-      final numPlayers = countControllerValue ?? 0;
+      // Default to 1 player needed for backend compatibility
+      final numPlayers = 1;
       final maxPlayers = 4;
       debugPrint('CreateGame: creating game $gameName');
-      debugPrint('CreateGame: numPlayers=$numPlayers (randoms needed), maxPlayers=$maxPlayers');
+      debugPrint('CreateGame: numPlayers=$numPlayers (default), maxPlayers=$maxPlayers');
 
       final gamesRecordReference =
           FirebaseFirestore.instance.collection('games').doc();
@@ -560,6 +547,38 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     if (mounted) setState(() {});
   }
 
+  // Build game summary string
+  String _buildGameSummary() {
+    // Primary Format
+    String format = gameTypeValue ?? '';
+
+    // Add 2v2 Team Style if enabled
+    if (_is2v2 && _teamStyle != null && _teamStyle!.isNotEmpty) {
+      format += ' + 2v2 ($_teamStyle)';
+    }
+
+    // Display "Gross + Net" instead of "Both" for better readability
+    final handicap = scoringValue == 'Both' ? 'Gross + Net' : (scoringValue ?? '');
+    final stakes = styleGameValue ?? '';
+    final vibe = rulesSetValue ?? '';
+
+    // Build base summary
+    String summary = '$format • $handicap • $stakes • $vibe';
+
+    // Add Games if any selected
+    if (_selectedGames.isNotEmpty) {
+      final gamesList = _selectedGames.map((game) {
+        if (game == 'Other' && _otherGameText != null && _otherGameText!.isNotEmpty) {
+          return _otherGameText!;
+        }
+        return game;
+      }).join(', ');
+      summary += ' • Games: $gamesList';
+    }
+
+    return summary;
+  }
+
   // Show help dialog
   void _showHelpDialog(BuildContext context, String title, String message) {
     HapticFeedback.lightImpact();
@@ -640,6 +659,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   @override
   void dispose() {
     _gameNameController.dispose();
+    _otherGameController.dispose();
     super.dispose();
   }
 
@@ -750,9 +770,6 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Quick Create Banner
-                                    QuickCreateBanner(onQuickCreate: _quickCreate),
-
                                     SectionHeader(
                                       emoji: '🏷️',
                                       title: 'Game Name',
@@ -778,428 +795,139 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
 
                               SectionHeader(
                                 emoji: '📅',
-                                title: 'Game Day',
+                                title: 'Schedule',
+                                helpText: 'Select when you want to play. Choose a quick date or pick from the calendar, then set your exact tee time.',
+                                onHelpTap: () => _showHelpDialog(
+                                    context,
+                                    'Schedule',
+                                    'Select when you want to play. Choose a quick date or pick from the calendar, then set your exact tee time.'),
                               ),
-                              Align(
-                                alignment: AlignmentDirectional(-1.0, 0.0),
-                                child: Padding(
-                                  padding: EdgeInsets.only(
-                                      top: AppSpacing.xxs,
-                                      bottom: AppSpacing.md),
+
+                              // Premium date picker
+                              Padding(
+                                padding: EdgeInsets.only(top: AppSpacing.xxs),
+                                child: PremiumDatePicker(
+                                  selectedDate: datePicked,
+                                  onDateSelected: (date) {
+                                    if (mounted) {
+                                      setState(() {
+                                        datePicked = date;
+                                      });
+                                      _saveDraft();
+                                    }
+                                  },
+                                ),
+                              ),
+
+                              // Tee time picker row
+                              if (datePicked != null) ...[
+                                SizedBox(height: AppSpacing.sm),
+                                InkWell(
+                                  onTap: () {
+                                    showTeeTimePicker(
+                                      context: context,
+                                      selectedDateTime: datePicked,
+                                      onTimeSelected: (dateTime) {
+                                        if (mounted) {
+                                          setState(() {
+                                            datePicked = dateTime;
+                                          });
+                                          _saveDraft();
+                                        }
+                                      },
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(12),
                                   child: Container(
-                                    width:
-                                        MediaQuery.sizeOf(context).width * 1.0,
-                                    height: 100.0,
+                                    width: double.infinity,
+                                    padding: EdgeInsets.all(AppSpacing.md),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.of(context).secondary,
-                                      borderRadius: BorderRadius.circular(10.0),
+                                      color: AppTheme.of(context).secondaryBackground,
+                                      borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: AppTheme.of(context)
-                                            .accent4
-                                            .withValues(alpha: 0.35),
-                                        width: 1.0,
+                                        color: AppTheme.of(context).primary,
+                                        width: 1.5,
                                       ),
                                     ),
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                          right: AppSpacing.sm),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Padding(
-                                            padding:
-                                                EdgeInsets.only(
-                                                    left: AppSpacing.sm),
-                                            child: Container(
-                                              width: MediaQuery.sizeOf(context)
-                                                      .width *
-                                                  0.65,
-                                              height: 85.0,
-                                              decoration: BoxDecoration(
-                                                color: AppTheme.of(context)
-                                                    .secondaryBackground,
-                                                borderRadius:
-                                                    BorderRadius.circular(20.0),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.access_time_rounded,
+                                          color: AppTheme.of(context).primary,
+                                          size: 24,
+                                        ),
+                                        SizedBox(width: AppSpacing.sm),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Tee Time',
+                                                style: GoogleFonts.outfit(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: AppTheme.of(context).secondaryText,
+                                                ),
                                               ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(15.0, 0.0,
-                                                                0.0, 0.0),
-                                                    child: Column(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Text(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            dateTimeFormat(
-                                                                "MMM",
-                                                                datePicked),
-                                                            'Jan',
-                                                          ),
-                                                          style: AppTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .outfit(
-                                                                  fontWeight: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                color: AppTheme.of(
-                                                                        context)
-                                                                    .primaryText,
-                                                                fontSize: 22.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                                fontStyle: AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                        ),
-                                                        Text(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            dateTimeFormat("d",
-                                                                datePicked),
-                                                            '22',
-                                                          ),
-                                                          style: AppTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .outfit(
-                                                                  fontWeight: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                color: AppTheme.of(
-                                                                        context)
-                                                                    .primaryText,
-                                                                fontSize: 26.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                                fontStyle: AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                    height: 20.0,
-                                                    child: VerticalDivider(
-                                                      thickness: 1.0,
-                                                      color:
-                                                          AppTheme.of(context)
-                                                              .accent4,
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(10.0, 0.0,
-                                                                0.0, 0.0),
-                                                    child: Column(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            dateTimeFormat(
-                                                                "EEEE",
-                                                                datePicked),
-                                                            'Friday',
-                                                          ),
-                                                          style: AppTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .outfit(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w300,
-                                                                  fontStyle: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                color: AppTheme.of(
-                                                                        context)
-                                                                    .primaryText,
-                                                                fontSize: 22.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w300,
-                                                                fontStyle: AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                        ),
-                                                        Text(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            dateTimeFormat("jm",
-                                                                datePicked),
-                                                            '09:00am',
-                                                          ),
-                                                          style: AppTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .outfit(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w300,
-                                                                  fontStyle: AppTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                color: AppTheme.of(
-                                                                        context)
-                                                                    .primaryText,
-                                                                fontSize: 22.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w300,
-                                                                fontStyle: AppTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
+                                              SizedBox(height: 2),
+                                              Text(
+                                                dateTimeFormat("jm", datePicked),
+                                                style: GoogleFonts.outfit(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppTheme.of(context).primaryText,
+                                                ),
                                               ),
-                                            ),
+                                            ],
                                           ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsets.only(
-                                                    left: AppSpacing.sm),
-                                            child: InkWell(
-                                              splashColor: Colors.transparent,
-                                              focusColor: Colors.transparent,
-                                              hoverColor: Colors.transparent,
-                                              highlightColor:
-                                                  Colors.transparent,
-                                              onTap: () async {
-                                                final _datePickedDate =
-                                                    await showDatePicker(
-                                                  context: context,
-                                                  initialDate:
-                                                      getCurrentTimestamp,
-                                                  firstDate:
-                                                      getCurrentTimestamp,
-                                                  lastDate: DateTime(2050),
-                                                  builder: (context, child) {
-                                                    return wrapInMaterialDatePickerTheme(
-                                                      context,
-                                                      child!,
-                                                      headerBackgroundColor:
-                                                          AppTheme.of(context)
-                                                              .primaryBackground,
-                                                      headerForegroundColor:
-                                                          AppTheme.of(context)
-                                                              .primaryText,
-                                                      headerTextStyle:
-                                                          AppTheme.of(context)
-                                                              .headlineLarge
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .outfit(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontStyle: AppTheme.of(
-                                                                          context)
-                                                                      .headlineLarge
-                                                                      .fontStyle,
-                                                                ),
-                                                                fontSize: 32.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                fontStyle: AppTheme.of(
-                                                                        context)
-                                                                    .headlineLarge
-                                                                    .fontStyle,
-                                                              ),
-                                                      pickerBackgroundColor:
-                                                          AppTheme.of(context)
-                                                              .primaryBackground,
-                                                      pickerForegroundColor:
-                                                          AppTheme.of(context)
-                                                              .primaryText,
-                                                      selectedDateTimeBackgroundColor:
-                                                          AppTheme.of(context)
-                                                              .primary,
-                                                      selectedDateTimeForegroundColor:
-                                                          AppTheme.of(context)
-                                                              .primaryBtnText,
-                                                      actionButtonForegroundColor:
-                                                          AppTheme.of(context)
-                                                              .primaryText,
-                                                      iconSize: 24.0,
-                                                    );
-                                                  },
-                                                );
-
-                                                TimeOfDay? _datePickedTime;
-                                                if (_datePickedDate != null) {
-                                                  _datePickedTime =
-                                                      await showTimePicker(
-                                                    context: context,
-                                                    initialTime:
-                                                        TimeOfDay.fromDateTime(
-                                                            getCurrentTimestamp),
-                                                    builder: (context, child) {
-                                                      return wrapInMaterialTimePickerTheme(
-                                                        context,
-                                                        child!,
-                                                        headerBackgroundColor:
-                                                            AppTheme.of(context)
-                                                                .primary,
-                                                        headerForegroundColor:
-                                                            AppTheme.of(context)
-                                                                .info,
-                                                        headerTextStyle:
-                                                            AppTheme.of(context)
-                                                                .headlineLarge
-                                                                .override(
-                                                                  font: GoogleFonts
-                                                                      .outfit(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontStyle: AppTheme.of(
-                                                                            context)
-                                                                        .headlineLarge
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  fontSize:
-                                                                      32.0,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontStyle: AppTheme.of(
-                                                                          context)
-                                                                      .headlineLarge
-                                                                      .fontStyle,
-                                                                ),
-                                                        pickerBackgroundColor:
-                                                            AppTheme.of(context)
-                                                                .secondaryBackground,
-                                                        pickerForegroundColor:
-                                                            AppTheme.of(context)
-                                                                .primaryText,
-                                                        selectedDateTimeBackgroundColor:
-                                                            AppTheme.of(context)
-                                                                .primary,
-                                                        selectedDateTimeForegroundColor:
-                                                            AppTheme.of(context)
-                                                                .info,
-                                                        actionButtonForegroundColor:
-                                                            AppTheme.of(context)
-                                                                .primaryText,
-                                                        iconSize: 24.0,
-                                                      );
-                                                    },
-                                                  );
-                                                }
-
-                                                if (_datePickedDate != null &&
-                                                    _datePickedTime != null) {
-                                                  if (mounted)
-                                                    setState(() {
-                                                      datePicked = DateTime(
-                                                        _datePickedDate.year,
-                                                        _datePickedDate.month,
-                                                        _datePickedDate.day,
-                                                        _datePickedTime!.hour,
-                                                        _datePickedTime.minute,
-                                                      );
-                                                    });
-                                                  _saveDraft();
-                                                } else if (datePicked != null) {
-                                                  if (mounted)
-                                                    setState(() {
-                                                      datePicked =
-                                                          getCurrentTimestamp;
-                                                    });
-                                                  _saveDraft();
-                                                }
-                                              },
-                                              child: Icon(
-                                                Icons.date_range,
-                                                color: AppTheme.of(context)
-                                                    .primaryBtnText,
-                                                size: 36.0,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                        ),
+                                        Icon(
+                                          Icons.edit_rounded,
+                                          color: AppTheme.of(context).secondaryText,
+                                          size: 20,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              ),
+                              ],
+
+                              // Human-readable summary
+                              if (datePicked != null) ...[
+                                SizedBox(height: AppSpacing.sm),
+                                Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.all(AppSpacing.md),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [AppColors.fairwayLight, AppColors.fairway],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.golf_course_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                      SizedBox(width: AppSpacing.sm),
+                                      Expanded(
+                                        child: Text(
+                                          '${dateTimeFormat("EEEE, MMM d", datePicked)} at ${dateTimeFormat("jm", datePicked)}',
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                               SectionHeader(
                                 emoji: '👁️',
                                 title: 'Visibility',
@@ -1407,109 +1135,33 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                   }
                                 },
                               ),
-                              Padding(
-                                padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    SectionHeader(
-                                      emoji: '👥',
-                                      title: 'Number of Players Needed',
-                                      helpText: 'How many additional players are you looking for to join your game?',
-                                      onHelpTap: () => _showHelpDialog(
-                                          context,
-                                          'Number of Players Needed',
-                                          'How many additional players are you looking for to join your game?'),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Align(
-                                alignment: AlignmentDirectional(-1.0, 0.0),
-                                child: Padding(
-                                  padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                  child: Container(
-                                    width: 160.0,
-                                    height: 50.0,
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.of(context)
-                                          .secondaryBackground,
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      shape: BoxShape.rectangle,
-                                      border: Border.all(
-                                        color: AppTheme.of(context).primary,
-                                        width: 1.0,
-                                      ),
-                                    ),
-                                    child: AppCountController(
-                                      decrementIconBuilder: (enabled) => FaIcon(
-                                        FontAwesomeIcons.minus,
-                                        color: enabled
-                                            ? AppTheme.of(context).secondaryText
-                                            : AppTheme.of(context).alternate,
-                                        size: 20.0,
-                                      ),
-                                      incrementIconBuilder: (enabled) => FaIcon(
-                                        FontAwesomeIcons.plus,
-                                        color: enabled
-                                            ? AppTheme.of(context).primary
-                                            : AppTheme.of(context).alternate,
-                                        size: 20.0,
-                                      ),
-                                      countBuilder: (count) => Text(
-                                        count.toString(),
-                                        style: AppTheme.of(context)
-                                            .titleLarge
-                                            .override(
-                                              font: GoogleFonts.outfit(
-                                                fontWeight: AppTheme.of(context)
-                                                    .titleLarge
-                                                    .fontWeight,
-                                                fontStyle: AppTheme.of(context)
-                                                    .titleLarge
-                                                    .fontStyle,
-                                              ),
-                                              fontSize: 18.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: AppTheme.of(context)
-                                                  .titleLarge
-                                                  .fontWeight,
-                                              fontStyle: AppTheme.of(context)
-                                                  .titleLarge
-                                                  .fontStyle,
-                                            ),
-                                      ),
-                                      count: countControllerValue ??= 1,
-                                      updateCount: (count) {
-                                        if (mounted) {
-                                          setState(() =>
-                                              countControllerValue = count);
-                                          _saveDraft();
-                                        }
-                                      },
-                                      stepSize: 1,
-                                      minimum: 1,
-                                      maximum: 3,
-                                    ),
-                                  ),
-                                ),
-                              ),
                               SectionHeader(
-                                emoji: '⚙️',
-                                title: 'Rules Settings',
-                                helpText: 'Strict follows USGA rules precisely. Relaxed allows casual adjustments. Open to Discuss means flexible.',
+                                emoji: '🎭',
+                                title: 'Game Vibe',
+                                helpText: 'Set the tone for your round. Competitive focuses on rules and pace, while Casual keeps it relaxed and friendly.',
                                 onHelpTap: () => _showHelpDialog(
                                     context,
-                                    'Rules Settings',
-                                    'Strict follows USGA rules precisely. Relaxed allows casual adjustments. Open to Discuss means flexible.'),
+                                    'Game Vibe',
+                                    'Set the tone for your round. Competitive focuses on rules and pace, while Casual keeps it relaxed and friendly.'),
                               ),
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxs),
                                 child: CardGrid(
                                   options: [
-                                    {'value': 'Strict', 'label': 'Strict', 'icon': Icons.gavel_rounded, 'emoji': '📏'},
-                                    {'value': 'Relaxed', 'label': 'Relaxed', 'icon': Icons.self_improvement_rounded, 'emoji': '😌'},
-                                    {'value': 'Open to Discuss', 'label': 'Flexible', 'icon': Icons.chat_bubble_outline_rounded, 'emoji': '💬'},
+                                    {
+                                      'value': 'Competitive',
+                                      'label': 'Competitive',
+                                      'icon': Icons.emoji_events_rounded,
+                                      'emoji': '🏆',
+                                      'subtitle': 'Rules-focused • pace matters'
+                                    },
+                                    {
+                                      'value': 'Casual',
+                                      'label': 'Casual',
+                                      'icon': Icons.sentiment_satisfied_rounded,
+                                      'emoji': '😊',
+                                      'subtitle': 'Relaxed rules • good vibes'
+                                    },
                                   ],
                                   selectedValue: rulesSetValue,
                                   onChanged: (val) {
@@ -1518,26 +1170,26 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                       _saveDraft();
                                     }
                                   },
-                                  crossAxisCount: 3,
-                                  childAspectRatio: 0.95,
+                                  crossAxisCount: 2,
+                                  childAspectRatio: 1.2,
                                 ),
                               ),
                               SectionHeader(
-                                emoji: '🎯',
-                                title: 'Style of Game',
-                                helpText: 'Are you playing for money, just for fun, or open to discussing stakes?',
+                                emoji: '💰',
+                                title: 'Stakes',
+                                helpText: 'Playing for money or keeping it friendly? Choose your comfort level.',
                                 onHelpTap: () => _showHelpDialog(
                                     context,
-                                    'Style of Game',
-                                    'Are you playing for money, just for fun, or open to discussing stakes?'),
+                                    'Stakes',
+                                    'Playing for money or keeping it friendly? Choose your comfort level.'),
                               ),
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxs),
                                 child: CardGrid(
                                   options: [
-                                    {'value': 'Money Game', 'label': 'Money', 'icon': Icons.attach_money_rounded, 'emoji': '💵'},
-                                    {'value': 'All Fun', 'label': 'Just Fun', 'icon': Icons.celebration_rounded, 'emoji': '🎉'},
-                                    {'value': 'Open to Discuss', 'label': 'Flexible', 'icon': Icons.chat_bubble_outline_rounded, 'emoji': '💬'},
+                                    {'value': 'No Money', 'label': 'No Money', 'icon': Icons.handshake_rounded, 'emoji': '🤝'},
+                                    {'value': 'Low Stakes', 'label': 'Low Stakes', 'icon': Icons.attach_money_rounded, 'emoji': '💵'},
+                                    {'value': 'High Stakes', 'label': 'High Stakes', 'icon': Icons.monetization_on_rounded, 'emoji': '💰'},
                                   ],
                                   selectedValue: styleGameValue,
                                   onChanged: (val) {
@@ -1552,28 +1204,27 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                               ),
                               SectionHeader(
                                 emoji: '🏆',
-                                title: 'Game Type',
-                                helpText: 'Choose your preferred format: Match Play (hole-by-hole), Stroke Play (total strokes), Stableford (points), etc.',
+                                title: 'Primary Format',
+                                helpText: 'Choose your core scoring format: Match Play (hole-by-hole), Stroke Play (total strokes), Stableford (points).',
                                 onHelpTap: () => _showHelpDialog(
                                     context,
-                                    'Game Type',
-                                    'Choose your preferred format: Match Play (hole-by-hole), Stroke Play (total strokes), Stableford (points), etc.'),
+                                    'Primary Format',
+                                    'Choose your core scoring format: Match Play (hole-by-hole), Stroke Play (total strokes), Stableford (points).'),
                               ),
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxs),
                                 child: CardGrid(
                                   options: [
-                                    {'value': 'Match Play', 'label': 'Match Play', 'icon': Icons.sports_golf_rounded, 'emoji': '🆚'},
                                     {'value': 'Stroke Play', 'label': 'Stroke Play', 'icon': Icons.format_list_numbered_rounded, 'emoji': '📝'},
+                                    {'value': 'Match Play', 'label': 'Match Play', 'icon': Icons.sports_golf_rounded, 'emoji': '🆚'},
                                     {'value': 'Stableford', 'label': 'Stableford', 'icon': Icons.star_rounded, 'emoji': '⭐'},
-                                    {'value': 'Vegas', 'label': 'Vegas', 'icon': Icons.casino_rounded, 'emoji': '🎰'},
-                                    {'value': 'Skins', 'label': 'Skins', 'icon': Icons.workspace_premium_rounded, 'emoji': '🏅'},
-                                    {'value': 'For Fun', 'label': 'For Fun', 'icon': Icons.celebration_rounded, 'emoji': '🎉'},
                                   ],
                                   selectedValue: gameTypeValue,
                                   onChanged: (val) {
                                     if (mounted) {
-                                      setState(() => gameTypeValue = val);
+                                      setState(() {
+                                        gameTypeValue = val;
+                                      });
                                       _saveDraft();
                                     }
                                   },
@@ -1581,14 +1232,63 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                   childAspectRatio: 0.95,
                                 ),
                               ),
+
+                              // Team Setup Section
+                              SizedBox(height: AppSpacing.md),
+                              ToggleSwitch(
+                                label: '👥 2v2 (Teams)',
+                                description: 'Enable team play mode',
+                                value: _is2v2,
+                                onChanged: (val) {
+                                  if (mounted) {
+                                    setState(() {
+                                      _is2v2 = val;
+                                      if (!val) {
+                                        _teamStyle = null;
+                                      }
+                                    });
+                                    _saveDraft();
+                                  }
+                                },
+                              ),
+
+                              // Team Style (conditional, shown only if 2v2 is enabled)
+                              if (_is2v2) ...[
+                                SizedBox(height: AppSpacing.sm),
+                                SectionHeader(
+                                  emoji: '🤝',
+                                  title: 'Team Style',
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(top: AppSpacing.xxs),
+                                  child: CardGrid(
+                                    options: [
+                                      {'value': 'Best Ball', 'label': 'Best Ball', 'icon': Icons.star_rounded, 'emoji': '⭐'},
+                                      {'value': 'Scramble', 'label': 'Scramble', 'icon': Icons.groups_rounded, 'emoji': '👥'},
+                                    ],
+                                    selectedValue: _teamStyle,
+                                    onChanged: (val) {
+                                      if (mounted) {
+                                        setState(() {
+                                          _teamStyle = val;
+                                        });
+                                        _saveDraft();
+                                      }
+                                    },
+                                    crossAxisCount: 2,
+                                    childAspectRatio: 1.2,
+                                  ),
+                                ),
+                              ],
+
                               SectionHeader(
                                 emoji: '📊',
-                                title: 'Scoring',
-                                helpText: 'Gross is total strokes. Net adjusts for handicap. Both tracks both scores.',
+                                title: 'Handicap Use',
+                                helpText: 'Gross is total strokes. Net adjusts for handicap. Gross + Net tracks both scores.',
                                 onHelpTap: () => _showHelpDialog(
                                     context,
-                                    'Scoring',
-                                    'Gross is total strokes. Net adjusts for handicap. Both tracks both scores.'),
+                                    'Handicap Use',
+                                    'Gross is total strokes. Net adjusts for handicap. Gross + Net tracks both scores.'),
                               ),
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxs),
@@ -1596,8 +1296,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                   options: [
                                     {'value': 'Gross', 'label': 'Gross', 'icon': Icons.sports_golf_rounded, 'emoji': '📊'},
                                     {'value': 'Net', 'label': 'Net', 'icon': Icons.calculate_rounded, 'emoji': '🧮'},
-                                    {'value': 'Both', 'label': 'Both', 'icon': Icons.compare_arrows_rounded, 'emoji': '↔️'},
-                                    {'value': 'FUN', 'label': 'Just Fun', 'icon': Icons.celebration_rounded, 'emoji': '🎉'},
+                                    {'value': 'Both', 'label': 'Gross + Net', 'icon': Icons.compare_arrows_rounded, 'emoji': '↔️'},
                                   ],
                                   selectedValue: scoringValue,
                                   onChanged: (val) {
@@ -1606,10 +1305,104 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                       _saveDraft();
                                     }
                                   },
-                                  crossAxisCount: 2,
-                                  childAspectRatio: 1.6,
+                                  crossAxisCount: 3,
+                                  childAspectRatio: 0.95,
                                 ),
                               ),
+
+                              // Games Multi-Select Section
+                              SectionHeader(
+                                emoji: '🎮',
+                                title: 'Games (Optional)',
+                                helpText: 'Add up to 3 side games to your round. These are played alongside your primary format.',
+                                onHelpTap: () => _showHelpDialog(
+                                    context,
+                                    'Games',
+                                    'Add up to 3 side games to your round. These are played alongside your primary format.'),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(top: AppSpacing.xxs),
+                                child: GamesMultiSelect(
+                                  selectedGames: _selectedGames,
+                                  onGameToggled: (game) {
+                                    if (mounted) {
+                                      setState(() {
+                                        if (_selectedGames.contains(game)) {
+                                          _selectedGames.remove(game);
+                                          // Clear other game text if deselecting Other
+                                          if (game == 'Other') {
+                                            _otherGameText = null;
+                                            _otherGameController.clear();
+                                          }
+                                        } else {
+                                          _selectedGames.add(game);
+                                        }
+                                      });
+                                      _saveDraft();
+                                    }
+                                  },
+                                  otherGameController: _otherGameController,
+                                  onOtherGameChanged: (text) {
+                                    setState(() {
+                                      _otherGameText = text.trim().isEmpty ? null : text.trim();
+                                    });
+                                    _saveDraft();
+                                  },
+                                  maxGames: 3,
+                                ),
+                              ),
+
+                              // Auto-Generated Summary
+                              if (gameTypeValue != null &&
+                                  scoringValue != null &&
+                                  styleGameValue != null &&
+                                  rulesSetValue != null) ...[
+                                Padding(
+                                  padding: EdgeInsets.only(top: AppSpacing.lg),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.all(AppSpacing.md),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          AppColors.fairway.withValues(alpha: 0.3),
+                                          AppColors.fairwayDark.withValues(alpha: 0.4),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: AppColors.sunsetGold.withValues(alpha: 0.3),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Game Summary',
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white.withValues(alpha: 0.7),
+                                          ),
+                                        ),
+                                        SizedBox(height: AppSpacing.xs),
+                                        Text(
+                                          _buildGameSummary(),
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white,
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxl),
                                 child: AppButtonEnhanced(
