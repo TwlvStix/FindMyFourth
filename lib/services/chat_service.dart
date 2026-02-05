@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 
 import '/models/chat.dart';
@@ -289,6 +290,22 @@ class ChatService {
     required String uid,
   }) async {
     try {
+      // Try Cloud Function first (production-grade, admin privileges)
+      try {
+        debugPrint('🔥 Attempting Cloud Function deleteChat for $chatId');
+        final functions = FirebaseFunctions.instanceFor(region: 'us-west2');
+        final callable = functions.httpsCallable('deleteChat');
+        final result = await callable.call({'chatId': chatId});
+
+        debugPrint('✅ Cloud Function deleteChat succeeded: ${result.data}');
+        return; // Success via Cloud Function
+      } catch (cloudFunctionError) {
+        debugPrint('⚠️ Cloud Function deleteChat failed, falling back to client-side: $cloudFunctionError');
+        // Fall through to client-side deletion
+      }
+
+      // Fallback: Client-side deletion (uses security rules)
+      debugPrint('📱 Using client-side deleteChat for $chatId');
       final chatRef = _firestore.collection('chats').doc(chatId);
 
       // First, verify the user is a member of this chat
@@ -328,6 +345,7 @@ class ChatService {
 
       // Delete the chat document itself
       await chatRef.delete();
+      debugPrint('✅ Client-side deleteChat succeeded for $chatId');
     } catch (e, stackTrace) {
       debugPrint('❌ ChatService: Error deleting chat: $e');
       debugPrint('❌ ChatService: StackTrace: $stackTrace');

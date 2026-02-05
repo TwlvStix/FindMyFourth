@@ -516,6 +516,7 @@ service cloud.firestore {
         allow update: if request.auth.uid == document &&
           request.resource.data.diff(resource.data).changedKeys()
             .hasOnly(['read']);
+        allow delete: if request.auth.uid == document;
       }
     }
 
@@ -570,11 +571,11 @@ service cloud.firestore {
             messageSenderUpdateAllowed(resource.data, request.resource.data)) ||
           readByChangeAllowed(resource.data, request.resource.data)
         );
-        allow delete: if isSignedIn() &&
-          isChatMemberById(chatId) && (
-            resource.data.senderId == request.auth.uid ||
-            isGameChatOwnerById(chatId)
-          );
+        allow delete: if isSignedIn() && isChatMemberById(chatId) && (
+          resource.data.senderId == request.auth.uid ||
+          isGameChatOwnerById(chatId) ||
+          (chatDataById(chatId).type != 'game' && isChatMemberById(chatId))
+        );
       }
     }
 

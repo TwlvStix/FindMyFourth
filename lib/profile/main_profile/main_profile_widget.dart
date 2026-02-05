@@ -8,6 +8,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/motion/motion_helpers.dart';
+import '/core/navigation/transition_standards.dart';
 import '/utils/app_util.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/notifications/notification_page/notification_page_widget.dart';
@@ -147,6 +148,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               HapticFeedback.lightImpact();
                               _pushNamed(
                                 NotificationsListWidget.routeName,
+                                extra: <String, dynamic>{
+                                  kTransitionInfoKey: TransitionStandards.detailTransition,
+                                },
                               );
                             },
                           ),
@@ -964,12 +968,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       NotificationPageWidget.routeName,
                       extra: <String, dynamic>{
                         kTransitionInfoKey: TransitionInfo(
-                  hasTransition: true,
-                  transitionType: PageTransitionType.fade,
-                  enterDuration: Duration(milliseconds: 200),
-                  exitDuration: Duration(milliseconds: 170),
-                  scaleOnPush: true,
-                ),
+                          hasTransition: true,
+                          transitionType: PageTransitionType.fade,
+                          enterDuration: Duration(milliseconds: 200),
+                          exitDuration: Duration(milliseconds: 170),
+                          scaleOnPush: true,
+                        ),
                       },
                     );
                   },

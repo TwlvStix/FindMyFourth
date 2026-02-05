@@ -1363,3 +1363,127 @@ exports.syncUsernameIndex = functions
       console.error("syncUsernameIndex failed", error);
     }
   });
+
+/**
+ * Cloud Function to delete a chat and all its messages.
+ * Uses admin privileges to bypass security rules for efficient batch deletion.
+ *
+ * @param {Object} data - { chatId: string }
+ * @param {Object} context - Authentication context
+ * @returns {Promise<{success: boolean, messagesDeleted: number}>}
+ */
+exports.deleteChat = functions
+  .region("us-west2")
+  .https.onCall(async (data, context) => {
+    // Verify authentication
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "User must be authenticated to delete a chat.",
+      );
+    }
+
+    const { chatId } = data;
+    const uid = context.auth.uid;
+
+    // Validate input
+    if (!chatId || typeof chatId !== "string") {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "chatId must be a non-empty string.",
+      );
+    }
+
+    const firestore = admin.firestore();
+    const chatRef = firestore.collection("chats").doc(chatId);
+
+    try {
+      // 1. Verify the chat exists and user has permission
+      const chatSnapshot = await chatRef.get();
+      if (!chatSnapshot.exists) {
+        throw new functions.https.HttpsError(
+          "not-found",
+          "Chat not found.",
+        );
+      }
+
+      const chatData = chatSnapshot.data();
+      const memberIds = Array.isArray(chatData.memberIds)
+        ? chatData.memberIds
+        : [];
+      const chatType = chatData.type;
+
+      // 2. Check permission based on chat type
+      let hasPermission = false;
+
+      if (chatType === "game") {
+        // For game chats, only game owner can delete
+        if (chatData.gameId) {
+          const gameRef = firestore.collection("games").doc(chatData.gameId);
+          const gameSnapshot = await gameRef.get();
+          if (gameSnapshot.exists && gameSnapshot.data().uid === uid) {
+            hasPermission = true;
+          }
+        }
+      } else {
+        // For direct chats, any member can delete
+        hasPermission = memberIds.includes(uid);
+      }
+
+      if (!hasPermission) {
+        throw new functions.https.HttpsError(
+          "permission-denied",
+          "You do not have permission to delete this chat.",
+        );
+      }
+
+      // 3. Delete all messages in batches (admin SDK bypasses security rules)
+      const messagesRef = chatRef.collection("messages");
+      const messagesSnapshot = await messagesRef.get();
+      const totalMessages = messagesSnapshot.docs.length;
+
+      console.log(`Deleting chat ${chatId} with ${totalMessages} messages`);
+
+      // Delete in batches of 500 (Firestore batch write limit)
+      const batchSize = 500;
+      let deletedCount = 0;
+
+      for (let i = 0; i < totalMessages; i += batchSize) {
+        const batch = firestore.batch();
+        const end =
+          i + batchSize < totalMessages ? i + batchSize : totalMessages;
+
+        for (let j = i; j < end; j++) {
+          batch.delete(messagesSnapshot.docs[j].ref);
+          deletedCount++;
+        }
+
+        await batch.commit();
+      }
+
+      // 4. Delete the chat document itself
+      await chatRef.delete();
+
+      console.log(
+        `Successfully deleted chat ${chatId} and ${deletedCount} messages`,
+      );
+
+      return {
+        success: true,
+        messagesDeleted: deletedCount,
+      };
+    } catch (error) {
+      console.error("deleteChat Cloud Function failed:", error);
+
+      // Re-throw HttpsErrors as-is
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+
+      // Wrap other errors
+      throw new functions.https.HttpsError(
+        "internal",
+        `Failed to delete chat: ${error.message}`,
+      );
+    }
+  });

@@ -77,6 +77,128 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     await reference.update({'read': true});
   }
 
+  Future<void> _markAsUnread(DocumentReference reference) async {
+    await reference.update({'read': false});
+  }
+
+  Future<void> _deleteNotification(DocumentReference reference) async {
+    try {
+      await reference.delete();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Notification deleted'),
+            backgroundColor: AppColors.fairway,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete notification'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteAllNotifications(DocumentReference userRef) async {
+    try {
+      // Get all notifications in batches of 500 to stay under Firestore limits
+      final allSnapshot = await userRef
+          .collection('notifications')
+          .orderBy('createdAt')
+          .get();
+
+      if (allSnapshot.docs.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('No notifications to delete'),
+              backgroundColor: AppColors.fairway,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+
+      var batch = FirebaseFirestore.instance.batch();
+      var opCount = 0;
+
+      for (final doc in allSnapshot.docs) {
+        batch.delete(doc.reference);
+        opCount += 1;
+        // Commit batch at 500 operations (Firestore limit)
+        if (opCount >= 500) {
+          await batch.commit();
+          batch = FirebaseFirestore.instance.batch();
+          opCount = 0;
+        }
+      }
+
+      // Commit remaining operations
+      if (opCount > 0) {
+        await batch.commit();
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('All notifications deleted'),
+            backgroundColor: AppColors.fairway,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete notifications'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showDeleteAllConfirmDialog(DocumentReference userRef) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Delete All Notifications'),
+        content: Text('Are you sure you want to delete all notifications? This action cannot be undone.'),
+        backgroundColor: AppTheme.of(context).secondaryBackground,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppTheme.of(context).secondaryText),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(
+              'Delete All',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete == true) {
+      await _deleteAllNotifications(userRef);
+    }
+  }
+
   Map<String, dynamic> _extractDataMap(dynamic raw) {
     if (raw is Map<String, dynamic>) {
       return raw;
@@ -223,11 +345,47 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                       );
                     },
                   ),
+                  PopupMenuButton<String>(
+                    icon: Icon(
+                      Icons.more_vert,
+                      color: Colors.white,
+                    ),
+                    color: AppTheme.of(context).secondaryBackground,
+                    onSelected: (value) {
+                      if (value == 'delete_all') {
+                        _showDeleteAllConfirmDialog(userRef);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem<String>(
+                        value: 'delete_all',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete_sweep,
+                              color: Colors.red,
+                              size: 20.0,
+                            ),
+                            SizedBox(width: AppSpacing.sm),
+                            Text(
+                              'Delete all',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
           centerTitle: false,
         ),
         body: FairwayBackgroundDark(
-          child: userRef == null
+          child: SafeArea(
+            top: false,
+            child: userRef == null
               ? Center(
                   child: Text(
                     'Please sign in to view notifications.',
@@ -305,7 +463,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                       child: ListView.separated(
                         padding: EdgeInsets.fromLTRB(
                           AppSpacing.md,
-                          AppSpacing.sm,
+                          MediaQuery.of(context).padding.top + 60,
                           AppSpacing.md,
                           AppSpacing.xxxl,
                         ),
@@ -325,171 +483,261 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               (data['createdAt'] as Timestamp?)?.toDate();
                           final timeLabel =
                               dateTimeFormat('relative', createdAt);
-                          return InkWell(
-                            borderRadius: BorderRadius.circular(12.0),
-                            onTap: () async {
-                              await _handleNotificationTap(doc);
-                            },
-                            child: Container(
+                          return Dismissible(
+                            key: Key(doc.id),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: EdgeInsets.only(right: AppSpacing.md),
                               decoration: BoxDecoration(
-                                color:
-                                    AppTheme.of(context).secondaryBackground,
+                                color: Colors.red,
                                 borderRadius: BorderRadius.circular(12.0),
-                                border: Border.all(
-                                  color: AppTheme.of(context).alternate,
-                                  width: 1.0,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    blurRadius: 3.0,
-                                    color: Color(0x33000000),
-                                    offset: Offset(0.0, 1.0),
-                                  ),
-                                ],
                               ),
-                              padding: EdgeInsets.all(AppSpacing.md),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    width: 36.0,
-                                    height: 36.0,
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.of(context).primary,
-                                      shape: BoxShape.circle,
+                              child: Icon(
+                                Icons.delete_outline,
+                                color: Colors.white,
+                                size: 28.0,
+                              ),
+                            ),
+                            confirmDismiss: (direction) async {
+                              return await showDialog<bool>(
+                                context: context,
+                                builder: (dialogContext) => AlertDialog(
+                                  title: Text('Delete Notification'),
+                                  content: Text('Are you sure you want to delete this notification?'),
+                                  backgroundColor: AppTheme.of(context).secondaryBackground,
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.of(dialogContext).pop(false),
+                                      child: Text(
+                                        'Cancel',
+                                        style: TextStyle(color: AppTheme.of(context).secondaryText),
+                                      ),
                                     ),
-                                    child: Icon(
-                                      _iconForType(type),
-                                      color:
-                                          AppTheme.of(context).primaryBtnText,
-                                      size: 18.0,
+                                    TextButton(
+                                      onPressed: () => Navigator.of(dialogContext).pop(true),
+                                      child: Text(
+                                        'Delete',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
                                     ),
-                                  ),
-                                  SizedBox(width: AppSpacing.sm),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                  ],
+                                ),
+                              ) ?? false;
+                            },
+                            onDismissed: (direction) {
+                              _deleteNotification(doc.reference);
+                            },
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12.0),
+                              onTap: () async {
+                                await _handleNotificationTap(doc);
+                              },
+                              onLongPress: isRead ? () async {
+                                final result = await showDialog<String>(
+                                  context: context,
+                                  builder: (dialogContext) => AlertDialog(
+                                    title: Text('Notification Actions'),
+                                    backgroundColor: AppTheme.of(context).secondaryBackground,
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                title?.isNotEmpty == true
-                                                    ? title!
-                                                    : _titleFallback(type),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: AppTheme.of(context)
-                                                    .bodyLarge
-                                                    .override(
-                                                      font: GoogleFonts.outfit(
-                                                        fontWeight: AppTheme.of(
-                                                                context)
-                                                            .bodyLarge
-                                                            .fontWeight,
-                                                        fontStyle: AppTheme.of(
-                                                                context)
-                                                            .bodyLarge
-                                                            .fontStyle,
-                                                      ),
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          AppTheme.of(context)
-                                                              .bodyLarge
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          AppTheme.of(context)
-                                                              .bodyLarge
-                                                              .fontStyle,
-                                                    ),
-                                              ),
-                                            ),
-                                            if (timeLabel.isNotEmpty)
-                                              Padding(
-                                                padding:
-                                                    EdgeInsetsDirectional.only(
-                                                  start: AppSpacing.xs,
-                                                ),
-                                                child: Text(
-                                                  timeLabel,
-                                                  style: AppTheme.of(context)
-                                                      .labelSmall
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.outfit(
-                                                          fontWeight:
-                                                              AppTheme.of(context)
-                                                                  .labelSmall
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTheme.of(context)
-                                                                  .labelSmall
-                                                                  .fontStyle,
-                                                        ),
-                                                        color: AppTheme.of(context)
-                                                            .secondaryText,
-                                                        letterSpacing: 0.0,
-                                                      ),
-                                                ),
-                                              ),
-                                            if (!isRead)
-                                              Container(
-                                                margin:
-                                                    EdgeInsetsDirectional.only(
-                                                  start: AppSpacing.xs,
-                                                ),
-                                                width: 8.0,
-                                                height: 8.0,
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      AppTheme.of(context).primary,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                        if ((body ?? '').isNotEmpty)
-                                          Padding(
-                                            padding: EdgeInsetsDirectional.only(
-                                              top: AppSpacing.xxs,
-                                            ),
-                                            child: Text(
-                                              body!,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .override(
-                                                    font: GoogleFonts.outfit(
-                                                      fontWeight:
-                                                          AppTheme.of(context)
-                                                              .bodyMedium
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          AppTheme.of(context)
-                                                              .bodyMedium
-                                                              .fontStyle,
-                                                    ),
-                                                    color:
-                                                        AppTheme.of(context)
-                                                            .primaryText,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight:
-                                                        AppTheme.of(context)
-                                                            .bodyMedium
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        AppTheme.of(context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                            ),
+                                        ListTile(
+                                          leading: Icon(
+                                            Icons.mark_email_unread,
+                                            color: AppTheme.of(context).primary,
                                           ),
+                                          title: Text('Mark as unread'),
+                                          onTap: () => Navigator.of(dialogContext).pop('unread'),
+                                        ),
+                                        ListTile(
+                                          leading: Icon(
+                                            Icons.delete_outline,
+                                            color: Colors.red,
+                                          ),
+                                          title: Text('Delete'),
+                                          onTap: () => Navigator.of(dialogContext).pop('delete'),
+                                        ),
                                       ],
                                     ),
                                   ),
-                                ],
+                                );
+                                if (result == 'unread') {
+                                  await _markAsUnread(doc.reference);
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Marked as unread'),
+                                        backgroundColor: AppColors.fairway,
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
+                                  }
+                                } else if (result == 'delete') {
+                                  await _deleteNotification(doc.reference);
+                                }
+                              } : null,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color:
+                                      AppTheme.of(context).secondaryBackground,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  border: Border.all(
+                                    color: AppTheme.of(context).alternate,
+                                    width: 1.0,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      blurRadius: 3.0,
+                                      color: Color(0x33000000),
+                                      offset: Offset(0.0, 1.0),
+                                    ),
+                                  ],
+                                ),
+                                padding: EdgeInsets.all(AppSpacing.md),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      width: 36.0,
+                                      height: 36.0,
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.of(context).primary,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        _iconForType(type),
+                                        color:
+                                            AppTheme.of(context).primaryBtnText,
+                                        size: 18.0,
+                                      ),
+                                    ),
+                                    SizedBox(width: AppSpacing.sm),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  title?.isNotEmpty == true
+                                                      ? title!
+                                                      : _titleFallback(type),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: AppTheme.of(context)
+                                                      .bodyLarge
+                                                      .override(
+                                                        font: GoogleFonts.outfit(
+                                                          fontWeight: AppTheme.of(
+                                                                  context)
+                                                              .bodyLarge
+                                                              .fontWeight,
+                                                          fontStyle: AppTheme.of(
+                                                                  context)
+                                                              .bodyLarge
+                                                              .fontStyle,
+                                                        ),
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            AppTheme.of(context)
+                                                                .bodyLarge
+                                                                .fontWeight,
+                                                        fontStyle:
+                                                            AppTheme.of(context)
+                                                                .bodyLarge
+                                                                .fontStyle,
+                                                      ),
+                                                ),
+                                              ),
+                                              if (timeLabel.isNotEmpty)
+                                                Padding(
+                                                  padding:
+                                                      EdgeInsetsDirectional.only(
+                                                    start: AppSpacing.xs,
+                                                  ),
+                                                  child: Text(
+                                                    timeLabel,
+                                                    style: AppTheme.of(context)
+                                                        .labelSmall
+                                                        .override(
+                                                          font:
+                                                              GoogleFonts.outfit(
+                                                            fontWeight:
+                                                                AppTheme.of(context)
+                                                                    .labelSmall
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                AppTheme.of(context)
+                                                                    .labelSmall
+                                                                    .fontStyle,
+                                                          ),
+                                                          color: AppTheme.of(context)
+                                                              .secondaryText,
+                                                          letterSpacing: 0.0,
+                                                        ),
+                                                  ),
+                                                ),
+                                              if (!isRead)
+                                                Container(
+                                                  margin:
+                                                      EdgeInsetsDirectional.only(
+                                                    start: AppSpacing.xs,
+                                                  ),
+                                                  width: 8.0,
+                                                  height: 8.0,
+                                                  decoration: BoxDecoration(
+                                                    color:
+                                                        AppTheme.of(context).primary,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                          if ((body ?? '').isNotEmpty)
+                                            Padding(
+                                              padding: EdgeInsetsDirectional.only(
+                                                top: AppSpacing.xxs,
+                                              ),
+                                              child: Text(
+                                                body!,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: AppTheme.of(context)
+                                                    .bodyMedium
+                                                    .override(
+                                                      font: GoogleFonts.outfit(
+                                                        fontWeight:
+                                                            AppTheme.of(context)
+                                                                .bodyMedium
+                                                                .fontWeight,
+                                                        fontStyle:
+                                                            AppTheme.of(context)
+                                                                .bodyMedium
+                                                                .fontStyle,
+                                                      ),
+                                                      color:
+                                                          AppTheme.of(context)
+                                                              .primaryText,
+                                                      letterSpacing: 0.0,
+                                                      fontWeight:
+                                                          AppTheme.of(context)
+                                                              .bodyMedium
+                                                              .fontWeight,
+                                                      fontStyle:
+                                                          AppTheme.of(context)
+                                                              .bodyMedium
+                                                              .fontStyle,
+                                                    ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );
@@ -498,6 +746,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                     );
                   },
                 ),
+          ),
         ),
       ),
     );
