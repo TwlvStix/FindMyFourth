@@ -677,6 +677,14 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                     },
                                                     onMessage: () async {
                                                       // Accept button
+                                                      // Capture context values before async operation
+                                                      final scaffoldMessenger =
+                                                          ScaffoldMessenger.of(
+                                                              context);
+                                                      final theme = AppTheme.of(context);
+                                                      final titleMediumStyle = theme.titleMedium;
+                                                      final primaryBtnTextColor = theme.primaryBtnText;
+                                                      final primaryColor = theme.primary;
                                                       try {
                                                         await context
                                                             .read<UserProvider>()
@@ -687,42 +695,27 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                         if (mounted) {
                                                           setState(() {});
                                                         }
-                                                        if (!mounted) {
-                                                          return;
-                                                        }
-                                                        ScaffoldMessenger.of(
-                                                                context)
+                                                        // Show success message using captured values
+                                                        scaffoldMessenger
                                                             .showSnackBar(
                                                           SnackBar(
                                                             content: Text(
                                                               'Friend request accepted!',
-                                                              style: AppTheme.of(
-                                                                      context)
-                                                                  .titleMedium
+                                                              style: titleMediumStyle
                                                                   .override(
                                                                     font: GoogleFonts
                                                                         .outfit(
-                                                                      fontWeight: AppTheme.of(
-                                                                              context)
-                                                                          .titleMedium
+                                                                      fontWeight: titleMediumStyle
                                                                           .fontWeight,
-                                                                      fontStyle: AppTheme.of(
-                                                                              context)
-                                                                          .titleMedium
+                                                                      fontStyle: titleMediumStyle
                                                                           .fontStyle,
                                                                     ),
-                                                                    color: AppTheme.of(
-                                                                            context)
-                                                                        .primaryBtnText,
+                                                                    color: primaryBtnTextColor,
                                                                     letterSpacing:
                                                                         0.0,
-                                                                    fontWeight: AppTheme.of(
-                                                                            context)
-                                                                        .titleMedium
+                                                                    fontWeight: titleMediumStyle
                                                                         .fontWeight,
-                                                                    fontStyle: AppTheme.of(
-                                                                            context)
-                                                                        .titleMedium
+                                                                    fontStyle: titleMediumStyle
                                                                         .fontStyle,
                                                                   ),
                                                             ),
@@ -730,9 +723,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                 milliseconds:
                                                                     1500),
                                                             backgroundColor:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .primary,
+                                                                primaryColor,
                                                           ),
                                                         );
                                                       } catch (e) {

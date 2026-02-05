@@ -651,27 +651,40 @@ class UserProvider extends ChangeNotifier {
 
   /// Accept friend request
   Future<void> acceptFriendRequest(DocumentReference requesterRef) async {
+    final authUser = FirebaseAuth.instance.currentUser;
+    if (authUser == null) return;
+    final currentUserRef = UsersRecord.collection.doc(authUser.uid);
+
+    // Remove from friend_requests list (non-fatal if fails)
     try {
-      final authUser = FirebaseAuth.instance.currentUser;
-      if (authUser == null) return;
-      final currentUserRef = UsersRecord.collection.doc(authUser.uid);
       await currentUserRef.update({
         'friend_requests': FieldValue.arrayRemove(
           [requesterRef, requesterRef.id],
         ),
       });
+    } catch (e) {
+      debugPrint('Failed to remove from friend_requests: $e');
+    }
+
+    // Add to friends lists (current user and requester)
+    try {
       await currentUserRef.update({
         'friends': FieldValue.arrayUnion([requesterRef]),
       });
       await requesterRef.update({
         'friends': FieldValue.arrayUnion([currentUserRef]),
       });
-
-      refreshFriends();
-      refreshFriendRequests();
     } catch (e) {
       debugPrint('Error accepting friend request: $e');
       rethrow;
+    }
+
+    // Refresh UI state
+    try {
+      refreshFriends();
+      refreshFriendRequests();
+    } catch (e) {
+      debugPrint('Error refreshing friends: $e');
     }
   }
 

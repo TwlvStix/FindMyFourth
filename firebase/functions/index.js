@@ -362,7 +362,9 @@ exports.sendGameCreatedNotifications = functions
     const gameData = snapshot.data() || {};
     const gameId = context.params.gameId;
     const styleTokens = extractGameStyleTokens(gameData);
+    console.log(`Game ${gameId} created with style tokens:`, styleTokens);
     if (styleTokens.length === 0) {
+      console.log(`No style tokens found for game ${gameId}, skipping notifications`);
       return;
     }
     const creatorUid = gameData.userRef?.id || gameData.uid || null;
@@ -374,6 +376,7 @@ exports.sendGameCreatedNotifications = functions
         .where("style", "==", token)
         .where("enabled", "==", true)
         .get();
+      console.log(`Found ${subsSnap.docs.length} subscriptions for style: ${token}`);
       subsSnap.docs.forEach((doc) => {
         const uid = doc.data()?.uid;
         if (typeof uid === "string" && uid.length > 0) {
@@ -382,7 +385,9 @@ exports.sendGameCreatedNotifications = functions
       });
     }
 
+    console.log(`Total recipients for game ${gameId}: ${recipients.size}`);
     if (recipients.size === 0) {
+      console.log(`No recipients found for game ${gameId}, skipping notifications`);
       return;
     }
 
@@ -538,6 +543,123 @@ exports.sendGameCreatedNotifications = functions
           },
         });
       }
+    }
+  });
+
+/**
+ * Syncs user notification preferences to alertSubs collection.
+ * This enables the sendGameCreatedNotifications function to efficiently
+ * query for users interested in specific game styles.
+ */
+exports.syncNotificationPreferencesToAlertSubs = functions
+  .region("us-west2")
+  .firestore.document("users/{userId}")
+  .onWrite(async (change, context) => {
+    const userId = context.params.userId;
+    const before = change.before.exists ? change.before.data() : null;
+    const after = change.after.exists ? change.after.data() : null;
+
+    // If user deleted, clean up their alertSubs
+    if (!after) {
+      console.log(`User ${userId} deleted, cleaning up alertSubs`);
+      const subsToDelete = await firestore
+        .collection(kAlertSubsCollection)
+        .where("uid", "==", userId)
+        .get();
+      const batch = firestore.batch();
+      subsToDelete.docs.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+      return;
+    }
+
+    const beforePrefs = getUserNotificationPrefs(before || {});
+    const afterPrefs = getUserNotificationPrefs(after || {});
+
+    // Extract old and new styles
+    const oldStyles = new Set(beforePrefs.styles);
+    const newStyles = new Set(afterPrefs.styles);
+
+    // Determine if game alerts are enabled
+    const gameAlertsEnabled = afterPrefs.pushEnabled && afterPrefs.gameAlertsEnabled;
+
+    console.log(`Syncing alertSubs for user ${userId}:`, {
+      oldStyles: Array.from(oldStyles),
+      newStyles: Array.from(newStyles),
+      gameAlertsEnabled,
+    });
+
+    // Styles to add/enable
+    const stylesToEnable = Array.from(newStyles).filter((s) => !oldStyles.has(s));
+
+    // Styles to disable (removed from preferences)
+    const stylesToDisable = Array.from(oldStyles).filter((s) => !newStyles.has(s));
+
+    // Styles that remain but need enabled status updated
+    const stylesToUpdate = Array.from(newStyles).filter((s) => oldStyles.has(s));
+
+    const batch = firestore.batch();
+    let changeCount = 0;
+
+    // Enable new subscriptions
+    for (const style of stylesToEnable) {
+      // Use compound doc ID for uniqueness
+      const docId = `${userId}_${style}`;
+      const subRef = firestore.collection(kAlertSubsCollection).doc(docId);
+      batch.set(subRef, {
+        uid: userId,
+        style,
+        enabled: gameAlertsEnabled,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      changeCount++;
+      console.log(`Enabling alertSub: ${docId}`);
+    }
+
+    // Disable removed subscriptions
+    for (const style of stylesToDisable) {
+      const docId = `${userId}_${style}`;
+      const subRef = firestore.collection(kAlertSubsCollection).doc(docId);
+      batch.set(
+        subRef,
+        {
+          enabled: false,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+      changeCount++;
+      console.log(`Disabling alertSub: ${docId}`);
+    }
+
+    // Update enabled status for existing subscriptions
+    for (const style of stylesToUpdate) {
+      const docId = `${userId}_${style}`;
+      const subRef = firestore.collection(kAlertSubsCollection).doc(docId);
+      const subSnap = await subRef.get();
+
+      // Only update if enabled status changed
+      if (!subSnap.exists || subSnap.data()?.enabled !== gameAlertsEnabled) {
+        batch.set(
+          subRef,
+          {
+            uid: userId,
+            style,
+            enabled: gameAlertsEnabled,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
+        changeCount++;
+        console.log(`Updating alertSub: ${docId} enabled=${gameAlertsEnabled}`);
+      }
+    }
+
+    if (changeCount > 0) {
+      await batch.commit();
+      console.log(`Synced ${changeCount} alertSub documents for user ${userId}`);
+    } else {
+      console.log(`No alertSub changes needed for user ${userId}`);
     }
   });
 
@@ -1372,6 +1494,97 @@ exports.syncUsernameIndex = functions
  * @param {Object} context - Authentication context
  * @returns {Promise<{success: boolean, messagesDeleted: number}>}
  */
+/**
+ * One-time migration function to backfill alertSubs for existing users.
+ * Call this once after deploying the syncNotificationPreferencesToAlertSubs function.
+ *
+ * Usage: firebase functions:call backfillAlertSubs
+ */
+exports.backfillAlertSubs = functions
+  .region("us-west2")
+  .runWith({
+    timeoutSeconds: 540,
+    memory: "2GB",
+  })
+  .https.onCall(async (data, context) => {
+    // Require authentication and optionally restrict to admins
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Must be authenticated to run backfill",
+      );
+    }
+
+    console.log(`Starting alertSubs backfill initiated by ${context.auth.uid}`);
+
+    try {
+      // Get all users
+      const usersSnap = await firestore.collection("users").get();
+      console.log(`Found ${usersSnap.docs.length} users to process`);
+
+      let processedCount = 0;
+      let skippedCount = 0;
+      let errorCount = 0;
+
+      for (const userDoc of usersSnap.docs) {
+        const userId = userDoc.id;
+        const userData = userDoc.data() || {};
+
+        try {
+          const prefs = getUserNotificationPrefs(userData);
+          const gameAlertsEnabled = prefs.pushEnabled && prefs.gameAlertsEnabled;
+          const styles = prefs.styles || [];
+
+          if (styles.length === 0) {
+            skippedCount++;
+            continue;
+          }
+
+          const batch = firestore.batch();
+
+          for (const style of styles) {
+            const docId = `${userId}_${style}`;
+            const subRef = firestore.collection(kAlertSubsCollection).doc(docId);
+
+            batch.set(subRef, {
+              uid: userId,
+              style,
+              enabled: gameAlertsEnabled,
+              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+          }
+
+          await batch.commit();
+          processedCount++;
+
+          if (processedCount % 50 === 0) {
+            console.log(`Processed ${processedCount} users so far...`);
+          }
+        } catch (error) {
+          console.error(`Error processing user ${userId}:`, error);
+          errorCount++;
+        }
+      }
+
+      const summary = {
+        totalUsers: usersSnap.docs.length,
+        processedCount,
+        skippedCount,
+        errorCount,
+      };
+
+      console.log("Backfill complete:", summary);
+      return summary;
+    } catch (error) {
+      console.error("Backfill failed:", error);
+      throw new functions.https.HttpsError(
+        "internal",
+        `Backfill failed: ${error.message}`,
+      );
+    }
+  });
+
 exports.deleteChat = functions
   .region("us-west2")
   .https.onCall(async (data, context) => {
