@@ -45,6 +45,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   List<Game>? _cachedGames;
   GameListFilters _filters = GameListFilters();
   Set<String> _availableGameTypes = {};
+  Set<String> _availableVibes = {};
+  Set<String> _availableStakes = {};
+  Set<String> _availableHandicaps = {};
+  Set<String> _availableCourses = {};
   bool _showLockedGames = false;
   static const Map<CancelledGameHandling, String>
       _cancelledHandlingStorageMap = {
@@ -162,29 +166,85 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     switch (value) {
       case 'stroke':
       case 'stroke play':
-        return 'Stroke';
+        return 'Stroke Play';
       case 'match play':
       case 'matchplay':
         return 'Match Play';
-      case 'skins':
-        return 'Skins';
-      case 'money':
-      case 'money game':
-        return 'Money';
+      case 'stableford':
+        return 'Stableford';
+      default:
+        return null;
+    }
+  }
+
+  String? _canonicalVibe(String rawValue) {
+    final value = rawValue.trim().toLowerCase();
+    if (value.isEmpty) {
+      return null;
+    }
+    switch (value) {
+      case 'competitive':
+        return 'Competitive';
       case 'casual':
         return 'Casual';
-      case 'fun':
-      case 'for fun':
-      case 'all fun':
-        return 'Fun';
+      default:
+        return null;
+    }
+  }
+
+  String? _canonicalStakes(String rawValue) {
+    final value = rawValue.trim().toLowerCase();
+    if (value.isEmpty) {
+      return null;
+    }
+    switch (value) {
+      case 'no money':
+      case 'nomoney':
+        return 'No Money';
+      case 'low stakes':
+      case 'lowstakes':
+        return 'Low Stakes';
+      case 'high stakes':
+      case 'highstakes':
+        return 'High Stakes';
+      default:
+        return null;
+    }
+  }
+
+  String? _canonicalHandicap(String rawValue) {
+    final value = rawValue.trim().toLowerCase();
+    if (value.isEmpty) {
+      return null;
+    }
+    switch (value) {
+      case 'gross':
+        return 'Gross';
+      case 'net':
+        return 'Net';
+      case 'both':
+      case 'gross + net':
+      case 'gross+net':
+        return 'Both';
       default:
         return null;
     }
   }
 
   String? _gameTypeForFilters(Game game) {
-    return _canonicalGameType(game.gameType) ??
-        _canonicalGameType(game.styleGame);
+    return _canonicalGameType(game.gameType);
+  }
+
+  String? _vibeForFilters(Game game) {
+    return _canonicalVibe(game.rulesSetting);
+  }
+
+  String? _stakesForFilters(Game game) {
+    return _canonicalStakes(game.styleGame);
+  }
+
+  String? _handicapForFilters(Game game) {
+    return _canonicalHandicap(game.scoring);
   }
 
   bool _isSameDay(DateTime a, DateTime b) {
@@ -268,6 +328,31 @@ class _GamesListWidgetState extends State<GamesListWidget> {
           return false;
         }
       }
+      if (filters.selectedVibes.isNotEmpty) {
+        final vibe = _vibeForFilters(game);
+        if (vibe == null || !filters.selectedVibes.contains(vibe)) {
+          return false;
+        }
+      }
+      if (filters.selectedStakes.isNotEmpty) {
+        final stakes = _stakesForFilters(game);
+        if (stakes == null || !filters.selectedStakes.contains(stakes)) {
+          return false;
+        }
+      }
+      if (filters.selectedHandicaps.isNotEmpty) {
+        final handicap = _handicapForFilters(game);
+        if (handicap == null ||
+            !filters.selectedHandicaps.contains(handicap)) {
+          return false;
+        }
+      }
+      if (filters.selectedCourse != null &&
+          filters.selectedCourse!.trim().isNotEmpty) {
+        if (game.coursePlay.trim() != filters.selectedCourse!.trim()) {
+          return false;
+        }
+      }
       if (!_matchesDateRange(game.date, filters.selectedDateRange)) {
         return false;
       }
@@ -286,7 +371,57 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     return types;
   }
 
-  Future<void> _showFilterBottomSheet(Set<String> availableGameTypes) async {
+  Set<String> _extractAvailableVibes(List<Game> gamesList) {
+    final vibes = <String>{};
+    for (final game in gamesList) {
+      final vibe = _vibeForFilters(game);
+      if (vibe != null) {
+        vibes.add(vibe);
+      }
+    }
+    return vibes;
+  }
+
+  Set<String> _extractAvailableStakes(List<Game> gamesList) {
+    final stakes = <String>{};
+    for (final game in gamesList) {
+      final stake = _stakesForFilters(game);
+      if (stake != null) {
+        stakes.add(stake);
+      }
+    }
+    return stakes;
+  }
+
+  Set<String> _extractAvailableHandicaps(List<Game> gamesList) {
+    final handicaps = <String>{};
+    for (final game in gamesList) {
+      final handicap = _handicapForFilters(game);
+      if (handicap != null) {
+        handicaps.add(handicap);
+      }
+    }
+    return handicaps;
+  }
+
+  Set<String> _extractAvailableCourses(List<Game> gamesList) {
+    final courses = <String>{};
+    for (final game in gamesList) {
+      final course = game.coursePlay.trim();
+      if (course.isNotEmpty) {
+        courses.add(course);
+      }
+    }
+    return courses;
+  }
+
+  Future<void> _showFilterBottomSheet(
+    Set<String> availableGameTypes,
+    Set<String> availableVibes,
+    Set<String> availableStakes,
+    Set<String> availableHandicaps,
+    Set<String> availableCourses,
+  ) async {
     final result = await showModalBottomSheet<GameListFilters>(
       context: context,
       isScrollControlled: true,
@@ -294,6 +429,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       builder: (context) => GameListFilterBottomSheet(
         currentFilters: _filters,
         availableGameTypes: availableGameTypes,
+        availableVibes: availableVibes,
+        availableStakes: availableStakes,
+        availableHandicaps: availableHandicaps,
+        availableCourses: availableCourses,
       ),
     );
 
@@ -406,7 +545,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   size: 24.0,
                 ),
                 onPressed: () {
-                  _showFilterBottomSheet(_availableGameTypes);
+                  _showFilterBottomSheet(
+                    _availableGameTypes,
+                    _availableVibes,
+                    _availableStakes,
+                    _availableHandicaps,
+                    _availableCourses,
+                  );
                 },
               ),
             ),
@@ -473,6 +618,48 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       if (mounted) {
                         setState(() {
                           _availableGameTypes = availableTypes;
+                        });
+                      }
+                    });
+                  }
+                  final availableVibes = _extractAvailableVibes(activeGames);
+                  if (!setEquals(availableVibes, _availableVibes)) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        setState(() {
+                          _availableVibes = availableVibes;
+                        });
+                      }
+                    });
+                  }
+                  final availableStakes = _extractAvailableStakes(activeGames);
+                  if (!setEquals(availableStakes, _availableStakes)) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        setState(() {
+                          _availableStakes = availableStakes;
+                        });
+                      }
+                    });
+                  }
+                  final availableHandicaps =
+                      _extractAvailableHandicaps(activeGames);
+                  if (!setEquals(availableHandicaps, _availableHandicaps)) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        setState(() {
+                          _availableHandicaps = availableHandicaps;
+                        });
+                      }
+                    });
+                  }
+                  final availableCourses =
+                      _extractAvailableCourses(activeGames);
+                  if (!setEquals(availableCourses, _availableCourses)) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        setState(() {
+                          _availableCourses = availableCourses;
                         });
                       }
                     });

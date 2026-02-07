@@ -1,4 +1,4 @@
-package com.mycompany.findmyfourth
+package com.twlvstix.findmyfourth
 
 import android.app.NotificationChannel
 import android.app.NotificationManager

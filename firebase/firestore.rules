@@ -9,11 +9,6 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid in data.memberIds;
     }
 
-    function isLegacyChatMember(data) {
-      return isSignedIn() &&
-        data.users is list &&
-        data.users.hasAny([/databases/$(database)/documents/users/$(request.auth.uid)]);
-    }
 
     function hasValidChatType(data) {
       return data.type in ['direct', 'game'];
@@ -53,19 +48,12 @@ service cloud.firestore {
       return data.memberIds is list ? data.memberIds : [];
     }
 
-    function isChatMemberOrLegacy(data) {
-      return isChatMember(data) || isLegacyChatMember(data);
-    }
-
     function isChatMemberById(chatId) {
       let chatPath = /databases/$(database)/documents/chats/$(chatId);
       let chatData = exists(chatPath) ? get(chatPath).data : null;
-      return chatData != null && (
-        (chatData.memberIds is list &&
-          request.auth.uid in chatData.memberIds) ||
-        (chatData.users is list &&
-          chatData.users.hasAny([userRef(request.auth.uid)]))
-      );
+      return chatData != null &&
+        chatData.memberIds is list &&
+        request.auth.uid in chatData.memberIds;
     }
 
     function chatDataById(chatId) {
@@ -153,9 +141,6 @@ service cloud.firestore {
       return data.memberIds is list ? data.memberIds : [];
     }
 
-    function chatUsers(data) {
-      return data.users is list ? data.users : [];
-    }
 
     function isGameChat(data) {
       return data.type == 'game';
@@ -168,18 +153,16 @@ service cloud.firestore {
     }
 
     function isSelfOnlyAddedToChat(oldData, newData) {
-      return isSelfOnlyAdded(chatMemberIds(oldData), chatMemberIds(newData)) &&
-        isSelfOnlyAdded(chatUsers(oldData), chatUsers(newData));
+      return isSelfOnlyAdded(chatMemberIds(oldData), chatMemberIds(newData));
     }
 
     function isSelfOnlyRemovedFromChat(oldData, newData) {
-      return isSelfOnlyRemoved(chatMemberIds(oldData), chatMemberIds(newData)) &&
-        isSelfOnlyRemoved(chatUsers(oldData), chatUsers(newData));
+      return isSelfOnlyRemoved(chatMemberIds(oldData), chatMemberIds(newData));
     }
 
     function canUpdateChatMetadata(oldData, newData) {
       let changed = newData.diff(oldData).changedKeys();
-      return isChatMemberOrLegacy(oldData) &&
+      return isChatMember(oldData) &&
         changed.hasOnly([
           'last_message',
           'lastMessage',
@@ -208,7 +191,6 @@ service cloud.firestore {
         isSelfOnlyAddedToChat(oldData, newData) &&
         changedKeys.hasOnly([
           'memberIds',
-          'users',
           'updatedAt',
           'unreadCountByUser'
         ]) &&
@@ -221,7 +203,6 @@ service cloud.firestore {
         isSelfOnlyRemovedFromChat(oldData, newData) &&
         changedKeys.hasOnly([
           'memberIds',
-          'users',
           'updatedAt'
         ]);
     }
@@ -230,19 +211,13 @@ service cloud.firestore {
       let changedKeys = newData.diff(oldData).changedKeys();
       let oldMembers = chatMemberIds(oldData);
       let newMembers = chatMemberIds(newData);
-      let oldUsers = chatUsers(oldData);
-      let newUsers = chatUsers(newData);
       return isGameChat(oldData) &&
         isGameOwnerForChat(oldData) &&
         newMembers is list &&
-        newUsers is list &&
         oldMembers.size() == newMembers.size() + 1 &&
         oldMembers.hasAll(newMembers) &&
-        oldUsers.size() == newUsers.size() + 1 &&
-        oldUsers.hasAll(newUsers) &&
         changedKeys.hasOnly([
           'memberIds',
-          'users',
           'updatedAt'
         ]);
     }
@@ -541,8 +516,7 @@ service cloud.firestore {
       // 2. Document doesn't exist (allows checking for existence during creation)
       allow read: if isSignedIn() && (
         !exists(/databases/$(database)/documents/chats/$(chatId)) ||
-        isChatMember(resource.data) ||
-        isLegacyChatMember(resource.data)
+        isChatMember(resource.data)
       );
 
       // Allow update for strict metadata changes or controlled membership changes
@@ -577,14 +551,6 @@ service cloud.firestore {
           (chatDataById(chatId).type != 'game' && isChatMemberById(chatId))
         );
       }
-    }
-
-    // Legacy collection - read-only for backward compatibility
-    // All new messages use chats/{chatId}/messages subcollection
-    match /chat_messages/{messageId} {
-      allow read: if isSignedIn() &&
-        resource.data.user.id == request.auth.uid;
-      allow create, update, delete: if false;
     }
 
     match /games/{document} {

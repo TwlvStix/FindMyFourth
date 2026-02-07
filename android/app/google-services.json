@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:357406229935:android:e49d3b908afab558e9db5a",
         "android_client_info": {
-          "package_name": "com.mycompany.findmyfourth"
+          "package_name": "com.twlvstix.findmyfourth"
         }
       },
       "oauth_client": [
@@ -18,7 +18,7 @@
           "client_id": "357406229935-b80gfcvite6up8auvsclnp7o5u8vf67p.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.mycompany.findmyfourth",
+            "package_name": "com.twlvstix.findmyfourth",
             "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
           }
         },
@@ -43,7 +43,7 @@
               "client_id": "357406229935-1l8fsgi4n77o2qdjmr599phggtaeb36h.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.mycompany.findmyfourth"
+                "bundle_id": "com.twlvstix.findmyfourth"
               }
             }
           ]

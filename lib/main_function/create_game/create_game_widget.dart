@@ -13,6 +13,7 @@ import '/main_function/games_list/games_list_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
 import '/providers/provider_extensions.dart';
 import '/models/course.dart';
+import 'create_game_constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:collection/collection.dart';
@@ -1147,22 +1148,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxs),
                                 child: CardGrid(
-                                  options: [
-                                    {
-                                      'value': 'Competitive',
-                                      'label': 'Competitive',
-                                      'icon': Icons.emoji_events_rounded,
-                                      'emoji': '🏆',
-                                      'subtitle': 'Rules-focused • pace matters'
-                                    },
-                                    {
-                                      'value': 'Casual',
-                                      'label': 'Casual',
-                                      'icon': Icons.sentiment_satisfied_rounded,
-                                      'emoji': '😊',
-                                      'subtitle': 'Relaxed rules • good vibes'
-                                    },
-                                  ],
+                                  options: kCreateGameVibeOptions,
                                   selectedValue: rulesSetValue,
                                   onChanged: (val) {
                                     if (mounted) {
@@ -1186,11 +1172,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxs),
                                 child: CardGrid(
-                                  options: [
-                                    {'value': 'No Money', 'label': 'No Money', 'icon': Icons.handshake_rounded, 'emoji': '🤝'},
-                                    {'value': 'Low Stakes', 'label': 'Low Stakes', 'icon': Icons.attach_money_rounded, 'emoji': '💵'},
-                                    {'value': 'High Stakes', 'label': 'High Stakes', 'icon': Icons.monetization_on_rounded, 'emoji': '💰'},
-                                  ],
+                                  options: kCreateGameStakesOptions,
                                   selectedValue: styleGameValue,
                                   onChanged: (val) {
                                     if (mounted) {
@@ -1214,11 +1196,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxs),
                                 child: CardGrid(
-                                  options: [
-                                    {'value': 'Stroke Play', 'label': 'Stroke Play', 'icon': Icons.format_list_numbered_rounded, 'emoji': '📝'},
-                                    {'value': 'Match Play', 'label': 'Match Play', 'icon': Icons.sports_golf_rounded, 'emoji': '🆚'},
-                                    {'value': 'Stableford', 'label': 'Stableford', 'icon': Icons.star_rounded, 'emoji': '⭐'},
-                                  ],
+                                  options: kCreateGamePrimaryFormatOptions,
                                   selectedValue: gameTypeValue,
                                   onChanged: (val) {
                                     if (mounted) {
@@ -1293,11 +1271,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxs),
                                 child: CardGrid(
-                                  options: [
-                                    {'value': 'Gross', 'label': 'Gross', 'icon': Icons.sports_golf_rounded, 'emoji': '📊'},
-                                    {'value': 'Net', 'label': 'Net', 'icon': Icons.calculate_rounded, 'emoji': '🧮'},
-                                    {'value': 'Both', 'label': 'Gross + Net', 'icon': Icons.compare_arrows_rounded, 'emoji': '↔️'},
-                                  ],
+                                  options: kCreateGameHandicapOptions,
                                   selectedValue: scoringValue,
                                   onChanged: (val) {
                                     if (mounted) {
