@@ -50,64 +50,6 @@ function userRefsFromUids(uids) {
   return uids.map((uid) => firestore.collection("users").doc(uid));
 }
 
-function normalizeStyleToken(value) {
-  if (typeof value !== "string") {
-    return "";
-  }
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-}
-
-function mapGameStyleToken(value) {
-  const normalized = normalizeStyleToken(value);
-  const map = {
-    money_game: "money",
-    money: "money",
-    all_fun: "for_fun",
-    for_fun: "for_fun",
-    open_to_discuss: "open",
-    open: "open",
-    match_play: "match_play",
-    stroke_play: "stroke_play",
-    stableford: "stableford",
-    vegas: "vegas",
-    skins: "skins",
-    competitive: "competitive",
-    friends: "friends",
-  };
-  return map[normalized] || normalized;
-}
-
-function extractGameStyleTokens(gameData) {
-  const tokens = new Set();
-  const styleGame = gameData.style_game;
-  const gameType = gameData.game_type;
-  const rulesSetting = gameData.rules_setting;
-  const friendGame = gameData.friend_game;
-  const memberDiscount = gameData.member_discount;
-
-  if (styleGame) {
-    tokens.add(mapGameStyleToken(styleGame));
-  }
-  if (gameType) {
-    tokens.add(mapGameStyleToken(gameType));
-  }
-  if (rulesSetting) {
-    tokens.add(mapGameStyleToken(rulesSetting));
-  }
-  if (friendGame && normalizeStyleToken(friendGame) === "friends") {
-    tokens.add("friends");
-  }
-  if (memberDiscount && normalizeStyleToken(memberDiscount) === "yes") {
-    tokens.add("member_discount");
-  }
-
-  return Array.from(tokens).filter((token) => token.length > 0);
-}
-
 function getUserNotificationPrefs(userData) {
   const prefs = userData.notification_prefs || {};
   const gameAlerts = prefs.game_alerts || {};
@@ -354,6 +296,139 @@ exports.sendUserPushNotificationsTrigger = functions
     }
   });
 
+/**
+ * Check if any value in the list matches the target (case-insensitive)
+ */
+function matchesAny(values, target) {
+  if (!target || typeof target !== "string") {
+    return false;
+  }
+
+  const targetLower = target.toLowerCase().trim();
+
+  for (const value of values) {
+    if (typeof value === "string" && value.toLowerCase().trim() === targetLower) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Check if an alert subscription matches a game
+ *
+ * Implements exact matching logic:
+ * 1. AND across categories: Every category the user selected must match
+ * 2. OR within a category: If multiple values selected, any one match passes
+ * 3. Empty category = match-all: If category is empty, it doesn't restrict
+ */
+function doesAlertSubMatchGame(subscription, gameData) {
+  // If subscription is disabled, no match
+  if (!subscription.enabled) {
+    return false;
+  }
+
+  const gameVibes = subscription.gameVibes || [];
+  const stakes = subscription.stakes || [];
+  const formats = subscription.formats || [];
+  const handicapUses = subscription.handicapUses || [];
+  const courses = subscription.courses || [];
+  const special = subscription.special || { games: false, twoVTwo: false };
+
+  // If all categories are empty, match all games
+  const hasActiveFilters =
+    gameVibes.length > 0 ||
+    stakes.length > 0 ||
+    formats.length > 0 ||
+    handicapUses.length > 0 ||
+    courses.length > 0 ||
+    special.games ||
+    special.twoVTwo;
+
+  if (!hasActiveFilters) {
+    return true;
+  }
+
+  // 1. Game Vibe (rules_setting)
+  if (gameVibes.length > 0) {
+    const gameRulesSetting = gameData.rules_setting || "";
+    if (!matchesAny(gameVibes, gameRulesSetting)) {
+      return false;
+    }
+  }
+
+  // 2. Stakes (style_game)
+  if (stakes.length > 0) {
+    const gameStyleGame = gameData.style_game || "";
+    if (!matchesAny(stakes, gameStyleGame)) {
+      return false;
+    }
+  }
+
+  // 3. Format (game_type)
+  if (formats.length > 0) {
+    const gameType = gameData.game_type || "";
+    if (!matchesAny(formats, gameType)) {
+      return false;
+    }
+  }
+
+  // 4. Handicap Use (scoring)
+  if (handicapUses.length > 0) {
+    const gameScoring = gameData.scoring || "";
+    if (!matchesAny(handicapUses, gameScoring)) {
+      return false;
+    }
+  }
+
+  // 5. Course (courseRef ID)
+  if (courses.length > 0) {
+    const gameCourseId = gameData.courseRef?.id || null;
+    if (!gameCourseId || !courses.includes(gameCourseId)) {
+      return false;
+    }
+  }
+
+  // 6. Special options
+  // TODO: Add has_side_games and is_2v2 fields to game documents
+  // if (special.games) {
+  //   if (!gameData.has_side_games) return false;
+  // }
+  // if (special.twoVTwo) {
+  //   if (!gameData.is_2v2) return false;
+  // }
+
+  // All categories matched
+  return true;
+}
+
+/**
+ * Build notification content for a game (simplified version for new system)
+ */
+function buildGameNotificationContentSimple(gameData) {
+  const name = gameData.name_game || "New game";
+  const course = gameData.course_play || "";
+  const title = "New game posted";
+
+  // Build a nice summary
+  const parts = [];
+  if (gameData.style_game) parts.push(gameData.style_game);
+  if (gameData.game_type) parts.push(gameData.game_type);
+  if (gameData.rules_setting) parts.push(gameData.rules_setting);
+
+  const suffix = parts.length > 0 ? ` • ${parts.join(' • ')}` : "";
+  const body = course ? `${name} at ${course}${suffix}` : `${name}${suffix}`;
+
+  return { title, body };
+}
+
+/**
+ * Send game created notifications using new matching logic
+ *
+ * Triggered when a new game is created in Firestore.
+ * Matches against user alert subscriptions and sends push notifications.
+ */
 exports.sendGameCreatedNotifications = functions
   .region("us-west2")
   .runWith(kPushNotificationRuntimeOpts)
@@ -361,305 +436,229 @@ exports.sendGameCreatedNotifications = functions
   .onCreate(async (snapshot, context) => {
     const gameData = snapshot.data() || {};
     const gameId = context.params.gameId;
-    const styleTokens = extractGameStyleTokens(gameData);
-    console.log(`Game ${gameId} created with style tokens:`, styleTokens);
-    if (styleTokens.length === 0) {
-      console.log(`No style tokens found for game ${gameId}, skipping notifications`);
-      return;
-    }
     const creatorUid = gameData.userRef?.id || gameData.uid || null;
-    const recipients = new Set();
 
-    for (const token of styleTokens) {
-      const subsSnap = await firestore
-        .collection(kAlertSubsCollection)
-        .where("style", "==", token)
-        .where("enabled", "==", true)
-        .get();
-      console.log(`Found ${subsSnap.docs.length} subscriptions for style: ${token}`);
-      subsSnap.docs.forEach((doc) => {
-        const uid = doc.data()?.uid;
-        if (typeof uid === "string" && uid.length > 0) {
-          recipients.add(uid);
-        }
-      });
-    }
-
-    console.log(`Total recipients for game ${gameId}: ${recipients.size}`);
-    if (recipients.size === 0) {
-      console.log(`No recipients found for game ${gameId}, skipping notifications`);
-      return;
-    }
-
-    const now = new Date();
-    for (const uid of recipients) {
-      if (creatorUid && uid === creatorUid) {
-        continue;
-      }
-      const userRef = firestore.collection("users").doc(uid);
-      const userSnap = await userRef.get();
-      if (!userSnap.exists) {
-        continue;
-      }
-      const userData = userSnap.data() || {};
-      const prefs = getUserNotificationPrefs(userData);
-      const styleMatches =
-        prefs.styles.length === 0 ||
-        prefs.styles.some((style) => styleTokens.includes(style));
-      if (!prefs.pushEnabled || !prefs.gameAlertsEnabled || !styleMatches) {
-        continue;
-      }
-      if (prefs.digestMode === "off") {
-        continue;
-      }
-
-      const matchedStyle =
-        prefs.styles.find((style) => styleTokens.includes(style)) ||
-        styleTokens[0];
-      const state = userData.notification_state || {};
-      const styleLast = state.game_style_last || {};
-      const lastStamp = styleLast[matchedStyle];
-      if (lastStamp?.toDate) {
-        const lastDate = lastStamp.toDate();
-        const cooldownMs = kGameAlertCooldownMinutes * 60 * 1000;
-        if (now - lastDate < cooldownMs) {
-          continue;
-        }
-      }
-
-      const dedupeKey = `game_${gameId}_to_${uid}`;
-      const notificationRef = userRef
-        .collection(kUserNotificationsCollection)
-        .doc(dedupeKey);
-      const existing = await notificationRef.get();
-      if (existing.exists) {
-        continue;
-      }
-
-      const styleLabel = styleLabelForToken(matchedStyle);
-      const content = buildGameNotificationContent(gameData, styleLabel);
-      await notificationRef.set({
-        type: "game_created",
-        title: content.title,
-        body: content.body,
-        data: {
-          gameId,
-          style: matchedStyle,
-        },
-        read: false,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        dedupeKey,
-      });
-
-      await userRef.set(
-        {
-          notification_state: {
-            game_style_last: {
-              [matchedStyle]: admin.firestore.FieldValue.serverTimestamp(),
-            },
-          },
-        },
-        { merge: true },
-      );
-
-      const inQuietHours =
-        prefs.quietHoursEnabled &&
-        isWithinQuietHours(prefs.quietHoursStart, prefs.quietHoursEnd, now);
-      if (prefs.digestMode !== "instant" || inQuietHours) {
-        continue;
-      }
-
-      const deviceSnap = await userRef
-        .collection(kUserDevicesCollection)
-        .get();
-      if (deviceSnap.empty) {
-        continue;
-      }
-      const deviceTokens = [];
-      deviceSnap.docs.forEach((doc) => {
-        const token = doc.data()?.fcmToken;
-        if (typeof token === "string" && token.length > 0) {
-          deviceTokens.push({ token, ref: doc.ref });
-        }
-      });
-      if (deviceTokens.length === 0) {
-        continue;
-      }
-
-      const message = {
-        notification: {
-          title: content.title,
-          body: content.body,
-        },
-        data: {
-          initialPageName: "JoinGameDetailed",
-          parameterData: JSON.stringify({
-            gameRef: `games/${gameId}`,
-          }),
-          type: "game_created",
-          gameId,
-        },
-        tokens: deviceTokens.map((entry) => entry.token),
-      };
-
-      try {
-        const response = await admin.messaging().sendEachForMulticast(message);
-
-        // Record success
-        await userRef.update({
-          "notification_state.last_send_success": admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        const invalidRefs = [];
-        response.responses.forEach((resp, index) => {
-          if (resp.success) {
-            return;
-          }
-          const code = resp.error?.code || "";
-          if (
-            code === "messaging/registration-token-not-registered" ||
-            code === "messaging/invalid-registration-token"
-          ) {
-            invalidRefs.push(deviceTokens[index]?.ref);
-          }
-        });
-        if (invalidRefs.length > 0) {
-          await Promise.all(
-            invalidRefs
-              .filter((ref) => ref)
-              .map((ref) => ref.delete()),
-          );
-        }
-      } catch (error) {
-        console.error("Notification send failed", { uid, error: error.message });
-
-        // Store error for frontend to read
-        await userRef.update({
-          "notification_state.last_error": {
-            message: error.message || "Failed to send notification",
-            code: error.code || "unknown",
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            type: "notification_send",
-          },
-        });
-      }
-    }
-  });
-
-/**
- * Syncs user notification preferences to alertSubs collection.
- * This enables the sendGameCreatedNotifications function to efficiently
- * query for users interested in specific game styles.
- */
-exports.syncNotificationPreferencesToAlertSubs = functions
-  .region("us-west2")
-  .firestore.document("users/{userId}")
-  .onWrite(async (change, context) => {
-    const userId = context.params.userId;
-    const before = change.before.exists ? change.before.data() : null;
-    const after = change.after.exists ? change.after.data() : null;
-
-    // If user deleted, clean up their alertSubs
-    if (!after) {
-      console.log(`User ${userId} deleted, cleaning up alertSubs`);
-      const subsToDelete = await firestore
-        .collection(kAlertSubsCollection)
-        .where("uid", "==", userId)
-        .get();
-      const batch = firestore.batch();
-      subsToDelete.docs.forEach((doc) => batch.delete(doc.ref));
-      await batch.commit();
-      return;
-    }
-
-    const beforePrefs = getUserNotificationPrefs(before || {});
-    const afterPrefs = getUserNotificationPrefs(after || {});
-
-    // Extract old and new styles
-    const oldStyles = new Set(beforePrefs.styles);
-    const newStyles = new Set(afterPrefs.styles);
-
-    // Determine if game alerts are enabled
-    const gameAlertsEnabled = afterPrefs.pushEnabled && afterPrefs.gameAlertsEnabled;
-
-    console.log(`Syncing alertSubs for user ${userId}:`, {
-      oldStyles: Array.from(oldStyles),
-      newStyles: Array.from(newStyles),
-      gameAlertsEnabled,
+    console.log(`[GameAlerts] New game created: ${gameId}`);
+    console.log(`[GameAlerts] Game data:`, {
+      name: gameData.name_game,
+      course: gameData.course_play,
+      vibe: gameData.rules_setting,
+      stakes: gameData.style_game,
+      format: gameData.game_type,
+      handicap: gameData.scoring,
     });
 
-    // Styles to add/enable
-    const stylesToEnable = Array.from(newStyles).filter((s) => !oldStyles.has(s));
+    try {
+      // Get all enabled alert subscriptions
+      const subsSnapshot = await firestore
+        .collection(kAlertSubsCollection)
+        .where("enabled", "==", true)
+        .get();
 
-    // Styles to disable (removed from preferences)
-    const stylesToDisable = Array.from(oldStyles).filter((s) => !newStyles.has(s));
+      console.log(`[GameAlerts] Found ${subsSnapshot.docs.length} enabled subscriptions`);
 
-    // Styles that remain but need enabled status updated
-    const stylesToUpdate = Array.from(newStyles).filter((s) => oldStyles.has(s));
+      if (subsSnapshot.empty) {
+        console.log(`[GameAlerts] No enabled subscriptions, skipping`);
+        return;
+      }
 
-    const batch = firestore.batch();
-    let changeCount = 0;
+      const now = new Date();
+      let matchedCount = 0;
+      let notifiedCount = 0;
 
-    // Enable new subscriptions
-    for (const style of stylesToEnable) {
-      // Use compound doc ID for uniqueness
-      const docId = `${userId}_${style}`;
-      const subRef = firestore.collection(kAlertSubsCollection).doc(docId);
-      batch.set(subRef, {
-        uid: userId,
-        style,
-        enabled: gameAlertsEnabled,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-      changeCount++;
-      console.log(`Enabling alertSub: ${docId}`);
-    }
+      // Check each subscription for a match
+      for (const subDoc of subsSnapshot.docs) {
+        const subscription = subDoc.data();
+        const userId = subscription.userId;
 
-    // Disable removed subscriptions
-    for (const style of stylesToDisable) {
-      const docId = `${userId}_${style}`;
-      const subRef = firestore.collection(kAlertSubsCollection).doc(docId);
-      batch.set(
-        subRef,
-        {
-          enabled: false,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        },
-        { merge: true },
-      );
-      changeCount++;
-      console.log(`Disabling alertSub: ${docId}`);
-    }
+        // Skip creator
+        if (creatorUid && userId === creatorUid) {
+          continue;
+        }
 
-    // Update enabled status for existing subscriptions
-    for (const style of stylesToUpdate) {
-      const docId = `${userId}_${style}`;
-      const subRef = firestore.collection(kAlertSubsCollection).doc(docId);
-      const subSnap = await subRef.get();
+        // Check if subscription matches game
+        const matches = doesAlertSubMatchGame(subscription, gameData);
 
-      // Only update if enabled status changed
-      if (!subSnap.exists || subSnap.data()?.enabled !== gameAlertsEnabled) {
-        batch.set(
-          subRef,
+        if (!matches) {
+          continue;
+        }
+
+        matchedCount++;
+        console.log(`[GameAlerts] Subscription ${userId} matches game ${gameId}`);
+
+        // Load user document
+        const userRef = firestore.collection("users").doc(userId);
+        const userSnap = await userRef.get();
+
+        if (!userSnap.exists) {
+          console.log(`[GameAlerts] User ${userId} not found, skipping`);
+          continue;
+        }
+
+        const userData = userSnap.data() || {};
+        const prefs = getUserNotificationPrefs(userData);
+
+        // Check if push notifications are enabled
+        if (!prefs.pushEnabled) {
+          console.log(`[GameAlerts] User ${userId} has push disabled, skipping`);
+          continue;
+        }
+
+        // Check digest mode
+        if (prefs.digestMode === "off") {
+          console.log(`[GameAlerts] User ${userId} has digest mode off, skipping`);
+          continue;
+        }
+
+        // Check cooldown (60 minutes between game alerts)
+        const state = userData.notification_state || {};
+        const lastGameAlert = state.last_game_alert;
+        if (lastGameAlert?.toDate) {
+          const lastDate = lastGameAlert.toDate();
+          const cooldownMs = kGameAlertCooldownMinutes * 60 * 1000;
+          if (now - lastDate < cooldownMs) {
+            console.log(`[GameAlerts] User ${userId} in cooldown, skipping`);
+            continue;
+          }
+        }
+
+        // Create notification document (deduplicated)
+        const dedupeKey = `game_${gameId}_to_${userId}`;
+        const notificationRef = userRef
+          .collection(kUserNotificationsCollection)
+          .doc(dedupeKey);
+
+        const existing = await notificationRef.get();
+        if (existing.exists) {
+          console.log(`[GameAlerts] Notification already sent to ${userId}, skipping`);
+          continue;
+        }
+
+        const content = buildGameNotificationContentSimple(gameData);
+        await notificationRef.set({
+          type: "game_created",
+          title: content.title,
+          body: content.body,
+          data: {
+            gameId,
+          },
+          read: false,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          dedupeKey,
+        });
+
+        // Update cooldown timestamp
+        await userRef.set(
           {
-            uid: userId,
-            style,
-            enabled: gameAlertsEnabled,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            notification_state: {
+              last_game_alert: admin.firestore.FieldValue.serverTimestamp(),
+            },
           },
           { merge: true },
         );
-        changeCount++;
-        console.log(`Updating alertSub: ${docId} enabled=${gameAlertsEnabled}`);
-      }
-    }
 
-    if (changeCount > 0) {
-      await batch.commit();
-      console.log(`Synced ${changeCount} alertSub documents for user ${userId}`);
-    } else {
-      console.log(`No alertSub changes needed for user ${userId}`);
+        // Check if we should send push notification now
+        const inQuietHours =
+          prefs.quietHoursEnabled &&
+          isWithinQuietHours(prefs.quietHoursStart, prefs.quietHoursEnd, now);
+
+        if (prefs.digestMode !== "instant" || inQuietHours) {
+          console.log(`[GameAlerts] User ${userId} in quiet hours or digest mode, notification saved but not sent`);
+          continue;
+        }
+
+        // Get user devices
+        const deviceSnap = await userRef
+          .collection(kUserDevicesCollection)
+          .get();
+
+        if (deviceSnap.empty) {
+          console.log(`[GameAlerts] User ${userId} has no devices, skipping push`);
+          continue;
+        }
+
+        const deviceTokens = [];
+        deviceSnap.docs.forEach((doc) => {
+          const token = doc.data()?.fcmToken;
+          if (typeof token === "string" && token.length > 0) {
+            deviceTokens.push({ token, ref: doc.ref });
+          }
+        });
+
+        if (deviceTokens.length === 0) {
+          console.log(`[GameAlerts] User ${userId} has no valid tokens, skipping push`);
+          continue;
+        }
+
+        // Send push notification
+        const message = {
+          notification: {
+            title: content.title,
+            body: content.body,
+          },
+          data: {
+            initialPageName: "JoinGameDetailed",
+            parameterData: JSON.stringify({
+              gameRef: `games/${gameId}`,
+            }),
+            type: "game_created",
+            gameId,
+          },
+          tokens: deviceTokens.map((entry) => entry.token),
+        };
+
+        try {
+          const response = await admin.messaging().sendEachForMulticast(message);
+          console.log(`[GameAlerts] Sent push notification to ${userId}, success: ${response.successCount}/${response.responses.length}`);
+
+          notifiedCount++;
+
+          // Record success
+          await userRef.update({
+            "notification_state.last_send_success": admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+          // Clean up invalid tokens
+          const invalidRefs = [];
+          response.responses.forEach((resp, index) => {
+            if (resp.success) {
+              return;
+            }
+            const code = resp.error?.code || "";
+            if (
+              code === "messaging/registration-token-not-registered" ||
+              code === "messaging/invalid-registration-token"
+            ) {
+              invalidRefs.push(deviceTokens[index]?.ref);
+            }
+          });
+
+          if (invalidRefs.length > 0) {
+            await Promise.all(
+              invalidRefs
+                .filter((ref) => ref)
+                .map((ref) => ref.delete()),
+            );
+          }
+        } catch (error) {
+          console.error(`[GameAlerts] Failed to send push to ${userId}:`, error.message);
+
+          // Store error for frontend to read
+          await userRef.update({
+            "notification_state.last_error": {
+              message: error.message || "Failed to send notification",
+              code: error.code || "unknown",
+              timestamp: admin.firestore.FieldValue.serverTimestamp(),
+              type: "notification_send",
+            },
+          });
+        }
+      }
+
+      console.log(`[GameAlerts] Game ${gameId} complete: ${matchedCount} matched, ${notifiedCount} notified`);
+    } catch (error) {
+      console.error(`[GameAlerts] Error processing game ${gameId}:`, error);
+      throw error;
     }
   });
 
