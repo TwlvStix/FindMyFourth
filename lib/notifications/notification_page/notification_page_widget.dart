@@ -1,20 +1,29 @@
-import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
-import '/backend/backend.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/form_field_controller.dart';
 import '/core/widgets/app_button_enhanced.dart';
-import '/core/widgets/app_choice_chips.dart';
 import '/core/widgets/fairway_background.dart';
+import '/models/alert_subscription.dart';
 import '/models/notification_preferences.dart';
-import '/providers/notification_provider.dart';
+import '/notifications/game_alerts_page/game_alerts_page_widget.dart';
+import '/services/alert_subscription_service.dart';
 import '/services/notification_permission_service.dart';
 import '/utils/app_util.dart';
-import 'package:flutter/material.dart';
 
+/// Premium Notification Settings Page
+///
+/// Hierarchical toggle model:
+/// - Push notifications (master) - controls everything
+///   - Game alerts (submaster) - links to detail page
+///   - Chat alerts (submaster) - single toggle
+///
+/// When Push is OFF:
+/// - Game Alerts and Chat Alerts sections are disabled/grayed
+/// - gameAlertsEnabled and chatAlertsEnabled are set to false
 class NotificationPageWidget extends StatefulWidget {
   const NotificationPageWidget({super.key});
 
@@ -31,72 +40,332 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   final NotificationPermissionService _notificationPermissionService =
       NotificationPermissionService();
 
-  NotificationPreferences? _prefs; // Working copy for form
-  bool _initialized = false;
-  FormFieldController<List<String>>? _gameStyleController;
-  FormFieldController<List<String>>? _digestController;
+  // Working copies
+  NotificationPreferences? _prefs;
+  AlertSubscription? _alertSub;
 
-  static const List<_ChoiceOption> _gameStyleOptions = [
-    _ChoiceOption(value: 'money', label: 'Money'),
-    _ChoiceOption(value: 'vegas', label: 'Vegas'),
-    _ChoiceOption(value: 'competitive', label: 'Competitive'),
-    _ChoiceOption(value: 'for_fun', label: 'For Fun'),
-    _ChoiceOption(value: 'friends', label: 'Friends'),
-    _ChoiceOption(value: 'member_discount', label: 'Member Discount'),
+  bool _isLoading = true;
+  bool _isSaving = false;
+  String? _errorMessage;
+  bool _hasChanges = false;
+
+  // Quiet hours
+  static const List<_DigestOption> _digestOptions = [
+    _DigestOption(value: 'instant', label: 'Instant', icon: Icons.flash_on),
+    _DigestOption(value: 'hourly', label: 'Hourly', icon: Icons.schedule),
+    _DigestOption(value: 'daily', label: 'Daily', icon: Icons.calendar_today),
+    _DigestOption(value: 'off', label: 'Off', icon: Icons.do_not_disturb),
   ];
 
-  static const List<_ChoiceOption> _digestOptions = [
-    _ChoiceOption(value: 'instant', label: 'Instant'),
-    _ChoiceOption(value: 'hourly', label: 'Hourly'),
-    _ChoiceOption(value: 'daily', label: 'Daily'),
-    _ChoiceOption(value: 'off', label: 'Off'),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    if (currentUserUid == null) {
+      setState(() {
+        _errorMessage = 'User not authenticated';
+        _isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      debugPrint('[NotificationSettings] Loading data for user: $currentUserUid');
+
+      // Load notification preferences and alert subscription
+      NotificationPreferences? prefs;
+      AlertSubscription? alertSub;
+
+      try {
+        prefs = await _loadNotificationPrefs();
+        debugPrint('[NotificationSettings] Loaded notification prefs: ${prefs.toFirestore()}');
+      } catch (e) {
+        debugPrint('[NotificationSettings] Error loading prefs, using defaults: $e');
+        prefs = NotificationPreferences.defaults();
+      }
+
+      try {
+        alertSub = await AlertSubscriptionService.loadSubscription(currentUserUid!);
+        debugPrint('[NotificationSettings] Loaded alert subscription: ${alertSub != null ? "exists" : "null"}');
+      } catch (e) {
+        debugPrint('[NotificationSettings] Error loading alert sub, using defaults: $e');
+        alertSub = null;
+      }
+
+      setState(() {
+        _prefs = prefs;
+        _alertSub = alertSub ?? AlertSubscription.defaults(currentUserUid!);
+        _isLoading = false;
+        _hasChanges = false;
+      });
+
+      debugPrint('[NotificationSettings] Successfully loaded all settings');
+    } catch (e, stackTrace) {
+      debugPrint('[NotificationSettings] Critical error loading settings: $e');
+      debugPrint('[NotificationSettings] Stack trace: $stackTrace');
+
+      // Try to set defaults so user can at least use the page
+      setState(() {
+        _prefs = NotificationPreferences.defaults();
+        _alertSub = AlertSubscription.defaults(currentUserUid!);
+        _errorMessage = 'Could not load settings. Using defaults. Error: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<NotificationPreferences> _loadNotificationPrefs() async {
+    debugPrint('[NotificationSettings] Loading notification prefs...');
+
+    if (currentUserReference == null) {
+      debugPrint('[NotificationSettings] currentUserReference is null');
+      return NotificationPreferences.defaults();
+    }
+
+    try {
+      final userDoc = await currentUserReference!.get();
+      debugPrint('[NotificationSettings] User doc exists: ${userDoc.exists}');
+
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>?;
+        debugPrint('[NotificationSettings] User data keys: ${userData?.keys.toList()}');
+
+        final prefsData = userData?['notification_prefs'] as Map<String, dynamic>?;
+        debugPrint('[NotificationSettings] Prefs data exists: ${prefsData != null}');
+
+        if (prefsData != null) {
+          return NotificationPreferences.fromMap(prefsData);
+        }
+      }
+    } catch (e) {
+      debugPrint('[NotificationSettings] Error in _loadNotificationPrefs: $e');
+      throw e;
+    }
+
+    debugPrint('[NotificationSettings] Returning default prefs');
+    return NotificationPreferences.defaults();
+  }
+
+  Future<void> _saveNotificationPrefs(NotificationPreferences prefs) async {
+    if (currentUserReference == null) return;
+
+    await currentUserReference!.update({
+      'notification_prefs': prefs.toFirestore(),
+    });
+  }
+
+  Future<void> _save() async {
+    if (_prefs == null || _alertSub == null || currentUserUid == null) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // Save both notification preferences and alert subscription
+      await Future.wait([
+        _saveNotificationPrefs(_prefs!),
+        AlertSubscriptionService.saveSubscription(_alertSub!),
+      ]);
+
+      setState(() {
+        _isSaving = false;
+        _hasChanges = false;
+      });
+
+      if (mounted) {
+        // Navigate back to Profile page
+        context.pop();
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Settings saved successfully',
+              style: GoogleFonts.outfit(color: Colors.white),
+            ),
+            backgroundColor: AppColors.fairway,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isSaving = false;
+        _errorMessage = 'Failed to save settings: $e';
+      });
+    }
+  }
+
+  Future<void> _reset() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.fairwayDark,
+        title: Text(
+          'Reset to Defaults?',
+          style: AppTypography.titleMedium.copyWith(color: Colors.white),
+        ),
+        content: Text(
+          'This will reset all notification settings to defaults:\n\n'
+          '• Push notifications: ON\n'
+          '• Game alerts: OFF\n'
+          '• Chat alerts: ON\n'
+          '• All filters: Cleared',
+          style: AppTypography.bodyMedium.copyWith(
+            color: Colors.white.withValues(alpha: 0.8),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel', style: TextStyle(color: Colors.white70)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Reset',
+              style: TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && currentUserUid != null) {
+      setState(() {
+        // Reset to defaults
+        _prefs = NotificationPreferences.defaults();
+        _alertSub = AlertSubscription.defaults(currentUserUid!);
+        _hasChanges = true;
+      });
+    }
+  }
+
+  void _updatePrefs(NotificationPreferences updated) {
+    setState(() {
+      _prefs = updated;
+      _hasChanges = true;
+    });
+  }
+
+  void _updateAlertSub(AlertSubscription updated) {
+    setState(() {
+      _alertSub = updated;
+      _hasChanges = true;
+    });
+  }
+
+  Future<void> _togglePushNotifications(bool enabled) async {
+    if (enabled) {
+      final granted = await _ensureNotificationPermission();
+      if (!granted) {
+        return;
+      }
+    }
+
+    // When Push is turned OFF, disable downstream toggles
+    if (!enabled) {
+      _updatePrefs(
+        _prefs!.copyWith(
+          pushEnabled: false,
+          gameAlerts: _prefs!.gameAlerts.copyWith(enabled: false),
+          chatAlerts: _prefs!.chatAlerts.copyWith(enabled: false),
+        ),
+      );
+      _updateAlertSub(_alertSub!.copyWith(enabled: false));
+    } else {
+      // When turned ON, just enable push
+      _updatePrefs(_prefs!.copyWith(pushEnabled: true));
+    }
+  }
+
+  void _toggleGameAlerts(bool enabled) {
+    // Update both notification prefs and alert subscription
+    _updatePrefs(
+      _prefs!.copyWith(
+        gameAlerts: _prefs!.gameAlerts.copyWith(enabled: enabled),
+      ),
+    );
+    _updateAlertSub(_alertSub!.copyWith(enabled: enabled));
+  }
+
+  void _toggleChatAlerts(bool enabled) {
+    _updatePrefs(
+      _prefs!.copyWith(
+        chatAlerts: _prefs!.chatAlerts.copyWith(enabled: enabled),
+      ),
+    );
+  }
+
+  Future<void> _navigateToGameAlerts() async {
+    if (!_prefs!.pushEnabled || !_prefs!.gameAlerts.enabled) {
+      // Don't navigate if disabled
+      return;
+    }
+
+    // Save alert subscription before navigating to preserve enabled state
+    // This ensures the Game Alerts page loads the correct enabled state
+    try {
+      await AlertSubscriptionService.saveSubscription(_alertSub!);
+      debugPrint('[NotificationSettings] Saved alert subscription before navigation');
+    } catch (e) {
+      debugPrint('[NotificationSettings] Error saving alert sub before navigation: $e');
+      // Continue anyway - Game Alerts page will handle gracefully
+    }
+
+    // Navigate to Game Alerts detail page and get returned subscription
+    final updatedSub = await context.pushNamed<AlertSubscription>(
+      GameAlertsPageWidget.routeName,
+    );
+
+    // If subscription was returned (user saved), use it directly
+    // This avoids race conditions with Firestore sync
+    if (updatedSub != null) {
+      debugPrint('[NotificationSettings] Received updated subscription: enabled=${updatedSub.enabled}, filters=${updatedSub.getSummary()}');
+      if (mounted) {
+        setState(() {
+          _alertSub = updatedSub;
+        });
+        debugPrint('[NotificationSettings] Updated alert subscription from navigation result');
+      }
+    } else {
+      debugPrint('[NotificationSettings] No subscription returned, reloading from Firestore');
+      // User navigated back without saving, reload from Firestore
+      if (mounted) {
+        await _reloadAlertSubscription();
+      }
+    }
+  }
+
+  /// Reload only the alert subscription without touching notification prefs
+  /// Used when returning from Game Alerts detail page
+  Future<void> _reloadAlertSubscription() async {
+    if (currentUserUid == null) return;
+
+    try {
+      final alertSub = await AlertSubscriptionService.loadSubscription(currentUserUid!);
+      setState(() {
+        _alertSub = alertSub ?? AlertSubscription.defaults(currentUserUid!);
+      });
+      debugPrint('[NotificationSettings] Reloaded alert subscription');
+    } catch (e) {
+      debugPrint('[NotificationSettings] Error reloading alert sub: $e');
+      // Don't update state if reload fails - keep existing data
+    }
+  }
 
   Future<bool> _ensureNotificationPermission() async {
     final status =
         await _notificationPermissionService.requestPermissionAndRegister();
     return status == NotificationPermissionStatus.granted ||
         status == NotificationPermissionStatus.provisional;
-  }
-
-  void _ensureControllers(NotificationPreferences prefs) {
-    _gameStyleController ??= FormFieldController<List<String>>(
-      _labelsForValues(
-        _gameStyleOptions,
-        prefs.gameAlerts.styles,
-      ),
-    );
-    _digestController ??= FormFieldController<List<String>>([
-      _labelForValue(_digestOptions, prefs.digestMode),
-    ]);
-  }
-
-  Future<void> _savePreferences(NotificationProvider provider) async {
-    if (currentUserReference == null || _prefs == null) {
-      return;
-    }
-
-    // Save the local working copy to the provider
-    await provider.updatePreferences(_prefs!);
-
-    // Only pop if successfully synced (not offline)
-    if (mounted && provider.syncStatus != SyncStatus.offline) {
-      context.pop();
-    } else if (mounted && provider.syncStatus == SyncStatus.offline) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Changes saved offline. Will sync when connected.'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-    } else if (mounted && provider.syncStatus == SyncStatus.error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error saving: ${provider.errorMessage ?? "Unknown error"}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
   }
 
   Future<void> _pickTime({required bool isStart}) async {
@@ -118,6 +387,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
           end: isStart ? _prefs!.quietHours.end : formatted,
         ),
       );
+      _hasChanges = true;
     });
   }
 
@@ -140,54 +410,185 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
     return TimeOfDay(hour: hour, minute: minute);
   }
 
-  Widget _buildPremiumPanel(
-    BuildContext context, {
-    String? title,
-    required List<Widget> children,
-  }) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: AppColors.fairway.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1.0,
+  // Custom styled buttons for better visibility on dark background
+  Widget _buildResetButton() {
+    final isDisabled = _isSaving;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isDisabled ? null : _reset,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          height: 56,
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDisabled
+                  ? AppColors.stone.withValues(alpha: 0.3)
+                  : AppColors.pure.withValues(alpha: 0.4),
+              width: 2.0,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              'Reset',
+              style: AppTypography.buttonLarge.copyWith(
+                color: isDisabled ? AppColors.stone : AppColors.pure,
+              ),
+            ),
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (title != null) ...[
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.sm,
-              ),
-              child: Text(
-                title,
-                style: AppTypography.titleSmall.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Divider(
-              color: Colors.white.withValues(alpha: 0.1),
-              height: 1,
-              thickness: 1,
-            ),
-          ],
-          ...children,
-        ],
       ),
     );
   }
 
-  Widget _buildPremiumRow(
-    BuildContext context, {
+  Widget _buildSaveButton() {
+    final isDisabled = _isSaving || !_hasChanges;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isDisabled ? null : _save,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          height: 56,
+          decoration: BoxDecoration(
+            color: isDisabled
+                ? AppColors.stone.withValues(alpha: 0.3)
+                : AppColors.fairway,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDisabled
+                  ? Colors.transparent
+                  : AppColors.pure.withValues(alpha: 0.3),
+              width: 2.0,
+            ),
+            boxShadow: isDisabled
+                ? []
+                : [
+                    BoxShadow(
+                      color: AppColors.fairway.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+          ),
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_isSaving) ...[
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.pure),
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                ] else ...[
+                  Icon(
+                    Icons.check_rounded,
+                    size: 20,
+                    color: AppColors.pure,
+                  ),
+                  SizedBox(width: 8),
+                ],
+                Text(
+                  _isSaving ? 'Saving...' : 'Save Settings',
+                  style: AppTypography.buttonLarge.copyWith(
+                    color: AppColors.pure,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection({
+    required String emoji,
+    required String title,
+    String? subtitle,
+    required List<Widget> children,
+    bool disabled = false,
+  }) {
+    return Opacity(
+      opacity: disabled ? 0.5 : 1.0,
+      child: IgnorePointer(
+        ignoring: disabled,
+        child: Container(
+          margin: EdgeInsets.only(bottom: AppSpacing.md),
+          decoration: BoxDecoration(
+            color: AppColors.fairway.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: disabled
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.white.withValues(alpha: 0.1),
+              width: 1.0,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  subtitle != null ? AppSpacing.xs : AppSpacing.sm,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          emoji,
+                          style: TextStyle(fontSize: 20),
+                        ),
+                        SizedBox(width: AppSpacing.xs),
+                        Text(
+                          title,
+                          style: AppTypography.titleSmall.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (subtitle != null) ...[
+                      SizedBox(height: AppSpacing.xxs),
+                      Text(
+                        subtitle,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: Colors.white.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Divider(
+                color: Colors.white.withValues(alpha: 0.1),
+                height: 1,
+                thickness: 1,
+              ),
+              ...children,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToggleRow({
     required String title,
     String? subtitle,
     required bool value,
@@ -245,8 +646,56 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
     );
   }
 
-  Widget _buildTimeRow(
-    BuildContext context, {
+  Widget _buildNavigationRow({
+    required String emoji,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.md,
+        ),
+        child: Row(
+          children: [
+            Text(emoji, style: TextStyle(fontSize: 24)),
+            SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTypography.bodyLarge.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.white.withValues(alpha: 0.5),
+              size: 24,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeRow({
     required String label,
     required String time,
     required VoidCallback onTap,
@@ -288,683 +737,545 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
     );
   }
 
-  Widget _buildSyncStatus(SyncStatus status) {
-    switch (status) {
-      case SyncStatus.saving:
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+  Widget _buildDigestModeSelector() {
+    return Padding(
+      padding: EdgeInsets.all(AppSpacing.md),
+      child: Wrap(
+        spacing: AppSpacing.sm,
+        runSpacing: AppSpacing.sm,
+        children: _digestOptions.map((option) {
+          final isSelected = _prefs!.digestMode == option.value;
+
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _prefs = _prefs!.copyWith(digestMode: option.value);
+                _hasChanges = true;
+              });
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.sunsetGold
+                    : Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected
+                      ? AppColors.sunsetGold
+                      : Colors.white.withValues(alpha: 0.2),
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    option.icon,
+                    size: 18,
+                    color: isSelected
+                        ? AppColors.fairwayDark
+                        : Colors.white.withValues(alpha: 0.7),
+                  ),
+                  SizedBox(width: AppSpacing.xs),
+                  Text(
+                    option.label,
+                    style: AppTypography.labelMedium.copyWith(
+                      color: isSelected
+                          ? AppColors.fairwayDark
+                          : Colors.white.withValues(alpha: 0.9),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-      case SyncStatus.synced:
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Icon(Icons.cloud_done, color: Colors.green, size: 24),
-        );
-      case SyncStatus.offline:
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Icon(Icons.cloud_off, color: Colors.orange, size: 24),
-        );
-      case SyncStatus.error:
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Icon(Icons.error, color: Colors.red, size: 24),
-        );
-      default:
-        return const SizedBox.shrink();
-    }
+          );
+        }).toList(),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<NotificationProvider>(
-      builder: (context, notificationProvider, _) {
-        return Scaffold(
-          key: scaffoldKey,
-          extendBodyBehindAppBar: true,
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            automaticallyImplyLeading: false,
-            elevation: 0.0,
-            leading: GestureDetector(
-              onTap: () async {
-                context.pop();
-              },
-              child: Container(
-                margin: EdgeInsets.only(left: AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: AppColors.fairway.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(12.0),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
-                ),
-                child: Icon(
-                  Icons.chevron_left_rounded,
-                  color: Colors.white,
-                  size: 28.0,
-                ),
+    return Scaffold(
+      key: scaffoldKey,
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        automaticallyImplyLeading: false,
+        elevation: 0.0,
+        leading: GestureDetector(
+          onTap: () => context.pop(),
+          child: Container(
+            margin: EdgeInsets.only(left: AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: AppColors.fairway.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12.0),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
               ),
             ),
-            title: Text(
-              'Notification Settings',
-              style: AppTypography.headlineMedium.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
+            child: Icon(
+              Icons.chevron_left_rounded,
+              color: Colors.white,
+              size: 28.0,
             ),
-            actions: [
-              _buildSyncStatus(notificationProvider.syncStatus),
-            ],
-            centerTitle: false,
           ),
+        ),
+        title: Text(
+          'Notification Settings',
+          style: AppTypography.headlineMedium.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: false,
+      ),
       body: FairwayBackgroundDark(
         showOrganic: true,
         showTexture: true,
         child: SafeArea(
-          child: StreamBuilder<UsersRecord>(
-            stream: currentUserReference == null
-                ? null
-                : UsersRecord.getDocument(currentUserReference!),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              final _ = snapshot.data!; // Unused but needed for StreamBuilder
-              if (!_initialized) {
-                // Initialize from provider (which loads from Firestore)
-                _prefs = notificationProvider.preferences;
-                _ensureControllers(_prefs!);
-                _initialized = true;
-              }
-
-              // Safety check
-              if (_prefs == null) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              return ListView(
-                padding: EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  AppSpacing.md,
-                  AppSpacing.md,
-                  AppSpacing.xxxl,
-                ),
-                children: [
-                Text(
-                  'Manage push alerts and in-app notifications.',
-                  style: AppTypography.labelMedium.copyWith(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    letterSpacing: 0.0,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.lg),
-
-                // ERROR BANNER
-                if (notificationProvider.lastBackendError != null) ...[
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                    padding: EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: AppColors.error.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: AppColors.error.withValues(alpha: 0.5),
-                        width: 1.0,
+          child: _isLoading
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        color: AppColors.sunsetGold,
                       ),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          color: AppColors.error,
-                          size: 24,
+                      SizedBox(height: AppSpacing.md),
+                      Text(
+                        'Loading settings...',
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: Colors.white.withValues(alpha: 0.7),
                         ),
-                        SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Notification Error',
-                                style: AppTypography.titleSmall.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                notificationProvider.lastBackendError!.message,
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                ),
-                              ),
-                              if (notificationProvider.lastBackendError!.code != null) ...[
-                                SizedBox(height: 2),
-                                Text(
-                                  'Error code: ${notificationProvider.lastBackendError!.code}',
-                                  style: AppTypography.bodySmall.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.7),
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        SizedBox(width: AppSpacing.xs),
-                        IconButton(
-                          icon: Icon(Icons.close, color: Colors.white, size: 20),
-                          onPressed: () => notificationProvider.clearError(),
-                          padding: EdgeInsets.zero,
-                          constraints: BoxConstraints(),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: AppSpacing.lg),
-                ],
-
-                // PUSH NOTIFICATIONS PANEL
-                _buildPremiumPanel(
-                  context,
-                  children: [
-                    _buildPremiumRow(
-                      context,
-                      title: 'Push notifications',
-                      subtitle: 'Allow alerts for games and chats',
-                      value: _prefs!.pushEnabled,
-                      onChanged: (value) async {
-                        if (value) {
-                          final granted = await _ensureNotificationPermission();
-                          if (!granted) {
-                            return;
-                          }
-                        }
-                        setState(() {
-                          _prefs = _prefs!.copyWith(pushEnabled: value);
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                // PERMISSION STATUS CARD
-                FutureBuilder<NotificationPermissionStatus>(
-                  future: _notificationPermissionService.getDetailedStatus(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return Padding(
-                        padding: EdgeInsets.all(AppSpacing.sm),
-                        child: Center(
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                      );
-                    }
-
-                    final status = snapshot.data!;
-
-                    if (status == NotificationPermissionStatus.granted ||
-                        status == NotificationPermissionStatus.provisional) {
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.check_circle,
-                              color: Colors.green,
-                              size: 20,
-                            ),
-                            SizedBox(width: AppSpacing.xs),
-                            Text(
-                              status == NotificationPermissionStatus.provisional
-                                  ? 'Notifications enabled (provisional)'
-                                  : 'Notifications enabled',
-                              style: AppTypography.bodySmall.copyWith(
-                                color: Colors.green,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    if (status == NotificationPermissionStatus.permanentlyDenied) {
-                      return Container(
-                        margin: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
-                        ),
-                        padding: EdgeInsets.all(AppSpacing.md),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.orange.withValues(alpha: 0.5),
-                            width: 1.0,
-                          ),
-                        ),
+                )
+              : _prefs == null || _alertSub == null
+                  ? Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(AppSpacing.lg),
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.settings,
-                              size: 48,
-                              color: Colors.orange,
+                              Icons.error_outline,
+                              size: 64,
+                              color: AppColors.error,
                             ),
-                            SizedBox(height: AppSpacing.sm),
+                            SizedBox(height: AppSpacing.md),
                             Text(
-                              'Notification permission required',
-                              style: AppTypography.titleSmall.copyWith(
+                              'Failed to load settings',
+                              style: AppTypography.headlineSmall.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            SizedBox(height: AppSpacing.xs),
-                            Text(
-                              'Please enable notifications in Settings to receive alerts',
-                              style: AppTypography.bodySmall.copyWith(
-                                color: Colors.white.withValues(alpha: 0.8),
+                            if (_errorMessage != null) ...[
+                              SizedBox(height: AppSpacing.sm),
+                              Container(
+                                padding: EdgeInsets.all(AppSpacing.md),
+                                decoration: BoxDecoration(
+                                  color: AppColors.error.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppColors.error.withValues(alpha: 0.5),
+                                    width: 1.0,
+                                  ),
+                                ),
+                                child: Text(
+                                  _errorMessage!,
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: Colors.white,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(height: AppSpacing.md),
+                            ],
+                            SizedBox(height: AppSpacing.lg),
                             AppButtonEnhanced(
-                              onPressed: () async {
-                                await _notificationPermissionService.openSystemSettings();
-                              },
-                              text: 'Open Settings',
-                              trailingIcon: Icons.open_in_new,
-                              size: AppButtonSize.small,
+                              text: 'Retry',
                               variant: AppButtonVariant.primary,
+                              size: AppButtonSize.medium,
+                              onPressed: () {
+                                setState(() {
+                                  _isLoading = true;
+                                  _errorMessage = null;
+                                });
+                                _loadData();
+                              },
                             ),
                           ],
                         ),
-                      );
-                    }
-
-                    if (status == NotificationPermissionStatus.denied) {
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
-                        ),
-                        child: AppButtonEnhanced(
-                          onPressed: () async {
-                            final result = await _notificationPermissionService
-                                .requestPermissionAndRegister();
-                            if (result == NotificationPermissionStatus.granted &&
-                                mounted) {
-                              setState(() {
-                                _prefs = _prefs!.copyWith(pushEnabled: true);
-                              });
-                            }
-                          },
-                          text: 'Enable Notifications',
-                          leadingIcon: Icons.notifications_active,
-                          size: AppButtonSize.small,
-                          fullWidth: true,
-                        ),
-                      );
-                    }
-
-                    return SizedBox.shrink();
-                  },
-                ),
-                SizedBox(height: AppSpacing.lg),
-
-                // GAME ALERTS PANEL
-                _buildPremiumPanel(
-                  context,
-                  title: 'Game alerts',
-                  children: [
-                    _buildPremiumRow(
-                      context,
-                      title: 'Enable game alerts',
-                      value: _prefs!.gameAlerts.enabled,
-                      onChanged: (value) {
-                        setState(() {
-                          _prefs = _prefs!.copyWith(
-                            gameAlerts: _prefs!.gameAlerts.copyWith(enabled: value),
-                          );
-                        });
-                      },
-                    ),
-                    Divider(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      height: 1,
-                      thickness: 1,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(AppSpacing.md),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Alert types',
-                            style: AppTypography.labelSmall.copyWith(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          SizedBox(height: AppSpacing.sm),
-                          AppChoiceChips(
-                            options: _gameStyleOptions
-                                .map((option) => ChipData(option.label))
-                                .toList(),
-                            onChanged: (labels) {
-                              final values =
-                                  _valuesForLabels(_gameStyleOptions, labels ?? []);
-                              setState(() {
-                                _prefs = _prefs!.copyWith(
-                                  gameAlerts:
-                                      _prefs!.gameAlerts.copyWith(styles: values),
-                                );
-                              });
-                            },
-                            controller: _gameStyleController!,
-                            selectedChipStyle: ChipStyle(
-                              backgroundColor: AppColors.sunsetGold,
-                              textStyle: AppTypography.labelSmall.copyWith(
-                                color: AppColors.fairwayDark,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: AppTypography.letterSpacingNormal,
-                              ),
-                              borderColor: AppColors.sunsetGold,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            unselectedChipStyle: ChipStyle(
-                              backgroundColor: Colors.white.withValues(alpha: 0.1),
-                              textStyle: AppTypography.labelSmall.copyWith(
-                                color: Colors.white.withValues(alpha: 0.7),
-                                letterSpacing: AppTypography.letterSpacingNormal,
-                              ),
-                              borderColor: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            chipSpacing: AppSpacing.sm,
-                            rowSpacing: AppSpacing.xs,
-                            multiselect: true,
-                          ),
-                        ],
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: AppSpacing.lg),
-
-                // CHAT ALERTS PANEL
-                _buildPremiumPanel(
-                  context,
-                  title: 'Chat alerts',
-                  children: [
-                    _buildPremiumRow(
-                      context,
-                      title: 'Enable chat alerts',
-                      value: _prefs!.chatAlerts.enabled,
-                      onChanged: (value) {
-                        setState(() {
-                          _prefs = _prefs!.copyWith(
-                            chatAlerts:
-                                _prefs!.chatAlerts.copyWith(enabled: value),
-                          );
-                        });
-                      },
-                    ),
-                    Divider(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      height: 1,
-                      thickness: 1,
-                    ),
-                    _buildPremiumRow(
-                      context,
-                      title: 'Direct messages',
-                      value: _prefs!.chatAlerts.direct,
-                      onChanged: (value) {
-                        setState(() {
-                          _prefs = _prefs!.copyWith(
-                            chatAlerts: _prefs!.chatAlerts.copyWith(direct: value),
-                          );
-                        });
-                      },
-                    ),
-                    Divider(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      height: 1,
-                      thickness: 1,
-                    ),
-                    _buildPremiumRow(
-                      context,
-                      title: 'Group chats',
-                      value: _prefs!.chatAlerts.group,
-                      onChanged: (value) {
-                        setState(() {
-                          _prefs = _prefs!.copyWith(
-                            chatAlerts: _prefs!.chatAlerts.copyWith(group: value),
-                          );
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                SizedBox(height: AppSpacing.lg),
-
-                // QUIET HOURS PANEL
-                _buildPremiumPanel(
-                  context,
-                  title: 'Quiet hours',
-                  children: [
-                    _buildPremiumRow(
-                      context,
-                      title: 'Enable quiet hours',
-                      value: _prefs!.quietHours.enabled,
-                      onChanged: (value) {
-                        setState(() {
-                          _prefs = _prefs!.copyWith(
-                            quietHours:
-                                _prefs!.quietHours.copyWith(enabled: value),
-                          );
-                        });
-                      },
-                    ),
-                    Divider(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      height: 1,
-                      thickness: 1,
-                    ),
-                    _buildTimeRow(
-                      context,
-                      label: 'Start',
-                      time: _prefs!.quietHours.start,
-                      onTap: () => _pickTime(isStart: true),
-                    ),
-                    Divider(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      height: 1,
-                      thickness: 1,
-                    ),
-                    _buildTimeRow(
-                      context,
-                      label: 'End',
-                      time: _prefs!.quietHours.end,
-                      onTap: () => _pickTime(isStart: false),
-                    ),
-                  ],
-                ),
-                SizedBox(height: AppSpacing.lg),
-
-                // DIGEST MODE PANEL
-                _buildPremiumPanel(
-                  context,
-                  title: 'Digest mode',
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(AppSpacing.md),
-                      child: AppChoiceChips(
-                        options: _digestOptions
-                            .map((option) => ChipData(option.label))
-                            .toList(),
-                        onChanged: (labels) {
-                          final label =
-                              labels != null && labels.isNotEmpty
-                                  ? labels.first
-                                  : 'Instant';
-                          final value = _valueForLabel(_digestOptions, label);
-                          setState(() {
-                            _prefs = _prefs!.copyWith(digestMode: value);
-                          });
-                        },
-                        controller: _digestController!,
-                        selectedChipStyle: ChipStyle(
-                          backgroundColor: AppColors.sunsetGold,
-                          textStyle: AppTypography.labelSmall.copyWith(
-                            color: AppColors.fairwayDark,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: AppTypography.letterSpacingNormal,
+                    )
+                  : Stack(
+                      children: [
+                        // Main content
+                        ListView(
+                          padding: EdgeInsets.fromLTRB(
+                            AppSpacing.md,
+                            AppSpacing.md,
+                            AppSpacing.md,
+                            120, // Space for sticky bottom bar
                           ),
-                          borderColor: AppColors.sunsetGold,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        unselectedChipStyle: ChipStyle(
-                          backgroundColor: Colors.white.withValues(alpha: 0.1),
-                          textStyle: AppTypography.labelSmall.copyWith(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            letterSpacing: AppTypography.letterSpacingNormal,
-                          ),
-                          borderColor: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        chipSpacing: AppSpacing.sm,
-                        rowSpacing: AppSpacing.xs,
-                        multiselect: false,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: AppSpacing.lg),
-
-                // MUTED THREADS PANEL
-                _buildPremiumPanel(
-                  context,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        // TODO: Navigate to muted threads management
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.md,
-                        ),
-                        child: Row(
                           children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Muted threads',
-                                    style: AppTypography.bodyLarge.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
+                            // Header
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.sm),
+                              child: Text(
+                                'Manage push notifications, game alerts, and chat alerts.',
+                                style: AppTypography.bodyMedium.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: AppSpacing.lg),
+
+                            // Error message
+                            if (_errorMessage != null) ...[
+                              Container(
+                                padding: EdgeInsets.all(AppSpacing.md),
+                                margin: EdgeInsets.only(bottom: AppSpacing.md),
+                                decoration: BoxDecoration(
+                                  color: AppColors.error.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppColors.error
+                                        .withValues(alpha: 0.5),
+                                    width: 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.error_outline,
+                                        color: AppColors.error),
+                                    SizedBox(width: AppSpacing.sm),
+                                    Expanded(
+                                      child: Text(
+                                        _errorMessage!,
+                                        style:
+                                            AppTypography.bodySmall.copyWith(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+
+                            // MASTER: Push Notifications
+                            _buildSection(
+                              emoji: '🔔',
+                              title: 'Push Notifications',
+                              subtitle:
+                                  'Master control for all notifications',
+                              children: [
+                                _buildToggleRow(
+                                  title: 'Enable push notifications',
+                                  subtitle:
+                                      'Allow notifications for games and chats',
+                                  value: _prefs!.pushEnabled,
+                                  onChanged: _togglePushNotifications,
+                                ),
+                              ],
+                            ),
+
+                            // Permission status
+                            FutureBuilder<NotificationPermissionStatus>(
+                              future: _notificationPermissionService
+                                  .getDetailedStatus(),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return SizedBox.shrink();
+                                }
+
+                                final status = snapshot.data!;
+
+                                if (status ==
+                                    NotificationPermissionStatus
+                                        .permanentlyDenied) {
+                                  return Container(
+                                    margin:
+                                        EdgeInsets.only(bottom: AppSpacing.md),
+                                    padding: EdgeInsets.all(AppSpacing.md),
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Colors.orange
+                                            .withValues(alpha: 0.5),
+                                        width: 1.0,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Icon(Icons.settings,
+                                            size: 40, color: Colors.orange),
+                                        SizedBox(height: AppSpacing.sm),
+                                        Text(
+                                          'Notification permission required',
+                                          style: AppTypography.titleSmall
+                                              .copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        SizedBox(height: AppSpacing.xs),
+                                        Text(
+                                          'Please enable notifications in Settings',
+                                          style: AppTypography.bodySmall
+                                              .copyWith(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.8),
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        SizedBox(height: AppSpacing.md),
+                                        AppButtonEnhanced(
+                                          onPressed: () async {
+                                            await _notificationPermissionService
+                                                .openSystemSettings();
+                                          },
+                                          text: 'Open Settings',
+                                          trailingIcon: Icons.open_in_new,
+                                          size: AppButtonSize.small,
+                                          variant: AppButtonVariant.primary,
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+
+                                return SizedBox.shrink();
+                              },
+                            ),
+
+                            // SUBMASTER: Game Alerts
+                            _buildSection(
+                              emoji: '🎮',
+                              title: 'Game Alerts',
+                              subtitle: 'Get notified when games match your preferences',
+                              disabled: !_prefs!.pushEnabled,
+                              children: [
+                                _buildToggleRow(
+                                  title: 'Enable game alerts',
+                                  value: _prefs!.gameAlerts.enabled,
+                                  onChanged: _toggleGameAlerts,
+                                ),
+
+                                // Show summary and configure button when enabled
+                                if (_prefs!.gameAlerts.enabled && _prefs!.pushEnabled) ...[
+                                  Divider(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                    height: 1,
+                                    thickness: 1,
+                                  ),
+
+                                  // Summary
+                                  Padding(
+                                    padding: EdgeInsets.all(AppSpacing.md),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.info_outline,
+                                              color: AppColors.sunsetGold,
+                                              size: 16,
+                                            ),
+                                            SizedBox(width: AppSpacing.xs),
+                                            Text(
+                                              'Current filters',
+                                              style: AppTypography.labelSmall.copyWith(
+                                                color: Colors.white.withValues(alpha: 0.6),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: AppSpacing.xs),
+                                        Text(
+                                          _alertSub!.getSummary(),
+                                          style: AppTypography.bodyMedium.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  SizedBox(height: 2),
-                                  Text(
-                                    '${_prefs!.mutedThreads.length} muted',
-                                    style: AppTypography.bodySmall.copyWith(
-                                      color: Colors.white.withValues(alpha: 0.6),
-                                    ),
+
+                                  Divider(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                    height: 1,
+                                    thickness: 1,
+                                  ),
+
+                                  // Configure button
+                                  _buildNavigationRow(
+                                    emoji: '⚙️',
+                                    title: 'Configure filters',
+                                    subtitle: 'Set game vibe, stakes, format, courses, and more',
+                                    onTap: _navigateToGameAlerts,
+                                  ),
+                                ],
+                              ],
+                            ),
+
+                            // SUBMASTER: Chat Alerts
+                            _buildSection(
+                              emoji: '💬',
+                              title: 'Chat Alerts',
+                              subtitle: 'Get notified for chat messages',
+                              disabled: !_prefs!.pushEnabled,
+                              children: [
+                                _buildToggleRow(
+                                  title: 'Enable chat alerts',
+                                  value: _prefs!.chatAlerts.enabled,
+                                  onChanged: _toggleChatAlerts,
+                                ),
+                              ],
+                            ),
+
+                            // Quiet Hours
+                            _buildSection(
+                              emoji: '🌙',
+                              title: 'Quiet Hours',
+                              subtitle: 'Pause notifications during specific hours',
+                              children: [
+                                _buildToggleRow(
+                                  title: 'Enable quiet hours',
+                                  value: _prefs!.quietHours.enabled,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _prefs = _prefs!.copyWith(
+                                        quietHours: _prefs!.quietHours
+                                            .copyWith(enabled: value),
+                                      );
+                                      _hasChanges = true;
+                                    });
+                                  },
+                                ),
+                                if (_prefs!.quietHours.enabled) ...[
+                                  Divider(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                    height: 1,
+                                    thickness: 1,
+                                  ),
+                                  _buildTimeRow(
+                                    label: 'Start',
+                                    time: _prefs!.quietHours.start,
+                                    onTap: () => _pickTime(isStart: true),
+                                  ),
+                                  Divider(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                    height: 1,
+                                    thickness: 1,
+                                  ),
+                                  _buildTimeRow(
+                                    label: 'End',
+                                    time: _prefs!.quietHours.end,
+                                    onTap: () => _pickTime(isStart: false),
+                                  ),
+                                ],
+                              ],
+                            ),
+
+                            // Digest Mode
+                            _buildSection(
+                              emoji: '📨',
+                              title: 'Digest Mode',
+                              subtitle: 'Control notification frequency',
+                              children: [
+                                _buildDigestModeSelector(),
+                              ],
+                            ),
+
+                            // Muted Threads
+                            _buildSection(
+                              emoji: '🔇',
+                              title: 'Muted Threads',
+                              children: [
+                                _buildNavigationRow(
+                                  emoji: '',
+                                  title: 'Muted threads',
+                                  subtitle:
+                                      '${_prefs!.mutedThreads.length} muted',
+                                  onTap: () {
+                                    // TODO: Navigate to muted threads management
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+
+                        // Sticky bottom bar
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            padding: EdgeInsets.all(AppSpacing.md),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.transparent,
+                                  AppColors.fairwayDark.withValues(alpha: 0.95),
+                                  AppColors.fairwayDark,
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                stops: [0.0, 0.3, 1.0],
+                              ),
+                            ),
+                            child: SafeArea(
+                              top: false,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildResetButton(),
+                                  ),
+                                  SizedBox(width: AppSpacing.md),
+                                  Expanded(
+                                    flex: 2,
+                                    child: _buildSaveButton(),
                                   ),
                                 ],
                               ),
                             ),
-                            Icon(
-                              Icons.chevron_right,
-                              color: Colors.white.withValues(alpha: 0.5),
-                              size: 24,
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-                SizedBox(height: AppSpacing.xl),
-                AppButtonEnhanced(
-                  text: 'Save settings',
-                  variant: AppButtonVariant.primary,
-                  size: AppButtonSize.large,
-                  onPressed: () => _savePreferences(notificationProvider),
-                ),
-              ],
-            );
-          },
-        ),
         ),
       ),
-        );
-      },
     );
   }
 }
 
-class _ChoiceOption {
-  const _ChoiceOption({
+class _DigestOption {
+  const _DigestOption({
     required this.value,
     required this.label,
+    required this.icon,
   });
 
   final String value;
   final String label;
-}
-
-String _labelForValue(List<_ChoiceOption> options, String value) {
-  return options.firstWhere(
-    (option) => option.value == value,
-    orElse: () => options.first,
-  ).label;
-}
-
-String _valueForLabel(List<_ChoiceOption> options, String label) {
-  return options.firstWhere(
-    (option) => option.label == label,
-    orElse: () => options.first,
-  ).value;
-}
-
-List<String> _labelsForValues(
-  List<_ChoiceOption> options,
-  List<String> values,
-) {
-  return options
-      .where((option) => values.contains(option.value))
-      .map((option) => option.label)
-      .toList();
-}
-
-List<String> _valuesForLabels(
-  List<_ChoiceOption> options,
-  List<String> labels,
-) {
-  return options
-      .where((option) => labels.contains(option.label))
-      .map((option) => option.value)
-      .toList();
+  final IconData icon;
 }

@@ -27,6 +27,7 @@ import '/main_function/success_leave/success_leave_widget.dart';
 import '/main_function/success_page/success_page_widget.dart';
 import '/notifications/notification_page/notification_page_widget.dart';
 import '/notifications/notifications_list/notifications_list_widget.dart';
+import '/notifications/game_alerts_page/game_alerts_page_widget.dart';
 import '/profile/create_profile/create_profile_widget.dart';
 import '/profile/edit_profile/edit_profile_widget.dart';
 import '/profile/edit_vibe_importance/edit_vibe_importance_widget.dart';
@@ -359,6 +360,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             state,
             appStateNotifier,
             NotificationPageWidget(),
+          ),
+        ),
+        GoRoute(
+          name: GameAlertsPageWidget.routeName,
+          path: GameAlertsPageWidget.routePath,
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            GameAlertsPageWidget(),
           ),
         ),
         GoRoute(

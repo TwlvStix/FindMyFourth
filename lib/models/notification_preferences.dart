@@ -19,7 +19,7 @@ class NotificationPreferences {
 
   static NotificationPreferences defaults() {
     return NotificationPreferences(
-      pushEnabled: false,
+      pushEnabled: true,  // Default to ON per requirements
       gameAlerts: NotificationGameAlerts.defaults(),
       chatAlerts: NotificationChatAlerts.defaults(),
       quietHours: NotificationQuietHours.defaults(),
@@ -125,41 +125,34 @@ class NotificationPreferences {
 class NotificationGameAlerts {
   NotificationGameAlerts({
     required this.enabled,
-    required this.styles,
   });
 
   final bool enabled;
-  final List<String> styles;
 
   static NotificationGameAlerts defaults() {
     return NotificationGameAlerts(
-      enabled: true,
-      styles: const ['money', 'vegas', 'competitive', 'for_fun'],
+      enabled: false, // Default to OFF as per requirements
     );
   }
 
   NotificationGameAlerts copyWith({
     bool? enabled,
-    List<String>? styles,
   }) {
     return NotificationGameAlerts(
       enabled: enabled ?? this.enabled,
-      styles: styles ?? this.styles,
     );
   }
 
   static NotificationGameAlerts fromMap(Map<String, dynamic>? map) {
     final data = map == null ? <String, dynamic>{} : Map<String, dynamic>.from(map);
     return NotificationGameAlerts(
-      enabled: NotificationPreferences._boolValue(data, 'enabled', true),
-      styles: NotificationPreferences._stringListValue(data, 'styles'),
+      enabled: NotificationPreferences._boolValue(data, 'enabled', false),
     );
   }
 
   Map<String, dynamic> toFirestore() {
     return {
       'enabled': enabled,
-      'styles': styles,
     };
   }
 }
@@ -167,31 +160,21 @@ class NotificationGameAlerts {
 class NotificationChatAlerts {
   NotificationChatAlerts({
     required this.enabled,
-    required this.direct,
-    required this.group,
   });
 
   final bool enabled;
-  final bool direct;
-  final bool group;
 
   static NotificationChatAlerts defaults() {
     return NotificationChatAlerts(
       enabled: true,
-      direct: true,
-      group: true,
     );
   }
 
   NotificationChatAlerts copyWith({
     bool? enabled,
-    bool? direct,
-    bool? group,
   }) {
     return NotificationChatAlerts(
       enabled: enabled ?? this.enabled,
-      direct: direct ?? this.direct,
-      group: group ?? this.group,
     );
   }
 
@@ -199,16 +182,12 @@ class NotificationChatAlerts {
     final data = map == null ? <String, dynamic>{} : Map<String, dynamic>.from(map);
     return NotificationChatAlerts(
       enabled: NotificationPreferences._boolValue(data, 'enabled', true),
-      direct: NotificationPreferences._boolValue(data, 'direct', true),
-      group: NotificationPreferences._boolValue(data, 'group', true),
     );
   }
 
   Map<String, dynamic> toFirestore() {
     return {
       'enabled': enabled,
-      'direct': direct,
-      'group': group,
     };
   }
 }
