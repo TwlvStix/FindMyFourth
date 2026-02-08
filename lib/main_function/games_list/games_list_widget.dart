@@ -15,6 +15,7 @@ import '/models/game.dart';
 import '/providers/game_provider.dart';
 import '/backend/backend.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
+import '/notifications/notifications_list/notifications_list_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -524,6 +525,30 @@ class _GamesListWidgetState extends State<GamesListWidget> {
             ),
           ),
           actions: [
+            Padding(
+              padding: EdgeInsets.only(right: AppSpacing.xs),
+              child: AppIconButton(
+                borderColor: Colors.transparent,
+                borderRadius: 30.0,
+                borderWidth: 1.0,
+                buttonSize: 44.0,
+                fillColor: Colors.transparent,
+                tooltip: 'Notifications',
+                icon: Icon(
+                  Icons.notifications_none_rounded,
+                  color: Colors.white,
+                  size: 24.0,
+                ),
+                onPressed: () {
+                  context.pushNamed(
+                    NotificationsListWidget.routeName,
+                    extra: <String, dynamic>{
+                      kTransitionInfoKey: TransitionStandards.detailTransition,
+                    },
+                  );
+                },
+              ),
+            ),
             Padding(
               padding: EdgeInsets.only(right: AppSpacing.sm),
               child: AppIconButton(

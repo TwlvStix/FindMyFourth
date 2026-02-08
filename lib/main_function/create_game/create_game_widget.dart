@@ -303,7 +303,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       debugPrint('❌ CREATE GAME: rulesSetValue is null');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please select a rules setting'),
+          content: Text('Please select a game vibe'),
           backgroundColor: Colors.red,
         ),
       );
@@ -313,7 +313,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       debugPrint('❌ CREATE GAME: styleGameValue is null');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please select a game style'),
+          content: Text('Please select stakes'),
           backgroundColor: Colors.red,
         ),
       );
@@ -323,7 +323,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       debugPrint('❌ CREATE GAME: gameTypeValue is null');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please select a game type'),
+          content: Text('Please select a primary format'),
           backgroundColor: Colors.red,
         ),
       );

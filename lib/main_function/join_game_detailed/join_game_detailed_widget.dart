@@ -4,6 +4,7 @@ import '/core/motion/motion_helpers.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
+import '/core/utils/firebase_error_utils.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
@@ -52,6 +53,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
   Map<String, GroupVibeMemberResult> _memberMatchesById = {};
   bool _isGroupVibeLoading = false;
   String _groupVibeKey = '';
+  bool _hasLoggedAccessDenied = false;
 
   @override
   void initState() {
@@ -92,6 +94,74 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
       }
       _loadGroupVibeMatch(gameRecord, currentUserRef, groupRefs);
     });
+  }
+
+  void _logAccessDeniedOnce(String gameId, Object error) {
+    if (_hasLoggedAccessDenied) {
+      return;
+    }
+    _hasLoggedAccessDenied = true;
+    debugPrint(
+      'JoinGameDetailed: access denied for game $gameId (likely friends-only). Error: $error',
+    );
+  }
+
+  Widget _buildAccessDeniedScaffold(BuildContext context) {
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: _buildPremiumAppBar(context, 'Game'),
+      body: FairwayBackgroundDark(
+        showOrganic: true,
+        showTexture: true,
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 88,
+                  height: 88,
+                  decoration: BoxDecoration(
+                    color: AppColors.fairway.withValues(alpha: 0.35),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.lock_outline_rounded,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    size: 44,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.md),
+                Text(
+                  'Friends Only Game',
+                  style: AppTypography.titleSmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: AppSpacing.xs),
+                Text(
+                  'This game is visible to friends only. Add the host as a friend to view details.',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: AppSpacing.md),
+                AppButtonEnhanced(
+                  text: 'Go back',
+                  variant: AppButtonVariant.secondary,
+                  size: AppButtonSize.medium,
+                  onPressed: () => context.pop(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   List<DocumentReference> _groupMemberRefs(Game gameRecord) {
@@ -551,6 +621,11 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
       stream: context.read<GameProvider>().watchGame(gameRef.id),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
+          final error = snapshot.error!;
+          if (FirebaseErrorUtils.isPermissionDenied(error)) {
+            _logAccessDeniedOnce(gameRef.id, error);
+            return _buildAccessDeniedScaffold(context);
+          }
           return Scaffold(
             extendBodyBehindAppBar: true,
             appBar: _buildPremiumAppBar(context, 'Game'),
