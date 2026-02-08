@@ -80,7 +80,7 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
 
           // Avatar with animated gradient ring
           Positioned(
-            top: 40,
+            top: 60,
             left: 0,
             right: 0,
             child: Center(
@@ -91,8 +91,8 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                   RotationTransition(
                     turns: _controller,
                     child: Container(
-                      width: 156,
-                      height: 156,
+                      width: 148,
+                      height: 148,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: SweepGradient(
@@ -112,8 +112,8 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                   GestureDetector(
                     onTap: widget.onEditPhoto,
                     child: Container(
-                      width: 148,
-                      height: 148,
+                      width: 140,
+                      height: 140,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.pure,
@@ -131,8 +131,8 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                           widget.photoUrl.isNotEmpty
                               ? widget.photoUrl
                               : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                          width: 140,
-                          height: 140,
+                          width: 132,
+                          height: 132,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               Container(
@@ -150,28 +150,36 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
 
                   // Edit button - positioned bottom-right of avatar
                   Positioned(
-                    bottom: 8,
-                    right: MediaQuery.of(context).size.width / 2 - 74 + 8,
-                    child: GestureDetector(
-                      onTap: widget.onEditPhoto,
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.sunsetGold,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 8,
-                              offset: Offset(0, 2),
+                    bottom: 4,
+                    right: 4,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkResponse(
+                        onTap: widget.onEditPhoto,
+                        radius: 30,
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.edit_rounded,
-                          color: Colors.white,
-                          size: 20,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.sunsetGold.withOpacity(0.4),
+                                blurRadius: 12,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.camera_alt_rounded,
+                            color: Colors.white,
+                            size: 22,
+                          ),
                         ),
                       ),
                     ),

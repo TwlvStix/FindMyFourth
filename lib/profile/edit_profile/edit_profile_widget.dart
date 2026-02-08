@@ -413,49 +413,54 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             Positioned(
               bottom: 4,
               right: 4,
-              child: GestureDetector(
-                onTap: () async {
-                  HapticFeedback.lightImpact();
-                  await showAppBottomSheet(
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    enableDrag: false,
-                    context: context,
-                    builder: (context) {
-                      return GestureDetector(
-                        onTap: () {
-                          FocusScope.of(context).unfocus();
-                          FocusManager.instance.primaryFocus?.unfocus();
-                        },
-                        child: Padding(
-                          padding: MediaQuery.viewInsetsOf(context),
-                          child: ChangePhotoWidget(),
-                        ),
-                      );
-                    },
-                  ).then((value) {
-                    if (mounted) setState(() {});
-                  });
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.sunsetGold.withOpacity(0.4),
-                        blurRadius: 12,
-                        offset: Offset(0, 4),
+              child: Material(
+                color: Colors.transparent,
+                child: InkResponse(
+                  radius: 30,
+                  onTap: () async {
+                    HapticFeedback.lightImpact();
+                    await showAppBottomSheet(
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      enableDrag: false,
+                      context: context,
+                      builder: (context) {
+                        return GestureDetector(
+                          onTap: () {
+                            FocusScope.of(context).unfocus();
+                            FocusManager.instance.primaryFocus?.unfocus();
+                          },
+                          child: Padding(
+                            padding: MediaQuery.viewInsetsOf(context),
+                            child: ChangePhotoWidget(),
+                          ),
+                        );
+                      },
+                    ).then((value) {
+                      if (mounted) setState(() {});
+                    });
+                  },
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    ],
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.sunsetGold.withOpacity(0.4),
+                          blurRadius: 12,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child:
+                        Icon(Icons.camera_alt_rounded, color: Colors.white, size: 22),
                   ),
-                  child: Icon(Icons.camera_alt_rounded, color: Colors.white, size: 22),
                 ),
               ),
             ),
