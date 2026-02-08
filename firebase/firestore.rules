@@ -167,7 +167,6 @@ service cloud.firestore {
       let changed = newData.diff(oldData).changedKeys();
       return isChatMember(oldData) &&
         changed.hasOnly([
-          'last_message',
           'lastMessage',
           'lastMessageAt',
           'lastMessageSenderId',
