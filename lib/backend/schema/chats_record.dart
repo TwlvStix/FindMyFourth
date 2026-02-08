@@ -187,7 +187,7 @@ Map<String, dynamic> createChatsRecordData({
       'type': type,
       'directKey': directKey,
       'gameId': gameId,
-      'last_message': lastMessage,
+      'lastMessage': lastMessage,
       'lastMessageAt': lastMessageAt,
       'lastMessageSenderId': lastMessageSenderId,
       'group_chat_id': groupChatId,

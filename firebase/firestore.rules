@@ -33,10 +33,10 @@ service cloud.firestore {
 
     function isGameParticipant(gameId) {
       let gamePath = /databases/$(database)/documents/games/$(gameId);
-      let gameData = exists(gamePath) ? get(gamePath).data : null;
+      let gameExists = gameId is string && exists(gamePath);
+      let gameData = gameExists ? get(gamePath).data : {};
       return isSignedIn() &&
-        gameId is string &&
-        gameData != null &&
+        gameExists &&
         gameData.joined_players is list &&
         gameData.joined_players.hasAny([
           userRef(request.auth.uid),
@@ -44,27 +44,29 @@ service cloud.firestore {
         ]);
     }
 
-    function memberIdsOrEmpty(data) {
-      return data.memberIds is list ? data.memberIds : [];
-    }
-
     function isChatMemberById(chatId) {
       let chatPath = /databases/$(database)/documents/chats/$(chatId);
-      let chatData = exists(chatPath) ? get(chatPath).data : null;
-      return chatData != null &&
+      let chatExists = exists(chatPath);
+      let chatData = chatExists ? get(chatPath).data : {};
+      return chatExists &&
         chatData.memberIds is list &&
         request.auth.uid in chatData.memberIds;
     }
 
     function chatDataById(chatId) {
       let chatPath = /databases/$(database)/documents/chats/$(chatId);
-      return exists(chatPath) ? get(chatPath).data : null;
+      return exists(chatPath) ? get(chatPath).data : {};
+    }
+
+    function isChatMemberUid(chatId, uid) {
+      let chatData = chatDataById(chatId);
+      return chatData.memberIds is list &&
+        chatData.memberIds.hasAny([uid]);
     }
 
     function isGameChatOwnerById(chatId) {
       let chatData = chatDataById(chatId);
-      return chatData != null &&
-        chatData.type == 'game' &&
+      return chatData.type == 'game' &&
         isGameOwnerForChat(chatData);
     }
 
@@ -148,8 +150,9 @@ service cloud.firestore {
 
     function isGameOwnerForChat(data) {
       let gamePath = /databases/$(database)/documents/games/$(data.gameId);
-      let gameData = (data.gameId is string && exists(gamePath)) ? get(gamePath).data : null;
-      return isSignedIn() && gameData != null && gameData.uid == request.auth.uid;
+      let gameExists = data.gameId is string && exists(gamePath);
+      let gameData = gameExists ? get(gamePath).data : {};
+      return isSignedIn() && gameExists && gameData.uid == request.auth.uid;
     }
 
     function isSelfOnlyAddedToChat(oldData, newData) {
@@ -295,17 +298,17 @@ service cloud.firestore {
     function allowedVibeProfileChangesOnly() {
       let newVibe = request.resource.data.vibe_profile;
       let oldVibe = resource.data.vibe_profile;
-      let vibeChanges =
-        newVibe is map
-          ? (oldVibe is map ? newVibe.diff(oldVibe).changedKeys() : newVibe.keys())
-          : [];
-      return vibeChanges.hasOnly([
+      let allowedKeys = [
         'prefs',
         'importance',
         'importance_version',
         'importance_updated_at',
         'confirmed_at'
-      ]);
+      ];
+      return !(newVibe is map) ||
+        ((oldVibe is map)
+          ? newVibe.diff(oldVibe).changedKeys().hasOnly(allowedKeys)
+          : newVibe.keys().hasOnly(allowedKeys));
     }
 
     function roleUnchanged() {
@@ -371,8 +374,9 @@ service cloud.firestore {
 
     function isFriendOfOwner(data) {
       let ownerPath = userRef(data.uid);
-      let ownerData = (data.uid is string && exists(ownerPath)) ? get(ownerPath).data : null;
-      return ownerData != null &&
+      let ownerExists = data.uid is string && exists(ownerPath);
+      let ownerData = ownerExists ? get(ownerPath).data : {};
+      return ownerExists &&
         ownerData.friends is list &&
         ownerData.friends.hasAny([userRef(request.auth.uid), request.auth.uid]);
     }
@@ -484,6 +488,16 @@ service cloud.firestore {
 
       match /devices/{deviceId} {
         allow create, update, read, delete: if request.auth.uid == document;
+      }
+
+      match /chatRefs/{chatId} {
+        allow read: if request.auth.uid == document;
+        allow create, update: if isSignedIn() &&
+          isChatMemberById(chatId) &&
+          isChatMemberUid(chatId, document) &&
+          request.resource.data.keys().hasOnly(['chatId', 'lastMessageAt']) &&
+          request.resource.data.chatId == chatId;
+        allow delete: if request.auth.uid == document;
       }
 
       match /notifications/{notificationId} {

@@ -105,15 +105,19 @@ class GameService {
     try {
       final userRef =
           FirebaseFirestore.instance.collection('users').doc(userId);
-
-      return FirebaseFirestore.instance
-          .collection('games')
-          .where('joined_players', arrayContains: userRef)
-          .orderBy('date', descending: true)
-          .snapshots()
-          .map((snapshot) => snapshot.docs
-              .map((doc) => GamesRecord.fromSnapshot(doc))
-              .toList());
+      return FirebaseAuth.instance.authStateChanges().switchMap((user) {
+        if (user == null || user.uid != userId) {
+          return Stream.value(<GamesRecord>[]);
+        }
+        return FirebaseFirestore.instance
+            .collection('games')
+            .where('joined_players', arrayContains: userRef)
+            .orderBy('date', descending: true)
+            .snapshots()
+            .map((snapshot) => snapshot.docs
+                .map((doc) => GamesRecord.fromSnapshot(doc))
+                .toList());
+      });
     } on FirebaseException catch (e) {
       debugPrint('GameService.queryUserGames error: ${e.code} - ${e.message}');
       rethrow;

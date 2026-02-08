@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '/models/chat.dart';
 import '/models/chat_message.dart';
-import '/services/firestore_repository.dart';
 
 class ChatService {
   ChatService({FirebaseFirestore? firestore})
@@ -15,26 +16,46 @@ class ChatService {
   final FirebaseFirestore _firestore;
   final Map<String, Map<String, dynamic>> _userCache = {};
 
+  DocumentReference _userChatRef(String uid, String chatId) {
+    return _firestore.collection('users').doc(uid).collection('chatRefs').doc(chatId);
+  }
+
   Stream<List<Chat>> getChatListStream({
     required String uid,
     int limit = 50,
   }) {
-    final query = _firestore
-        .collection('chats')
-        .where('memberIds', arrayContains: uid)
-        .orderBy('lastMessageAt', descending: true)
-        .limit(limit);
+    return FirebaseAuth.instance.authStateChanges().switchMap((user) {
+      if (user == null || user.uid != uid) {
+        return Stream.value(<Chat>[]);
+      }
 
-    return const FirestoreRepository()
-        .queryCollectionPage<Chat>(
-          query,
-          (doc) => Chat.fromDoc(doc),
-          pageSize: limit,
-          isStream: true,
-        )
-        .asStream()
-        .asyncExpand((page) => page.dataStream ?? Stream.value(page.data))
-        .map((chats) => chats);
+      final query = _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('chatRefs')
+          .orderBy('lastMessageAt', descending: true)
+          .limit(limit);
+
+      return query.snapshots().switchMap((snapshot) {
+        final chatIds = snapshot.docs.map((doc) => doc.id).toList();
+        if (chatIds.isEmpty) {
+          return Stream.value(<Chat>[]);
+        }
+
+        final streams = chatIds.map(
+          (chatId) => _firestore
+              .collection('chats')
+              .doc(chatId)
+              .snapshots()
+              .map((doc) => doc.exists ? Chat.fromDoc(doc) : null)
+              .onErrorReturn(null),
+        );
+
+        return Rx.combineLatestList<Chat?>(streams).map(
+          (chats) => chats.whereType<Chat>().toList(),
+        );
+      });
+    });
   }
 
   Stream<Chat?> getChatStream({
@@ -119,34 +140,46 @@ class ChatService {
 
       await _firestore.runTransaction((transaction) async {
         final chatSnapshot = await transaction.get(chatRef);
-        if (chatSnapshot.exists) {
-          return;
+        if (!chatSnapshot.exists) {
+          transaction.set(chatRef, {
+            'memberIds': memberIds,
+            'users': memberIds
+                .map((uid) => _firestore.collection('users').doc(uid))
+                .toList(),
+            'user_a': _firestore.collection('users').doc(currentUid),
+            'user_b': _firestore.collection('users').doc(otherUid),
+            'directKey': directKey,
+            'type': 'direct',
+            'gameId': null,
+          'lastMessage': '',
+            'isReadOnly': false,
+            'pinnedMessage': '',
+            'pinnedAt': null,
+            'archivedAt': null,
+            'lastMessageAt': FieldValue.serverTimestamp(),
+            'lastMessageSenderId': currentUid,
+            'unreadCountByUser': {
+              currentUid: 0,
+              otherUid: 0,
+            },
+            'createdAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
         }
-        transaction.set(chatRef, {
-          'memberIds': memberIds,
-          'users': memberIds
-              .map((uid) => _firestore.collection('users').doc(uid))
-              .toList(),
-          'user_a': _firestore.collection('users').doc(currentUid),
-          'user_b': _firestore.collection('users').doc(otherUid),
-          'directKey': directKey,
-          'type': 'direct',
-          'gameId': null,
-          'last_message': '',
-          'isReadOnly': false,
-          'pinnedMessage': '',
-          'pinnedAt': null,
-          'archivedAt': null,
-          'lastMessageAt': FieldValue.serverTimestamp(),
-          'lastMessageSenderId': currentUid,
-          'unreadCountByUser': {
-            currentUid: 0,
-            otherUid: 0,
-          },
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
       });
+
+      final batch = _firestore.batch();
+      for (final uid in memberIds) {
+        batch.set(
+          _userChatRef(uid, directKey),
+          {
+            'chatId': directKey,
+            'lastMessageAt': FieldValue.serverTimestamp(),
+          },
+          SetOptions(merge: true),
+        );
+      }
+      await batch.commit();
 
       return chatRef;
     } catch (e, stackTrace) {
@@ -168,7 +201,7 @@ class ChatService {
       'type': 'game',
       'gameId': gameId,
       'gameName': gameName,
-      'last_message': '',
+      'lastMessage': '',
       'isReadOnly': false,
       'pinnedMessage': '',
       'pinnedAt': null,
@@ -181,6 +214,10 @@ class ChatService {
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    await _userChatRef(createdByUid, chatRef.id).set({
+      'chatId': chatRef.id,
+      'lastMessageAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
     return chatRef;
   }
 
@@ -190,12 +227,13 @@ class ChatService {
   }) async {
     await _firestore.collection('chats').doc(chatId).update({
       'memberIds': FieldValue.arrayUnion([uid]),
-      'users': FieldValue.arrayUnion(
-        [_firestore.collection('users').doc(uid)],
-      ),
       'updatedAt': FieldValue.serverTimestamp(),
       'unreadCountByUser.$uid': 0,
     });
+    await _userChatRef(uid, chatId).set({
+      'chatId': chatId,
+      'lastMessageAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 
   Future<void> removeMember({
@@ -204,22 +242,20 @@ class ChatService {
   }) async {
     await _firestore.collection('chats').doc(chatId).update({
       'memberIds': FieldValue.arrayRemove([uid]),
-      'users': FieldValue.arrayRemove(
-        [_firestore.collection('users').doc(uid)],
-      ),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    await _userChatRef(uid, chatId).delete();
   }
 
   /// Send a message to a chat
   ///
   /// Uses Firestore transaction to atomically create message and update chat's
-  /// last_message field. This prevents race conditions where concurrent sends
-  /// could overwrite each other's last_message updates (Phase 10-03 A-RACE-004).
+  /// lastMessage field. This prevents race conditions where concurrent sends
+  /// could overwrite each other's lastMessage updates (Phase 10-03 A-RACE-004).
   ///
   /// Transaction ensures:
   /// - Message document created in messages subcollection
-  /// - Chat's last_message field always reflects latest message
+  /// - Chat's lastMessage field always reflects latest message
   /// - Unread counts updated atomically for all members
   ///
   /// Throws Exception if chat is read-only or archived
@@ -248,7 +284,7 @@ class ChatService {
               <String>[];
 
       final updates = <String, dynamic>{
-        'last_message': text,
+        'lastMessage': text,
         'lastMessageAt': FieldValue.serverTimestamp(),
         'lastMessageSenderId': senderId,
         'updatedAt': FieldValue.serverTimestamp(),
@@ -260,6 +296,15 @@ class ChatService {
         } else {
           updates['unreadCountByUser.$memberId'] = FieldValue.increment(1);
         }
+
+        transaction.set(
+          _userChatRef(memberId, chatId),
+          {
+            'chatId': chatId,
+            'lastMessageAt': FieldValue.serverTimestamp(),
+          },
+          SetOptions(merge: true),
+        );
       }
 
       transaction.set(messageRef, {

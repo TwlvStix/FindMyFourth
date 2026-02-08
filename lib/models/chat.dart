@@ -65,7 +65,9 @@ class Chat {
       directKey: data['directKey'] as String?,
       gameId: data['gameId'] as String?,
       gameName: data['gameName'] as String?,
-      lastMessage: (data['lastMessage'] as String?) ?? '',
+      lastMessage: (data['lastMessage'] as String?) ??
+          (data['last_message'] as String?) ??
+          '',
       lastMessageAt:
           (data['lastMessageAt'] as Timestamp?)?.toDate(),
       lastMessageSenderId: data['lastMessageSenderId'] as String?,
