@@ -161,7 +161,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                   child: TextFormField(
                                     controller: emailAddressTextController,
                                     focusNode: emailAddressFocusNode,
-                                    autofocus: true,
+                                    autofocus: false,
                                     autofillHints: [AutofillHints.email],
                                     obscureText: false,
                                     decoration: InputDecoration(
@@ -266,7 +266,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                   child: TextFormField(
                                     controller: passwordTextController,
                                     focusNode: passwordFocusNode,
-                                    autofocus: true,
+                                    autofocus: false,
                                     autofillHints: [AutofillHints.password],
                                     obscureText: !passwordVisibility,
                                     decoration: InputDecoration(

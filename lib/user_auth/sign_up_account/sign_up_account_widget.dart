@@ -147,7 +147,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                           }
                                         },
                                       ),
-                                      autofocus: true,
+                                      autofocus: false,
                                       autofillHints: [AutofillHints.email],
                                       textInputAction: TextInputAction.next,
                                       obscureText: false,
@@ -229,7 +229,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                     child: TextFormField(
                                       controller: passwordTextController,
                                       focusNode: passwordFocusNode,
-                                      autofocus: true,
+                                      autofocus: false,
                                       autofillHints: [AutofillHints.password],
                                       textInputAction: TextInputAction.next,
                                       obscureText: !passwordVisibility,
@@ -312,7 +312,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                     child: TextFormField(
                                       controller: passwordConfirmTextController,
                                       focusNode: passwordConfirmFocusNode,
-                                      autofocus: true,
+                                      autofocus: false,
                                       autofillHints: [AutofillHints.password],
                                       textInputAction: TextInputAction.next,
                                       obscureText: !passwordConfirmVisibility,

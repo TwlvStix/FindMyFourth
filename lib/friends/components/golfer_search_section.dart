@@ -33,7 +33,7 @@ class GolferSearchSection extends StatefulWidget {
     this.showDefaultsWhenBelowThreshold = false,
     this.searchDebounce = Duration.zero,
     this.showFocusHelperText = false,
-    this.autofocus = true,
+    this.autofocus = false,
     this.resultsLabel = 'Search Results',
     this.emptyStateBuilder,
     this.loadingWidget,
