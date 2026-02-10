@@ -7,6 +7,7 @@ import '../../utils/app_util.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 
 final _handledMessageIds = <String?>{};
@@ -62,6 +63,90 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
     return null;
   }
 
+  Future<void> _showFriendsOnlyDialog(BuildContext context) async {
+    await showDialog<void>(
+      context: context,
+      builder: (alertDialogContext) {
+        return AlertDialog(
+          title: Text('Friends Only Game'),
+          content: Text(
+            'This game is visible to friends only. Add the host as a friend to view details.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(alertDialogContext),
+              child: Text('Ok'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<bool> _shouldBlockFriendsOnlyGame(
+    Map<String, dynamic> initialParameterData,
+  ) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return false;
+    }
+
+    final gameRef =
+        getParameter<DocumentReference>(initialParameterData, 'gameRef');
+    if (gameRef == null) {
+      return false;
+    }
+
+    Map<String, dynamic>? data;
+    try {
+      final gameSnap = await gameRef.get();
+      data = gameSnap.data() as Map<String, dynamic>?;
+    } on FirebaseException catch (error) {
+      if (error.code == 'permission-denied') {
+        return true;
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+    if (data == null) {
+      return false;
+    }
+
+    final friendGameValue = (data['friendGame'] as String?) ?? '';
+    final isFriendsOnly = friendGameValue.trim().toLowerCase() == 'friends';
+    if (!isFriendsOnly) {
+      return false;
+    }
+
+    final ownerRef = data['userRef'];
+    if (ownerRef is! DocumentReference) {
+      return true;
+    }
+
+    final currentUserRef =
+        FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
+    final userSnap = await currentUserRef.get();
+    final userData = userSnap.data() as Map<String, dynamic>? ?? {};
+    final friends = userData['friends'];
+    if (friends is List) {
+      return !friends.any((entry) {
+        if (entry is DocumentReference) {
+          return entry.id == ownerRef.id;
+        }
+        if (entry is String) {
+          if (entry.contains('/')) {
+            final parts = entry.split('/');
+            return parts.isNotEmpty && parts.last == ownerRef.id;
+          }
+          return entry == ownerRef.id;
+        }
+        return false;
+      });
+    }
+    return true;
+  }
+
   Future handleOpenedPushNotification() async {
     if (isWeb) {
       return;
@@ -100,6 +185,18 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
           getInitialParameterData(message.data);
       if (initialPageName == null) {
         return;
+      }
+      if (initialPageName == 'JoinGameDetailed') {
+        final shouldBlock = await _shouldBlockFriendsOnlyGame(
+          initialParameterData,
+        );
+        if (shouldBlock) {
+          final dialogContext = mounted ? context : appNavigatorKey.currentContext;
+          if (dialogContext != null) {
+            await _showFriendsOnlyDialog(dialogContext);
+          }
+          return;
+        }
       }
       final parametersBuilder = parametersBuilderMap[initialPageName];
       if (parametersBuilder != null) {

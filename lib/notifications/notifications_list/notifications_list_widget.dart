@@ -168,6 +168,80 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     }
   }
 
+  Future<void> _showFriendsOnlyDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (alertDialogContext) {
+        return AlertDialog(
+          title: Text('Friends Only Game'),
+          content: Text(
+            'This game is visible to friends only. Add the host as a friend to view details.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(alertDialogContext),
+              child: Text('Ok'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<bool> _shouldBlockFriendsOnlyGame(DocumentReference gameRef) async {
+    final currentUserRef = currentUserReference;
+    if (currentUserRef == null) {
+      return false;
+    }
+
+    Map<String, dynamic>? data;
+    try {
+      final gameSnap = await gameRef.get();
+      data = gameSnap.data() as Map<String, dynamic>?;
+    } on FirebaseException catch (error) {
+      if (error.code == 'permission-denied') {
+        return true;
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+    if (data == null) {
+      return false;
+    }
+
+    final friendGameValue = (data['friendGame'] as String?) ?? '';
+    final isFriendsOnly = friendGameValue.trim().toLowerCase() == 'friends';
+    if (!isFriendsOnly) {
+      return false;
+    }
+
+    final ownerRef = data['userRef'];
+    if (ownerRef is! DocumentReference) {
+      return true;
+    }
+
+    final userSnap = await currentUserRef.get();
+    final userData = userSnap.data() as Map<String, dynamic>? ?? {};
+    final friends = userData['friends'];
+    if (friends is List) {
+      return !friends.any((entry) {
+        if (entry is DocumentReference) {
+          return entry.id == ownerRef.id;
+        }
+        if (entry is String) {
+          if (entry.contains('/')) {
+            final parts = entry.split('/');
+            return parts.isNotEmpty && parts.last == ownerRef.id;
+          }
+          return entry == ownerRef.id;
+        }
+        return false;
+      });
+    }
+    return true;
+  }
+
   Future<void> _showDeleteAllConfirmDialog(DocumentReference userRef) async {
     final shouldDelete = await showDialog<bool>(
       context: context,
@@ -254,6 +328,11 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
         gameRef = FirebaseFirestore.instance.collection('games').doc(gameId);
       }
       if (gameRef != null) {
+        final shouldBlock = await _shouldBlockFriendsOnlyGame(gameRef);
+        if (shouldBlock) {
+          await _showFriendsOnlyDialog();
+          return;
+        }
         context.pushNamed(
           JoinGameDetailedWidget.routeName,
           extra: <String, dynamic>{

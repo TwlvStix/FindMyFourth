@@ -499,6 +499,26 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     }
   }
 
+  Future<void> _showFriendsOnlyDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (alertDialogContext) {
+        return AlertDialog(
+          title: Text('Friends Only Game'),
+          content: Text(
+            'This game is visible to friends only. Add the host as a friend to view details.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(alertDialogContext),
+              child: Text('Ok'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
@@ -1073,6 +1093,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
           if (_getCancelledHandling(game) == null) {
             await _showCancelledGameOptions(game);
           }
+        } else if (isLocked) {
+          await _showFriendsOnlyDialog();
         } else if (isUserGame) {
           context.pushNamed(
             GameJoinedDetailedWidget.routeName,
@@ -1124,32 +1146,35 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   Row(
                     children: [
                       if (isLocked)
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xxs,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(20.0),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.lock_rounded,
-                                size: 12,
-                                color: Colors.white.withOpacity(0.85),
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                'Locked',
-                                style: AppTypography.labelSmall.copyWith(
+                        Tooltip(
+                          message: 'Friends-only game',
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xxs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(20.0),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.lock_rounded,
+                                  size: 12,
                                   color: Colors.white.withOpacity(0.85),
-                                  fontWeight: FontWeight.w600,
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 4),
+                                Text(
+                                  'Friends Only',
+                                  style: AppTypography.labelSmall.copyWith(
+                                    color: Colors.white.withOpacity(0.85),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       if (isLocked) SizedBox(width: AppSpacing.xs),

@@ -54,6 +54,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
   bool _isGroupVibeLoading = false;
   String _groupVibeKey = '';
   bool _hasLoggedAccessDenied = false;
+  bool _hasShownAccessDeniedDialog = false;
 
   @override
   void initState() {
@@ -162,6 +163,33 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
         ),
       ),
     );
+  }
+
+  Future<void> _showFriendsOnlyDialogAndPop(BuildContext context) async {
+    if (_hasShownAccessDeniedDialog) {
+      return;
+    }
+    _hasShownAccessDeniedDialog = true;
+    await showDialog<void>(
+      context: context,
+      builder: (alertDialogContext) {
+        return AlertDialog(
+          title: Text('Friends Only Game'),
+          content: Text(
+            'This game is visible to friends only. Add the host as a friend to view details.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(alertDialogContext),
+              child: Text('Ok'),
+            ),
+          ],
+        );
+      },
+    );
+    if (mounted) {
+      context.pop();
+    }
   }
 
   List<DocumentReference> _groupMemberRefs(Game gameRecord) {
@@ -624,7 +652,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
           final error = snapshot.error!;
           if (FirebaseErrorUtils.isPermissionDenied(error)) {
             _logAccessDeniedOnce(gameRef.id, error);
-            return _buildAccessDeniedScaffold(context);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                _showFriendsOnlyDialogAndPop(context);
+              }
+            });
+            return SizedBox.shrink();
           }
           return Scaffold(
             extendBodyBehindAppBar: true,
