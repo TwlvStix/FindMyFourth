@@ -77,6 +77,11 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   QueryDocumentSnapshot<Map<String, dynamic>>? _lastDocument;
   List<UserProfile> _searchResults = [];
   final Map<String, String> _labelCache = {};
+  StateSetter? _modalSetState;
+
+  void _refreshModalIfOpen() {
+    _modalSetState?.call(() {});
+  }
 
   @override
   void initState() {
@@ -108,6 +113,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
           _hasMoreResults = false;
           _isSearching = false;
         });
+        _refreshModalIfOpen();
         return;
       }
       _runSearch(query: query, reset: true);
@@ -162,6 +168,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   Future<void> _runSearch({required String query, required bool reset}) async {
     final searchToken = ++_searchToken;
     if (mounted) {
+      debugPrint(
+        '🔍 AddPlayer search: query="$query" length=${query.length} reset=$reset',
+      );
       setState(() {
         _isSearching = true;
         _activeQuery = query;
@@ -170,12 +179,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
           _hasMoreResults = false;
         }
       });
+      _refreshModalIfOpen();
     }
 
     try {
       Query<Map<String, dynamic>> baseQuery = FirebaseFirestore.instance
           .collection('users')
-          .orderBy('display_name_lower')
+          .orderBy('display_name_lowercase')
           .startAt([query])
           .endAt(['$query\uf8ff'])
           .limit(_pageSize);
@@ -213,6 +223,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         }
         _isSearching = false;
       });
+      _refreshModalIfOpen();
     } catch (e) {
       if (!mounted || searchToken != _searchToken) return;
       setState(() {
@@ -223,6 +234,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
           _lastDocument = null;
         }
       });
+      _refreshModalIfOpen();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error searching players: $e'),
@@ -254,6 +266,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
+            _modalSetState = setModalState;
             return DraggableScrollableSheet(
               initialChildSize: 0.9,
               minChildSize: 0.5,
@@ -460,7 +473,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
           },
         );
       },
-    );
+    ).whenComplete(() {
+      _modalSetState = null;
+    });
   }
 
   Widget _buildPlayerOption({

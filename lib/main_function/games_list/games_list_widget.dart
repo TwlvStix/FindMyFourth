@@ -1,6 +1,7 @@
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_patterns/premium_ui_patterns.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_stream_builder.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -527,27 +528,71 @@ class _GamesListWidgetState extends State<GamesListWidget> {
           actions: [
             Padding(
               padding: EdgeInsets.only(right: AppSpacing.xs),
-              child: AppIconButton(
-                borderColor: Colors.transparent,
-                borderRadius: 30.0,
-                borderWidth: 1.0,
-                buttonSize: 44.0,
-                fillColor: Colors.transparent,
-                tooltip: 'Notifications',
-                icon: Icon(
-                  Icons.notifications_none_rounded,
-                  color: Colors.white,
-                  size: 24.0,
-                ),
-                onPressed: () {
-                  context.pushNamed(
-                    NotificationsListWidget.routeName,
-                    extra: <String, dynamic>{
-                      kTransitionInfoKey: TransitionStandards.detailTransition,
-                    },
-                  );
-                },
-              ),
+              child: currentUserReference == null
+                  ? AppIconButton(
+                      borderColor: Colors.transparent,
+                      borderRadius: 30.0,
+                      borderWidth: 1.0,
+                      buttonSize: 44.0,
+                      fillColor: Colors.transparent,
+                      tooltip: 'Notifications',
+                      icon: Icon(
+                        Icons.notifications_none_rounded,
+                        color: Colors.white,
+                        size: 24.0,
+                      ),
+                      onPressed: () {
+                        context.pushNamed(
+                          NotificationsListWidget.routeName,
+                          extra: <String, dynamic>{
+                            kTransitionInfoKey:
+                                TransitionStandards.detailTransition,
+                          },
+                        );
+                      },
+                    )
+                  : StreamBuilder<QuerySnapshot>(
+                      stream: currentUserReference!
+                          .collection('notifications')
+                          .where('read', isEqualTo: false)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        final unreadCount = snapshot.data?.docs.length ?? 0;
+                        return Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            AppIconButton(
+                              borderColor: Colors.transparent,
+                              borderRadius: 30.0,
+                              borderWidth: 1.0,
+                              buttonSize: 44.0,
+                              fillColor: Colors.transparent,
+                              tooltip: 'Notifications',
+                              icon: Icon(
+                                Icons.notifications_none_rounded,
+                                color: Colors.white,
+                                size: 24.0,
+                              ),
+                              onPressed: () {
+                                context.pushNamed(
+                                  NotificationsListWidget.routeName,
+                                  extra: <String, dynamic>{
+                                    kTransitionInfoKey:
+                                        TransitionStandards.detailTransition,
+                                  },
+                                );
+                              },
+                            ),
+                            if (unreadCount > 0)
+                              Positioned(
+                                right: 0.0,
+                                bottom: 0.0,
+                                child: NotificationBadge(count: unreadCount),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
             ),
             Padding(
               padding: EdgeInsets.only(right: AppSpacing.sm),

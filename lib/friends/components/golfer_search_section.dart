@@ -417,10 +417,15 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
     }
 
     final searchTerm = debouncedTerm.toLowerCase();
+    if (kDebugMode) {
+      debugPrint(
+        '🔍 Golfer search: query="$searchTerm" length=${searchTerm.length}',
+      );
+    }
     return StreamBuilder<List<UsersRecord>>(
       stream: queryUsersRecord(
         queryBuilder: (usersRecord) => usersRecord
-            .orderBy('display_name_lower')
+            .orderBy('display_name_lowercase')
             .startAt([searchTerm])
             .endAt(['${searchTerm}\uf8ff'])
             .limit(25),

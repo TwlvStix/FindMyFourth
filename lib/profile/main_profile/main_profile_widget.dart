@@ -9,6 +9,7 @@ import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/navigation/transition_standards.dart';
+import '/core/design_patterns/premium_ui_patterns.dart';
 import '/utils/app_util.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/notifications/notification_page/notification_page_widget.dart';
@@ -157,8 +158,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         ),
                         if (unreadCount > 0)
                           Positioned(
-                            right: -4.0,
-                            top: -4.0,
+                            right: 0.0,
+                            bottom: 0.0,
                             child: Container(
                               padding: EdgeInsets.symmetric(
                                 horizontal: 6.0,
@@ -958,26 +959,59 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ),
             child: Column(
               children: [
-                _buildSettingsRow(
-                  context,
-                  icon: Icons.notifications_outlined,
-                  label: 'Notifications',
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    _pushNamed(
-                      NotificationPageWidget.routeName,
-                      extra: <String, dynamic>{
-                        kTransitionInfoKey: TransitionInfo(
-                          hasTransition: true,
-                          transitionType: PageTransitionType.fade,
-                          enterDuration: Duration(milliseconds: 200),
-                          exitDuration: Duration(milliseconds: 170),
-                          scaleOnPush: true,
-                        ),
-                      },
-                    );
-                  },
-                ),
+                currentUserReference == null
+                    ? _buildSettingsRow(
+                        context,
+                        icon: Icons.notifications_outlined,
+                        label: 'Notifications',
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _pushNamed(
+                            NotificationPageWidget.routeName,
+                            extra: <String, dynamic>{
+                              kTransitionInfoKey: TransitionInfo(
+                                hasTransition: true,
+                                transitionType: PageTransitionType.fade,
+                                enterDuration: Duration(milliseconds: 200),
+                                exitDuration: Duration(milliseconds: 170),
+                                scaleOnPush: true,
+                              ),
+                            },
+                          );
+                        },
+                      )
+                    : StreamBuilder<QuerySnapshot>(
+                        stream: currentUserReference!
+                            .collection('notifications')
+                            .where('read', isEqualTo: false)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          final unreadCount = snapshot.data?.docs.length ?? 0;
+                          return _buildSettingsRow(
+                            context,
+                            icon: Icons.notifications_outlined,
+                            label: 'Notifications',
+                            trailing: unreadCount > 0
+                                ? NotificationBadge(count: unreadCount)
+                                : null,
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              _pushNamed(
+                                NotificationPageWidget.routeName,
+                                extra: <String, dynamic>{
+                                  kTransitionInfoKey: TransitionInfo(
+                                    hasTransition: true,
+                                    transitionType: PageTransitionType.fade,
+                                    enterDuration: Duration(milliseconds: 200),
+                                    exitDuration: Duration(milliseconds: 170),
+                                    scaleOnPush: true,
+                                  ),
+                                },
+                              );
+                            },
+                          );
+                        },
+                      ),
                 Divider(height: 1, color: AppColors.cloud, indent: 56),
                 _buildSettingsRow(
                   context,
@@ -1057,6 +1091,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     required String label,
     required VoidCallback onTap,
     bool isDestructive = false,
+    Widget? trailing,
   }) {
     final color = isDestructive ? AppColors.error : AppColors.slate;
 
@@ -1078,6 +1113,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
               ),
             ),
+            if (trailing != null) ...[
+              trailing,
+              SizedBox(width: AppSpacing.xs),
+            ],
             Icon(
               Icons.chevron_right_rounded,
               color: AppColors.stone,
