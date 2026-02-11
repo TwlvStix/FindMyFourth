@@ -958,7 +958,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 child: Padding(
                                   padding: EdgeInsets.fromLTRB(
                                     AppSpacing.sm,
-                                    AppSpacing.md,
+                                    4.0,
                                     AppSpacing.sm,
                                     AppSpacing.sm,
                                   ),
