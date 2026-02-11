@@ -299,32 +299,37 @@ class _NavBarPageState extends State<NavBarPage> {
     };
     final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
 
+    // Only show FAB on GamesList and GamesJoined (My Games) tabs
+    final shouldShowFab = _currentPageName == 'GamesList' || _currentPageName == 'GamesJoined';
+
     return Scaffold(
       resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
       body: _currentPage ?? tabs[_currentPageName],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.pushNamed(
-            CreateGameWidget.routeName,
-            extra: <String, dynamic>{
-              kTransitionInfoKey: TransitionInfo(
-                hasTransition: true,
-                transitionType: PageTransitionType.fade,
-                enterDuration: Duration(milliseconds: 200),
-                exitDuration: Duration(milliseconds: 170),
-                scaleOnPush: true,
+      floatingActionButton: shouldShowFab
+          ? FloatingActionButton(
+              onPressed: () {
+                context.pushNamed(
+                  CreateGameWidget.routeName,
+                  extra: <String, dynamic>{
+                    kTransitionInfoKey: TransitionInfo(
+                      hasTransition: true,
+                      transitionType: PageTransitionType.fade,
+                      enterDuration: Duration(milliseconds: 200),
+                      exitDuration: Duration(milliseconds: 170),
+                      scaleOnPush: true,
+                    ),
+                  },
+                );
+              },
+              backgroundColor: AppTheme.of(context).primary,
+              elevation: 8.0,
+              child: Icon(
+                Icons.add,
+                color: Colors.white,
+                size: 28.0,
               ),
-            },
-          );
-        },
-        backgroundColor: AppTheme.of(context).primary,
-        elevation: 8.0,
-        child: Icon(
-          Icons.add,
-          color: Colors.white,
-          size: 28.0,
-        ),
-      ),
+            )
+          : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       bottomNavigationBar: GNav(
         selectedIndex: currentIndex,
@@ -341,8 +346,8 @@ class _NavBarPageState extends State<NavBarPage> {
         activeColor: AppTheme.of(context).primary,
         tabBackgroundColor: Colors.transparent,
         tabBorderRadius: 0.0,
-        tabMargin: EdgeInsets.all(AppSpacing.xs),
-        padding: EdgeInsets.all(AppSpacing.md),
+        tabMargin: EdgeInsets.all(AppSpacing.xxs),
+        padding: EdgeInsets.all(AppSpacing.sm),
         gap: 0.0,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         duration: Duration.zero, // Instant tab switching per premium motion system
@@ -350,23 +355,23 @@ class _NavBarPageState extends State<NavBarPage> {
         tabs: [
           GButton(
             icon: Icons.golf_course,
-            iconSize: AppIconSize.xl,
+            iconSize: AppIconSize.lg,
           ),
           GButton(
             icon: Icons.calendar_today_outlined,
-            iconSize: AppIconSize.xl,
+            iconSize: AppIconSize.lg,
           ),
           GButton(
             icon: Icons.people_outline,
-            iconSize: AppIconSize.xl,
+            iconSize: AppIconSize.lg,
           ),
           GButton(
             icon: Icons.chat_bubble_outline,
-            iconSize: AppIconSize.xl,
+            iconSize: AppIconSize.lg,
           ),
           GButton(
             icon: Icons.person_outline,
-            iconSize: AppIconSize.xl,
+            iconSize: AppIconSize.lg,
           )
         ],
       ),

@@ -796,7 +796,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             SliverPadding(
                               padding: EdgeInsets.only(
                                 top: AppSpacing.md,
-                                bottom: 44.0,
+                                // Account for bottom nav bar (56) + FAB (56) + spacing (16) + safe area
+                                bottom: MediaQuery.of(context).padding.bottom + 128.0,
                               ),
                               sliver: joinableGames.isEmpty
                                   ? SliverToBoxAdapter(
@@ -1032,7 +1033,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               SliverPadding(
                                 padding: EdgeInsets.only(
                                   top: AppSpacing.sm,
-                                  bottom: 44.0,
+                                  // Account for bottom nav bar (56) + FAB (56) + spacing (16) + safe area
+                                  bottom: MediaQuery.of(context).padding.bottom + 128.0,
                                 ),
                                 sliver: SliverList(
                                   delegate: SliverChildBuilderDelegate(
@@ -1387,12 +1389,16 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   color: Colors.white,
                                   fontWeight: FontWeight.w500,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               Text(
                                 dateTimeFormat("jm", game.date),
                                 style: AppTypography.labelSmall.copyWith(
                                   color: Colors.white.withOpacity(0.6),
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),

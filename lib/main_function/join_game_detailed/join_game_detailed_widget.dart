@@ -1710,6 +1710,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
           SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1717,16 +1718,18 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   label,
                   style: AppTypography.labelSmall.copyWith(
                     color: Colors.white.withValues(alpha: 0.6),
+                    height: 1.0,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: AppSpacing.xxs),
+                SizedBox(height: 2),
                 Text(
                   value.isNotEmpty ? value : '--',
                   style: AppTypography.bodySmall.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
+                    height: 1.0,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

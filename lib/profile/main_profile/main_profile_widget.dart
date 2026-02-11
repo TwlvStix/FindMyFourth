@@ -290,130 +290,142 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     return Column(
       children: [
         // Animated Avatar with Rotating Gradient Ring
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            // Outer glow
-            Container(
-              width: 160,
-              height: 160,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.sunsetGold.withOpacity(0.3),
-                    blurRadius: 40,
-                    spreadRadius: 5,
-                  ),
-                ],
-              ),
-            ),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final screenWidth = MediaQuery.of(context).size.width;
+            final avatarSize = (screenWidth * 0.45).clamp(120.0, 160.0);
+            final ringSize = avatarSize * 0.925;
+            final borderSize = avatarSize * 0.875;
+            final photoSize = avatarSize * 0.825;
+            final buttonSize = avatarSize * 0.25;
+            final iconSize = avatarSize * 0.375;
 
-            // Rotating gradient ring
-            AnimatedBuilder(
-              animation: _ringController,
-              builder: (context, child) {
-                return Transform.rotate(
-                  angle: _ringController.value * 2 * 3.14159,
-                  child: Container(
-                    width: 148,
-                    height: 148,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: SweepGradient(
-                        colors: [
-                          AppColors.sunsetGold,
-                          AppColors.sunsetPeach,
-                          AppColors.sunsetRose,
-                          AppColors.fairwayLight,
-                          AppColors.sunsetGold,
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-
-            // White border
-            Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.pure,
-              ),
-            ),
-
-            // Profile photo
-            AuthUserStreamWidget(
-              builder: (context) => GestureDetector(
-                onTap: () async {
-                  HapticFeedback.lightImpact();
-                  await _openChangePhotoSheet();
-                },
-                child: Container(
-                  width: 132,
-                  height: 132,
-                  clipBehavior: Clip.antiAlias,
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                // Outer glow
+                Container(
+                  width: avatarSize,
+                  height: avatarSize,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                  ),
-                  child: Image.network(
-                    valueOrDefault<String>(
-                      currentUserPhoto,
-                      'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                    ),
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: AppColors.sand,
-                      child: Icon(
-                        Icons.person_rounded,
-                        size: 60,
-                        color: AppColors.stone,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // Edit photo button
-            Positioned(
-              bottom: 4,
-              right: 4,
-              child: GestureDetector(
-                onTap: () async {
-                  HapticFeedback.lightImpact();
-                  await _openChangePhotoSheet();
-                },
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.sunsetGold.withOpacity(0.4),
-                        blurRadius: 12,
-                        offset: Offset(0, 4),
+                        color: AppColors.sunsetGold.withOpacity(0.3),
+                        blurRadius: 40,
+                        spreadRadius: 5,
                       ),
                     ],
                   ),
-                  child: Icon(
-                    Icons.camera_alt_rounded,
-                    color: Colors.white,
-                    size: 20,
+                ),
+
+                // Rotating gradient ring
+                AnimatedBuilder(
+                  animation: _ringController,
+                  builder: (context, child) {
+                    return Transform.rotate(
+                      angle: _ringController.value * 2 * 3.14159,
+                      child: Container(
+                        width: ringSize,
+                        height: ringSize,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: SweepGradient(
+                            colors: [
+                              AppColors.sunsetGold,
+                              AppColors.sunsetPeach,
+                              AppColors.sunsetRose,
+                              AppColors.fairwayLight,
+                              AppColors.sunsetGold,
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                // White border
+                Container(
+                  width: borderSize,
+                  height: borderSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.pure,
                   ),
                 ),
-              ),
-            ),
-          ],
+
+                // Profile photo
+                AuthUserStreamWidget(
+                  builder: (context) => GestureDetector(
+                    onTap: () async {
+                      HapticFeedback.lightImpact();
+                      await _openChangePhotoSheet();
+                    },
+                    child: Container(
+                      width: photoSize,
+                      height: photoSize,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                      ),
+                      child: Image.network(
+                        valueOrDefault<String>(
+                          currentUserPhoto,
+                          'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+                        ),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: AppColors.sand,
+                          child: Icon(
+                            Icons.person_rounded,
+                            size: iconSize,
+                            color: AppColors.stone,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Edit photo button
+                Positioned(
+                  bottom: 4,
+                  right: 4,
+                  child: GestureDetector(
+                    onTap: () async {
+                      HapticFeedback.lightImpact();
+                      await _openChangePhotoSheet();
+                    },
+                    child: Container(
+                      width: buttonSize,
+                      height: buttonSize,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.sunsetGold.withOpacity(0.4),
+                            blurRadius: 12,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.camera_alt_rounded,
+                        color: Colors.white,
+                        size: buttonSize * 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
 
         SizedBox(height: AppSpacing.lg),
@@ -692,80 +704,178 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Widget _buildQuickActionsGrid(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildQuickActionCard(
-              context,
-              icon: Icons.person_outline_rounded,
-              label: 'Edit Profile',
-              gradient: [AppColors.fairwayLight, AppColors.fairway],
-              onTap: () {
-                HapticFeedback.lightImpact();
-                _pushNamed(
-                  EditProfileWidget.routeName,
-                  extra: <String, dynamic>{
-                    kTransitionInfoKey: TransitionInfo(
-                  hasTransition: true,
-                  transitionType: PageTransitionType.fade,
-                  enterDuration: Duration(milliseconds: 200),
-                  exitDuration: Duration(milliseconds: 170),
-                  scaleOnPush: false,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final screenWidth = MediaQuery.of(context).size.width;
+          // Use 2 columns for small screens, 3 for larger screens
+          final useCompactLayout = screenWidth < 400;
+
+          if (useCompactLayout) {
+            // 2-column layout for small screens
+            return Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildQuickActionCard(
+                        context,
+                        icon: Icons.person_outline_rounded,
+                        label: 'Edit Profile',
+                        gradient: [AppColors.fairwayLight, AppColors.fairway],
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _pushNamed(
+                            EditProfileWidget.routeName,
+                            extra: <String, dynamic>{
+                              kTransitionInfoKey: TransitionInfo(
+                            hasTransition: true,
+                            transitionType: PageTransitionType.fade,
+                            enterDuration: Duration(milliseconds: 200),
+                            exitDuration: Duration(milliseconds: 170),
+                            scaleOnPush: false,
+                          ),
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: _buildQuickActionCard(
+                        context,
+                        icon: Icons.tune_rounded,
+                        label: 'Golf Vibes',
+                        gradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _pushNamed(
+                            EditVibesWidget.routeName,
+                            extra: <String, dynamic>{
+                              kTransitionInfoKey: TransitionInfo(
+                            hasTransition: true,
+                            transitionType: PageTransitionType.fade,
+                            enterDuration: Duration(milliseconds: 200),
+                            exitDuration: Duration(milliseconds: 170),
+                            scaleOnPush: false,
+                          ),
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                  },
-                );
-              },
-            ),
-          ),
-          SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: _buildQuickActionCard(
-              context,
-              icon: Icons.tune_rounded,
-              label: 'Golf Vibes',
-              gradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
-              onTap: () {
-                HapticFeedback.lightImpact();
-                _pushNamed(
-                  EditVibesWidget.routeName,
-                  extra: <String, dynamic>{
-                    kTransitionInfoKey: TransitionInfo(
-                  hasTransition: true,
-                  transitionType: PageTransitionType.fade,
-                  enterDuration: Duration(milliseconds: 200),
-                  exitDuration: Duration(milliseconds: 170),
-                  scaleOnPush: false,
+                SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildQuickActionCard(
+                        context,
+                        icon: Icons.people_outline_rounded,
+                        label: 'Friends',
+                        gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _pushNamed(
+                            TabFriendsWidget.routeName,
+                            extra: <String, dynamic>{
+                              kTransitionInfoKey: TransitionInfo(
+                            hasTransition: true,
+                            transitionType: PageTransitionType.fade,
+                            enterDuration: Duration(milliseconds: 200),
+                            exitDuration: Duration(milliseconds: 170),
+                            scaleOnPush: true,
+                          ),
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(width: AppSpacing.sm),
+                    Expanded(child: SizedBox()), // Empty space to maintain grid alignment
+                  ],
                 ),
-                  },
-                );
-              },
-            ),
-          ),
-          SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: _buildQuickActionCard(
-              context,
-              icon: Icons.people_outline_rounded,
-              label: 'Friends',
-              gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
-              onTap: () {
-                HapticFeedback.lightImpact();
-                _pushNamed(
-                  TabFriendsWidget.routeName,
-                  extra: <String, dynamic>{
-                    kTransitionInfoKey: TransitionInfo(
-                  hasTransition: true,
-                  transitionType: PageTransitionType.fade,
-                  enterDuration: Duration(milliseconds: 200),
-                  exitDuration: Duration(milliseconds: 170),
-                  scaleOnPush: true,
+              ],
+            );
+          } else {
+            // 3-column layout for larger screens
+            return Row(
+              children: [
+                Expanded(
+                  child: _buildQuickActionCard(
+                    context,
+                    icon: Icons.person_outline_rounded,
+                    label: 'Edit Profile',
+                    gradient: [AppColors.fairwayLight, AppColors.fairway],
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      _pushNamed(
+                        EditProfileWidget.routeName,
+                        extra: <String, dynamic>{
+                          kTransitionInfoKey: TransitionInfo(
+                        hasTransition: true,
+                        transitionType: PageTransitionType.fade,
+                        enterDuration: Duration(milliseconds: 200),
+                        exitDuration: Duration(milliseconds: 170),
+                        scaleOnPush: false,
+                      ),
+                        },
+                      );
+                    },
+                  ),
                 ),
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+                SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: _buildQuickActionCard(
+                    context,
+                    icon: Icons.tune_rounded,
+                    label: 'Golf Vibes',
+                    gradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      _pushNamed(
+                        EditVibesWidget.routeName,
+                        extra: <String, dynamic>{
+                          kTransitionInfoKey: TransitionInfo(
+                        hasTransition: true,
+                        transitionType: PageTransitionType.fade,
+                        enterDuration: Duration(milliseconds: 200),
+                        exitDuration: Duration(milliseconds: 170),
+                        scaleOnPush: false,
+                      ),
+                        },
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: _buildQuickActionCard(
+                    context,
+                    icon: Icons.people_outline_rounded,
+                    label: 'Friends',
+                    gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      _pushNamed(
+                        TabFriendsWidget.routeName,
+                        extra: <String, dynamic>{
+                          kTransitionInfoKey: TransitionInfo(
+                        hasTransition: true,
+                        transitionType: PageTransitionType.fade,
+                        enterDuration: Duration(milliseconds: 200),
+                        exitDuration: Duration(milliseconds: 170),
+                        scaleOnPush: true,
+                      ),
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          }
+        },
       ),
     );
   }
@@ -817,6 +927,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 color: AppColors.slate,
                 fontWeight: FontWeight.w500,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
           ],
         ),
