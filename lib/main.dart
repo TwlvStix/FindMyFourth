@@ -13,6 +13,8 @@ import 'auth/firebase_auth/auth_util.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/utils/app_util.dart';
 import '/providers/user_provider.dart';
 import '/providers/chat_provider.dart';
@@ -335,42 +337,36 @@ class _NavBarPageState extends State<NavBarPage> {
           }
         },
         backgroundColor: Colors.white,
-        color: AppTheme.of(context).primary,
-        activeColor: Color(0xFF402550),
-        tabBackgroundColor: AppTheme.of(context).primaryBtnText,
-        tabBorderRadius: 100.0,
-        tabMargin: EdgeInsets.all(6.0),
-        padding: EdgeInsets.all(6.0),
+        color: AppTheme.of(context).tertiary,
+        activeColor: AppTheme.of(context).primary,
+        tabBackgroundColor: Colors.transparent,
+        tabBorderRadius: 0.0,
+        tabMargin: EdgeInsets.all(AppSpacing.xs),
+        padding: EdgeInsets.all(AppSpacing.md),
         gap: 0.0,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         duration: Duration.zero, // Instant tab switching per premium motion system
         haptic: false,
         tabs: [
           GButton(
-            icon: Icons.list_alt,
-            text: 'Games',
-            iconSize: 24.0,
-            backgroundColor: AppTheme.of(context).primaryBackground,
+            icon: Icons.golf_course,
+            iconSize: AppIconSize.xl,
           ),
           GButton(
-            icon: Icons.calendar_month,
-            text: 'Schedule',
-            iconSize: 24.0,
+            icon: Icons.calendar_today_outlined,
+            iconSize: AppIconSize.xl,
           ),
           GButton(
-            icon: Icons.people,
-            text: 'Golfers',
-            iconSize: 24.0,
+            icon: Icons.people_outline,
+            iconSize: AppIconSize.xl,
           ),
           GButton(
-            icon: Icons.forum_outlined,
-            text: 'Chats',
-            iconSize: 24.0,
+            icon: Icons.chat_bubble_outline,
+            iconSize: AppIconSize.xl,
           ),
           GButton(
             icon: Icons.person_outline,
-            text: 'Profile',
-            iconSize: 24.0,
+            iconSize: AppIconSize.xl,
           )
         ],
       ),
