@@ -3,12 +3,12 @@ import 'dart:async';
 import 'serialization_util.dart';
 import '/backend/backend.dart';
 import '/core/app_theme.dart';
+import '/core/utils/app_log.dart';
 import '../../utils/app_util.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 
 final _handledMessageIds = <String?>{};
 
@@ -181,8 +181,8 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
           (rawPageName is String && rawPageName.isNotEmpty
               ? rawPageName
               : null);
-      final initialParameterData = resolvedRoute?.parameterData ??
-          getInitialParameterData(message.data);
+      final initialParameterData =
+          resolvedRoute?.parameterData ?? getInitialParameterData(message.data);
       if (initialPageName == null) {
         return;
       }
@@ -191,7 +191,8 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
           initialParameterData,
         );
         if (shouldBlock) {
-          final dialogContext = mounted ? context : appNavigatorKey.currentContext;
+          final dialogContext =
+              mounted ? context : appNavigatorKey.currentContext;
           if (dialogContext != null) {
             await _showFriendsOnlyDialog(dialogContext);
           }
@@ -216,7 +217,7 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
         }
       }
     } catch (e) {
-      print('Error: $e');
+      AppLog.d('Error: $e');
     } finally {
       _loadingTimeout?.cancel();
       if (mounted) setState(() => _loading = false);
@@ -324,7 +325,7 @@ Map<String, dynamic> getInitialParameterData(Map<String, dynamic> data) {
     }
     return jsonDecode(parameterDataStr) as Map<String, dynamic>;
   } catch (e) {
-    print('Error parsing parameter data: $e');
+    AppLog.d('Error parsing parameter data: $e');
     return {};
   }
 }

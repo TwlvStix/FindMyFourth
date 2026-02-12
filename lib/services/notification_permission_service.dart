@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '/backend/cloud_functions/cloud_functions.dart';
+import '/core/utils/app_log.dart';
 
 enum NotificationPermissionStatus {
   granted,
@@ -73,13 +74,9 @@ class NotificationPermissionService {
               : NotificationPermissionStatus.denied;
         case AuthorizationStatus.notDetermined:
           return NotificationPermissionStatus.denied;
-        default:
-          return NotificationPermissionStatus.error;
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('Error getting notification permission status: $e');
-      }
+      AppLog.d('Error getting notification permission status: $e');
       return NotificationPermissionStatus.error;
     }
   }
@@ -89,9 +86,7 @@ class NotificationPermissionService {
     try {
       await AppSettings.openAppSettings(type: AppSettingsType.notification);
     } catch (e) {
-      if (kDebugMode) {
-        print('Error opening system settings: $e');
-      }
+      AppLog.d('Error opening system settings: $e');
     }
   }
 
@@ -127,7 +122,7 @@ class NotificationPermissionService {
 
       _listenForTokenRefresh(user.uid);
       try {
-        final token = await _messaging.getToken();
+        final token = await _getMessagingToken();
         if (token != null && token.isNotEmpty) {
           await _upsertDeviceToken(user.uid, token);
         }
@@ -147,6 +142,28 @@ class NotificationPermissionService {
       }
       _upsertDeviceToken(uid, token);
     });
+  }
+
+  Future<String?> _getMessagingToken() async {
+    if (!kIsWeb && Platform.isIOS) {
+      final hasApnsToken = await _waitForApnsToken();
+      if (!hasApnsToken) {
+        return null;
+      }
+    }
+    return _messaging.getToken();
+  }
+
+  Future<bool> _waitForApnsToken() async {
+    final deadline = DateTime.now().add(const Duration(seconds: 8));
+    while (DateTime.now().isBefore(deadline)) {
+      final apnsToken = await _messaging.getAPNSToken();
+      if (apnsToken != null && apnsToken.isNotEmpty) {
+        return true;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+    }
+    return false;
   }
 
   Future<void> _upsertDeviceToken(String uid, String token) async {

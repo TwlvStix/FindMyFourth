@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '/backend/schema/util/firestore_util.dart';
+import '/core/utils/app_log.dart';
 
 class FirestorePage<T> {
   final List<T> data;
@@ -45,7 +46,7 @@ class FirestoreRepository {
         .map(
           (d) => safeGet(
             () => recordBuilder(d),
-            (e) => print('Error serializing doc ${d.reference.path}:\n$e'),
+            (e) => AppLog.d('Error serializing doc ${d.reference.path}: $e'),
           ),
         )
         .where((d) => d != null)
@@ -53,7 +54,8 @@ class FirestoreRepository {
         .toList();
     final data = getDocs(docSnapshot);
     final dataStream = docSnapshotStream?.map(getDocs);
-    final nextPageToken = docSnapshot.docs.isEmpty ? null : docSnapshot.docs.last;
+    final nextPageToken =
+        docSnapshot.docs.isEmpty ? null : docSnapshot.docs.last;
     return FirestorePage(data, dataStream, nextPageToken);
   }
 }

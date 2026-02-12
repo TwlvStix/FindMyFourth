@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../auth/firebase_auth/auth_util.dart';
+import '../core/utils/app_log.dart';
 
 import '../services/firestore_repository.dart';
 import '../utils/app_util.dart';
@@ -99,14 +100,16 @@ Future<FirestorePage<UsersRecord>> queryUsersRecordPage({
   required PagingController<DocumentSnapshot?, UsersRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    firestoreRepository.queryCollectionPage(
+    firestoreRepository
+        .queryCollectionPage(
       UsersRecord.collection,
       UsersRecord.fromSnapshot,
-    queryBuilder: queryBuilder,
-    nextPageMarker: nextPageMarker,
-    pageSize: pageSize,
-    isStream: isStream,
-  ).then((page) {
+      queryBuilder: queryBuilder,
+      nextPageMarker: nextPageMarker,
+      pageSize: pageSize,
+      isStream: isStream,
+    )
+        .then((page) {
       _appendPageToController(
         controller,
         page.data,
@@ -166,14 +169,16 @@ Future<FirestorePage<CourseRecord>> queryCourseRecordPage({
   required PagingController<DocumentSnapshot?, CourseRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    firestoreRepository.queryCollectionPage(
+    firestoreRepository
+        .queryCollectionPage(
       CourseRecord.collection,
       CourseRecord.fromSnapshot,
-    queryBuilder: queryBuilder,
-    nextPageMarker: nextPageMarker,
-    pageSize: pageSize,
-    isStream: isStream,
-  ).then((page) {
+      queryBuilder: queryBuilder,
+      nextPageMarker: nextPageMarker,
+      pageSize: pageSize,
+      isStream: isStream,
+    )
+        .then((page) {
       _appendPageToController(
         controller,
         page.data,
@@ -233,14 +238,16 @@ Future<FirestorePage<ChatMessagesRecord>> queryChatMessagesRecordPage({
   required PagingController<DocumentSnapshot?, ChatMessagesRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    firestoreRepository.queryCollectionPage(
+    firestoreRepository
+        .queryCollectionPage(
       ChatMessagesRecord.collection,
       ChatMessagesRecord.fromSnapshot,
-    queryBuilder: queryBuilder,
-    nextPageMarker: nextPageMarker,
-    pageSize: pageSize,
-    isStream: isStream,
-  ).then((page) {
+      queryBuilder: queryBuilder,
+      nextPageMarker: nextPageMarker,
+      pageSize: pageSize,
+      isStream: isStream,
+    )
+        .then((page) {
       _appendPageToController(
         controller,
         page.data,
@@ -300,14 +307,16 @@ Future<FirestorePage<ChatsRecord>> queryChatsRecordPage({
   required PagingController<DocumentSnapshot?, ChatsRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    firestoreRepository.queryCollectionPage(
+    firestoreRepository
+        .queryCollectionPage(
       ChatsRecord.collection,
       ChatsRecord.fromSnapshot,
-    queryBuilder: queryBuilder,
-    nextPageMarker: nextPageMarker,
-    pageSize: pageSize,
-    isStream: isStream,
-  ).then((page) {
+      queryBuilder: queryBuilder,
+      nextPageMarker: nextPageMarker,
+      pageSize: pageSize,
+      isStream: isStream,
+    )
+        .then((page) {
       _appendPageToController(
         controller,
         page.data,
@@ -367,14 +376,16 @@ Future<FirestorePage<GamesRecord>> queryGamesRecordPage({
   required PagingController<DocumentSnapshot?, GamesRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    firestoreRepository.queryCollectionPage(
+    firestoreRepository
+        .queryCollectionPage(
       GamesRecord.collection,
       GamesRecord.fromSnapshot,
-    queryBuilder: queryBuilder,
-    nextPageMarker: nextPageMarker,
-    pageSize: pageSize,
-    isStream: isStream,
-  ).then((page) {
+      queryBuilder: queryBuilder,
+      nextPageMarker: nextPageMarker,
+      pageSize: pageSize,
+      isStream: isStream,
+    )
+        .then((page) {
       _appendPageToController(
         controller,
         page.data,
@@ -434,14 +445,16 @@ Future<FirestorePage<FriendRequestRecord>> queryFriendRequestRecordPage({
   required PagingController<DocumentSnapshot?, FriendRequestRecord> controller,
   List<StreamSubscription?>? streamSubscriptions,
 }) =>
-    firestoreRepository.queryCollectionPage(
+    firestoreRepository
+        .queryCollectionPage(
       FriendRequestRecord.collection,
       FriendRequestRecord.fromSnapshot,
-    queryBuilder: queryBuilder,
-    nextPageMarker: nextPageMarker,
-    pageSize: pageSize,
-    isStream: isStream,
-  ).then((page) {
+      queryBuilder: queryBuilder,
+      nextPageMarker: nextPageMarker,
+      pageSize: pageSize,
+      isStream: isStream,
+    )
+        .then((page) {
       _appendPageToController(
         controller,
         page.data,
@@ -472,7 +485,7 @@ Future<int> queryCollectionCount(
     final value = await query.count().get();
     return value.count ?? 0;
   } catch (err) {
-    print('Error querying $collection: $err');
+    AppLog.d('Error querying $collection: $err');
     rethrow;
   }
 }
@@ -490,12 +503,12 @@ Stream<List<T>> queryCollection<T>(
     query = query.limit(singleRecord ? 1 : limit);
   }
   return query.snapshots().handleError((err) {
-    print('Error querying $collection: $err');
+    AppLog.d('Error querying $collection: $err');
   }).map((s) => s.docs
       .map(
         (d) => safeGet(
           () => recordBuilder(d),
-          (e) => print('Error serializing doc ${d.reference.path}:\n$e'),
+          (e) => AppLog.d('Error serializing doc ${d.reference.path}:\n$e'),
         ),
       )
       .where((d) => d != null)
@@ -521,14 +534,14 @@ Future<List<T>> queryCollectionOnce<T>(
           .map(
             (d) => safeGet(
               () => recordBuilder(d),
-              (e) => print('Error serializing doc ${d.reference.path}:\n$e'),
+              (e) => AppLog.d('Error serializing doc ${d.reference.path}:\n$e'),
             ),
           )
           .where((d) => d != null)
           .map((d) => d!)
           .toList())
       .catchError((err) {
-    print('Error querying $collection: $err');
+    AppLog.d('Error querying $collection: $err');
     return <T>[];
   });
 }

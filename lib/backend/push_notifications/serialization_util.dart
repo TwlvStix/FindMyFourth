@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '/backend/backend.dart';
+import '/core/utils/app_log.dart';
 
 import '../../models/lat_lng.dart';
 import '../../models/place.dart';
@@ -148,7 +149,7 @@ T? getParameter<T>(Map<String, dynamic> data, String paramName) {
     }
     return param;
   } catch (e) {
-    print('Error parsing parameter "$paramName": $e');
+    AppLog.d('Error parsing parameter "$paramName": $e');
     return null;
   }
 }

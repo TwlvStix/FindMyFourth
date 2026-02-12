@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../auth_manager.dart';
 import '/backend/cloud_functions/cloud_functions.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import '/core/utils/app_log.dart';
 
 import '/backend/backend.dart';
 import 'anonymous_auth.dart';
@@ -42,7 +42,8 @@ class FirebasePhoneAuthManager extends ChangeNotifier {
   }
 }
 
-const _genericAuthErrorMessage = 'Unable to complete the request. Please try again later.';
+const _genericAuthErrorMessage =
+    'Unable to complete the request. Please try again later.';
 
 class FirebaseAuthManager extends AuthManager
     with
@@ -78,7 +79,7 @@ class FirebaseAuthManager extends AuthManager
   Future deleteUser(BuildContext context) async {
     try {
       if (!loggedIn) {
-        print('Error: delete user attempted with no logged in user!');
+        AppLog.d('Error: delete user attempted with no logged in user!');
         return;
       }
       await currentUser?.delete();
@@ -104,7 +105,7 @@ class FirebaseAuthManager extends AuthManager
   }) async {
     try {
       if (!loggedIn) {
-        print('Error: update email attempted with no logged in user!');
+        AppLog.d('Error: update email attempted with no logged in user!');
         return;
       }
       await currentUser?.updateEmail(email);
@@ -131,7 +132,7 @@ class FirebaseAuthManager extends AuthManager
   }) async {
     try {
       if (!loggedIn) {
-        print('Error: update password attempted with no logged in user!');
+        AppLog.d('Error: update password attempted with no logged in user!');
         return;
       }
       await currentUser?.updatePassword(newPassword);
@@ -224,7 +225,7 @@ class FirebaseAuthManager extends AuthManager
     listener = () {
       if (!context.mounted) {
         if (listener != null) {
-          phoneAuthManager.removeListener(listener!);
+          phoneAuthManager.removeListener(listener);
           if (identical(_phoneAuthListener, listener)) {
             _phoneAuthListener = null;
           }
@@ -336,14 +337,15 @@ class FirebaseAuthManager extends AuthManager
     String authProvider,
   ) async {
     try {
-      debugPrint('🔐 AUTH: Starting sign in/create account with provider: $authProvider');
+      AppLog.d(
+          '🔐 AUTH: Starting sign in/create account with provider: $authProvider');
       final userCredential = await signInFunc();
-      debugPrint('🔐 AUTH: Received user credential.');
+      AppLog.d('🔐 AUTH: Received user credential.');
       final firebaseUser = userCredential?.user;
       if (firebaseUser != null) {
-        debugPrint('🔐 AUTH: Creating/updating user document.');
+        AppLog.d('🔐 AUTH: Creating/updating user document.');
         await ensureUserDocReady(firebaseUser);
-        debugPrint('🔐 AUTH: User document created/updated successfully');
+        AppLog.d('🔐 AUTH: User document created/updated successfully');
       }
       return userCredential == null
           ? null
@@ -354,21 +356,14 @@ class FirebaseAuthManager extends AuthManager
           user != null ? UsersRecord.collection.doc(user.uid).path : 'unknown';
       final authProviderInfo =
           'authProvider=$authProvider, code=${e.code}, message=${e.message}';
-      FirebaseMessaging.instance.getToken().then((token) {
-        debugPrint(
-            '🔐 AUTH ERROR: $authProviderInfo, userDocPath=$userDocPath, fcmToken=$token');
-      }).catchError((tokenError) {
-        debugPrint(
-            '🔐 AUTH ERROR: $authProviderInfo, userDocPath=$userDocPath, fcmToken=failed');
-        debugPrint('🔐 AUTH ERROR: token fetch error: $tokenError');
-      });
+      AppLog.d('🔐 AUTH ERROR: $authProviderInfo, userDocPath=$userDocPath');
       final errorMsg = _firebaseAuthErrorMessage(e);
       _showAuthError(context, errorMsg);
       return null;
     } catch (e, stackTrace) {
-      debugPrint('❌ AUTH: Unexpected error during sign in/create account');
-      debugPrint('❌ AUTH: Error: $e');
-      debugPrint('❌ AUTH: Stack trace: $stackTrace');
+      AppLog.d('❌ AUTH: Unexpected error during sign in/create account');
+      AppLog.d('❌ AUTH: Error: $e');
+      AppLog.d('❌ AUTH: Stack trace: $stackTrace');
       _showAuthError(context, 'Error: An unexpected error occurred');
       return null;
     }
@@ -380,7 +375,7 @@ class FirebaseAuthManager extends AuthManager
     String password,
   ) async {
     final trimmedEmail = email.trim();
-    debugPrint('🔐 AUTH: Email sign-in attempt for $trimmedEmail');
+    AppLog.d('🔐 AUTH: Email sign-in attempt for $trimmedEmail');
     if (trimmedEmail.isEmpty) {
       _showAuthError(context, 'Please enter an email address.');
       return null;
@@ -416,7 +411,8 @@ class FirebaseAuthManager extends AuthManager
       try {
         return await signInFunc();
       } on FirebaseAuthException catch (e) {
-      debugPrint('❌ AUTH: Email sign-in failed (attempt $attempt/$maxAttempts).');
+        AppLog.d(
+            '❌ AUTH: Email sign-in failed (attempt $attempt/$maxAttempts).');
         if (attempt >= maxAttempts || e.code != 'user-not-found') {
           rethrow;
         }
@@ -432,41 +428,43 @@ class FirebaseAuthManager extends AuthManager
     String password,
   ) async {
     final trimmedEmail = email.trim();
-    debugPrint('🔐 AUTH: Email create attempt for $trimmedEmail');
+    AppLog.d('🔐 AUTH: Email create attempt for $trimmedEmail');
     if (!_allowAuthAttempt(trimmedEmail)) {
       _showAuthError(context, _genericAuthErrorMessage);
       return null;
     }
 
     try {
-      debugPrint('🔐 AUTH: Calling createUserWithEmailAndPassword for $trimmedEmail');
-      final userCredential = await emailCreateAccountFunc(trimmedEmail, password);
+      AppLog.d(
+          '🔐 AUTH: Calling createUserWithEmailAndPassword for $trimmedEmail');
+      final userCredential =
+          await emailCreateAccountFunc(trimmedEmail, password);
       final firebaseUser = userCredential?.user;
       if (firebaseUser != null) {
         await ensureUserDocReady(firebaseUser);
-        debugPrint('🔐 AUTH: Email account created.');
+        AppLog.d('🔐 AUTH: Email account created.');
       }
       return userCredential == null
           ? null
           : FindMyFourthFirebaseUser.fromUserCredential(userCredential);
     } on FirebaseAuthException catch (e) {
-      debugPrint('❌ AUTH: create email failed.');
+      AppLog.d('❌ AUTH: create email failed.');
       final errorMsg = e.code == 'email-already-in-use'
           ? 'An account already exists for that email. Please sign in instead.'
           : _firebaseAuthErrorMessage(e);
       _showAuthError(context, errorMsg);
       return null;
     } catch (e, stackTrace) {
-      debugPrint('❌ AUTH: Unexpected error during account creation');
-      debugPrint('❌ AUTH: Error: $e');
-      debugPrint('❌ AUTH: Stack trace: $stackTrace');
+      AppLog.d('❌ AUTH: Unexpected error during account creation');
+      AppLog.d('❌ AUTH: Error: $e');
+      AppLog.d('❌ AUTH: Stack trace: $stackTrace');
       _showAuthError(context, 'Error: An unexpected error occurred');
       return null;
     }
   }
 
   void _showAuthError(BuildContext context, String message) {
-    debugPrint('❌ AUTH: Showing error to user: $message');
+    AppLog.d('❌ AUTH: Showing error to user: $message');
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
@@ -535,8 +533,7 @@ class FirebaseAuthManager extends AuthManager
           final userDoc = await UsersRecord.getDocumentOnce(
             UsersRecord.collection.doc(user.uid),
           );
-          final hasProfileData =
-              userDoc.displayName.isNotEmpty ||
+          final hasProfileData = userDoc.displayName.isNotEmpty ||
               userDoc.firstName.isNotEmpty ||
               userDoc.lastName.isNotEmpty;
           if (hasProfileData) {
@@ -582,7 +579,7 @@ class FirebaseAuthManager extends AuthManager
       );
       return result['completed'] == true;
     } catch (e) {
-      debugPrint('❌ AUTH: Onboarding verification call failed: $e');
+      AppLog.d('❌ AUTH: Onboarding verification call failed: $e');
       return false;
     }
   }
@@ -599,7 +596,7 @@ Future<UserCredential?> attemptEmailSignInWithRetries({
     try {
       return await signInFunc();
     } on FirebaseAuthException catch (e) {
-      debugPrint(
+      AppLog.d(
         '❌ AUTH: Email sign-in failed (attempt $attempt/$maxAttempts).',
       );
       if (e.code == 'user-not-found' || attempt >= maxAttempts) {

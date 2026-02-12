@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:provider/provider.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -11,6 +13,7 @@ import 'auth/firebase_auth/firebase_user_provider.dart';
 import 'auth/firebase_auth/auth_util.dart';
 
 import 'backend/firebase/firebase_config.dart';
+import '/core/config/build_flags.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/spacing.dart';
@@ -29,29 +32,82 @@ import '/main_function/games_joined/games_joined_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  GoRouter.optionURLReflectsImperativeAPIs = true;
-  usePathUrlStrategy();
 
-  await initFirebase();
+  await runZonedGuarded(() async {
+    GoRouter.optionURLReflectsImperativeAPIs = true;
+    usePathUrlStrategy();
+    await initFirebase();
+    await _configureErrorAndLoggingGuards();
 
-  final appState = AppState();
-  await appState.initializePersistedState();
+    final appState = AppState();
+    await appState.initializePersistedState();
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider<AppState>(create: (_) => appState),
-        ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
-        ChangeNotifierProvider<ChatProvider>(create: (_) => ChatProvider()),
-        ChangeNotifierProvider<GameProvider>(create: (_) => GameProvider()),
-        ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
-        ChangeNotifierProvider<NotificationProvider>(create: (_) => NotificationProvider()),
-      ],
-      child: MyApp(),
-    ),
-  );
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<AppState>(create: (_) => appState),
+          ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
+          ChangeNotifierProvider<ChatProvider>(create: (_) => ChatProvider()),
+          ChangeNotifierProvider<GameProvider>(create: (_) => GameProvider()),
+          ChangeNotifierProvider<ProfileProvider>(
+              create: (_) => ProfileProvider()),
+          ChangeNotifierProvider<NotificationProvider>(
+              create: (_) => NotificationProvider()),
+        ],
+        child: MyApp(),
+      ),
+    );
+  }, (error, stackTrace) {
+    if (kIsWeb) {
+      return;
+    }
+    FirebaseCrashlytics.instance.recordError(error, stackTrace, fatal: true);
+  });
+}
+
+Future<void> _configureErrorAndLoggingGuards() async {
+  if (kReleaseMode) {
+    debugPrint = (String? _, {int? wrapWidth}) {};
+  }
+
+  if (kReleaseMode && kEnableDevUi) {
+    throw StateError(
+      'Release build cannot enable dev-only UI. Set ENABLE_DEV_UI=false.',
+    );
+  }
+
+  if (kIsWeb) {
+    return;
+  }
+
+  final shouldCollectCrashReports = kReleaseMode && kCrashlyticsEnabled;
+  await FirebaseCrashlytics.instance
+      .setCrashlyticsCollectionEnabled(shouldCollectCrashReports);
+  await FirebaseCrashlytics.instance.setCustomKey('app_env', kAppEnv);
+  await FirebaseCrashlytics.instance
+      .setCustomKey('allow_internal_crash_test', kAllowInternalCrashTest);
+  await FirebaseCrashlytics.instance
+      .setCustomKey('enable_dev_ui', kEnableDevUi);
+
+  final previousFlutterErrorHandler = FlutterError.onError;
+  FlutterError.onError = (FlutterErrorDetails details) {
+    previousFlutterErrorHandler?.call(details);
+    FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+  };
+
+  PlatformDispatcher.instance.onError = (Object error, StackTrace stackTrace) {
+    FirebaseCrashlytics.instance.recordError(error, stackTrace, fatal: true);
+    return true;
+  };
+}
+
+void triggerInternalCrashForTesting() {
+  if (!kReleaseMode || !kAllowInternalCrashTest || kIsWeb) {
+    return;
+  }
+  FirebaseCrashlytics.instance.crash();
 }
 
 class MyApp extends StatefulWidget {
@@ -115,7 +171,8 @@ class _MyAppState extends State<MyApp> {
 
       debugPrint('📝 APP: Calling update() first');
       _appStateNotifier.update(user);
-      debugPrint('📊 APP: update() completed, authStateReady=${_appStateNotifier.authStateReady}');
+      debugPrint(
+          '📊 APP: update() completed, authStateReady=${_appStateNotifier.authStateReady}');
 
       if (!_initialAuthHandled) {
         _initialAuthHandled = true;
@@ -126,7 +183,8 @@ class _MyAppState extends State<MyApp> {
         // Force GoRouter to refresh by navigating to the appropriate route
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            debugPrint('🚀 APP: Post-frame callback - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
+            debugPrint(
+                '🚀 APP: Post-frame callback - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
             if (_appStateNotifier.loggedIn) {
               _router.go('/gamesList');
             } else {
@@ -148,7 +206,8 @@ class _MyAppState extends State<MyApp> {
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            debugPrint('🚀 APP: Error handler - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
+            debugPrint(
+                '🚀 APP: Error handler - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
             if (_appStateNotifier.loggedIn) {
               _router.go('/gamesList');
             } else {
@@ -163,7 +222,8 @@ class _MyAppState extends State<MyApp> {
 
     debugPrint('⏱️  APP: Starting 3-second fallback timer');
     _splashFallbackTimer = Timer(const Duration(seconds: 3), () {
-      debugPrint('⏰ APP: Fallback timer triggered, _initialAuthHandled=$_initialAuthHandled, mounted=$mounted');
+      debugPrint(
+          '⏰ APP: Fallback timer triggered, _initialAuthHandled=$_initialAuthHandled, mounted=$mounted');
       if (mounted && !_initialAuthHandled) {
         _initialAuthHandled = true;
         _appStateNotifier.update(
@@ -174,7 +234,8 @@ class _MyAppState extends State<MyApp> {
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            debugPrint('🚀 APP: Fallback timer - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
+            debugPrint(
+                '🚀 APP: Fallback timer - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
             if (_appStateNotifier.loggedIn) {
               _router.go('/gamesList');
             } else {
@@ -215,6 +276,18 @@ class _MyAppState extends State<MyApp> {
       title: 'Find My Fourth',
       scrollBehavior: MyAppScrollBehavior(),
       scaffoldMessengerKey: scaffoldMessengerKey,
+      builder: (context, child) {
+        final appChild = child ?? const SizedBox.shrink();
+        if (!kReleaseMode || !kAllowInternalCrashTest) {
+          return appChild;
+        }
+        return Stack(
+          children: [
+            appChild,
+            const _InternalCrashTestOverlay(),
+          ],
+        );
+      },
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -260,6 +333,45 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
+class _InternalCrashTestOverlay extends StatelessWidget {
+  const _InternalCrashTestOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: AppSpacing.md,
+      bottom: AppSpacing.md,
+      child: SafeArea(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16.0),
+            onLongPress: triggerInternalCrashForTesting,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.xs,
+              ),
+              child: const Text(
+                'Hold to Crash Test',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12.0,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class NavBarPage extends StatefulWidget {
   NavBarPage({
     Key? key,
@@ -300,7 +412,8 @@ class _NavBarPageState extends State<NavBarPage> {
     final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
 
     // Only show FAB on GamesList and GamesJoined (My Games) tabs
-    final shouldShowFab = _currentPageName == 'GamesList' || _currentPageName == 'GamesJoined';
+    final shouldShowFab =
+        _currentPageName == 'GamesList' || _currentPageName == 'GamesJoined';
 
     return Scaffold(
       resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
@@ -350,7 +463,8 @@ class _NavBarPageState extends State<NavBarPage> {
         padding: EdgeInsets.all(AppSpacing.sm),
         gap: 0.0,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        duration: Duration.zero, // Instant tab switching per premium motion system
+        duration:
+            Duration.zero, // Instant tab switching per premium motion system
         haptic: false,
         tabs: [
           GButton(

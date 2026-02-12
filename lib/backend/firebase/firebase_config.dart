@@ -4,9 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
+import '/core/config/build_flags.dart';
 
-const bool _useFirebaseEmulator =
-    bool.fromEnvironment('USE_FIREBASE_EMULATOR', defaultValue: false);
 const int _authEmulatorPort =
     int.fromEnvironment('FIREBASE_AUTH_EMULATOR_PORT', defaultValue: 9099);
 const int _firestoreEmulatorPort =
@@ -16,7 +15,26 @@ const int _functionsEmulatorPort =
 const int _storageEmulatorPort =
     int.fromEnvironment('FIREBASE_STORAGE_EMULATOR_PORT', defaultValue: 9199);
 
+const Set<String> _validAppEnvironments = {'dev', 'staging', 'prod'};
+
 Future initFirebase() async {
+  if (!_validAppEnvironments.contains(kAppEnv)) {
+    throw StateError(
+        'Invalid APP_ENV value "$kAppEnv". Expected one of: dev, staging, prod.');
+  }
+
+  if (kReleaseMode) {
+    if (kAppEnv != 'prod') {
+      throw StateError(
+          'Release builds must use APP_ENV=prod. Current value: $kAppEnv.');
+    }
+    if (kUseFirebaseEmulator) {
+      throw StateError(
+        'USE_FIREBASE_EMULATOR must be false for release builds.',
+      );
+    }
+  }
+
   if (kIsWeb) {
     await Firebase.initializeApp(
         options: FirebaseOptions(
@@ -30,7 +48,7 @@ Future initFirebase() async {
     await Firebase.initializeApp();
   }
 
-  if (kDebugMode && _useFirebaseEmulator) {
+  if (kDebugMode && kUseFirebaseEmulator) {
     final emulatorHost = _getEmulatorHost();
     FirebaseAuth.instance.useAuthEmulator(emulatorHost, _authEmulatorPort);
     FirebaseFirestore.instance

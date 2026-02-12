@@ -1,6 +1,5 @@
-import 'package:flutter/foundation.dart';
-
 import '/backend/backend.dart';
+import '/core/utils/app_log.dart';
 
 /// ProfileService provides stateless, centralized access to user profile data in Firestore
 ///
@@ -28,8 +27,7 @@ class ProfileService {
           .get();
       return doc.exists ? UsersRecord.fromSnapshot(doc) : null;
     } on FirebaseException catch (e) {
-      debugPrint(
-          'ProfileService.getUserProfile error: ${e.code} - ${e.message}');
+      AppLog.d('ProfileService.getUserProfile error: ${e.code} - ${e.message}');
       rethrow;
     }
   }
@@ -45,7 +43,7 @@ class ProfileService {
           .snapshots()
           .map((doc) => doc.exists ? UsersRecord.fromSnapshot(doc) : null);
     } on FirebaseException catch (e) {
-      debugPrint(
+      AppLog.d(
           'ProfileService.watchUserProfile error: ${e.code} - ${e.message}');
       rethrow;
     }
@@ -65,7 +63,7 @@ class ProfileService {
           .doc(userId)
           .update(updateData);
     } on FirebaseException catch (e) {
-      debugPrint('ProfileService.updateProfile error: ${e.code} - ${e.message}');
+      AppLog.d('ProfileService.updateProfile error: ${e.code} - ${e.message}');
       rethrow;
     }
   }
@@ -89,7 +87,7 @@ class ProfileService {
           .doc(userId)
           .update(updateData);
     } on FirebaseException catch (e) {
-      debugPrint(
+      AppLog.d(
           'ProfileService.updateVibeProfile error: ${e.code} - ${e.message}');
       rethrow;
     }
@@ -140,7 +138,7 @@ class ProfileService {
         'homeCourse': userData['home_course'] ?? '',
       };
     } on FirebaseException catch (e) {
-      debugPrint('ProfileService.getUserStats error: ${e.code} - ${e.message}');
+      AppLog.d('ProfileService.getUserStats error: ${e.code} - ${e.message}');
       rethrow;
     }
   }
@@ -171,7 +169,7 @@ class ProfileService {
               .map((doc) => UsersRecord.fromSnapshot(doc))
               .toList());
     } on FirebaseException catch (e) {
-      debugPrint(
+      AppLog.d(
           'ProfileService.searchUsersByName error: ${e.code} - ${e.message}');
       rethrow;
     }
@@ -207,7 +205,7 @@ class ProfileService {
 
       return result;
     } on FirebaseException catch (e) {
-      debugPrint(
+      AppLog.d(
           'ProfileService.batchGetUserProfiles error: ${e.code} - ${e.message}');
       rethrow;
     }

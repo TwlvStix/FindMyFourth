@@ -28,13 +28,27 @@ Stream<UserTokenInfo> getFcmTokenStream(String userPath) =>
             (_) => FirebaseMessaging.instance.requestPermission().then(
                   (settings) => settings.authorizationStatus ==
                           AuthorizationStatus.authorized
-                      ? FirebaseMessaging.instance.getToken()
+                      ? _getTokenAfterApnsReady()
                       : null,
                 ))
         .switchMap((fcmToken) => Stream.value(fcmToken)
             .merge(FirebaseMessaging.instance.onTokenRefresh))
         .where((fcmToken) => fcmToken != null && fcmToken.isNotEmpty)
         .map((token) => UserTokenInfo(userPath, token!));
+
+Future<String?> _getTokenAfterApnsReady() async {
+  if (!kIsWeb && Platform.isIOS) {
+    final deadline = DateTime.now().add(const Duration(seconds: 8));
+    while (DateTime.now().isBefore(deadline)) {
+      final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+      if (apnsToken != null && apnsToken.isNotEmpty) {
+        break;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+    }
+  }
+  return FirebaseMessaging.instance.getToken();
+}
 
 final fcmTokenUserStream = authenticatedUserStream
     .where((user) => user != null)

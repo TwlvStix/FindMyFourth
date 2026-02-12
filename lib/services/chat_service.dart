@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '/core/utils/app_log.dart';
 import '/models/chat.dart';
 import '/models/chat_message.dart';
 
@@ -17,7 +17,11 @@ class ChatService {
   final Map<String, Map<String, dynamic>> _userCache = {};
 
   DocumentReference _userChatRef(String uid, String chatId) {
-    return _firestore.collection('users').doc(uid).collection('chatRefs').doc(chatId);
+    return _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('chatRefs')
+        .doc(chatId);
   }
 
   Stream<List<Chat>> getChatListStream({
@@ -85,8 +89,7 @@ class ChatService {
     }
 
     return query.snapshots().map(
-          (snapshot) =>
-              snapshot.docs.map(ChatMessage.fromDoc).toList(),
+          (snapshot) => snapshot.docs.map(ChatMessage.fromDoc).toList(),
         );
   }
 
@@ -151,7 +154,7 @@ class ChatService {
             'directKey': directKey,
             'type': 'direct',
             'gameId': null,
-          'lastMessage': '',
+            'lastMessage': '',
             'isReadOnly': false,
             'pinnedMessage': '',
             'pinnedAt': null,
@@ -183,8 +186,8 @@ class ChatService {
 
       return chatRef;
     } catch (e, stackTrace) {
-      debugPrint('❌ ChatService: ERROR in createOrGetDirectChat: $e');
-      debugPrint('❌ ChatService: Stack trace: $stackTrace');
+      AppLog.d('❌ ChatService: ERROR in createOrGetDirectChat: $e');
+      AppLog.d('❌ ChatService: Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -273,8 +276,7 @@ class ChatService {
       final data =
           chatSnapshot.data() as Map<String, dynamic>? ?? <String, dynamic>{};
       final isReadOnly = data['isReadOnly'] == true;
-      final archivedAt =
-          (data['archivedAt'] as Timestamp?)?.toDate();
+      final archivedAt = (data['archivedAt'] as Timestamp?)?.toDate();
       if (isReadOnly ||
           (archivedAt != null && archivedAt.isBefore(DateTime.now()))) {
         throw Exception('Chat is read-only');
@@ -337,20 +339,21 @@ class ChatService {
     try {
       // Try Cloud Function first (production-grade, admin privileges)
       try {
-        debugPrint('🔥 Attempting Cloud Function deleteChat for $chatId');
+        AppLog.d('🔥 Attempting Cloud Function deleteChat for $chatId');
         final functions = FirebaseFunctions.instanceFor(region: 'us-west2');
         final callable = functions.httpsCallable('deleteChat');
         final result = await callable.call({'chatId': chatId});
 
-        debugPrint('✅ Cloud Function deleteChat succeeded: ${result.data}');
+        AppLog.d('✅ Cloud Function deleteChat succeeded: ${result.data}');
         return; // Success via Cloud Function
       } catch (cloudFunctionError) {
-        debugPrint('⚠️ Cloud Function deleteChat failed, falling back to client-side: $cloudFunctionError');
+        AppLog.d(
+            '⚠️ Cloud Function deleteChat failed, falling back to client-side: $cloudFunctionError');
         // Fall through to client-side deletion
       }
 
       // Fallback: Client-side deletion (uses security rules)
-      debugPrint('📱 Using client-side deleteChat for $chatId');
+      AppLog.d('📱 Using client-side deleteChat for $chatId');
       final chatRef = _firestore.collection('chats').doc(chatId);
 
       // First, verify the user is a member of this chat
@@ -379,7 +382,8 @@ class ChatService {
 
       for (var i = 0; i < totalMessages; i += batchSize) {
         final batch = _firestore.batch();
-        final end = (i + batchSize < totalMessages) ? i + batchSize : totalMessages;
+        final end =
+            (i + batchSize < totalMessages) ? i + batchSize : totalMessages;
 
         for (var j = i; j < end; j++) {
           batch.delete(messagesSnapshot.docs[j].reference);
@@ -390,10 +394,10 @@ class ChatService {
 
       // Delete the chat document itself
       await chatRef.delete();
-      debugPrint('✅ Client-side deleteChat succeeded for $chatId');
+      AppLog.d('✅ Client-side deleteChat succeeded for $chatId');
     } catch (e, stackTrace) {
-      debugPrint('❌ ChatService: Error deleting chat: $e');
-      debugPrint('❌ ChatService: StackTrace: $stackTrace');
+      AppLog.d('❌ ChatService: Error deleting chat: $e');
+      AppLog.d('❌ ChatService: StackTrace: $stackTrace');
       rethrow;
     }
   }
@@ -429,7 +433,7 @@ class ChatService {
         });
       }
     } catch (e) {
-      debugPrint('ChatService: Error updating typing status: $e');
+      AppLog.d('ChatService: Error updating typing status: $e');
     }
   }
 
@@ -448,10 +452,12 @@ class ChatService {
     await _firestore.runTransaction((transaction) async {
       final messageDoc = await transaction.get(messageRef);
       final data = messageDoc.data() ?? <String, dynamic>{};
-      final reactions = Map<String, dynamic>.from(data['reactions'] as Map<String, dynamic>? ?? {});
+      final reactions = Map<String, dynamic>.from(
+          data['reactions'] as Map<String, dynamic>? ?? {});
 
       if (reactions.containsKey(emoji)) {
-        final users = List<String>.from(reactions[emoji] as List<dynamic>? ?? []);
+        final users =
+            List<String>.from(reactions[emoji] as List<dynamic>? ?? []);
         if (!users.contains(uid)) {
           users.add(uid);
           reactions[emoji] = users;
@@ -479,10 +485,12 @@ class ChatService {
     await _firestore.runTransaction((transaction) async {
       final messageDoc = await transaction.get(messageRef);
       final data = messageDoc.data() ?? <String, dynamic>{};
-      final reactions = Map<String, dynamic>.from(data['reactions'] as Map<String, dynamic>? ?? {});
+      final reactions = Map<String, dynamic>.from(
+          data['reactions'] as Map<String, dynamic>? ?? {});
 
       if (reactions.containsKey(emoji)) {
-        final users = List<String>.from(reactions[emoji] as List<dynamic>? ?? []);
+        final users =
+            List<String>.from(reactions[emoji] as List<dynamic>? ?? []);
         users.remove(uid);
 
         if (users.isEmpty) {
@@ -513,8 +521,8 @@ class ChatService {
   }
 
   void logError(String message, Object error, StackTrace stackTrace) {
-    debugPrint('ChatService: $message $error');
-    debugPrintStack(stackTrace: stackTrace);
+    AppLog.d('ChatService: $message $error');
+    AppLog.d('ChatService stack trace: $stackTrace');
   }
 }
 

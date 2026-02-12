@@ -1,8 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '/backend/backend.dart';
+import '/core/utils/app_log.dart';
 import '/core/exceptions/app_exceptions.dart';
 
 /// GameService provides stateless, centralized access to game data in Firestore
@@ -91,7 +91,7 @@ class GameService {
         return streamFromQuery(baseQuery);
       });
     } on FirebaseException catch (e) {
-      debugPrint(
+      AppLog.d(
           'GameService.queryAvailableGames error: ${e.code} - ${e.message}');
       rethrow;
     }
@@ -119,7 +119,7 @@ class GameService {
                 .toList());
       });
     } on FirebaseException catch (e) {
-      debugPrint('GameService.queryUserGames error: ${e.code} - ${e.message}');
+      AppLog.d('GameService.queryUserGames error: ${e.code} - ${e.message}');
       rethrow;
     }
   }
@@ -135,7 +135,7 @@ class GameService {
           .get();
       return doc.exists ? GamesRecord.fromSnapshot(doc) : null;
     } on FirebaseException catch (e) {
-      debugPrint('GameService.getGameById error: ${e.code} - ${e.message}');
+      AppLog.d('GameService.getGameById error: ${e.code} - ${e.message}');
       rethrow;
     }
   }
@@ -151,7 +151,7 @@ class GameService {
           .snapshots()
           .map((doc) => doc.exists ? GamesRecord.fromSnapshot(doc) : null);
     } on FirebaseException catch (e) {
-      debugPrint('GameService.watchGameById error: ${e.code} - ${e.message}');
+      AppLog.d('GameService.watchGameById error: ${e.code} - ${e.message}');
       rethrow;
     }
   }
@@ -175,11 +175,13 @@ class GameService {
     try {
       await FirebaseFirestore.instance.runTransaction((transaction) async {
         // 1. Read game document
-        final gameRef = FirebaseFirestore.instance.collection('games').doc(gameId);
+        final gameRef =
+            FirebaseFirestore.instance.collection('games').doc(gameId);
         final gameDoc = await transaction.get(gameRef);
 
         if (!gameDoc.exists) {
-          throw GameOperationException('Game not found', code: 'game-not-found');
+          throw GameOperationException('Game not found',
+              code: 'game-not-found');
         }
 
         final game = GamesRecord.fromSnapshot(gameDoc);
@@ -192,12 +194,16 @@ class GameService {
         }
 
         // 3. Check not already joined
-        final userRef = FirebaseFirestore.instance.collection('users').doc(userId);
-        final rawJoinedPlayers = (gameDoc.data() as Map<String, dynamic>?)?['joined_players'];
+        final userRef =
+            FirebaseFirestore.instance.collection('users').doc(userId);
+        final rawJoinedPlayers =
+            (gameDoc.data() as Map<String, dynamic>?)?['joined_players'];
         final alreadyJoined = rawJoinedPlayers is List &&
-            rawJoinedPlayers.any((entry) => entry == userRef || entry == userId);
+            rawJoinedPlayers
+                .any((entry) => entry == userRef || entry == userId);
         if (alreadyJoined) {
-          throw GameOperationException('Already joined this game', code: 'already-joined');
+          throw GameOperationException('Already joined this game',
+              code: 'already-joined');
         }
 
         // 4. Atomic update - only if checks pass
@@ -206,14 +212,15 @@ class GameService {
         });
       });
 
-      debugPrint('GameService.joinGame: User $userId joined game $gameId');
+      AppLog.d('GameService.joinGame: User $userId joined game $gameId');
     } on GameOperationException {
       // Re-throw our custom exceptions as-is
       rethrow;
     } on FirebaseException catch (e) {
-      debugPrint('GameService.joinGame error: ${e.code} - ${e.message}');
+      AppLog.d('GameService.joinGame error: ${e.code} - ${e.message}');
       if (e.code == 'aborted') {
-        throw GameOperationException('Game capacity changed, please try again', code: 'transaction-conflict');
+        throw GameOperationException('Game capacity changed, please try again',
+            code: 'transaction-conflict');
       }
       rethrow;
     }
@@ -233,7 +240,7 @@ class GameService {
         'joined_players': FieldValue.arrayRemove([userRef, userId]),
       });
     } on FirebaseException catch (e) {
-      debugPrint('GameService.leaveGame error: ${e.code} - ${e.message}');
+      AppLog.d('GameService.leaveGame error: ${e.code} - ${e.message}');
       rethrow;
     }
   }
@@ -252,8 +259,7 @@ class GameService {
           .doc(gameId)
           .update(updateData);
     } on FirebaseException catch (e) {
-      debugPrint(
-          'GameService.updateGameDetails error: ${e.code} - ${e.message}');
+      AppLog.d('GameService.updateGameDetails error: ${e.code} - ${e.message}');
       rethrow;
     }
   }
@@ -277,7 +283,7 @@ class GameService {
       await gameRef.set(createData);
       return gameRef;
     } on FirebaseException catch (e) {
-      debugPrint('GameService.createGame error: ${e.code} - ${e.message}');
+      AppLog.d('GameService.createGame error: ${e.code} - ${e.message}');
       rethrow;
     }
   }
@@ -296,7 +302,7 @@ class GameService {
         'updated_at': FieldValue.serverTimestamp(),
       });
     } on FirebaseException catch (e) {
-      debugPrint('GameService.cancelGame error: ${e.code} - ${e.message}');
+      AppLog.d('GameService.cancelGame error: ${e.code} - ${e.message}');
       rethrow;
     }
   }
