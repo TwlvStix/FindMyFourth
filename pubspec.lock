@@ -258,7 +258,7 @@ packages:
     source: hosted
     version: "3.0.7"
   csslib:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: csslib
       sha256: "09bad715f418841f976c77db72d5398dc1253c21fb9c0c7f0b0b985860b2d58e"
@@ -726,7 +726,7 @@ packages:
     source: hosted
     version: "7.2.0"
   google_sign_in_android:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: google_sign_in_android
       sha256: "5ec98ab35387c68c0050495bb211bd88375873723a80fae7c2e9266ea0bdd8bb"
@@ -734,7 +734,7 @@ packages:
     source: hosted
     version: "7.2.7"
   google_sign_in_ios:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: google_sign_in_ios
       sha256: aee8bb29484611a37607849175a2009d423de6bd7c129326c69fd7068f0b6ed7
@@ -758,7 +758,7 @@ packages:
     source: hosted
     version: "1.1.0"
   html:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: html
       sha256: "6d1264f2dffa1b1101c25a91dff0dc2daee4c18e87cd8538729773c073dbf602"
@@ -806,7 +806,7 @@ packages:
     source: hosted
     version: "1.2.1"
   image_picker_android:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: image_picker_android
       sha256: "5e9bf126c37c117cf8094215373c6d561117a3cfb50ebc5add1a61dc6e224677"
@@ -814,7 +814,7 @@ packages:
     source: hosted
     version: "0.8.13+10"
   image_picker_for_web:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: image_picker_for_web
       sha256: "66257a3191ab360d23a55c8241c91a6e329d31e94efa7be9cf7a212e65850214"
@@ -822,7 +822,7 @@ packages:
     source: hosted
     version: "3.1.1"
   image_picker_ios:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: image_picker_ios
       sha256: "956c16a42c0c708f914021666ffcd8265dde36e673c9fa68c81f7d085d9774ad"
@@ -830,7 +830,7 @@ packages:
     source: hosted
     version: "0.8.13+3"
   image_picker_linux:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: image_picker_linux
       sha256: "1f81c5f2046b9ab724f85523e4af65be1d47b038160a8c8deed909762c308ed4"
@@ -838,7 +838,7 @@ packages:
     source: hosted
     version: "0.2.2"
   image_picker_macos:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: image_picker_macos
       sha256: "86f0f15a309de7e1a552c12df9ce5b59fe927e71385329355aec4776c6a8ec91"
@@ -846,7 +846,7 @@ packages:
     source: hosted
     version: "0.2.2+1"
   image_picker_platform_interface:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: image_picker_platform_interface
       sha256: "567e056716333a1647c64bb6bd873cff7622233a5c3f694be28a583d4715690c"
@@ -854,7 +854,7 @@ packages:
     source: hosted
     version: "2.11.1"
   image_picker_windows:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: image_picker_windows
       sha256: d248c86554a72b5495a31c56f060cf73a41c7ff541689327b1a7dbccc33adfae
@@ -885,14 +885,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
-  iregexp:
-    dependency: transitive
-    description:
-      name: iregexp
-      sha256: "143859dcaeecf6f683102786762d70a47ef8441a0d2287a158172d32d38799cf"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.2"
   js:
     dependency: transitive
     description:
@@ -909,14 +901,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.9.0"
-  json_path:
-    dependency: "direct main"
-    description:
-      name: json_path
-      sha256: dc25b4e2297a6bd39fb52b7d122a7787b7dab751fb278d315b54706b98bb76db
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.7.2"
   leak_tracker:
     dependency: transitive
     description:
@@ -973,14 +957,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.11.1"
-  maybe_just_nothing:
-    dependency: transitive
-    description:
-      name: maybe_just_nothing
-      sha256: "0c06326e26d08f6ed43247404376366dc4d756cef23a4f1db765f546224c35e0"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.5.3"
   meta:
     dependency: transitive
     description:
@@ -1086,7 +1062,7 @@ packages:
     source: hosted
     version: "2.1.5"
   path_provider_android:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: path_provider_android
       sha256: f2c65e21139ce2c3dad46922be8272bb5963516045659e71bb16e151c93b580e
@@ -1094,7 +1070,7 @@ packages:
     source: hosted
     version: "2.2.22"
   path_provider_foundation:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: path_provider_foundation
       sha256: "6d13aece7b3f5c5a9731eaf553ff9dcbc2eff41087fd2df587fd0fed9a3eb0c4"
@@ -1102,7 +1078,7 @@ packages:
     source: hosted
     version: "2.5.1"
   path_provider_linux:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: path_provider_linux
       sha256: f7a1fe3a634fe7734c8d3f2766ad746ae2a2884abe22e241a8b301bf5cac3279
@@ -1118,7 +1094,7 @@ packages:
     source: hosted
     version: "2.1.2"
   path_provider_windows:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: path_provider_windows
       sha256: bd6f00dbd873bfb70d0761682da2b3a2c2fccc2b9e84c495821639601d81afe7
@@ -1142,7 +1118,7 @@ packages:
     source: hosted
     version: "3.1.6"
   plugin_platform_interface:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: plugin_platform_interface
       sha256: "4820fbfdb9478b1ebae27888254d445073732dae3d6ea81f0b7e06d5dedc3f02"
@@ -1173,14 +1149,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
-  rfc_6901:
-    dependency: transitive
-    description:
-      name: rfc_6901
-      sha256: "6a43b1858dca2febaf93e15639aa6b0c49ccdfd7647775f15a499f872b018154"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.1"
   rxdart:
     dependency: "direct main"
     description:
@@ -1198,7 +1166,7 @@ packages:
     source: hosted
     version: "2.5.4"
   shared_preferences_android:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: shared_preferences_android
       sha256: "83af5c682796c0f7719c2bbf74792d113e40ae97981b8f266fa84574573556bc"
@@ -1206,7 +1174,7 @@ packages:
     source: hosted
     version: "2.4.18"
   shared_preferences_foundation:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: shared_preferences_foundation
       sha256: "4e7eaffc2b17ba398759f1151415869a34771ba11ebbccd1b0145472a619a64f"
@@ -1214,7 +1182,7 @@ packages:
     source: hosted
     version: "2.5.6"
   shared_preferences_linux:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: shared_preferences_linux
       sha256: "580abfd40f415611503cae30adf626e6656dfb2f0cee8f465ece7b6defb40f2f"
@@ -1238,7 +1206,7 @@ packages:
     source: hosted
     version: "2.4.3"
   shared_preferences_windows:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: shared_preferences_windows
       sha256: "94ef0f72b2d71bc3e700e025db3710911bd51a71cefb65cc609dd0d9a982e3c1"
@@ -1286,7 +1254,7 @@ packages:
     source: hosted
     version: "7.0.1"
   sign_in_with_apple_platform_interface:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: sign_in_with_apple_platform_interface
       sha256: "981bca52cf3bb9c3ad7ef44aace2d543e5c468bb713fd8dda4275ff76dfa6659"
@@ -1294,7 +1262,7 @@ packages:
     source: hosted
     version: "2.0.0"
   sign_in_with_apple_web:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: sign_in_with_apple_web
       sha256: f316400827f52cafcf50d00e1a2e8a0abc534ca1264e856a81c5f06bd5b10fed
@@ -1339,7 +1307,7 @@ packages:
     source: hosted
     version: "1.10.1"
   sqflite:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: sqflite
       sha256: e2297b1da52f127bc7a3da11439985d9b536f75070f3325e62ada69a5c585d03
@@ -1355,7 +1323,7 @@ packages:
     source: hosted
     version: "2.4.2+2"
   sqflite_common:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: sqflite_common
       sha256: "6ef422a4525ecc601db6c0a2233ff448c731307906e92cabc9ba292afaae16a6"
@@ -1458,14 +1426,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.12"
-  text_search:
-    dependency: "direct main"
-    description:
-      name: text_search
-      sha256: "09838e68bdf2747b436523cee19471a0603e6387265fa5885bb4f2d7e7add934"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.2"
   timeago:
     dependency: "direct main"
     description:
@@ -1482,14 +1442,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.10.1"
-  tuple:
-    dependency: transitive
-    description:
-      name: tuple
-      sha256: a97ce2013f240b2f3807bcbaf218765b6f301c3eff91092bcfa23a039e7dd151
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.2"
   typed_data:
     dependency: transitive
     description:
@@ -1499,7 +1451,7 @@ packages:
     source: hosted
     version: "1.4.0"
   universal_io:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: universal_io
       sha256: f63cbc48103236abf48e345e07a03ce5757ea86285ed313a6a032596ed9301e2
@@ -1515,7 +1467,7 @@ packages:
     source: hosted
     version: "6.3.2"
   url_launcher_android:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: url_launcher_android
       sha256: "767344bf3063897b5cf0db830e94f904528e6dd50a6dfaf839f0abf509009611"
@@ -1523,7 +1475,7 @@ packages:
     source: hosted
     version: "6.3.28"
   url_launcher_ios:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: url_launcher_ios
       sha256: cfde38aa257dae62ffe79c87fab20165dfdf6988c1d31b58ebf59b9106062aad
@@ -1531,7 +1483,7 @@ packages:
     source: hosted
     version: "6.3.6"
   url_launcher_linux:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: url_launcher_linux
       sha256: d5e14138b3bc193a0f63c10a53c94b91d399df0512b1f29b94a043db7482384a
@@ -1539,7 +1491,7 @@ packages:
     source: hosted
     version: "3.2.2"
   url_launcher_macos:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: url_launcher_macos
       sha256: "368adf46f71ad3c21b8f06614adb38346f193f3a59ba8fe9a2fd74133070ba18"
@@ -1563,7 +1515,7 @@ packages:
     source: hosted
     version: "2.4.1"
   url_launcher_windows:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: url_launcher_windows
       sha256: "712c70ab1b99744ff066053cbe3e80c73332b38d46e5e945c98689b2e66fc15f"
@@ -1595,7 +1547,7 @@ packages:
     source: hosted
     version: "2.10.1"
   video_player_android:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: video_player_android
       sha256: ee4fd520b0cafa02e4a867a0f882092e727cdaa1a2d24762171e787f8a502b0a
@@ -1603,7 +1555,7 @@ packages:
     source: hosted
     version: "2.9.1"
   video_player_avfoundation:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: video_player_avfoundation
       sha256: d1eb970495a76abb35e5fa93ee3c58bd76fb6839e2ddf2fbb636674f2b971dd4
@@ -1707,7 +1659,7 @@ packages:
     source: hosted
     version: "1.1.0"
   xml:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: xml
       sha256: b015a8ad1c488f66851d762d3090a21c600e479dc75e68328c52774040cf9226

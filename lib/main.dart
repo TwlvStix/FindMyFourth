@@ -24,6 +24,7 @@ import '/providers/chat_provider.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
 import '/providers/notification_provider.dart';
+import '/services/notification_permission_service.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:find_my_fourth/friends/tab_friends/tab_friends_widget.dart';
 import '/main_function/community/community_widget.dart';
@@ -121,11 +122,18 @@ void _setupErrorHandlers() {
 }
 
 /// Initialize non-critical services after first frame
-/// This includes Crashlytics metadata and persisted state
+/// This includes Crashlytics metadata, persisted state, and notification service
 Future<void> _initializeNonCriticalServices(AppState appState) async {
   try {
     // Load persisted state in background (doesn't block UI)
     await appState.initializePersistedState();
+
+    // Initialize notification service if user is authenticated
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null && !kIsWeb) {
+      debugPrint('🔔 APP: Initializing notification service for user: ${currentUser.uid}');
+      await NotificationPermissionService().init(currentUser.uid);
+    }
 
     // Set Crashlytics metadata (just metadata, not critical)
     await _configureCrashlyticsMetadata();
@@ -227,6 +235,14 @@ class _MyAppState extends State<MyApp> {
       _appStateNotifier.update(user);
       debugPrint(
           '📊 APP: update() completed, authStateReady=${_appStateNotifier.authStateReady}');
+
+      // Initialize notification service when user signs in
+      if (user.loggedIn && user.uid != null && !kIsWeb) {
+        debugPrint('🔔 APP: User signed in, initializing notification service');
+        NotificationPermissionService().init(user.uid!).catchError((error) {
+          debugPrint('⚠️  APP: Failed to initialize notification service: $error');
+        });
+      }
 
       if (!_initialAuthHandled) {
         _initialAuthHandled = true;

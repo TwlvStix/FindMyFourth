@@ -37,8 +37,6 @@ class NotificationPageWidget extends StatefulWidget {
 
 class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  final NotificationPermissionService _notificationPermissionService =
-      NotificationPermissionService();
 
   // Working copies
   NotificationPreferences? _prefs;
@@ -362,8 +360,16 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   }
 
   Future<bool> _ensureNotificationPermission() async {
+    debugPrint('[NotificationSettings] Requesting notification permission (user action)');
     final status =
-        await _notificationPermissionService.requestPermissionAndRegister();
+        await NotificationPermissionService().requestPermissionAndRegister();
+
+    // Trigger rebuild to update UI with new cached status
+    if (mounted) {
+      setState(() {});
+    }
+
+    debugPrint('[NotificationSettings] Permission result: $status');
     return status == NotificationPermissionStatus.granted ||
         status == NotificationPermissionStatus.provisional;
   }
@@ -991,16 +997,10 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                               ],
                             ),
 
-                            // Permission status
-                            FutureBuilder<NotificationPermissionStatus>(
-                              future: _notificationPermissionService
-                                  .getDetailedStatus(),
-                              builder: (context, snapshot) {
-                                if (!snapshot.hasData) {
-                                  return SizedBox.shrink();
-                                }
-
-                                final status = snapshot.data!;
+                            // Permission status (using cached state, no async in build)
+                            Builder(
+                              builder: (context) {
+                                final status = NotificationPermissionService().cachedStatus;
 
                                 if (status ==
                                     NotificationPermissionStatus
@@ -1046,7 +1046,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                         SizedBox(height: AppSpacing.md),
                                         AppButtonEnhanced(
                                           onPressed: () async {
-                                            await _notificationPermissionService
+                                            await NotificationPermissionService()
                                                 .openSystemSettings();
                                           },
                                           text: 'Open Settings',

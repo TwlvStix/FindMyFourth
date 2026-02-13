@@ -30,8 +30,6 @@ class GameAlertsPageWidget extends StatefulWidget {
 
 class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  final NotificationPermissionService _notificationPermissionService =
-      NotificationPermissionService();
 
   // Working copy of subscription
   AlertSubscription? _subscription;
@@ -202,8 +200,16 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
   }
 
   Future<bool> _ensureNotificationPermission() async {
+    debugPrint('[GameAlerts] Requesting notification permission (user action)');
     final status =
-        await _notificationPermissionService.requestPermissionAndRegister();
+        await NotificationPermissionService().requestPermissionAndRegister();
+
+    // Trigger rebuild to update UI with new cached status
+    if (mounted) {
+      setState(() {});
+    }
+
+    debugPrint('[GameAlerts] Permission result: $status');
     return status == NotificationPermissionStatus.granted ||
         status == NotificationPermissionStatus.provisional;
   }
@@ -667,16 +673,10 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                               ),
                             ],
 
-                            // Permission status
-                            FutureBuilder<NotificationPermissionStatus>(
-                              future: _notificationPermissionService
-                                  .getDetailedStatus(),
-                              builder: (context, snapshot) {
-                                if (!snapshot.hasData) {
-                                  return SizedBox.shrink();
-                                }
-
-                                final status = snapshot.data!;
+                            // Permission status (using cached state, no async in build)
+                            Builder(
+                              builder: (context) {
+                                final status = NotificationPermissionService().cachedStatus;
 
                                 if (status ==
                                         NotificationPermissionStatus
@@ -722,7 +722,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                         SizedBox(height: AppSpacing.md),
                                         AppButtonEnhanced(
                                           onPressed: () async {
-                                            await _notificationPermissionService
+                                            await NotificationPermissionService()
                                                 .openSystemSettings();
                                           },
                                           text: 'Open Settings',

@@ -21,18 +21,13 @@ class UserTokenInfo {
   final String fcmToken;
 }
 
+/// Get FCM token stream for initial token retrieval on auth
+/// Note: Token refresh is now handled by NotificationPermissionService singleton
+/// This stream only gets the initial token when user authenticates
 Stream<UserTokenInfo> getFcmTokenStream(String userPath) =>
     Stream.value(!kIsWeb && (Platform.isIOS || Platform.isAndroid))
         .where((shouldGetToken) => shouldGetToken)
-        .asyncMap<String?>(
-            (_) => FirebaseMessaging.instance.requestPermission().then(
-                  (settings) => settings.authorizationStatus ==
-                          AuthorizationStatus.authorized
-                      ? _getTokenAfterApnsReady()
-                      : null,
-                ))
-        .switchMap((fcmToken) => Stream.value(fcmToken)
-            .merge(FirebaseMessaging.instance.onTokenRefresh))
+        .asyncMap<String?>((_) => _getTokenAfterApnsReady())
         .where((fcmToken) => fcmToken != null && fcmToken.isNotEmpty)
         .map((token) => UserTokenInfo(userPath, token!));
 

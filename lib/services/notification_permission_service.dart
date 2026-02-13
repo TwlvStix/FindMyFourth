@@ -23,7 +23,13 @@ enum NotificationPermissionStatus {
 }
 
 class NotificationPermissionService {
-  NotificationPermissionService({
+  // Singleton pattern
+  static final NotificationPermissionService _instance =
+      NotificationPermissionService._internal();
+
+  factory NotificationPermissionService() => _instance;
+
+  NotificationPermissionService._internal({
     FirebaseAuth? auth,
     FirebaseFirestore? firestore,
     FirebaseMessaging? messaging,
@@ -31,6 +37,17 @@ class NotificationPermissionService {
   })  : _auth = auth ?? FirebaseAuth.instance,
         _firestore = firestore ?? FirebaseFirestore.instance,
         _messaging = messaging ?? FirebaseMessaging.instance,
+        _prefs = prefs;
+
+  // Allow dependency injection for testing
+  NotificationPermissionService.forTesting({
+    required FirebaseAuth auth,
+    required FirebaseFirestore firestore,
+    required FirebaseMessaging messaging,
+    SharedPreferences? prefs,
+  })  : _auth = auth,
+        _firestore = firestore,
+        _messaging = messaging,
         _prefs = prefs;
 
   static const String _deviceIdKey = 'notification_device_id';
@@ -46,39 +63,107 @@ class NotificationPermissionService {
   SharedPreferences? _prefs;
   StreamSubscription<String>? _tokenRefreshSub;
 
-  /// Get detailed notification permission status
-  Future<NotificationPermissionStatus> getDetailedStatus() async {
+  // Cached state
+  NotificationPermissionStatus? _cachedStatus;
+  NotificationSettings? _cachedSettings;
+  DateTime? _lastCheckedAt;
+  bool _initialized = false;
+
+  /// Synchronous access to cached permission status
+  NotificationPermissionStatus get cachedStatus =>
+      _cachedStatus ?? NotificationPermissionStatus.denied;
+
+  /// Synchronous access to cached notification settings
+  NotificationSettings? get cachedSettings => _cachedSettings;
+
+  /// Whether the service has been initialized
+  bool get isInitialized => _initialized;
+
+  /// Last time permission status was checked
+  DateTime? get lastCheckedAt => _lastCheckedAt;
+
+  /// Initialize the notification service (idempotent - safe to call multiple times)
+  /// Should be called once after user authentication
+  Future<void> init(String uid) async {
+    if (_initialized) {
+      AppLog.d('[NotificationService] Already initialized, skipping');
+      return;
+    }
+
     if (kIsWeb) {
-      return NotificationPermissionStatus.unsupported;
+      AppLog.d('[NotificationService] Web platform, skipping initialization');
+      _initialized = true;
+      _cachedStatus = NotificationPermissionStatus.unsupported;
+      return;
+    }
+
+    AppLog.d('[NotificationService] Initializing notification service');
+    _initialized = true;
+
+    // Load current permission status
+    await refreshPermissionStatus();
+
+    // Set up token refresh listener (only once)
+    _setupTokenRefreshListener(uid);
+
+    AppLog.d('[NotificationService] Notification service initialized successfully');
+  }
+
+  /// Refresh permission status from system and update cache
+  Future<NotificationPermissionStatus> refreshPermissionStatus() async {
+    if (kIsWeb) {
+      _cachedStatus = NotificationPermissionStatus.unsupported;
+      _lastCheckedAt = DateTime.now();
+      return _cachedStatus!;
     }
 
     final user = _auth.currentUser;
     if (user == null) {
-      return NotificationPermissionStatus.noUser;
+      _cachedStatus = NotificationPermissionStatus.noUser;
+      _lastCheckedAt = DateTime.now();
+      return _cachedStatus!;
     }
 
     try {
       final settings = await _messaging.getNotificationSettings();
+      _cachedSettings = settings;
+      _lastCheckedAt = DateTime.now();
 
+      NotificationPermissionStatus status;
       switch (settings.authorizationStatus) {
         case AuthorizationStatus.authorized:
-          return NotificationPermissionStatus.granted;
+          status = NotificationPermissionStatus.granted;
+          break;
         case AuthorizationStatus.provisional:
-          return NotificationPermissionStatus.provisional;
+          status = NotificationPermissionStatus.provisional;
+          break;
         case AuthorizationStatus.denied:
           // Check if we've asked before
           _prefs ??= await SharedPreferences.getInstance();
           final hasAsked = _prefs?.getBool(_permissionAskedKey) ?? false;
-          return hasAsked
+          status = hasAsked
               ? NotificationPermissionStatus.permanentlyDenied
               : NotificationPermissionStatus.denied;
+          break;
         case AuthorizationStatus.notDetermined:
-          return NotificationPermissionStatus.denied;
+          status = NotificationPermissionStatus.denied;
+          break;
       }
+
+      _cachedStatus = status;
+      AppLog.d('[NotificationService] Permission status refreshed: $status');
+      return status;
     } catch (e) {
-      AppLog.d('Error getting notification permission status: $e');
-      return NotificationPermissionStatus.error;
+      AppLog.d('[NotificationService] Error getting notification permission status: $e');
+      _cachedStatus = NotificationPermissionStatus.error;
+      return _cachedStatus!;
     }
+  }
+
+  /// Get detailed notification permission status (DEPRECATED - use cachedStatus or refreshPermissionStatus)
+  @Deprecated('Use cachedStatus for synchronous access or refreshPermissionStatus() to update cache')
+  Future<NotificationPermissionStatus> getDetailedStatus() async {
+    return refreshPermissionStatus();
   }
 
   /// Open system settings for the app
@@ -100,6 +185,8 @@ class NotificationPermissionService {
     }
 
     try {
+      AppLog.d('[NotificationService] Requesting notification permission');
+
       // Mark that we've asked for permission
       _prefs ??= await SharedPreferences.getInstance();
       await _prefs?.setBool(_permissionAskedKey, true);
@@ -108,40 +195,69 @@ class NotificationPermissionService {
       final authorized =
           settings.authorizationStatus == AuthorizationStatus.authorized ||
               settings.authorizationStatus == AuthorizationStatus.provisional;
+
+      // Update cache immediately
+      _cachedSettings = settings;
+      _lastCheckedAt = DateTime.now();
+
       if (!authorized) {
         await _markPermissionDenied(user.uid);
-        return settings.authorizationStatus == AuthorizationStatus.denied
+        final status = settings.authorizationStatus == AuthorizationStatus.denied
             ? NotificationPermissionStatus.permanentlyDenied
             : NotificationPermissionStatus.denied;
+        _cachedStatus = status;
+        AppLog.d('[NotificationService] Permission denied: $status');
+        return status;
       }
 
       // Return provisional or granted based on status
       if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+        _cachedStatus = NotificationPermissionStatus.provisional;
+        AppLog.d('[NotificationService] Permission granted (provisional)');
         return NotificationPermissionStatus.provisional;
       }
 
-      _listenForTokenRefresh(user.uid);
+      _cachedStatus = NotificationPermissionStatus.granted;
+      AppLog.d('[NotificationService] Permission granted');
+
+      // Set up token refresh listener if not already set up
+      _setupTokenRefreshListener(user.uid);
+
+      // Get and save initial token
       try {
         final token = await _getMessagingToken();
         if (token != null && token.isNotEmpty) {
           await _upsertDeviceToken(user.uid, token);
+          AppLog.d('[NotificationService] Initial FCM token saved');
         }
-      } catch (_) {
+      } catch (e) {
         // Token fetch can fail transiently; permissions are still granted.
+        AppLog.d('[NotificationService] Failed to get initial token: $e');
       }
       return NotificationPermissionStatus.granted;
-    } catch (_) {
+    } catch (e) {
+      AppLog.d('[NotificationService] Error requesting permission: $e');
+      _cachedStatus = NotificationPermissionStatus.error;
       return NotificationPermissionStatus.error;
     }
   }
 
-  void _listenForTokenRefresh(String uid) {
-    _tokenRefreshSub ??= _messaging.onTokenRefresh.listen((token) {
+  /// Set up token refresh listener (idempotent - safe to call multiple times)
+  void _setupTokenRefreshListener(String uid) {
+    if (_tokenRefreshSub != null) {
+      AppLog.d('[NotificationService] Token refresh listener already active, skipping');
+      return;
+    }
+
+    _tokenRefreshSub = _messaging.onTokenRefresh.listen((token) {
       if (token.isEmpty) {
         return;
       }
+      AppLog.d('[NotificationService] FCM token refreshed, updating backend (uid=$uid)');
       _upsertDeviceToken(uid, token);
     });
+
+    AppLog.d('[NotificationService] Token refresh listener attached');
   }
 
   Future<String?> _getMessagingToken() async {
@@ -234,5 +350,17 @@ class NotificationPermissionService {
       return 'Android';
     }
     return 'unknown';
+  }
+
+  /// Dispose the service and cancel all subscriptions
+  /// Only needed for app shutdown or testing. Singleton lives for app lifetime.
+  void dispose() {
+    AppLog.d('[NotificationService] Disposing notification service');
+    _tokenRefreshSub?.cancel();
+    _tokenRefreshSub = null;
+    _initialized = false;
+    _cachedStatus = null;
+    _cachedSettings = null;
+    _lastCheckedAt = null;
   }
 }
