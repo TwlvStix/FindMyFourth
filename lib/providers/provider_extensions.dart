@@ -52,12 +52,13 @@ extension UserProviderHelpers on UserProvider {
 
   /// Check if golf profile is set up
   bool get isGolfProfileComplete {
-    return homeCourse.isNotEmpty && handicap > 0;
+    return homeCourse.isNotEmpty && handicap != 0;
   }
 
   /// Get a user-friendly handicap display
   String get handicapDisplay {
     if (handicap == 0) return 'Not set';
+    if (handicap < 0) return '+${handicap.abs()}';  // Plus handicap: +1, +2, etc.
     return handicap.toString();
   }
 

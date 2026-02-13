@@ -47,7 +47,7 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 240,
+      height: 260,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -192,7 +192,7 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
           // Display name
           if (widget.displayName.isNotEmpty)
             Positioned(
-              bottom: 20,
+              bottom: 16,
               left: 0,
               right: 0,
               child: Text(

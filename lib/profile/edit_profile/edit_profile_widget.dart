@@ -741,7 +741,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                           constraints: BoxConstraints(minWidth: 56),
                           alignment: Alignment.center,
                           child: Text(
-                            count.toString(),
+                            count < 0 ? '+${count.abs()}' : count.toString(),
                             maxLines: 1,
                             softWrap: false,
                             overflow: TextOverflow.clip,
@@ -756,7 +756,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             valueOrDefault(currentUserDocument?.handicap, 0),
                         updateCount: (count) => setState(() => handicapValue = count),
                         stepSize: 1,
-                        minimum: 0,
+                        minimum: -5,
                         maximum: 54,
                       ),
                     ],

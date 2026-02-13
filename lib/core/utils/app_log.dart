@@ -6,7 +6,7 @@ class AppLog {
   static String _redact(String message) {
     var safe = message;
     safe = safe.replaceAll(
-      RegExp(r'(?i)bearer\s+[A-Za-z0-9\-\._~\+/]+=*'),
+      RegExp(r'bearer\s+[A-Za-z0-9\-\._~\+/]+=*', caseSensitive: false),
       'Bearer [REDACTED]',
     );
     safe = safe.replaceAll(

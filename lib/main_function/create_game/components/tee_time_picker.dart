@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,7 +7,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/widgets/app_button_enhanced.dart';
 
-/// Premium tee time picker with masked input
+/// Premium tee time picker with iOS-style wheel picker
 class TeeTimePicker extends StatefulWidget {
   final DateTime? selectedDateTime;
   final Function(DateTime) onTimeSelected;
@@ -22,11 +23,19 @@ class TeeTimePicker extends StatefulWidget {
 }
 
 class _TeeTimePickerState extends State<TeeTimePicker> {
-  late TextEditingController _timeController;
+  late FixedExtentScrollController _hourController;
+  late FixedExtentScrollController _minuteController;
+
   bool _isPM = false;
   int _hour = 9;
   int _minute = 0;
   String? _errorMessage;
+
+  // Hours: 1-12
+  final List<int> _hours = List.generate(12, (index) => index + 1);
+
+  // Minutes: 0-59 (every minute)
+  final List<int> _minutes = List.generate(60, (index) => index);
 
   @override
   void initState() {
@@ -38,84 +47,23 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
       _hour = time.hour > 12 ? time.hour - 12 : (time.hour == 0 ? 12 : time.hour);
       _minute = time.minute;
       _isPM = time.hour >= 12;
-      _timeController = TextEditingController(
-        text: '${_hour.toString().padLeft(2, '0')}:${_minute.toString().padLeft(2, '0')}',
-      );
     } else {
       // Default to 9:00 AM
       _hour = 9;
       _minute = 0;
       _isPM = false;
-      _timeController = TextEditingController(text: '09:00');
     }
+
+    // Initialize scroll controllers at the correct positions
+    _hourController = FixedExtentScrollController(initialItem: _hour - 1);
+    _minuteController = FixedExtentScrollController(initialItem: _minute);
   }
 
   @override
   void dispose() {
-    _timeController.dispose();
+    _hourController.dispose();
+    _minuteController.dispose();
     super.dispose();
-  }
-
-  void _parseTimeInput(String input) {
-    setState(() {
-      _errorMessage = null;
-    });
-
-    // Remove any non-digit characters
-    final digits = input.replaceAll(RegExp(r'[^\d]'), '');
-
-    if (digits.isEmpty) {
-      return;
-    }
-
-    int? hour;
-    int? minute;
-
-    // Parse based on length
-    if (digits.length <= 2) {
-      // Just hours: "9" or "09"
-      hour = int.tryParse(digits);
-      minute = 0;
-    } else if (digits.length == 3) {
-      // "930" -> 9:30
-      hour = int.tryParse(digits.substring(0, 1));
-      minute = int.tryParse(digits.substring(1, 3));
-    } else {
-      // "1012" -> 10:12
-      hour = int.tryParse(digits.substring(0, digits.length - 2));
-      minute = int.tryParse(digits.substring(digits.length - 2));
-    }
-
-    // Validate
-    if (hour == null || hour < 1 || hour > 12) {
-      setState(() {
-        _errorMessage = 'Hour must be between 1 and 12';
-      });
-      return;
-    }
-
-    if (minute == null || minute < 0 || minute > 59) {
-      setState(() {
-        _errorMessage = 'Minutes must be between 0 and 59';
-      });
-      return;
-    }
-
-    // Auto-detect AM/PM based on common tee times if not explicitly set
-    if (hour >= 5 && hour <= 11) {
-      // 5-11 defaults to AM
-      _isPM = false;
-    } else if (hour == 12) {
-      // 12 defaults to PM
-      _isPM = true;
-    }
-
-    setState(() {
-      _hour = hour!;
-      _minute = minute!;
-      _timeController.text = '${_hour.toString().padLeft(2, '0')}:${_minute.toString().padLeft(2, '0')}';
-      _errorMessage = null;
-    });
   }
 
   void _adjustTime(int minutesDelta) {
@@ -131,9 +79,20 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
       if (_hour == 0) _hour = 12;
       if (_hour > 12) _hour = _hour - 12;
       _minute = totalMinutes % 60;
-      _timeController.text = '${_hour.toString().padLeft(2, '0')}:${_minute.toString().padLeft(2, '0')}';
       _errorMessage = null;
     });
+
+    // Animate to new positions
+    _hourController.animateToItem(
+      _hour - 1,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+    _minuteController.animateToItem(
+      _minute,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
   }
 
   bool _isValidForToday() {
@@ -197,7 +156,12 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
       ),
       child: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.lg),
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.md,
+            AppSpacing.lg,
+            AppSpacing.lg,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -210,7 +174,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              SizedBox(height: AppSpacing.md),
+              SizedBox(height: AppSpacing.sm),
 
               // Header
               Row(
@@ -219,7 +183,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                   Text(
                     'Enter Tee Time',
                     style: GoogleFonts.outfit(
-                      fontSize: 22,
+                      fontSize: 20,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.of(context).primaryText,
                     ),
@@ -227,69 +191,22 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                   IconButton(
                     icon: Icon(Icons.close, color: AppTheme.of(context).secondaryText),
                     onPressed: () => Navigator.pop(context),
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(),
                   ),
                 ],
               ),
-              SizedBox(height: AppSpacing.lg),
+              SizedBox(height: AppSpacing.sm),
 
-              // Time input field
-              TextField(
-                controller: _timeController,
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
+              // Current time display
+              Text(
+                '${_hour.toString().padLeft(2, '0')}:${_minute.toString().padLeft(2, '0')} ${_isPM ? 'PM' : 'AM'}',
                 style: GoogleFonts.outfit(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 40,
+                  fontWeight: FontWeight.w700,
                   color: AppTheme.of(context).primaryText,
-                  letterSpacing: 2,
+                  letterSpacing: 0.5,
                 ),
-                decoration: InputDecoration(
-                  hintText: '10:30',
-                  hintStyle: GoogleFonts.outfit(
-                    fontSize: 48,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.of(context).secondaryText.withValues(alpha: 0.3),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: _errorMessage != null
-                          ? AppColors.error
-                          : AppTheme.of(context).primary,
-                      width: 2,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: AppTheme.of(context).accent4.withValues(alpha: 0.3),
-                      width: 2,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: AppTheme.of(context).primary,
-                      width: 2,
-                    ),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(
-                      color: AppColors.error,
-                      width: 2,
-                    ),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: AppSpacing.lg,
-                    horizontal: AppSpacing.md,
-                  ),
-                ),
-                onChanged: _parseTimeInput,
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[\d:]')),
-                  LengthLimitingTextInputFormatter(5),
-                ],
               ),
 
               // Error message
@@ -298,7 +215,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                 Text(
                   _errorMessage!,
                   style: GoogleFonts.outfit(
-                    fontSize: 14,
+                    fontSize: 13,
                     color: AppColors.error,
                     fontWeight: FontWeight.w500,
                   ),
@@ -306,6 +223,149 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
               ],
 
               SizedBox(height: AppSpacing.md),
+
+              // Wheel Pickers
+              Container(
+                height: 160,
+                decoration: BoxDecoration(
+                  color: AppTheme.of(context).secondaryBackground,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppTheme.of(context).accent4.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    // Hour picker
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(top: AppSpacing.xs, bottom: 4),
+                            child: Text(
+                              'Hour',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.of(context).secondaryText,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: CupertinoPicker(
+                              scrollController: _hourController,
+                              itemExtent: 44,
+                              onSelectedItemChanged: (index) {
+                                HapticFeedback.selectionClick();
+                                setState(() {
+                                  _hour = _hours[index];
+                                  _errorMessage = null;
+                                });
+                              },
+                              selectionOverlay: Container(
+                                decoration: BoxDecoration(
+                                  border: Border.symmetric(
+                                    horizontal: BorderSide(
+                                      color: AppColors.fairway.withValues(alpha: 0.3),
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              children: _hours.map((hour) {
+                                return Center(
+                                  child: Text(
+                                    hour.toString().padLeft(2, '0'),
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.of(context).primaryText,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Colon separator
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      child: Text(
+                        ':',
+                        style: GoogleFonts.outfit(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.of(context).primaryText,
+                        ),
+                      ),
+                    ),
+
+                    // Minute picker
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(top: AppSpacing.xs, bottom: 4),
+                            child: Text(
+                              'Minutes',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.of(context).secondaryText,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: CupertinoPicker(
+                              scrollController: _minuteController,
+                              itemExtent: 44,
+                              onSelectedItemChanged: (index) {
+                                HapticFeedback.selectionClick();
+                                setState(() {
+                                  _minute = _minutes[index];
+                                  _errorMessage = null;
+                                });
+                              },
+                              selectionOverlay: Container(
+                                decoration: BoxDecoration(
+                                  border: Border.symmetric(
+                                    horizontal: BorderSide(
+                                      color: AppColors.fairway.withValues(alpha: 0.3),
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              children: _minutes.map((minute) {
+                                return Center(
+                                  child: Text(
+                                    minute.toString().padLeft(2, '0'),
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.of(context).primaryText,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: AppSpacing.sm),
 
               // AM/PM Toggle
               Container(
@@ -322,7 +382,10 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                       child: InkWell(
                         onTap: () {
                           HapticFeedback.selectionClick();
-                          setState(() => _isPM = false);
+                          setState(() {
+                            _isPM = false;
+                            _errorMessage = null;
+                          });
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
@@ -351,7 +414,10 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                       child: InkWell(
                         onTap: () {
                           HapticFeedback.selectionClick();
-                          setState(() => _isPM = true);
+                          setState(() {
+                            _isPM = true;
+                            _errorMessage = null;
+                          });
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
@@ -380,13 +446,13 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                 ),
               ),
 
-              SizedBox(height: AppSpacing.lg),
+              SizedBox(height: AppSpacing.md),
 
               // Quick adjust controls
               Text(
                 'Quick Adjust',
                 style: GoogleFonts.outfit(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: AppTheme.of(context).secondaryText,
                 ),
@@ -405,7 +471,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                 ],
               ),
 
-              SizedBox(height: AppSpacing.xl),
+              SizedBox(height: AppSpacing.lg),
 
               // Done button
               SizedBox(
@@ -431,7 +497,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xs,
+          vertical: 8,
         ),
         decoration: BoxDecoration(
           color: AppTheme.of(context).secondaryBackground,
@@ -443,7 +509,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
         child: Text(
           label,
           style: GoogleFonts.outfit(
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: FontWeight.w500,
             color: AppTheme.of(context).primaryText,
           ),

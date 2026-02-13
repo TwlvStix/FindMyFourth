@@ -407,7 +407,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
           ),
           SizedBox(width: 4),
           Text(
-            '$handicap',
+            handicap < 0 ? '+${handicap.abs()}' : '$handicap',
             style: AppTypography.labelSmall.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,

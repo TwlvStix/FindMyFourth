@@ -178,226 +178,230 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           b: theirVibes,
         );
         final subtitle = _matchSubtitle(explanation);
-        final sheetNavigator = Navigator.of(context, rootNavigator: true);
-        void closeSheet() => sheetNavigator.maybePop();
-        return SafeArea(
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.pure,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.pure,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(20),
             ),
-            child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.lg,
-                AppSpacing.lg,
-                AppSpacing.xxl,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: Row(
+          ),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Drag handle
+                SizedBox(height: AppSpacing.sm),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.cloud,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                // Header with back button - larger tap area
+                Container(
+                  alignment: Alignment.centerLeft,
+                  padding: EdgeInsets.only(
+                    left: AppSpacing.xs,
+                    top: AppSpacing.sm,
+                    bottom: AppSpacing.xs,
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                      },
+                      borderRadius: BorderRadius.circular(30),
+                      child: Container(
+                        padding: EdgeInsets.all(12),
+                        child: Icon(
+                          Icons.arrow_back,
+                          color: AppColors.onyx,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // Scrollable content
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      0,
+                      AppSpacing.lg,
+                      AppSpacing.xxl,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            'Vibe Match',
-                            style: AppTypography.titleMedium.copyWith(
+                        Text(
+                          '$displayScore%',
+                          style: AppTypography.displayMedium.copyWith(
+                            color: AppColors.fairwayDark,
+                          ),
+                        ),
+                        if (subtitle != null) ...[
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            subtitle,
+                            textAlign: TextAlign.center,
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.slate,
+                            ),
+                          ),
+                        ],
+                        if (isCapped || !result.isRecommended) ...[
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            'Not recommended',
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: AppColors.error,
+                              fontWeight: AppTypography.semiBold,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: AppSpacing.lg),
+                        _buildConfidenceMeter(explanation),
+                        if (result.confidence == VibeConfidence.low) ...[
+                          const SizedBox(height: AppSpacing.sm),
+                          GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              context.pushNamed(
+                                EditVibesWidget.routeName,
+                                extra: <String, dynamic>{
+                                  kTransitionInfoKey:
+                                      TransitionStandards.detailTransition,
+                                },
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(AppSpacing.sm),
+                              decoration: BoxDecoration(
+                                color: AppColors.sand,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: AppColors.cloud,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.tune_rounded,
+                                    color: AppColors.fairway,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Expanded(
+                                    child: Text(
+                                      'Finish your VIBE to improve match accuracy',
+                                      style: AppTypography.bodySmall.copyWith(
+                                        color: AppColors.slate,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    color: AppColors.stone,
+                                    size: 14,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(
+                          'Per-category breakdown',
+                          style: AppTypography.titleSmall.copyWith(
+                            color: AppColors.onyx,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        _buildCategoryBreakdown(explanation),
+                        const SizedBox(height: AppSpacing.lg),
+                        if (explanation.whyThisMatchWorks.isNotEmpty) ...[
+                          Text(
+                            'Why this match works',
+                            style: AppTypography.titleSmall.copyWith(
                               color: AppColors.onyx,
                             ),
                           ),
+                          const SizedBox(height: AppSpacing.sm),
+                          ...explanation.whyThisMatchWorks.map(
+                            (item) => _buildInsightRow(
+                              icon: Icons.check_circle_rounded,
+                              title: item.title,
+                              description: item.description,
+                              iconColor: AppColors.fairway,
+                              showActivityBadge: item.isActivityBased,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                        ],
+                        Text(
+                          'Top differences that matter',
+                          style: AppTypography.titleSmall.copyWith(
+                            color: AppColors.onyx,
+                          ),
                         ),
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: closeSheet,
-                          child: Padding(
-                            padding: const EdgeInsets.all(AppSpacing.xs),
-                            child: Icon(
-                              Icons.close_rounded,
+                        const SizedBox(height: AppSpacing.sm),
+                        if (explanation.topDifferencesThatMatter.isEmpty)
+                          Text(
+                            'No major differences found.',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.stone,
+                            ),
+                          )
+                        else
+                          ...explanation.topDifferencesThatMatter.map(
+                            (item) => _buildInsightRow(
+                              icon: Icons.priority_high_rounded,
+                              title: item.title,
+                              description: item.description,
+                              iconColor: AppColors.stone,
+                            ),
+                          ),
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(
+                          'You vs Them',
+                          style: AppTypography.titleSmall.copyWith(
+                            color: AppColors.onyx,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        ...VibeCategory.values.map((category) {
+                          return _buildVibeComparisonRow(
+                            category,
+                            myVibes.preferenceFor(category),
+                            theirVibes.preferenceFor(category),
+                          );
+                        }),
+                        if (explanation.defaultCategoryCount > 0) ...[
+                          const SizedBox(height: AppSpacing.md),
+                          Text(
+                            'Defaults reduce certainty. You can update any category anytime.',
+                            style: AppTypography.labelSmall.copyWith(
                               color: AppColors.stone,
                             ),
                           ),
+                        ],
+                        const SizedBox(height: AppSpacing.lg),
+                        AppButtonEnhanced(
+                          text: 'Close',
+                          variant: AppButtonVariant.secondary,
+                          size: AppButtonSize.medium,
+                          fullWidth: true,
+                          onPressed: () => Navigator.of(context).pop(),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Center(
-                    child: Container(
-                      width: 48,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.cloud,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Text(
-                    '$displayScore%',
-                    style: AppTypography.displayMedium.copyWith(
-                      color: AppColors.fairwayDark,
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      subtitle,
-                      textAlign: TextAlign.center,
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.slate,
-                      ),
-                    ),
-                  ],
-                  if (isCapped || !result.isRecommended) ...[
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Not recommended',
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.error,
-                        fontWeight: AppTypography.semiBold,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: AppSpacing.lg),
-                  _buildConfidenceMeter(explanation),
-                  if (result.confidence == VibeConfidence.low) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        context.pushNamed(
-                          EditVibesWidget.routeName,
-                          extra: <String, dynamic>{
-                            kTransitionInfoKey:
-                                TransitionStandards.detailTransition,
-                          },
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(AppSpacing.sm),
-                        decoration: BoxDecoration(
-                          color: AppColors.sand,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.cloud,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.tune_rounded,
-                              color: AppColors.fairway,
-                              size: 18,
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: Text(
-                                'Finish your VIBE to improve match accuracy',
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: AppColors.slate,
-                                ),
-                              ),
-                            ),
-                            Icon(
-                              Icons.arrow_forward_ios_rounded,
-                              color: AppColors.stone,
-                              size: 14,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: AppSpacing.lg),
-                  Text(
-                    'Per-category breakdown',
-                    style: AppTypography.titleSmall.copyWith(
-                      color: AppColors.onyx,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  _buildCategoryBreakdown(explanation),
-                  const SizedBox(height: AppSpacing.lg),
-                  if (explanation.whyThisMatchWorks.isNotEmpty) ...[
-                    Text(
-                      'Why this match works',
-                      style: AppTypography.titleSmall.copyWith(
-                        color: AppColors.onyx,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    ...explanation.whyThisMatchWorks.map(
-                      (item) => _buildInsightRow(
-                        icon: Icons.check_circle_rounded,
-                        title: item.title,
-                        description: item.description,
-                        iconColor: AppColors.fairway,
-                        showActivityBadge: item.isActivityBased,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                  ],
-                  Text(
-                    'Top differences that matter',
-                    style: AppTypography.titleSmall.copyWith(
-                      color: AppColors.onyx,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  if (explanation.topDifferencesThatMatter.isEmpty)
-                    Text(
-                      'No major differences found.',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.stone,
-                      ),
-                    )
-                  else
-                    ...explanation.topDifferencesThatMatter.map(
-                      (item) => _buildInsightRow(
-                        icon: Icons.priority_high_rounded,
-                        title: item.title,
-                        description: item.description,
-                        iconColor: AppColors.stone,
-                      ),
-                    ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Text(
-                    'You vs Them',
-                    style: AppTypography.titleSmall.copyWith(
-                      color: AppColors.onyx,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  ...VibeCategory.values.map((category) {
-                    return _buildVibeComparisonRow(
-                      category,
-                      myVibes.preferenceFor(category),
-                      theirVibes.preferenceFor(category),
-                    );
-                  }),
-                  if (explanation.defaultCategoryCount > 0) ...[
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      'Defaults reduce certainty. You can update any category anytime.',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.stone,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: AppSpacing.lg),
-                  AppButtonEnhanced(
-                    text: 'Close',
-                    variant: AppButtonVariant.secondary,
-                    size: AppButtonSize.medium,
-                    fullWidth: true,
-                    onPressed: closeSheet,
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );
@@ -833,9 +837,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
 
   Widget _buildVibeMatchRow() {
     final result = _vibeMatchResult;
-    final displayScore = result == null
-        ? '--'
-        : '${result.finalScorePercent.round()}%';
+    final displayScore =
+        result == null ? '--' : '${result.finalScorePercent.round()}%';
     final label = 'Vibe Match $displayScore';
     final canOpenSheet = result != null;
 
@@ -1213,9 +1216,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           }
 
           final result = showVibeMatch ? _vibeMatchResult : null;
-          final vibeScore = result == null
-              ? null
-              : result.finalScorePercent.round();
+          final vibeScore =
+              result == null ? null : result.finalScorePercent.round();
           final vibeLabel =
               vibeScore == null ? 'Vibe Match' : 'Vibe $vibeScore%';
           final canOpenVibe = vibeScore != null;
@@ -1460,8 +1462,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           final data = <String, dynamic>{
             'friend_requests': userRecord.friendRequests,
           };
-          final isSelf =
-              currentUserReference?.path == widget.userRef.path;
+          final isSelf = currentUserReference?.path == widget.userRef.path;
           if (!isSelf) {
             // TODO(11-06): Migrate vibe matching to VibeMatchProvider
             // For now, fetch DocumentSnapshot separately for vibe matching
@@ -1476,20 +1477,28 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
           final firstName = userRecord.firstName;
           final lastName = userRecord.lastName;
-          final displayName = userRecord.displayName.isNotEmpty ? userRecord.displayName : 'Golfer';
-          final phoneNumber = userRecord.phoneNumber.isNotEmpty ? userRecord.phoneNumber : 'Not set';
-          final email = userRecord.email.isNotEmpty ? userRecord.email : 'Not set';
-          final homeCourse = userRecord.homeCourse.isNotEmpty ? userRecord.homeCourse : 'Not set';
+          final displayName = userRecord.displayName.isNotEmpty
+              ? userRecord.displayName
+              : 'Golfer';
+          final phoneNumber = userRecord.phoneNumber.isNotEmpty
+              ? userRecord.phoneNumber
+              : 'Not set';
+          final email =
+              userRecord.email.isNotEmpty ? userRecord.email : 'Not set';
+          final homeCourse = userRecord.homeCourse.isNotEmpty
+              ? userRecord.homeCourse
+              : 'Not set';
           final handicap = userRecord.handicap.toString();
-          final golfCanadaNumber = userRecord.golfCanadaNumber.isNotEmpty ? userRecord.golfCanadaNumber : 'Not set';
+          final golfCanadaNumber = userRecord.golfCanadaNumber.isNotEmpty
+              ? userRecord.golfCanadaNumber
+              : 'Not set';
 
           final fullName = [firstName, lastName]
               .where((name) => name.trim().isNotEmpty)
               .join(' ')
               .trim();
           final displayTitle = fullName.isNotEmpty ? fullName : displayName;
-          final handle =
-              displayName.trim().isNotEmpty ? '@$displayName' : '';
+          final handle = displayName.trim().isNotEmpty ? '@$displayName' : '';
           final friendsCount = userRecord.friends.length;
 
           return Scaffold(

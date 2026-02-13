@@ -652,7 +652,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                 size: 20,
                               ),
                               countBuilder: (count) => Text(
-                                count.toString(),
+                                count < 0 ? '+${count.abs()}' : count.toString(),
                                 style: AppTypography.headlineMedium.copyWith(
                                   color: AppColors.onyx,
                                 ),
@@ -661,7 +661,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                               updateCount: (count) =>
                                   setState(() => handicapValue = count),
                               stepSize: 1,
-                              minimum: 0,
+                              minimum: -5,
                               maximum: 54,
                             ),
                           ),

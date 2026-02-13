@@ -844,7 +844,7 @@ class _ProgressiveOnboardingWidgetState
                   size: 20.0,
                 ),
                 countBuilder: (count) => Text(
-                  count.toString(),
+                  count < 0 ? '+${count.abs()}' : count.toString(),
                   style: AppTheme.of(context).headlineSmall.override(
                         font: GoogleFonts.outfit(
                           fontWeight:
@@ -862,7 +862,7 @@ class _ProgressiveOnboardingWidgetState
                 updateCount: (count) =>
                     setState(() => _handicapValue = count),
                 stepSize: 1,
-                minimum: 0,
+                minimum: -5,
                 maximum: 54,
               ),
             ),
