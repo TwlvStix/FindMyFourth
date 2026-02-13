@@ -209,6 +209,66 @@ class ProfileProvider extends ChangeNotifier {
     return result;
   }
 
+  /// Warm profile cache for a set of user IDs (fire-and-forget batch prefetch)
+  ///
+  /// This is the primary method for eliminating N+1 queries in list views.
+  /// Call this once at screen/widget init with all UIDs that will be displayed,
+  /// then use getCachedProfile() synchronously in row widgets.
+  ///
+  /// Example usage in Games List:
+  /// ```dart
+  /// final ownerUids = games.map((g) => g.userRef?.id).whereType<String>().toSet();
+  /// profileProvider.warmProfiles(ownerUids);
+  /// ```
+  ///
+  /// Features:
+  /// - Deduplicates requests (only fetches UIDs not in cache)
+  /// - Batches Firestore reads in chunks of 10
+  /// - Fire-and-forget: does not block UI, returns immediately
+  /// - Debug logging shows batch count (only in debug mode)
+  Future<void> warmProfiles(Set<String> userIds) async {
+    if (userIds.isEmpty) return;
+
+    // Filter out profiles that are already cached and valid
+    final missingIds = userIds.where((uid) => !isProfileCacheValid(uid)).toList();
+
+    if (missingIds.isEmpty) {
+      // All profiles already cached
+      assert(() {
+        debugPrint('🔥 ProfileProvider.warmProfiles: All ${userIds.length} profiles already cached');
+        return true;
+      }());
+      return;
+    }
+
+    // Debug log batch operation (proof of no N+1)
+    assert(() {
+      final batchCount = (missingIds.length / 10).ceil();
+      debugPrint('🔥 ProfileProvider.warmProfiles: Warming ${missingIds.length} profiles in $batchCount batch(es)');
+      return true;
+    }());
+
+    try {
+      final fetched = await ProfileService.batchGetUserProfiles(missingIds);
+
+      // Cache all fetched profiles
+      fetched.forEach((userId, profile) {
+        _profileCache[userId] = profile;
+        _profileCacheTimestamps[userId] = DateTime.now();
+      });
+
+      _scheduleNotify();
+
+      assert(() {
+        debugPrint('✅ ProfileProvider.warmProfiles: Cached ${fetched.length} profiles');
+        return true;
+      }());
+    } catch (e) {
+      debugPrint('❌ ProfileProvider.warmProfiles error: $e');
+      // Don't rethrow - warming is a best-effort operation that shouldn't break the UI
+    }
+  }
+
   // ========================================
   // PROFILE MUTATIONS (WITH CACHE INVALIDATION)
   // ========================================

@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
 import '/providers/user_provider.dart';
+import '/providers/profile_provider.dart';
 import '/friends/components/premium_friend_card.dart';
 import '/friends/components/empty_state.dart';
 import '/friends/components/golfer_search_section.dart';
@@ -610,6 +611,19 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                             'Requests tab friend_requests raw: ${currentUserDocument?.snapshotData['friend_requests']}',
                                           );
 
+                                          // ═══════════════════════════════════════════════════════
+                                          // PERFORMANCE FIX #7: Batch-warm profiles for friend requests
+                                          // ═══════════════════════════════════════════════════════
+                                          final requestUids = friendRequestList
+                                              .map((ref) => ref.id)
+                                              .toSet();
+                                          if (requestUids.isNotEmpty) {
+                                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                                              if (!context.mounted) return;
+                                              context.read<ProfileProvider>().warmProfiles(requestUids);
+                                            });
+                                          }
+
                                           // AnimatedSwitcher ensures clean transition between empty state and list
                                           return AnimatedSwitcher(
                                             duration: Duration(milliseconds: 200),
@@ -643,19 +657,18 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                               final friendRequestListItem =
                                                   friendRequestList[
                                                       friendRequestListIndex];
-                                              final cachedUser = context.read<UserProvider>().getCachedUser(friendRequestListItem.id);
-                                              return StreamBuilder<UsersRecord>(
+
+                                              // PERFORMANCE FIX #7: Read from cached profile (no StreamBuilder, no N+1)
+                                              // Profile was batch-warmed above via ProfileProvider.warmProfiles()
+                                              return Consumer<ProfileProvider>(
                                                 key: ValueKey(friendRequestListItem.id),
-                                                stream:
-                                                    context.read<UserProvider>().watchUser(friendRequestListItem).where((user) => user != null).cast<UsersRecord>(),
-                                                initialData: cachedUser,
-                                                builder: (context, snapshot) {
-                                                  if (!snapshot.hasData) {
+                                                builder: (context, profileProvider, _) {
+                                                  final userList5UsersRecord =
+                                                      profileProvider.getCachedProfile(friendRequestListItem.id);
+
+                                                  if (userList5UsersRecord == null) {
                                                     return FriendCardSkeleton();
                                                   }
-
-                                                  final userList5UsersRecord =
-                                                      snapshot.data!;
 
                                                   return PremiumFriendCard(
                                                     key: ValueKey('request_${userList5UsersRecord.reference.id}'),

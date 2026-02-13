@@ -36,9 +36,10 @@ Future<void> main() async {
   // 🚀 STARTUP TIMING: Record start time (debug only)
   final startTime = kDebugMode ? DateTime.now() : null;
 
-  WidgetsFlutterBinding.ensureInitialized();
-
   await runZonedGuarded(() async {
+    // ✅ CRITICAL: Must be in same zone as runApp
+    WidgetsFlutterBinding.ensureInitialized();
+
     GoRouter.optionURLReflectsImperativeAPIs = true;
     usePathUrlStrategy();
 

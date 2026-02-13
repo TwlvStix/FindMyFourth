@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
-import 'package:rxdart/rxdart.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
@@ -10,6 +9,7 @@ import '/friends/components/premium_friend_card.dart';
 import '/friends/components/friend_section_header.dart';
 import '/friends/components/swipeable_friend_card.dart';
 import '/providers/user_provider.dart';
+import '/providers/profile_provider.dart';
 
 /// Grouped friends list that organizes friends into sections
 class GroupedFriendsList extends StatefulWidget {
@@ -42,22 +42,59 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
   bool clubMembersCollapsed = false;
   bool allFriendsCollapsed = false;
   bool favoritesCollapsed = false;
+  bool _profilesWarmed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Warm profiles on init (fire-and-forget batch prefetch)
+    _warmFriendProfiles();
+  }
+
+  @override
+  void didUpdateWidget(GroupedFriendsList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Re-warm if friend list changed
+    if (!setEquals(
+        oldWidget.friendRefs.map((r) => r.id).toSet(),
+        widget.friendRefs.map((r) => r.id).toSet())) {
+      _profilesWarmed = false;
+      _warmFriendProfiles();
+    }
+  }
+
+  /// PERFORMANCE FIX #7: Batch-warm friend profiles to avoid N+1 pattern
+  ///
+  /// This replaces the previous approach of creating N streams (one per friend)
+  /// with a single batch prefetch that fetches profiles in chunks of 10.
+  void _warmFriendProfiles() {
+    if (_profilesWarmed) return;
+
+    final friendUids = widget.friendRefs.map((ref) => ref.id).toSet();
+    if (friendUids.isEmpty) return;
+
+    _profilesWarmed = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<ProfileProvider>().warmProfiles(friendUids);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Get cached friends for initialData
-    final userProvider = context.read<UserProvider>();
-    final cachedFriends = widget.friendRefs
-        .map((ref) => userProvider.getCachedUser(ref.id))
-        .where((user) => user != null)
-        .cast<UsersRecord>()
-        .toList();
+    // PERFORMANCE FIX #7: Read friends from cache instead of creating N streams
+    // Profiles were batch-warmed in initState via ProfileProvider.warmProfiles()
+    return Consumer<ProfileProvider>(
+      builder: (context, profileProvider, _) {
+        // Read all friends from cache
+        final allFriends = widget.friendRefs
+            .map((ref) => profileProvider.getCachedProfile(ref.id))
+            .whereType<UsersRecord>()
+            .toList();
 
-    return StreamBuilder<List<UsersRecord>>(
-      stream: _getFriendsStream(context),
-      initialData: cachedFriends.isEmpty ? null : cachedFriends,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+        // Show loading if profiles aren't cached yet
+        if (allFriends.isEmpty && widget.friendRefs.isNotEmpty) {
           return Center(
             child: SpinKitWanderingCubes(
               color: AppColors.fairway,
@@ -65,8 +102,6 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
             ),
           );
         }
-
-        final allFriends = snapshot.data!;
 
         // Group friends
         final favorites = allFriends
@@ -174,36 +209,5 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
         showActionButton: true,
       ),
     );
-  }
-
-  Stream<List<UsersRecord>> _getFriendsStream(BuildContext context) {
-    if (widget.friendRefs.isEmpty) {
-      return Stream.value([]);
-    }
-
-    final userProvider = context.read<UserProvider>();
-
-    // Create streams for each friend reference using cached watchUser
-    final streams =
-        widget.friendRefs.map((ref) => userProvider.watchUser(ref).where((user) => user != null).cast<UsersRecord>()).toList();
-
-    // Combine all streams
-    return _combineStreams(streams);
-  }
-
-  Stream<List<UsersRecord>> _combineStreams(
-      List<Stream<UsersRecord>> streams) {
-    if (streams.isEmpty) {
-      return Stream.value(const <UsersRecord>[]);
-    }
-
-    // Debug log to confirm reactive stream usage (no polling)
-    if (kDebugMode) {
-      debugPrint('[GroupedFriendsList] Using reactive stream combiner (no polling) for ${streams.length} friend streams');
-    }
-
-    // Use RxDart's combineLatestList for reactive, non-polling stream combination
-    // This emits whenever any friend's user record updates
-    return Rx.combineLatestList<UsersRecord>(streams);
   }
 }

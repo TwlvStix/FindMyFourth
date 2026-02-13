@@ -14,6 +14,7 @@ import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
 import '/models/game.dart';
 import '/providers/game_provider.dart';
+import '/providers/profile_provider.dart';
 import '/backend/backend.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/notifications/notifications_list/notifications_list_widget.dart';
@@ -113,6 +114,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     availableHandicaps: {},
     availableCourses: {},
   );
+
+  // Track last warmed profile UIDs to avoid redundant warming calls
+  Set<String> _lastWarmedProfileUids = {};
   static const Map<CancelledGameHandling, String>
       _cancelledHandlingStorageMap = {
     CancelledGameHandling.removeNow: 'removeNow',
@@ -725,6 +729,25 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                         } else {
                           joinableGames.add(game);
                         }
+                      }
+
+                      // ═══════════════════════════════════════════════════════
+                      // PERFORMANCE FIX #7: Batch-warm profiles for locked games
+                      // ═══════════════════════════════════════════════════════
+                      // Extract all unique owner UIDs from locked games and pre-fetch
+                      // them in batches (chunks of 10) to avoid N+1 listener pattern.
+                      // This replaces per-row StreamBuilder with cached reads.
+                      final ownerUids = lockedGames
+                          .map((game) => game.userRef?.id)
+                          .whereType<String>()
+                          .toSet();
+
+                      // Only warm if the UID set has changed (avoid redundant calls)
+                      if (ownerUids.isNotEmpty &&
+                          !setEquals(ownerUids, _lastWarmedProfileUids)) {
+                        _lastWarmedProfileUids = ownerUids;
+                        // Fire-and-forget batch prefetch (non-blocking)
+                        context.read<ProfileProvider>().warmProfiles(ownerUids);
                       }
 
                       return RefreshIndicator(
@@ -1563,10 +1586,12 @@ class _LockedGameHostLabel extends StatelessWidget {
       return Text('Host: Unknown', style: style);
     }
 
-    return StreamBuilder<UsersRecord>(
-      stream: UsersRecord.getDocument(ownerRef!),
-      builder: (context, snapshot) {
-        final hostName = snapshot.data?.displayName;
+    // PERFORMANCE FIX #7: Read from cached profile (no StreamBuilder, no N+1)
+    // Profile was batch-warmed at screen level via ProfileProvider.warmProfiles()
+    return Consumer<ProfileProvider>(
+      builder: (context, profileProvider, _) {
+        final profile = profileProvider.getCachedProfile(ownerRef!.id);
+        final hostName = profile?.displayName;
         final label = hostName != null && hostName.trim().isNotEmpty
             ? hostName.trim()
             : 'Unknown';

@@ -520,6 +520,97 @@ class ChatService {
     });
   }
 
+  /// Mark multiple unread messages as read in a single batched operation
+  ///
+  /// This method queries messages where the current user is NOT in the readBy
+  /// array and updates them all in a single WriteBatch (or multiple batches
+  /// if > 500 messages). This dramatically reduces network calls and improves
+  /// "open chat" performance.
+  ///
+  /// Returns a map with diagnostic info:
+  /// - 'unreadCount': number of unread messages found
+  /// - 'batchCount': number of batch commits performed
+  /// - 'updatedCount': number of messages updated
+  Future<Map<String, int>> markMessagesAsReadBatch({
+    required String chatId,
+    required String uid,
+    int limit = 100,
+  }) async {
+    try {
+      // Query messages where user is NOT in readBy array
+      // Note: Firestore doesn't support "not contains" queries directly,
+      // so we fetch recent messages and filter client-side
+      final messagesSnapshot = await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+
+      // Filter to only unread messages
+      final unreadDocs = messagesSnapshot.docs.where((doc) {
+        final data = doc.data();
+        final readBy = (data['readBy'] as List<dynamic>?)
+                ?.whereType<String>()
+                .toList() ??
+            [];
+        return !readBy.contains(uid);
+      }).toList();
+
+      if (unreadDocs.isEmpty) {
+        AppLog.d(
+            '📖 ChatService: No unread messages found for chatId=$chatId uid=$uid');
+        return {
+          'unreadCount': 0,
+          'batchCount': 0,
+          'updatedCount': 0,
+        };
+      }
+
+      AppLog.d(
+          '📖 ChatService: Found ${unreadDocs.length} unread messages for chatId=$chatId uid=$uid');
+
+      // Firestore WriteBatch has a limit of 500 operations
+      const batchSize = 500;
+      final totalMessages = unreadDocs.length;
+      int batchCount = 0;
+      int updatedCount = 0;
+
+      // Process in chunks of 500
+      for (var i = 0; i < totalMessages; i += batchSize) {
+        final batch = _firestore.batch();
+        final end =
+            (i + batchSize < totalMessages) ? i + batchSize : totalMessages;
+
+        for (var j = i; j < end; j++) {
+          batch.update(unreadDocs[j].reference, {
+            'readBy': FieldValue.arrayUnion([uid]),
+          });
+          updatedCount++;
+        }
+
+        await batch.commit();
+        batchCount++;
+        AppLog.d(
+            '📖 ChatService: Committed batch $batchCount with ${end - i} updates');
+      }
+
+      AppLog.d(
+          '✅ ChatService: markMessagesAsReadBatch complete - $updatedCount messages updated in $batchCount batch(es)');
+
+      return {
+        'unreadCount': unreadDocs.length,
+        'batchCount': batchCount,
+        'updatedCount': updatedCount,
+      };
+    } catch (e, stackTrace) {
+      AppLog.d('❌ ChatService: ERROR in markMessagesAsReadBatch: $e');
+      AppLog.d('❌ ChatService: Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
+
   void logError(String message, Object error, StackTrace stackTrace) {
     AppLog.d('ChatService: $message $error');
     AppLog.d('ChatService stack trace: $stackTrace');

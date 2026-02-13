@@ -416,6 +416,22 @@ class ChatProvider extends ChangeNotifier {
     );
   }
 
+  /// Mark multiple unread messages as read in a single batched operation
+  ///
+  /// This is a performance-optimized alternative to calling markMessageAsRead
+  /// in a loop. Returns diagnostic info about the operation.
+  Future<Map<String, int>> markMessagesAsReadBatch({
+    required String chatId,
+    required String uid,
+    int limit = 100,
+  }) {
+    return _service.markMessagesAsReadBatch(
+      chatId: chatId,
+      uid: uid,
+      limit: limit,
+    );
+  }
+
   void logError(String message, Object error, StackTrace stackTrace) {
     _service.logError(message, error, stackTrace);
   }
@@ -500,6 +516,107 @@ class ChatProvider extends ChangeNotifier {
     });
   }
 
+  // ========================================
+  // CHAT LIST VIEW MODEL STREAM (AUDIT #6 FIX)
+  // ========================================
+
+  /// Stream of chat row view models with resolved profiles
+  ///
+  /// This method combines chat list stream with profile resolution in a single stream,
+  /// avoiding nested StreamBuilder/FutureBuilder patterns and repeated profile fetches.
+  ///
+  /// Uses ProfileProvider's memoized cache to avoid re-fetching profiles on every rebuild.
+  Stream<List<ChatRowViewModel>> chatRowsStream({
+    required String currentUserId,
+    required ProfileProvider profileProvider,
+    int limit = 50,
+  }) {
+    if (kDebugMode) {
+      debugPrint('💬 ChatProvider: Creating chat rows VM stream for userId=$currentUserId (should happen once per screen)');
+    }
+
+    return chatListStream(uid: currentUserId, limit: limit)
+        .asyncMap((chats) async {
+      if (chats.isEmpty) {
+        return <ChatRowViewModel>[];
+      }
+
+      // Collect direct chat user IDs (exclude game chats)
+      final directUserIds = <String>{};
+      for (final chat in chats) {
+        if (chat.type == 'game') continue;
+        final otherUserId = chat.memberIds.firstWhere(
+          (id) => id != currentUserId,
+          orElse: () => currentUserId,
+        );
+        if (otherUserId.isNotEmpty) {
+          directUserIds.add(otherUserId);
+        }
+      }
+
+      if (kDebugMode) {
+        debugPrint('💬 ChatProvider: Chat rows VM emit - ${chats.length} chats, ${directUserIds.length} direct chat profiles needed');
+      }
+
+      // Fetch profiles using ProfileProvider's memoized cache
+      // This will only trigger network fetches for new user IDs not already cached
+      Map<String, UsersRecord> profileMap = {};
+      if (directUserIds.isNotEmpty) {
+        try {
+          profileMap = await profileProvider.batchGetProfiles(directUserIds.toList());
+
+          // Log which profiles were fetched vs cached
+          if (kDebugMode) {
+            final newUserIds = directUserIds
+                .where((id) => !profileProvider.isProfileCacheValid(id))
+                .toList();
+            if (newUserIds.isNotEmpty) {
+              debugPrint('🆕 ChatProvider: Profile fetch triggered for new userIds: $newUserIds');
+            }
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('❌ ChatProvider: Failed to fetch profiles: $e');
+          }
+          // Continue with empty profile map on error
+        }
+      }
+
+      // Create view models
+      return chats.map((chat) {
+        final unreadCount = chat.unreadCountByUser[currentUserId] ?? 0;
+
+        String displayName;
+        String photoUrl = '';
+
+        if (chat.type == 'game') {
+          displayName = (chat.gameName ?? '').trim().isNotEmpty
+              ? chat.gameName!
+              : 'Game Chat';
+        } else {
+          final otherUserId = chat.memberIds.firstWhere(
+            (id) => id != currentUserId,
+            orElse: () => currentUserId,
+          );
+          final profile = profileMap[otherUserId];
+          displayName = (profile?.displayName ?? '').trim().isNotEmpty
+              ? profile!.displayName
+              : 'Golfer';
+          photoUrl = profile?.photoUrl ?? '';
+        }
+
+        return ChatRowViewModel(
+          chatId: chat.id,
+          displayName: displayName,
+          photoUrl: photoUrl,
+          lastMessage: chat.lastMessage,
+          lastMessageAt: chat.lastMessageAt,
+          unreadCount: unreadCount,
+        );
+      }).toList();
+    });
+  }
+
   @override
   void dispose() {
     _disposed = true;
@@ -549,4 +666,31 @@ class ChatMessageViewModel {
   DateTime? get createdAt => message.createdAt;
   Map<String, List<String>> get reactions => message.reactions;
   List<String> get readBy => message.readBy;
+}
+
+// ========================================
+// CHAT ROW VIEW MODEL (AUDIT #6 FIX)
+// ========================================
+
+/// View model for chat list rows with resolved profile data
+///
+/// This class combines Chat with resolved user profile data,
+/// avoiding the need for nested builders in the UI and moving
+/// profile fetching out of the build method.
+class ChatRowViewModel {
+  ChatRowViewModel({
+    required this.chatId,
+    required this.displayName,
+    required this.photoUrl,
+    required this.lastMessage,
+    required this.lastMessageAt,
+    required this.unreadCount,
+  });
+
+  final String chatId;
+  final String displayName;
+  final String photoUrl;
+  final String lastMessage;
+  final DateTime? lastMessageAt;
+  final int unreadCount;
 }

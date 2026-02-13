@@ -526,35 +526,38 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   // AUDIT #5: Removed _shouldShowDateDivider, _isFirstInGroup, _isLastInGroup
   // These are now computed inline in the VM-based StreamBuilder to avoid confusion
 
+  /// Mark chat and messages as read using batched writes
+  ///
+  /// AUDIT #8 FIX: Replaced sequential per-message writes with a single
+  /// WriteBatch operation. This reduces network calls from N+1 to 2
+  /// (one for chat-level unread count, one batch for all messages).
   Future<void> _markChatSeen() async {
     final currentUserId = _currentUserId;
     if (currentUserId == null) {
       return;
     }
     try {
+      if (kDebugMode) {
+        debugPrint('📖 UI: _markChatSeen called for chatId=${widget.chatId}');
+      }
+
+      // Update chat-level unread count
       await context
           .read<ChatProvider>()
           .markChatRead(chatId: widget.chatId, uid: currentUserId);
 
-      // Also mark recent messages as read
-      final messagesSnapshot = await FirebaseFirestore.instance
-          .collection('chats')
-          .doc(widget.chatId)
-          .collection('messages')
-          .orderBy('createdAt', descending: true)
-          .limit(20)
-          .get();
+      // Mark all unread messages as read in a single batched operation
+      // This replaces the previous sequential loop with a single WriteBatch
+      final stats = await context.read<ChatProvider>().markMessagesAsReadBatch(
+            chatId: widget.chatId,
+            uid: currentUserId,
+            limit: 100, // Check up to 100 recent messages
+          );
 
-      for (final doc in messagesSnapshot.docs) {
-        final data = doc.data();
-        final readBy = (data['readBy'] as List<dynamic>?)?.whereType<String>().toList() ?? [];
-        if (!readBy.contains(currentUserId)) {
-          await context.read<ChatProvider>().markMessageAsRead(
-                chatId: widget.chatId,
-                messageId: doc.id,
-                uid: currentUserId,
-              );
-        }
+      if (kDebugMode) {
+        debugPrint(
+            '✅ UI: _markChatSeen complete - ${stats['unreadCount']} unread messages, '
+            '${stats['updatedCount']} updated in ${stats['batchCount']} batch(es)');
       }
     } catch (error, stackTrace) {
       context
