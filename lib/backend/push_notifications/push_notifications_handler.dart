@@ -37,6 +37,17 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   bool _loading = false;
   Timer? _loadingTimeout;
 
+  // Static subscription to ensure only ONE listener per app session
+  static StreamSubscription<RemoteMessage>? _messageSubscription;
+  static bool _listenerInitialized = false;
+
+  // Static cleanup method for app shutdown (if needed)
+  static Future<void> cleanupListener() async {
+    await _messageSubscription?.cancel();
+    _messageSubscription = null;
+    _listenerInitialized = false;
+  }
+
   _PushRoute? _resolveRouteFromType(Map<String, dynamic> data) {
     final type = data['type'];
     if (type is! String || type.isEmpty) {
@@ -152,11 +163,19 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
       return;
     }
 
+    // Only initialize the listener once per app session
+    if (_listenerInitialized) {
+      return;
+    }
+    _listenerInitialized = true;
+
     final notification = await FirebaseMessaging.instance.getInitialMessage();
     if (notification != null) {
       await _handlePushNotification(notification);
     }
-    FirebaseMessaging.onMessageOpenedApp.listen(_handlePushNotification);
+
+    // Store the subscription so we can cancel it later
+    _messageSubscription = FirebaseMessaging.onMessageOpenedApp.listen(_handlePushNotification);
   }
 
   Future _handlePushNotification(RemoteMessage message) async {
@@ -235,6 +254,9 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   @override
   void dispose() {
     _loadingTimeout?.cancel();
+    // Note: We don't cancel _messageSubscription here because it's static
+    // and shared across all instances. The listener should persist across
+    // navigation. Use cleanupListener() only for app shutdown if needed.
     super.dispose();
   }
 

@@ -1488,7 +1488,9 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           final homeCourse = userRecord.homeCourse.isNotEmpty
               ? userRecord.homeCourse
               : 'Not set';
-          final handicap = userRecord.handicap.toString();
+          final handicap = userRecord.handicap < 0
+              ? '+${userRecord.handicap.abs()}'
+              : userRecord.handicap.toString();
           final golfCanadaNumber = userRecord.golfCanadaNumber.isNotEmpty
               ? userRecord.golfCanadaNumber
               : 'Not set';

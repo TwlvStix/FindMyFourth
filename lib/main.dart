@@ -33,17 +33,25 @@ import '/main_function/games_list/games_list_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 
 Future<void> main() async {
+  // 🚀 STARTUP TIMING: Record start time (debug only)
+  final startTime = kDebugMode ? DateTime.now() : null;
+
   WidgetsFlutterBinding.ensureInitialized();
 
   await runZonedGuarded(() async {
     GoRouter.optionURLReflectsImperativeAPIs = true;
     usePathUrlStrategy();
+
+    // ✅ CRITICAL: Must complete before runApp
     await initFirebase();
-    await _configureErrorAndLoggingGuards();
 
+    // ✅ CRITICAL: Set up error handlers immediately (synchronous)
+    _setupErrorHandlers();
+
+    // ✅ CRITICAL: Create AppState instance (but don't load persisted state yet)
     final appState = AppState();
-    await appState.initializePersistedState();
 
+    // 🚀 OPTIMIZATION: Show first frame ASAP
     runApp(
       MultiProvider(
         providers: [
@@ -59,6 +67,20 @@ Future<void> main() async {
         child: MyApp(),
       ),
     );
+
+    // 🔄 POST-FRAME: Non-critical initialization after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 🚀 STARTUP TIMING: Log time to first frame (debug only)
+      if (kDebugMode && startTime != null) {
+        final timeToFirstFrame = DateTime.now().difference(startTime);
+        debugPrint(
+          '⚡ STARTUP TIMING: Time to first frame: ${timeToFirstFrame.inMilliseconds}ms',
+        );
+      }
+
+      // Start non-critical background work
+      _initializeNonCriticalServices(appState);
+    });
   }, (error, stackTrace) {
     if (kIsWeb) {
       return;
@@ -67,7 +89,9 @@ Future<void> main() async {
   });
 }
 
-Future<void> _configureErrorAndLoggingGuards() async {
+/// Set up error handlers immediately (synchronous, no await)
+/// This ensures errors are captured from the start, but doesn't block first frame
+void _setupErrorHandlers() {
   if (kReleaseMode) {
     debugPrint = (String? _, {int? wrapWidth}) {};
   }
@@ -82,15 +106,7 @@ Future<void> _configureErrorAndLoggingGuards() async {
     return;
   }
 
-  final shouldCollectCrashReports = kReleaseMode && kCrashlyticsEnabled;
-  await FirebaseCrashlytics.instance
-      .setCrashlyticsCollectionEnabled(shouldCollectCrashReports);
-  await FirebaseCrashlytics.instance.setCustomKey('app_env', kAppEnv);
-  await FirebaseCrashlytics.instance
-      .setCustomKey('allow_internal_crash_test', kAllowInternalCrashTest);
-  await FirebaseCrashlytics.instance
-      .setCustomKey('enable_dev_ui', kEnableDevUi);
-
+  // Set up error handlers immediately (synchronous)
   final previousFlutterErrorHandler = FlutterError.onError;
   FlutterError.onError = (FlutterErrorDetails details) {
     previousFlutterErrorHandler?.call(details);
@@ -101,6 +117,43 @@ Future<void> _configureErrorAndLoggingGuards() async {
     FirebaseCrashlytics.instance.recordError(error, stackTrace, fatal: true);
     return true;
   };
+}
+
+/// Initialize non-critical services after first frame
+/// This includes Crashlytics metadata and persisted state
+Future<void> _initializeNonCriticalServices(AppState appState) async {
+  try {
+    // Load persisted state in background (doesn't block UI)
+    await appState.initializePersistedState();
+
+    // Set Crashlytics metadata (just metadata, not critical)
+    await _configureCrashlyticsMetadata();
+  } catch (error, stackTrace) {
+    debugPrint('⚠️  Non-critical initialization failed: $error');
+    if (!kIsWeb) {
+      FirebaseCrashlytics.instance.recordError(
+        error,
+        stackTrace,
+        reason: 'Non-critical post-frame initialization failed',
+      );
+    }
+  }
+}
+
+/// Configure Crashlytics metadata (non-critical, can happen after first frame)
+Future<void> _configureCrashlyticsMetadata() async {
+  if (kIsWeb) {
+    return;
+  }
+
+  final shouldCollectCrashReports = kReleaseMode && kCrashlyticsEnabled;
+  await FirebaseCrashlytics.instance
+      .setCrashlyticsCollectionEnabled(shouldCollectCrashReports);
+  await FirebaseCrashlytics.instance.setCustomKey('app_env', kAppEnv);
+  await FirebaseCrashlytics.instance
+      .setCustomKey('allow_internal_crash_test', kAllowInternalCrashTest);
+  await FirebaseCrashlytics.instance
+      .setCustomKey('enable_dev_ui', kEnableDevUi);
 }
 
 void triggerInternalCrashForTesting() {

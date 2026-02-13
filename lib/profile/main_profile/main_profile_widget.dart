@@ -121,8 +121,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       .snapshots(),
                   builder: (context, snapshot) {
                     final unreadCount = snapshot.data?.docs.length ?? 0;
-                    final badgeText =
-                        unreadCount > 99 ? '99+' : '$unreadCount';
+                    final badgeText = unreadCount > 99 ? '99+' : '$unreadCount';
                     return Stack(
                       clipBehavior: Clip.none,
                       children: [
@@ -150,7 +149,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               _pushNamed(
                                 NotificationsListWidget.routeName,
                                 extra: <String, dynamic>{
-                                  kTransitionInfoKey: TransitionStandards.detailTransition,
+                                  kTransitionInfoKey:
+                                      TransitionStandards.detailTransition,
                                 },
                               );
                             },
@@ -175,7 +175,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 borderRadius: BorderRadius.circular(10.0),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.sunsetRose.withOpacity(0.4),
+                                    color:
+                                        AppColors.sunsetRose.withOpacity(0.4),
                                     blurRadius: 8,
                                     offset: Offset(0, 2),
                                   ),
@@ -481,7 +482,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               builder: (context) => _buildStatCard(
                 context,
                 icon: FontAwesomeIcons.golfBall,
-                value: valueOrDefault(currentUserDocument?.handicap, 0).toString(),
+                value: formatHandicap(
+                  valueOrDefault(currentUserDocument?.handicap, 0),
+                ),
                 label: 'Handicap',
                 gradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
               ),
@@ -493,7 +496,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           Expanded(
             child: AuthUserStreamWidget(
               builder: (context) {
-                final course = valueOrDefault(currentUserDocument?.homeCourse, 'Not Set');
+                final course =
+                    valueOrDefault(currentUserDocument?.homeCourse, 'Not Set');
                 final shortCourse = course.length > 12
                     ? '${course.substring(0, 10)}...'
                     : course;
@@ -546,7 +550,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.xs),
+        padding: EdgeInsets.symmetric(
+            vertical: AppSpacing.md, horizontal: AppSpacing.xs),
         decoration: BoxDecoration(
           color: AppColors.fairway.withOpacity(0.3),
           borderRadius: BorderRadius.circular(16),
@@ -614,7 +619,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           return SizedBox.shrink();
         }
         return Padding(
-          padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+          padding: EdgeInsets.fromLTRB(
+              AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
           child: GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
@@ -622,12 +628,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 EditVibesWidget.routeName,
                 extra: <String, dynamic>{
                   kTransitionInfoKey: TransitionInfo(
-                  hasTransition: true,
-                  transitionType: PageTransitionType.fade,
-                  enterDuration: Duration(milliseconds: 200),
-                  exitDuration: Duration(milliseconds: 170),
-                  scaleOnPush: false,
-                ),
+                    hasTransition: true,
+                    transitionType: PageTransitionType.fade,
+                    enterDuration: Duration(milliseconds: 200),
+                    exitDuration: Duration(milliseconds: 170),
+                    scaleOnPush: false,
+                  ),
                 },
               );
             },
@@ -728,12 +734,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             EditProfileWidget.routeName,
                             extra: <String, dynamic>{
                               kTransitionInfoKey: TransitionInfo(
-                            hasTransition: true,
-                            transitionType: PageTransitionType.fade,
-                            enterDuration: Duration(milliseconds: 200),
-                            exitDuration: Duration(milliseconds: 170),
-                            scaleOnPush: false,
-                          ),
+                                hasTransition: true,
+                                transitionType: PageTransitionType.fade,
+                                enterDuration: Duration(milliseconds: 200),
+                                exitDuration: Duration(milliseconds: 170),
+                                scaleOnPush: false,
+                              ),
                             },
                           );
                         },
@@ -752,12 +758,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             EditVibesWidget.routeName,
                             extra: <String, dynamic>{
                               kTransitionInfoKey: TransitionInfo(
-                            hasTransition: true,
-                            transitionType: PageTransitionType.fade,
-                            enterDuration: Duration(milliseconds: 200),
-                            exitDuration: Duration(milliseconds: 170),
-                            scaleOnPush: false,
-                          ),
+                                hasTransition: true,
+                                transitionType: PageTransitionType.fade,
+                                enterDuration: Duration(milliseconds: 200),
+                                exitDuration: Duration(milliseconds: 170),
+                                scaleOnPush: false,
+                              ),
                             },
                           );
                         },
@@ -780,19 +786,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             TabFriendsWidget.routeName,
                             extra: <String, dynamic>{
                               kTransitionInfoKey: TransitionInfo(
-                            hasTransition: true,
-                            transitionType: PageTransitionType.fade,
-                            enterDuration: Duration(milliseconds: 200),
-                            exitDuration: Duration(milliseconds: 170),
-                            scaleOnPush: true,
-                          ),
+                                hasTransition: true,
+                                transitionType: PageTransitionType.fade,
+                                enterDuration: Duration(milliseconds: 200),
+                                exitDuration: Duration(milliseconds: 170),
+                                scaleOnPush: true,
+                              ),
                             },
                           );
                         },
                       ),
                     ),
                     SizedBox(width: AppSpacing.sm),
-                    Expanded(child: SizedBox()), // Empty space to maintain grid alignment
+                    Expanded(
+                        child:
+                            SizedBox()), // Empty space to maintain grid alignment
                   ],
                 ),
               ],
@@ -813,12 +821,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         EditProfileWidget.routeName,
                         extra: <String, dynamic>{
                           kTransitionInfoKey: TransitionInfo(
-                        hasTransition: true,
-                        transitionType: PageTransitionType.fade,
-                        enterDuration: Duration(milliseconds: 200),
-                        exitDuration: Duration(milliseconds: 170),
-                        scaleOnPush: false,
-                      ),
+                            hasTransition: true,
+                            transitionType: PageTransitionType.fade,
+                            enterDuration: Duration(milliseconds: 200),
+                            exitDuration: Duration(milliseconds: 170),
+                            scaleOnPush: false,
+                          ),
                         },
                       );
                     },
@@ -837,12 +845,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         EditVibesWidget.routeName,
                         extra: <String, dynamic>{
                           kTransitionInfoKey: TransitionInfo(
-                        hasTransition: true,
-                        transitionType: PageTransitionType.fade,
-                        enterDuration: Duration(milliseconds: 200),
-                        exitDuration: Duration(milliseconds: 170),
-                        scaleOnPush: false,
-                      ),
+                            hasTransition: true,
+                            transitionType: PageTransitionType.fade,
+                            enterDuration: Duration(milliseconds: 200),
+                            exitDuration: Duration(milliseconds: 170),
+                            scaleOnPush: false,
+                          ),
                         },
                       );
                     },
@@ -861,12 +869,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         TabFriendsWidget.routeName,
                         extra: <String, dynamic>{
                           kTransitionInfoKey: TransitionInfo(
-                        hasTransition: true,
-                        transitionType: PageTransitionType.fade,
-                        enterDuration: Duration(milliseconds: 200),
-                        exitDuration: Duration(milliseconds: 170),
-                        scaleOnPush: true,
-                      ),
+                            hasTransition: true,
+                            transitionType: PageTransitionType.fade,
+                            enterDuration: Duration(milliseconds: 200),
+                            exitDuration: Duration(milliseconds: 170),
+                            scaleOnPush: true,
+                          ),
                         },
                       );
                     },
@@ -942,7 +950,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildGolfInfoSection(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
+      padding:
+          EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -962,7 +971,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               icon: Icons.verified_rounded,
               iconColor: AppColors.fairway,
               label: 'Golf Canada #',
-              value: valueOrDefault(currentUserDocument?.golfCanadaNumber, 'Not set'),
+              value: valueOrDefault(
+                  currentUserDocument?.golfCanadaNumber, 'Not set'),
             ),
           ),
 
@@ -986,7 +996,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               icon: Icons.phone_outlined,
               iconColor: AppColors.sunsetGold,
               label: 'Phone',
-              value: currentPhoneNumber.isNotEmpty ? currentPhoneNumber : 'Not set',
+              value: currentPhoneNumber.isNotEmpty
+                  ? currentPhoneNumber
+                  : 'Not set',
             ),
           ),
         ],
@@ -1051,7 +1063,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildSettingsSection(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, 0),
+      padding:
+          EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1063,7 +1076,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ),
           ),
           SizedBox(height: AppSpacing.md),
-
           Container(
             decoration: BoxDecoration(
               color: AppColors.sand,
@@ -1222,7 +1234,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 label,
                 style: AppTypography.bodyMedium.copyWith(
                   color: color,
-                  fontWeight: isDestructive ? FontWeight.w500 : FontWeight.normal,
+                  fontWeight:
+                      isDestructive ? FontWeight.w500 : FontWeight.normal,
                 ),
               ),
             ),

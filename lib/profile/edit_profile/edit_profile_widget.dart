@@ -167,7 +167,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           ),
         );
       });
-      currentUserDocument = await UsersRecord.getDocumentOnce(currentUserReference!);
+      currentUserDocument =
+          await UsersRecord.getDocumentOnce(currentUserReference!);
       _showSuccessAndNavigate();
     } catch (e) {
       debugPrint('EditProfile: profile save failed: $e');
@@ -403,7 +404,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
                     color: AppColors.sand,
-                    child: Icon(Icons.person_rounded, size: 60, color: AppColors.stone),
+                    child: Icon(Icons.person_rounded,
+                        size: 60, color: AppColors.stone),
                   ),
                 ),
               ),
@@ -458,8 +460,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         ),
                       ],
                     ),
-                    child:
-                        Icon(Icons.camera_alt_rounded, color: Colors.white, size: 22),
+                    child: Icon(Icons.camera_alt_rounded,
+                        color: Colors.white, size: 22),
                   ),
                 ),
               ),
@@ -503,7 +505,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildPersonalInfoSection(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+      padding:
+          EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -515,7 +518,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             ),
           ),
           SizedBox(height: AppSpacing.md),
-
           AuthUserStreamWidget(
             builder: (context) => Column(
               children: [
@@ -583,7 +585,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildGolfProfileSection(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+      padding:
+          EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -595,7 +598,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             ),
           ),
           SizedBox(height: AppSpacing.md),
-
           AuthUserStreamWidget(
             builder: (context) => Column(
               children: [
@@ -655,7 +657,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         borderColor: Colors.transparent,
                         borderWidth: 0,
                         borderRadius: 12,
-                        margin: EdgeInsetsDirectional.only(start: AppSpacing.md),
+                        margin:
+                            EdgeInsetsDirectional.only(start: AppSpacing.md),
                       ),
                     );
                   },
@@ -718,7 +721,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                           ),
                           child: Icon(
                             Icons.remove_rounded,
-                            color: enabled ? AppColors.fairway : AppColors.stone,
+                            color:
+                                enabled ? AppColors.fairway : AppColors.stone,
                             size: 18,
                           ),
                         ),
@@ -733,7 +737,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                           ),
                           child: Icon(
                             Icons.add_rounded,
-                            color: enabled ? AppColors.fairway : AppColors.stone,
+                            color:
+                                enabled ? AppColors.fairway : AppColors.stone,
                             size: 18,
                           ),
                         ),
@@ -741,7 +746,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                           constraints: BoxConstraints(minWidth: 56),
                           alignment: Alignment.center,
                           child: Text(
-                            count < 0 ? '+${count.abs()}' : count.toString(),
+                            formatHandicap(count),
                             maxLines: 1,
                             softWrap: false,
                             overflow: TextOverflow.clip,
@@ -754,7 +759,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         ),
                         count: handicapValue ??
                             valueOrDefault(currentUserDocument?.handicap, 0),
-                        updateCount: (count) => setState(() => handicapValue = count),
+                        updateCount: (count) =>
+                            setState(() => handicapValue = count),
                         stepSize: 1,
                         minimum: -5,
                         maximum: 54,
@@ -827,52 +833,54 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildDeleteAccountButton(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
+      padding:
+          EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
       child: GestureDetector(
         onTap: () async {
           HapticFeedback.mediumImpact();
           final confirm = await showDialog<bool>(
-            context: context,
-            builder: (alertDialogContext) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              title: Text(
-                'Delete Account?',
-                style: AppTypography.titleMedium.copyWith(
-                  color: AppColors.onyx,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              content: Text(
-                'This permanently deletes your account and all associated data. This action cannot be undone.',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.slate,
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(alertDialogContext, false),
-                  child: Text(
-                    'Cancel',
-                    style: AppTypography.labelLarge.copyWith(
-                      color: AppColors.stone,
-                    ),
+                context: context,
+                builder: (alertDialogContext) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(alertDialogContext, true),
-                  child: Text(
-                    'Delete',
-                    style: AppTypography.labelLarge.copyWith(
-                      color: AppColors.error,
+                  title: Text(
+                    'Delete Account?',
+                    style: AppTypography.titleMedium.copyWith(
+                      color: AppColors.onyx,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  content: Text(
+                    'This permanently deletes your account and all associated data. This action cannot be undone.',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.slate,
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(alertDialogContext, false),
+                      child: Text(
+                        'Cancel',
+                        style: AppTypography.labelLarge.copyWith(
+                          color: AppColors.stone,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(alertDialogContext, true),
+                      child: Text(
+                        'Delete',
+                        style: AppTypography.labelLarge.copyWith(
+                          color: AppColors.error,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ) ?? false;
+              ) ??
+              false;
 
           if (!confirm) return;
 
@@ -898,7 +906,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           } catch (e) {
             debugPrint('Delete account failed: $e');
             if (!mounted) return;
-            showSnackbar(context, 'Unable to delete account. Please try again.');
+            showSnackbar(
+                context, 'Unable to delete account. Please try again.');
           }
         },
         child: Container(
@@ -912,7 +921,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.delete_outline_rounded, color: AppColors.error, size: 22),
+              Icon(Icons.delete_outline_rounded,
+                  color: AppColors.error, size: 22),
               SizedBox(width: AppSpacing.xs),
               Text(
                 'Delete Account',

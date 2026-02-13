@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
+import 'package:rxdart/rxdart.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
@@ -190,19 +192,18 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
   }
 
   Stream<List<UsersRecord>> _combineStreams(
-      List<Stream<UsersRecord>> streams) async* {
-    await for (final _ in Stream.periodic(Duration(milliseconds: 100))) {
-      final results = <UsersRecord>[];
-      for (final stream in streams) {
-        await for (final user in stream.take(1)) {
-          results.add(user);
-          break;
-        }
-      }
-      if (results.length == streams.length) {
-        yield results;
-        return;
-      }
+      List<Stream<UsersRecord>> streams) {
+    if (streams.isEmpty) {
+      return Stream.value(const <UsersRecord>[]);
     }
+
+    // Debug log to confirm reactive stream usage (no polling)
+    if (kDebugMode) {
+      debugPrint('[GroupedFriendsList] Using reactive stream combiner (no polling) for ${streams.length} friend streams');
+    }
+
+    // Use RxDart's combineLatestList for reactive, non-polling stream combination
+    // This emits whenever any friend's user record updates
+    return Rx.combineLatestList<UsersRecord>(streams);
   }
 }

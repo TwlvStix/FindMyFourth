@@ -4,6 +4,16 @@ import 'package:timeago/timeago.dart' as timeago;
 T valueOrDefault<T>(T? value, T defaultValue) =>
     (value is String && value.isEmpty) || value == null ? defaultValue : value;
 
+/// Formats golf handicap values so negative indexes display as plus handicaps.
+/// Example: -2 -> +2
+String formatHandicap(int? handicap, {bool zeroAsNotSet = false}) {
+  final value = handicap ?? 0;
+  if (zeroAsNotSet && value == 0) {
+    return 'Not set';
+  }
+  return value < 0 ? '+${value.abs()}' : value.toString();
+}
+
 String dateTimeFormat(String format, DateTime? dateTime, {String? locale}) {
   if (dateTime == null) {
     return '';
