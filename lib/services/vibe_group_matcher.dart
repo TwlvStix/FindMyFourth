@@ -106,8 +106,6 @@ class GroupVibeMatcher {
     // Group average is computed from other members only (excluding me).
     final groupAverages = <VibeCategory, double>{};
     final differences = <GroupVibeDifference>[];
-    var weightedSum = 0.0;
-    var weightTotal = 0.0;
     var defaultCount = 0;
     var completenessSum = 0.0;
 
@@ -116,9 +114,6 @@ class GroupVibeMatcher {
       final average = others.isEmpty
           ? myPref.value.toDouble()
           : _averageValue(category, others);
-      final averageThreshold = others.isEmpty
-          ? myPref.threshold.toDouble()
-          : _averageThreshold(category, others);
       final distance = (myPref.value - average).abs();
 
       final myIsDefault = isDefault(
@@ -127,11 +122,6 @@ class GroupVibeMatcher {
         isDefaultFlag: myPref.isDefault,
       );
       final otherIsDefault = _groupHasDefault(category, others);
-      final importanceMultiplierValue = _groupImportanceMultiplier(
-        category,
-        mine,
-        others,
-      );
       if (myIsDefault || otherIsDefault) {
         defaultCount += 1;
       }
@@ -141,21 +131,6 @@ class GroupVibeMatcher {
       differences.add(
         GroupVibeDifference(category: category, distance: distance),
       );
-
-      final matchScore = categoryMatch(
-        myPref.value,
-        average,
-        myTolerance: myPref.threshold,
-        theirTolerance: averageThreshold.round(),
-        gamma: VibeTuning.gamma,
-        scaleMax: VibeTuning.scaleMax,
-      );
-      final baseWeight = VibeMatcher.weights[category] ?? 0;
-      final weight = baseWeight *
-          getDefaultMultiplier(myIsDefault, otherIsDefault) *
-          importanceMultiplierValue;
-      weightedSum += matchScore * weight;
-      weightTotal += weight;
     }
 
     final topDifferences = _topDifferences(differences);

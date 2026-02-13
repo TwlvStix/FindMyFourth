@@ -59,11 +59,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
 
   @override
@@ -1474,7 +1470,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                   .id,
                                               uid: currentUser.uid,
                                             );
-                                      } on FirebaseException catch (error) {
+                                      } on FirebaseException {
                                         if (mounted) {
                                           showSnackbar(
                                             context,

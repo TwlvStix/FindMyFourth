@@ -89,8 +89,6 @@ class NotificationProvider extends ChangeNotifier {
 
   /// Load current preferences from Firestore
   Future<void> _loadPreferences() async {
-    if (currentUserUid == null) return;
-
     try {
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
@@ -134,13 +132,6 @@ class NotificationProvider extends ChangeNotifier {
 
   /// Save preferences to Firestore
   Future<void> _saveToFirestore(NotificationPreferences prefs) async {
-    if (currentUserUid == null) {
-      _syncStatus = SyncStatus.error;
-      _errorMessage = 'User not authenticated';
-      notifyListeners();
-      return;
-    }
-
     _syncStatus = SyncStatus.saving;
     notifyListeners();
 
@@ -190,8 +181,6 @@ class NotificationProvider extends ChangeNotifier {
 
   /// Check for backend errors (e.g., notification send failures)
   Future<void> checkBackendErrors() async {
-    if (currentUserUid == null) return;
-
     try {
       final userDoc = await FirebaseFirestore.instance
           .collection('users')

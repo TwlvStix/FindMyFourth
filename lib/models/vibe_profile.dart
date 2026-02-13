@@ -115,7 +115,7 @@ class VibePreference {
         'is_default': isDefault,
       };
 
-  static int _clamp(int value) => value.clamp(minValue, maxValue) as int;
+  static int _clamp(int value) => value.clamp(minValue, maxValue);
 
   static int _toInt(dynamic raw, int fallback) {
     if (raw is int) {

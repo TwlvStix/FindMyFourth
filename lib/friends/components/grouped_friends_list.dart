@@ -8,7 +8,6 @@ import '/core/design_tokens/colors.dart';
 import '/friends/components/premium_friend_card.dart';
 import '/friends/components/friend_section_header.dart';
 import '/friends/components/swipeable_friend_card.dart';
-import '/providers/user_provider.dart';
 import '/providers/profile_provider.dart';
 
 /// Grouped friends list that organizes friends into sections

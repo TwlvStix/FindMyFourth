@@ -13,7 +13,6 @@ import '/core/form_field_controller.dart';
 import '/profile/change_photo/change_photo_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -100,7 +99,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     golfCanadaFocusNode = FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() {});
+      // ✅ PERFORMANCE: Removed empty setState (no-op rebuild)
     });
   }
 
@@ -439,7 +438,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         );
                       },
                     ).then((value) {
-                      if (mounted) setState(() {});
+                      // ✅ PERFORMANCE: Removed empty setState (no-op rebuild)
                     });
                   },
                   child: Container(
@@ -485,7 +484,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                 child: ChangePhotoWidget(),
               ),
             ).then((value) {
-              if (mounted) setState(() {});
+              // ✅ PERFORMANCE: Removed empty setState (no-op rebuild)
             });
           },
           child: Text(
@@ -946,7 +945,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     required FocusNode focusNode,
     required String label,
     required IconData icon,
-    TextInputAction? textInputAction,
     bool readOnly = false,
   }) {
     return AppTextField(

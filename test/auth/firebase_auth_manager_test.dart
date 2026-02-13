@@ -3,20 +3,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:find_my_fourth/auth/firebase_auth/firebase_auth_manager.dart';
 
 class _FakeUserCredential implements UserCredential {
-  _FakeUserCredential({
-    this.user,
-    this.credential,
-    this.additionalUserInfo,
-  });
+  _FakeUserCredential();
 
   @override
-  final User? user;
+  final User? user = null;
 
   @override
-  final AuthCredential? credential;
+  final AuthCredential? credential = null;
 
   @override
-  final AdditionalUserInfo? additionalUserInfo;
+  final AdditionalUserInfo? additionalUserInfo = null;
 }
 
 void main() {

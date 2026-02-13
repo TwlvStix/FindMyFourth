@@ -71,7 +71,6 @@ Theme wrapInMaterialDatePickerTheme(
         onSurface: pickerForegroundColor,
         surface: pickerBackgroundColor,
       ),
-      dialogBackgroundColor: pickerBackgroundColor,
       disabledColor: pickerForegroundColor.applyAlpha(0.3),
       textTheme: baseTheme.textTheme.copyWith(
         headlineSmall: headerTextStyle,
@@ -110,7 +109,7 @@ Theme wrapInMaterialDatePickerTheme(
         dayForegroundColor: dateTimeMaterialStateForegroundColor,
         todayForegroundColor: dateTimeMaterialStateForegroundColor,
         yearForegroundColor: dateTimeMaterialStateForegroundColor,
-      ),
+      ), dialogTheme: DialogThemeData(backgroundColor: pickerBackgroundColor),
     ),
     child: child,
   );

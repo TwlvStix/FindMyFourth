@@ -6,7 +6,6 @@ import '/core/design_tokens/spacing.dart';
 import 'dart:ui';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/models/game.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -31,11 +30,7 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
 
   @override

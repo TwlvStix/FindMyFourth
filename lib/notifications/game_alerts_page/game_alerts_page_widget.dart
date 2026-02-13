@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -7,7 +6,6 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
-import '/core/widgets/app_choice_chips.dart';
 import '/core/widgets/fairway_background.dart';
 import '/main_function/create_game/create_game_constants.dart';
 import '/models/alert_subscription.dart';
@@ -49,14 +47,6 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
   }
 
   Future<void> _loadData() async {
-    if (currentUserUid == null) {
-      setState(() {
-        _errorMessage = 'User not authenticated';
-        _isLoading = false;
-      });
-      return;
-    }
-
     try {
       // Load courses first (always works)
       final courses = await _loadAllCourses();
@@ -64,7 +54,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
       // Try to load subscription, but handle permission errors gracefully
       AlertSubscription? subscription;
       try {
-        subscription = await AlertSubscriptionService.loadSubscription(currentUserUid!);
+        subscription = await AlertSubscriptionService.loadSubscription(currentUserUid);
         debugPrint('[GameAlertsPage] Loaded subscription: ${subscription != null ? 'exists' : 'null'}');
       } catch (e) {
         // Handle permission errors gracefully - use defaults
@@ -73,7 +63,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
       }
 
       // If no subscription exists, create default
-      final sub = subscription ?? AlertSubscription.defaults(currentUserUid!);
+      final sub = subscription ?? AlertSubscription.defaults(currentUserUid);
 
       // Load selected courses
       final selectedCourses = courses
@@ -110,7 +100,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
   }
 
   Future<void> _save() async {
-    if (_subscription == null || currentUserUid == null) return;
+    if (_subscription == null) return;
 
     setState(() {
       _isSaving = true;
@@ -151,8 +141,6 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
   }
 
   Future<void> _reset() async {
-    if (currentUserUid == null) return;
-
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -185,7 +173,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
 
     if (confirmed == true) {
       setState(() {
-        _subscription = AlertSubscription.defaults(currentUserUid!);
+        _subscription = AlertSubscription.defaults(currentUserUid);
         _selectedCourses = [];
         _hasChanges = true;
       });

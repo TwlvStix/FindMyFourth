@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '/backend/api_requests/game_service.dart';
 import '/backend/backend.dart';
@@ -302,7 +301,7 @@ class GameProvider extends ChangeNotifier {
           return;
         }
 
-        final data = gameSnap.data() as Map<String, dynamic>? ?? {};
+        final data = gameSnap.data() ?? {};
         final joinedPlayers = data['joined_players'];
         final inGame = joinedPlayers is List &&
             joinedPlayers.any((entry) => entry == userRef || entry == userId);

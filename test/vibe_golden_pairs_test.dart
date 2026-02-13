@@ -121,7 +121,7 @@ Map<VibeCategory, VibePreference> _prefsFromJson(
   for (final category in VibeCategory.values) {
     final rawPref = raw[category.key];
     if (rawPref is Map) {
-      final data = Map<String, dynamic>.from(rawPref as Map);
+      final data = Map<String, dynamic>.from(rawPref);
       prefs[category] = VibePreference(
         value: _toInt(data['value'], VibePreference.defaultValue),
         dealbreaker: data['dealbreaker'] is bool

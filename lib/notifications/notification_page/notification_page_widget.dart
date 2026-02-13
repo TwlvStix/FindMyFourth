@@ -62,14 +62,6 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   }
 
   Future<void> _loadData() async {
-    if (currentUserUid == null) {
-      setState(() {
-        _errorMessage = 'User not authenticated';
-        _isLoading = false;
-      });
-      return;
-    }
-
     try {
       debugPrint('[NotificationSettings] Loading data for user: $currentUserUid');
 
@@ -86,7 +78,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
       }
 
       try {
-        alertSub = await AlertSubscriptionService.loadSubscription(currentUserUid!);
+        alertSub = await AlertSubscriptionService.loadSubscription(currentUserUid);
         debugPrint('[NotificationSettings] Loaded alert subscription: ${alertSub != null ? "exists" : "null"}');
       } catch (e) {
         debugPrint('[NotificationSettings] Error loading alert sub, using defaults: $e');
@@ -95,7 +87,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
       setState(() {
         _prefs = prefs;
-        _alertSub = alertSub ?? AlertSubscription.defaults(currentUserUid!);
+        _alertSub = alertSub ?? AlertSubscription.defaults(currentUserUid);
         _isLoading = false;
         _hasChanges = false;
       });
@@ -108,7 +100,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
       // Try to set defaults so user can at least use the page
       setState(() {
         _prefs = NotificationPreferences.defaults();
-        _alertSub = AlertSubscription.defaults(currentUserUid!);
+        _alertSub = AlertSubscription.defaults(currentUserUid);
         _errorMessage = 'Could not load settings. Using defaults. Error: $e';
         _isLoading = false;
       });
@@ -156,7 +148,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   }
 
   Future<void> _save() async {
-    if (_prefs == null || _alertSub == null || currentUserUid == null) {
+    if (_prefs == null || _alertSub == null) {
       return;
     }
 
@@ -236,11 +228,11 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
       ),
     );
 
-    if (confirmed == true && currentUserUid != null) {
+    if (confirmed == true) {
       setState(() {
         // Reset to defaults
         _prefs = NotificationPreferences.defaults();
-        _alertSub = AlertSubscription.defaults(currentUserUid!);
+        _alertSub = AlertSubscription.defaults(currentUserUid);
         _hasChanges = true;
       });
     }
@@ -345,12 +337,10 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   /// Reload only the alert subscription without touching notification prefs
   /// Used when returning from Game Alerts detail page
   Future<void> _reloadAlertSubscription() async {
-    if (currentUserUid == null) return;
-
     try {
-      final alertSub = await AlertSubscriptionService.loadSubscription(currentUserUid!);
+      final alertSub = await AlertSubscriptionService.loadSubscription(currentUserUid);
       setState(() {
-        _alertSub = alertSub ?? AlertSubscription.defaults(currentUserUid!);
+        _alertSub = alertSub ?? AlertSubscription.defaults(currentUserUid);
       });
       debugPrint('[NotificationSettings] Reloaded alert subscription');
     } catch (e) {

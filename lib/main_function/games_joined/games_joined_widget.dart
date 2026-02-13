@@ -2,7 +2,6 @@ import '/backend/backend.dart';
 import '/core/widgets/app_stream_builder.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
-import '/core/navigation/app_router.dart';
 import '/utils/app_util.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
@@ -33,11 +32,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
 
   @override

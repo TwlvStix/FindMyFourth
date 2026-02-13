@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
@@ -67,7 +66,7 @@ class UserProvider extends ChangeNotifier {
         _isLoading = false;
 
         // Ensure friend_requests field exists for logged-in user
-        if (isNowLoggedIn && user != null) {
+        if (isNowLoggedIn) {
           // Run in background, don't block the login flow
           _ensureFriendRequestsFieldExists(user);
         }

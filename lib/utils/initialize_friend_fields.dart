@@ -19,7 +19,7 @@ Future<void> initializeFriendFieldsForCurrentUser() async {
       return;
     }
 
-    final data = snapshot.data() as Map<String, dynamic>?;
+    final data = snapshot.data();
     final updates = <String, dynamic>{};
 
     // Initialize friend_requests if it doesn't exist

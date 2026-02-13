@@ -10,6 +10,16 @@
 -dontwarn org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider
 -keep class org.xmlpull.v1.** { *; }
 
+# Strip Java/Kotlin Android logging calls in release bytecode.
+# This only affects Android native/plugin code paths, not Dart debugPrint.
+-assumenosideeffects class android.util.Log {
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+    public static int w(...);
+    public static int println(...);
+    public static boolean isLoggable(...);
+}
 
 
 

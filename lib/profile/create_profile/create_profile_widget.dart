@@ -20,7 +20,6 @@ import '/main_function/games_list/games_list_widget.dart';
 import '/profile/change_photo/change_photo_widget.dart';
 import '/core/custom_functions.dart' as functions;
 import '/user_onboarding/vibe_onboarding_widget.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -202,7 +201,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     }
     await firebaseUser.getIdToken(true);
     final userRef = UsersRecord.collection.doc(firebaseUser.uid);
-    if (userRef == null || desiredUsername.isEmpty) {
+    if (desiredUsername.isEmpty) {
       return;
     }
     final usernamesRef = FirebaseFirestore.instance

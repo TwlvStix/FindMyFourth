@@ -46,20 +46,52 @@ class ChatService {
           return Stream.value(<Chat>[]);
         }
 
-        final streams = chatIds.map(
-          (chatId) => _firestore
-              .collection('chats')
-              .doc(chatId)
-              .snapshots()
-              .map((doc) => doc.exists ? Chat.fromDoc(doc) : null)
-              .onErrorReturn(null),
+        // ✅ PERFORMANCE: Batch whereIn queries (max 10 per batch)
+        // Instead of N listeners (one per chat), create N/10 batched listeners
+        final batches = _chunkList(chatIds, 10);
+        AppLog.d(
+          '[ChatService] Batching ${chatIds.length} chats into ${batches.length} queries (${batches.map((b) => b.length).join(", ")} per batch)',
         );
 
-        return Rx.combineLatestList<Chat?>(streams).map(
-          (chats) => chats.whereType<Chat>().toList(),
-        );
+        final streams = batches.map((batch) {
+          return _firestore
+              .collection('chats')
+              .where(FieldPath.documentId, whereIn: batch)
+              .snapshots()
+              .map((querySnapshot) {
+                return querySnapshot.docs
+                    .map((doc) => Chat.fromDoc(doc))
+                    .toList();
+              })
+              .onErrorReturn(<Chat>[]);
+        });
+
+        return Rx.combineLatestList<List<Chat>>(streams).map((batchResults) {
+          // Flatten all batches into single list
+          final allChats = batchResults.expand((batch) => batch).toList();
+
+          // ✅ PERFORMANCE: Sort by lastMessageAt to maintain correct order
+          // (whereIn doesn't guarantee order, so we sort client-side)
+          allChats.sort((a, b) {
+            final aTime = a.lastMessageAt ?? DateTime(1970);
+            final bTime = b.lastMessageAt ?? DateTime(1970);
+            return bTime.compareTo(aTime); // Descending
+          });
+
+          return allChats;
+        });
       });
     });
+  }
+
+  /// Helper: Chunk a list into batches of specified size
+  List<List<T>> _chunkList<T>(List<T> list, int chunkSize) {
+    final chunks = <List<T>>[];
+    for (var i = 0; i < list.length; i += chunkSize) {
+      final end = (i + chunkSize < list.length) ? i + chunkSize : list.length;
+      chunks.add(list.sublist(i, end));
+    }
+    return chunks;
   }
 
   Stream<Chat?> getChatStream({
@@ -274,7 +306,7 @@ class ChatService {
     await _firestore.runTransaction((transaction) async {
       final chatSnapshot = await transaction.get(chatRef);
       final data =
-          chatSnapshot.data() as Map<String, dynamic>? ?? <String, dynamic>{};
+          chatSnapshot.data() ?? <String, dynamic>{};
       final isReadOnly = data['isReadOnly'] == true;
       final archivedAt = (data['archivedAt'] as Timestamp?)?.toDate();
       if (isReadOnly ||
@@ -362,7 +394,7 @@ class ChatService {
         throw Exception('Chat not found');
       }
 
-      final chatData = chatSnapshot.data() as Map<String, dynamic>?;
+      final chatData = chatSnapshot.data();
       final memberIds = (chatData?['memberIds'] as List<dynamic>?)
               ?.whereType<String>()
               .toList() ??

@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
@@ -29,11 +28,7 @@ class _UserOnboardingWidgetState extends State<UserOnboardingWidget> {
   void initState() {
     super.initState();
     _ensureUserRecord();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
 
   @override
@@ -42,7 +37,6 @@ class _UserOnboardingWidgetState extends State<UserOnboardingWidget> {
   }
 
   Future<void> _completeOnboarding() async {
-    final userRef = currentUserReference;
     if (!mounted) {
       return;
     }

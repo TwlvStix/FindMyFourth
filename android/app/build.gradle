@@ -1,3 +1,5 @@
+import groovy.json.JsonSlurper
+
 plugins {
    id "com.android.application"
    id "kotlin-android"
@@ -32,17 +34,17 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace "com.twlvstix.findmyfourth"
-    compileSdkVersion 35
+    compileSdkVersion 36
     
 
     compileOptions {
         coreLibraryDesugaringEnabled true
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = JavaVersion.VERSION_17
     }
 
     sourceSets {
@@ -58,7 +60,7 @@ android {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.twlvstix.findmyfourth"
         minSdkVersion flutter.minSdkVersion
-        targetSdkVersion 35
+        targetSdkVersion 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -77,7 +79,9 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
@@ -89,4 +93,38 @@ flutter {
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.1.0"
+}
+
+tasks.register("validateGoogleServicesJson") {
+    doLast {
+        def gsFile = file("$projectDir/google-services.json")
+        if (!gsFile.exists()) {
+            throw new GradleException("Missing android/app/google-services.json; Firebase initialization will fail.")
+        }
+
+        def json = new JsonSlurper().parse(gsFile)
+        def expectedPackage = android.defaultConfig.applicationId
+        def clients = (json.client instanceof List) ? json.client : []
+        def matchingClient = clients.find { c ->
+            c?.client_info?.android_client_info?.package_name == expectedPackage
+        }
+
+        if (matchingClient == null) {
+            throw new GradleException(
+                "google-services.json has no client for package '${expectedPackage}'. " +
+                "Regenerate it from Firebase Console to match android.defaultConfig.applicationId."
+            )
+        }
+
+        def mobileSdkAppId = matchingClient?.client_info?.mobilesdk_app_id
+        if (!(mobileSdkAppId instanceof String) || mobileSdkAppId.trim().isEmpty()) {
+            throw new GradleException(
+                "google-services.json client for '${expectedPackage}' is missing client_info.mobilesdk_app_id."
+            )
+        }
+    }
+}
+
+tasks.named("preBuild").configure {
+    dependsOn(tasks.named("validateGoogleServicesJson"))
 }

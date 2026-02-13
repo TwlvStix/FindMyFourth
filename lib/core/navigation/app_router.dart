@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '/backend/backend.dart';
 
 import '/auth/base_auth_user_provider.dart';
 
@@ -11,7 +10,6 @@ import '/core/app_theme.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/utils/app_util.dart';
-import '/utils/serialization_util.dart';
 
 import '/chat_group/chat/chat_widget.dart';
 import '/chat_group/game_chat_details/game_chat_details_widget.dart';

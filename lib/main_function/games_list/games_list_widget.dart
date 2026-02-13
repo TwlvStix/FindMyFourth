@@ -18,7 +18,6 @@ import '/providers/profile_provider.dart';
 import '/backend/backend.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/notifications/notifications_list/notifications_list_widget.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -129,12 +128,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   @override
   void initState() {
     super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
 
   @override
@@ -576,7 +570,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       },
                     )
                   : StreamBuilder<QuerySnapshot>(
-                      stream: currentUserReference!
+                      stream: currentUserReference
                           .collection('notifications')
                           .where('read', isEqualTo: false)
                           .snapshots(),

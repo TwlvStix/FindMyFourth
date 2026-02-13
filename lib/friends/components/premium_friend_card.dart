@@ -319,8 +319,8 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
           runSpacing: 4,
           children: [
             if (_vibeMatch != null) _buildVibeBadge(),
-            if (widget.user.handicap != null && widget.user.handicap! > 0)
-              _buildHandicapBadge(widget.user.handicap!),
+            if (widget.user.handicap > 0)
+              _buildHandicapBadge(widget.user.handicap),
           ],
         ),
       ],

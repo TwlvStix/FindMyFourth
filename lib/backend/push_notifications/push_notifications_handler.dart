@@ -41,13 +41,6 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   static StreamSubscription<RemoteMessage>? _messageSubscription;
   static bool _listenerInitialized = false;
 
-  // Static cleanup method for app shutdown (if needed)
-  static Future<void> cleanupListener() async {
-    await _messageSubscription?.cancel();
-    _messageSubscription = null;
-    _listenerInitialized = false;
-  }
-
   _PushRoute? _resolveRouteFromType(Map<String, dynamic> data) {
     final type = data['type'];
     if (type is! String || type.isEmpty) {
@@ -138,7 +131,7 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
     final currentUserRef =
         FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
     final userSnap = await currentUserRef.get();
-    final userData = userSnap.data() as Map<String, dynamic>? ?? {};
+    final userData = userSnap.data() ?? {};
     final friends = userData['friends'];
     if (friends is List) {
       return !friends.any((entry) {

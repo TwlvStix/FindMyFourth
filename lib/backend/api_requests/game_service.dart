@@ -197,7 +197,7 @@ class GameService {
         final userRef =
             FirebaseFirestore.instance.collection('users').doc(userId);
         final rawJoinedPlayers =
-            (gameDoc.data() as Map<String, dynamic>?)?['joined_players'];
+            (gameDoc.data())?['joined_players'];
         final alreadyJoined = rawJoinedPlayers is List &&
             rawJoinedPlayers
                 .any((entry) => entry == userRef || entry == userId);

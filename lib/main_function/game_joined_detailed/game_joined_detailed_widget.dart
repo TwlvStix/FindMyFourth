@@ -11,7 +11,6 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon_button.dart';
-import '/core/navigation/app_router.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
@@ -20,7 +19,6 @@ import '/models/vibe_profile.dart';
 import '/vibe/vibe_match_types.dart';
 import '/services/vibe_group_matcher.dart';
 import '/services/vibe_repository.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -68,11 +66,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
 
   @override

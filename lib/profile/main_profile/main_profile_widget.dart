@@ -2,13 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/motion/motion_helpers.dart';
-import '/core/navigation/transition_standards.dart';
 import '/core/design_patterns/premium_ui_patterns.dart';
 import '/utils/app_util.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
@@ -69,11 +67,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       vsync: this,
       duration: const Duration(seconds: 8),
     )..repeat();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
 
   @override
@@ -518,7 +512,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           Expanded(
             child: AuthUserStreamWidget(
               builder: (context) {
-                final friendsCount = currentUserDocument?.friends?.length ?? 0;
+                final friendsCount = currentUserDocument?.friends.length ?? 0;
                 return _buildStatCard(
                   context,
                   icon: FontAwesomeIcons.userFriends,

@@ -7,7 +7,6 @@ import '/core/app_theme.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/navigation/app_router.dart';
 import '/core/widgets/fairway_background.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/utils/app_util.dart';
@@ -31,11 +30,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
 
   @override
@@ -550,7 +545,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                         separatorBuilder: (context, index) =>
                             SizedBox(height: AppSpacing.sm),
                         itemBuilder: (context, index) {
-                          final doc = docs[index] as QueryDocumentSnapshot;
+                          final doc = docs[index];
                           final data =
                               (doc.data() as Map<String, dynamic>?) ??
                                   <String, dynamic>{};

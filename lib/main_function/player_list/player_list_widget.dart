@@ -86,11 +86,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
 
   @override
@@ -523,6 +519,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                         : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
                       width: 40.0,
                       height: 40.0,
+                      cacheWidth: 120, // ✅ PERFORMANCE: 3x for high-DPI
+                      cacheHeight: 120,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -681,6 +679,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
                 width: 40.0,
                 height: 40.0,
+                cacheWidth: 120, // ✅ PERFORMANCE: 3x for high-DPI
+                cacheHeight: 120,
                 fit: BoxFit.cover,
               ),
             ),

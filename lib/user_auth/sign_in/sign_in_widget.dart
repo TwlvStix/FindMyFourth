@@ -42,11 +42,7 @@ class _SignInWidgetState extends State<SignInWidget> {
     passwordTextController = TextEditingController();
     passwordFocusNode = FocusNode();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
 
   @override

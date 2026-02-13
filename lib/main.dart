@@ -375,11 +375,9 @@ class _MyAppState extends State<MyApp> {
           secondary: appColors.secondary,
           error: appColors.error,
           surface: appColors.secondaryBackground,
-          background: appColors.primaryBackground,
           onPrimary: appColors.primaryBtnText,
           onSecondary: appColors.primaryText,
           onSurface: appColors.primaryText,
-          onBackground: appColors.primaryText,
           onError: appColors.info,
         ),
         scrollbarTheme: ScrollbarThemeData(
@@ -463,6 +461,24 @@ class _NavBarPageState extends State<NavBarPage> {
   String _currentPageName = 'GamesList';
   late Widget? _currentPage;
 
+  // ✅ PERFORMANCE: Create tab widgets once, reuse via IndexedStack
+  late final List<Widget> _tabs = [
+    GamesListWidget(),
+    GamesJoinedWidget(),
+    TabFriendsWidget(),
+    CommunityWidget(),
+    MainProfileWidget(),
+  ];
+
+  // Map tab names to indices for backward compatibility
+  static const Map<String, int> _tabIndices = {
+    'GamesList': 0,
+    'GamesJoined': 1,
+    'Golfers': 2,
+    'Community': 3,
+    'Profile': 4,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -472,14 +488,7 @@ class _NavBarPageState extends State<NavBarPage> {
 
   @override
   Widget build(BuildContext context) {
-    final tabs = {
-      'GamesList': GamesListWidget(),
-      'GamesJoined': GamesJoinedWidget(),
-      'Golfers': TabFriendsWidget(),
-      'Community': CommunityWidget(),
-      'Profile': MainProfileWidget(),
-    };
-    final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
+    final currentIndex = _tabIndices[_currentPageName] ?? 0;
 
     // Only show FAB on GamesList and GamesJoined (My Games) tabs
     final shouldShowFab =
@@ -487,7 +496,11 @@ class _NavBarPageState extends State<NavBarPage> {
 
     return Scaffold(
       resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
-      body: _currentPage ?? tabs[_currentPageName],
+      // ✅ PERFORMANCE: IndexedStack preserves state and avoids rebuilds
+      body: _currentPage ?? IndexedStack(
+        index: currentIndex,
+        children: _tabs,
+      ),
       floatingActionButton: shouldShowFab
           ? FloatingActionButton(
               onPressed: () {
@@ -520,7 +533,8 @@ class _NavBarPageState extends State<NavBarPage> {
           if (mounted) {
             setState(() {
               _currentPage = null;
-              _currentPageName = tabs.keys.toList()[i];
+              // ✅ PERFORMANCE: Direct index to name mapping
+              _currentPageName = _tabIndices.keys.elementAt(i);
             });
           }
         },

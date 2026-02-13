@@ -14,7 +14,6 @@ import '/core/form_field_controller.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 import '/user_onboarding/vibe_onboarding_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -68,11 +67,7 @@ class _ProgressiveOnboardingWidgetState
     super.initState();
     _ensureUserRecord();
     _emailController.text = currentUserEmail;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
 
   @override
@@ -211,7 +206,6 @@ class _ProgressiveOnboardingWidgetState
             .collection('usernames')
             .doc(desiredUsername);
 
-        var profileUpdated = false;
         try {
           await FirebaseFirestore.instance.runTransaction((transaction) async {
             final usernameSnap = await transaction.get(usernamesRef);
@@ -244,7 +238,6 @@ class _ProgressiveOnboardingWidgetState
               ),
             );
           });
-          profileUpdated = true;
         } on StateError catch (_) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

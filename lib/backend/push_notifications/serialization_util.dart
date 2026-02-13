@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import '/backend/backend.dart';
 import '/core/utils/app_log.dart';
 
-import '../../models/lat_lng.dart';
 import '../../models/place.dart';
 import '../../models/uploaded_file.dart';
 

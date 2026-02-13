@@ -8,8 +8,6 @@ import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/navigation/app_router.dart';
-import '/core/utils/formatting_utils.dart';
 import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
 import '/backend/backend.dart';
