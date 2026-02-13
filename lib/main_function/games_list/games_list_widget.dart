@@ -30,6 +30,63 @@ enum CancelledGameHandling {
   keepInList,
 }
 
+/// Immutable metadata derived from the current games snapshot.
+/// Computed once per build to avoid repeated state mutations.
+class GameFilterMeta {
+  final Set<String> availableGameTypes;
+  final Set<String> availableVibes;
+  final Set<String> availableStakes;
+  final Set<String> availableHandicaps;
+  final Set<String> availableCourses;
+
+  const GameFilterMeta({
+    required this.availableGameTypes,
+    required this.availableVibes,
+    required this.availableStakes,
+    required this.availableHandicaps,
+    required this.availableCourses,
+  });
+
+  factory GameFilterMeta.fromGames(
+    List<Game> games,
+    String? Function(Game) gameTypeExtractor,
+    String? Function(Game) vibeExtractor,
+    String? Function(Game) stakesExtractor,
+    String? Function(Game) handicapExtractor,
+  ) {
+    final types = <String>{};
+    final vibes = <String>{};
+    final stakes = <String>{};
+    final handicaps = <String>{};
+    final courses = <String>{};
+
+    for (final game in games) {
+      final type = gameTypeExtractor(game);
+      if (type != null) types.add(type);
+
+      final vibe = vibeExtractor(game);
+      if (vibe != null) vibes.add(vibe);
+
+      final stake = stakesExtractor(game);
+      if (stake != null) stakes.add(stake);
+
+      final handicap = handicapExtractor(game);
+      if (handicap != null) handicaps.add(handicap);
+
+      final course = game.coursePlay.trim();
+      if (course.isNotEmpty) courses.add(course);
+    }
+
+    return GameFilterMeta(
+      availableGameTypes: types,
+      availableVibes: vibes,
+      availableStakes: stakes,
+      availableHandicaps: handicaps,
+      availableCourses: courses,
+    );
+  }
+}
+
 class GamesListWidget extends StatefulWidget {
   const GamesListWidget({super.key});
 
@@ -46,12 +103,16 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   late final Stream<List<Game>> _gamesStream;
   List<Game>? _cachedGames;
   GameListFilters _filters = GameListFilters();
-  Set<String> _availableGameTypes = {};
-  Set<String> _availableVibes = {};
-  Set<String> _availableStakes = {};
-  Set<String> _availableHandicaps = {};
-  Set<String> _availableCourses = {};
   bool _showLockedGames = false;
+
+  // Cache for the last computed filter metadata (not state - updated during build)
+  GameFilterMeta _lastFilterMeta = const GameFilterMeta(
+    availableGameTypes: {},
+    availableVibes: {},
+    availableStakes: {},
+    availableHandicaps: {},
+    availableCourses: {},
+  );
   static const Map<CancelledGameHandling, String>
       _cancelledHandlingStorageMap = {
     CancelledGameHandling.removeNow: 'removeNow',
@@ -362,79 +423,18 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     }).toList();
   }
 
-  Set<String> _extractAvailableGameTypes(List<Game> gamesList) {
-    final types = <String>{};
-    for (final game in gamesList) {
-      final type = _gameTypeForFilters(game);
-      if (type != null) {
-        types.add(type);
-      }
-    }
-    return types;
-  }
-
-  Set<String> _extractAvailableVibes(List<Game> gamesList) {
-    final vibes = <String>{};
-    for (final game in gamesList) {
-      final vibe = _vibeForFilters(game);
-      if (vibe != null) {
-        vibes.add(vibe);
-      }
-    }
-    return vibes;
-  }
-
-  Set<String> _extractAvailableStakes(List<Game> gamesList) {
-    final stakes = <String>{};
-    for (final game in gamesList) {
-      final stake = _stakesForFilters(game);
-      if (stake != null) {
-        stakes.add(stake);
-      }
-    }
-    return stakes;
-  }
-
-  Set<String> _extractAvailableHandicaps(List<Game> gamesList) {
-    final handicaps = <String>{};
-    for (final game in gamesList) {
-      final handicap = _handicapForFilters(game);
-      if (handicap != null) {
-        handicaps.add(handicap);
-      }
-    }
-    return handicaps;
-  }
-
-  Set<String> _extractAvailableCourses(List<Game> gamesList) {
-    final courses = <String>{};
-    for (final game in gamesList) {
-      final course = game.coursePlay.trim();
-      if (course.isNotEmpty) {
-        courses.add(course);
-      }
-    }
-    return courses;
-  }
-
-  Future<void> _showFilterBottomSheet(
-    Set<String> availableGameTypes,
-    Set<String> availableVibes,
-    Set<String> availableStakes,
-    Set<String> availableHandicaps,
-    Set<String> availableCourses,
-  ) async {
+  Future<void> _showFilterBottomSheet(GameFilterMeta filterMeta) async {
     final result = await showModalBottomSheet<GameListFilters>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => GameListFilterBottomSheet(
         currentFilters: _filters,
-        availableGameTypes: availableGameTypes,
-        availableVibes: availableVibes,
-        availableStakes: availableStakes,
-        availableHandicaps: availableHandicaps,
-        availableCourses: availableCourses,
+        availableGameTypes: filterMeta.availableGameTypes,
+        availableVibes: filterMeta.availableVibes,
+        availableStakes: filterMeta.availableStakes,
+        availableHandicaps: filterMeta.availableHandicaps,
+        availableCourses: filterMeta.availableCourses,
       ),
     );
 
@@ -635,13 +635,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   size: 24.0,
                 ),
                 onPressed: () {
-                  _showFilterBottomSheet(
-                    _availableGameTypes,
-                    _availableVibes,
-                    _availableStakes,
-                    _availableHandicaps,
-                    _availableCourses,
-                  );
+                  _showFilterBottomSheet(_lastFilterMeta);
                 },
               ),
             ),
@@ -665,102 +659,53 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                 initialData: _cachedGames ?? const <Game>[],
                 onRetry: () => setState(() {}),
                 builder: (context, gamesList) {
-                  debugPrint('📋 GAME LIST: StreamBuilder triggered');
-                  debugPrint('✅ GAME LIST: Received ${gamesList.length} documents from Firestore');
-
-                  final allGames = gamesList
-                      .map((game) {
-                        debugPrint('  - Game: ${game.nameGame} (ID: ${game.reference.id}, isCancelled: ${game.isCancelled})');
-                        return game;
-                      })
-                      .toList();
-
-                  debugPrint('📊 GAME LIST: Total games parsed: ${allGames.length}');
+                  // Debug logging wrapped in assertions (only runs in debug mode)
+                  assert(() {
+                    debugPrint('📋 GAME LIST: StreamBuilder triggered with ${gamesList.length} games');
+                    return true;
+                  }());
 
                   // Filter games by status: only show active games, hide expired/completed
                   // For cancelled games, respect user preference
-                  final activeGames = allGames.where((game) {
-                    debugPrint('  - Checking game: ${game.nameGame} (status: ${game.status})');
-
+                  final activeGames = gamesList.where((game) {
                     // Always hide expired and completed games
                     if (game.status == 'expired' || game.status == 'completed') {
-                      debugPrint('    → Hiding ${game.status} game');
                       return false;
                     }
 
                     // For cancelled games, check user preference
                     if (game.status == 'cancelled') {
-                      final shouldHide = _shouldHideCancelledGame(game);
-                      debugPrint('    → Cancelled game, shouldHide: $shouldHide');
-                      return !shouldHide;
+                      return !_shouldHideCancelledGame(game);
                     }
 
                     // Show active games
-                    debugPrint('    → Showing active game');
                     return true;
                   }).toList();
 
-                  debugPrint('📊 GAME LIST: After status filter: ${activeGames.length} games');
+                  assert(() {
+                    debugPrint('📊 GAME LIST: After status filter: ${activeGames.length} games');
+                    return true;
+                  }());
 
-                  final availableTypes = _extractAvailableGameTypes(activeGames);
-                  if (!setEquals(availableTypes, _availableGameTypes)) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) {
-                        setState(() {
-                          _availableGameTypes = availableTypes;
-                        });
-                      }
-                    });
-                  }
-                  final availableVibes = _extractAvailableVibes(activeGames);
-                  if (!setEquals(availableVibes, _availableVibes)) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) {
-                        setState(() {
-                          _availableVibes = availableVibes;
-                        });
-                      }
-                    });
-                  }
-                  final availableStakes = _extractAvailableStakes(activeGames);
-                  if (!setEquals(availableStakes, _availableStakes)) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) {
-                        setState(() {
-                          _availableStakes = availableStakes;
-                        });
-                      }
-                    });
-                  }
-                  final availableHandicaps =
-                      _extractAvailableHandicaps(activeGames);
-                  if (!setEquals(availableHandicaps, _availableHandicaps)) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) {
-                        setState(() {
-                          _availableHandicaps = availableHandicaps;
-                        });
-                      }
-                    });
-                  }
-                  final availableCourses =
-                      _extractAvailableCourses(activeGames);
-                  if (!setEquals(availableCourses, _availableCourses)) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) {
-                        setState(() {
-                          _availableCourses = availableCourses;
-                        });
-                      }
-                    });
-                  }
+                  // Compute filter metadata once from the active games snapshot
+                  final filterMeta = GameFilterMeta.fromGames(
+                    activeGames,
+                    _gameTypeForFilters,
+                    _vibeForFilters,
+                    _stakesForFilters,
+                    _handicapForFilters,
+                  );
 
+                  // Cache for use by filter button (no setState - just update the field)
+                  _lastFilterMeta = filterMeta;
+
+                  // Apply user-selected filters to get visible games
                   final visibleGames = _applyFilters(activeGames, _filters);
 
-                  debugPrint('✅ GAME LIST: Final visible games: ${visibleGames.length}');
-                  visibleGames.forEach((game) {
-                    debugPrint('  ✓ ${game.nameGame} at ${game.coursePlay}');
-                  });
+                  assert(() {
+                    debugPrint('✅ GAME LIST: Final visible games: ${visibleGames.length}');
+                    return true;
+                  }());
 
                   return StreamBuilder<UsersRecord?>(
                     stream: currentUserReference == null

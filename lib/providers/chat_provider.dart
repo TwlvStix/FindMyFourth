@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
+import '/backend/backend.dart';
 import '/core/request_manager.dart';
 import '/models/chat.dart';
 import '/models/chat_message.dart';
+import '/providers/profile_provider.dart';
 import '/services/chat_service.dart';
 
 class ChatProvider extends ChangeNotifier {
@@ -422,6 +424,82 @@ class ChatProvider extends ChangeNotifier {
   // DISPOSE CLEANUP
   // ========================================
 
+  // ========================================
+  // VIEW MODEL STREAM (AUDIT #5 FIX)
+  // ========================================
+
+  /// Stream of chat message view models with resolved profiles
+  ///
+  /// This method combines message stream with profile resolution in a single stream,
+  /// avoiding nested StreamBuilder/FutureBuilder patterns and repeated profile fetches.
+  ///
+  /// Uses ProfileProvider's memoized cache to avoid re-fetching profiles on every rebuild.
+  Stream<List<ChatMessageViewModel>> gameChatMessageViewModelsStream({
+    required String chatId,
+    required int limit,
+    required ProfileProvider profileProvider,
+  }) {
+    if (kDebugMode) {
+      debugPrint('🔵 ChatProvider: Creating VM stream for chatId=$chatId (should happen once per screen)');
+    }
+
+    return messagesSnapshotStream(chatId: chatId, limit: limit)
+        .asyncMap((snapshot) async {
+      final docs = snapshot.docs;
+
+      if (docs.isEmpty) {
+        return <ChatMessageViewModel>[];
+      }
+
+      // Convert docs to ChatMessage objects
+      final messages = docs.map(ChatMessage.fromDoc).toList();
+
+      // Derive unique sender IDs
+      final senderIds = messages
+          .map((msg) => msg.senderId)
+          .toSet()
+          .toList();
+
+      if (kDebugMode) {
+        debugPrint('🔵 ChatProvider: VM stream emit - ${messages.length} messages, ${senderIds.length} unique senders');
+      }
+
+      // Fetch profiles using ProfileProvider's memoized cache
+      // This will only trigger network fetches for new sender IDs not already cached
+      Map<String, UsersRecord> profileMap = {};
+      if (senderIds.isNotEmpty) {
+        try {
+          profileMap = await profileProvider.batchGetProfiles(senderIds);
+
+          // Log which profiles were fetched vs cached
+          if (kDebugMode) {
+            final newSenderIds = senderIds
+                .where((id) => !profileProvider.isProfileCacheValid(id))
+                .toList();
+            if (newSenderIds.isNotEmpty) {
+              debugPrint('🆕 ChatProvider: Profile fetch triggered for new senderIds: $newSenderIds');
+            }
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('❌ ChatProvider: Failed to fetch profiles: $e');
+          }
+          // Continue with empty profile map on error
+        }
+      }
+
+      // Create view models
+      return messages.map((msg) {
+        final profile = profileMap[msg.senderId];
+        return ChatMessageViewModel(
+          message: msg,
+          senderDisplayName: profile?.displayName ?? '',
+          senderPhotoUrl: profile?.photoUrl ?? '',
+        );
+      }).toList();
+    });
+  }
+
   @override
   void dispose() {
     _disposed = true;
@@ -441,4 +519,34 @@ class ChatProvider extends ChangeNotifier {
 
     super.dispose();
   }
+}
+
+// ========================================
+// VIEW MODEL (AUDIT #5 FIX)
+// ========================================
+
+/// View model for chat messages with resolved profile data
+///
+/// This class combines ChatMessage with resolved user profile data,
+/// avoiding the need for nested builders in the UI.
+class ChatMessageViewModel {
+  ChatMessageViewModel({
+    required this.message,
+    required this.senderDisplayName,
+    required this.senderPhotoUrl,
+  });
+
+  final ChatMessage message;
+  final String senderDisplayName;
+  final String senderPhotoUrl;
+
+  // Convenience getters for common message fields
+  String get id => message.id;
+  String get senderId => message.senderId;
+  String get text => message.text;
+  String get imageUrl => message.imageUrl;
+  String get videoUrl => message.videoUrl;
+  DateTime? get createdAt => message.createdAt;
+  Map<String, List<String>> get reactions => message.reactions;
+  List<String> get readBy => message.readBy;
 }
