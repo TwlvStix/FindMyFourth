@@ -164,7 +164,6 @@ class VibeMatcher {
         gamma: VibeTuning.gamma,
         scaleMax: VibeTuning.scaleMax,
       );
-      // Mismatch is asymmetric: either side exceeding their own tolerance counts.
       mismatchedByCategory[category] =
           distance > myPref.threshold || distance > theirPref.threshold;
       final baseWeight = weights[category] ?? 0;
@@ -205,9 +204,8 @@ class VibeMatcher {
         continue;
       }
       final rawWeight = weightsByCategory[category] ?? 0;
-      final normalizedWeight = weightTotal > 0
-          ? (rawWeight / weightTotal * 100).toDouble()
-          : 0.0;
+      final normalizedWeight =
+          weightTotal > 0 ? (rawWeight / weightTotal * 100).toDouble() : 0.0;
       perCategory[category] = VibeCategoryScore(
         categoryMatch: existing.categoryMatch,
         weight: normalizedWeight,
@@ -217,17 +215,27 @@ class VibeMatcher {
 
     final baseScore =
         (weightTotal > 0 ? weightedSum / weightTotal : 0).toDouble();
+
+    // ── Phase 1 change: interaction bonus is capped via VibeTuning ──
+    // The interactionAdjustments function still computes bonuses, but
+    // we enforce the new cap (0.04 vs old 0.12) here as a safety net.
     final adjustment = interactionAdjustments(
       scoresByCategory,
       mismatchedByCategory,
       enableInteractionLayer: enableInteractionLayer,
     );
+    final cappedBonus = adjustment.bonusTotal.clamp(
+      0.0,
+      VibeTuning.interactionBonusCap,
+    );
+
     final adjustedScore = clampDouble(
-      (baseScore / 100) + adjustment.bonusTotal,
+      (baseScore / 100) + cappedBonus,
       0,
       1,
     );
     final totalScore = (adjustedScore * 100).toDouble();
+
     // Decision layers: hard blocks mark not recommended, soft risks apply penalties.
     final hardBlockResult = evaluateHardBlocks(mine, theirs);
     final isRecommended = !hardBlockResult.isHardBlocked;
@@ -242,6 +250,11 @@ class VibeMatcher {
         (completenessSum / max(1, VibeCategory.values.length)).toDouble();
     final confidence = _confidenceFromCompleteness(completeness);
 
+    // ── Soft-risk penalty computation ──
+    // Phase 1 changes flow through from VibeTuning:
+    //   riskScale: 1.75 → 1.0 (overruns hit ceiling faster)
+    //   riskCurveP: 2.0 → 1.3 (moderate mismatches penalize more)
+    //   riskMaxDefault: 0.45 → 0.65 (each category can penalize harder)
     final softRisks = <VibeSoftRisk>[];
     var softRiskPenalty01 = 0.0;
     if (!hardBlockResult.isHardBlocked) {
@@ -278,11 +291,11 @@ class VibeMatcher {
         );
       }
       if (weightTotal > 0) {
-        softRiskPenalty01 = (weightedPenaltySum / weightTotal)
-            .clamp(0, 1)
-            .toDouble();
+        softRiskPenalty01 =
+            (weightedPenaltySum / weightTotal).clamp(0, 1).toDouble();
       }
     }
+
     final baseScorePercent = totalScore;
     final finalScorePercent = (baseScorePercent * (1 - softRiskPenalty01))
         .clamp(VibeTuning.minScore, VibeTuning.maxScore)
@@ -306,7 +319,7 @@ class VibeMatcher {
       totalScore: totalScore,
       cappedScore: cappedScore,
       isRecommended: isRecommended,
-      interactionBonus: adjustment.bonusTotal,
+      interactionBonus: cappedBonus,
       interactionReasons: adjustment.reasons,
       interactionAppliedRules: adjustment.appliedRules,
       conflicts: conflicts,

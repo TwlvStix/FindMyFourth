@@ -65,6 +65,10 @@ class VibeAnalytics {
   }
 }
 
+/// Computes a one-sided category score: how well does the distance
+/// fit within one player's tolerance?
+///
+/// Returns 1.0 if within tolerance, decays via gamma curve beyond it.
 double oneSidedCategoryScore({
   required int distance,
   required int tolerance,
@@ -77,7 +81,6 @@ double oneSidedCategoryScore({
 
   final clampedDistance = distance.clamp(0, scaleMax);
   final tolMax = max(0, scaleMax - 1);
-  // Clamp to scaleMax - 1 so tolerance can never remove all penalty.
   final clampedTolerance = tolerance.clamp(0, tolMax);
 
   if (clampedDistance <= clampedTolerance) {
@@ -100,6 +103,8 @@ double oneSidedCategoryScore({
   return score.clamp(0, 1).toDouble();
 }
 
+/// Two-sided category score: blends both players' one-sided scores,
+/// weighting the stricter (lower) side more heavily.
 double twoSidedCategoryScore({
   required int distance,
   required int myTolerance,
@@ -150,9 +155,7 @@ double categoryMatch(
   final fallbackTolerance = tolerance ?? VibeTuning.defaultTolerance;
   final clampedA = a.clamp(0, safeScaleMax).toDouble();
   final clampedB = b.clamp(0, safeScaleMax).toDouble();
-  // Use round() to avoid flooring sub-1.0 differences to 0.
-  final distance =
-      (clampedA - clampedB).abs().clamp(0, safeScaleMax).round();
+  final distance = (clampedA - clampedB).abs().clamp(0, safeScaleMax).round();
   final score = twoSidedCategoryScore(
     distance: distance,
     myTolerance: myTolerance ?? fallbackTolerance,
@@ -238,9 +241,8 @@ VibeAggregateScore aggregateVibeScore(
 
   final baseScore =
       (weightTotal > 0 ? weightedSum / weightTotal : 0).toDouble();
-  final totalScore = baseScore
-      .clamp(VibeTuning.minScore, VibeTuning.maxScore)
-      .toDouble();
+  final totalScore =
+      baseScore.clamp(VibeTuning.minScore, VibeTuning.maxScore).toDouble();
 
   return VibeAggregateScore(
     totalScore: totalScore,
@@ -257,10 +259,8 @@ bool isDefault(
   if (isDefaultFlag != null) {
     return isDefaultFlag;
   }
-  // TODO: Remove value-based fallback after migration to explicit flags.
-  final defaultValue =
-      VibeTuning.defaultValuesByCategory[category] ??
-          VibePreference.defaultValue;
+  final defaultValue = VibeTuning.defaultValuesByCategory[category] ??
+      VibePreference.defaultValue;
   return selectedValue == defaultValue;
 }
 
@@ -295,11 +295,19 @@ double importanceMultiplier(VibeImportance importance) {
   }
 }
 
+/// Phase 1 change: importance blending now uses max() instead of average.
+///
+/// Old behavior: avg(1.30, 0.80) = 1.05 — a "top" and "bottom" nearly
+/// cancel out, which masks that one player cares deeply.
+///
+/// New behavior: max(1.30, 0.80) = 1.30 — if EITHER player considers
+/// this category important, it gets the full importance boost. This means
+/// mismatches on categories anyone cares about are weighted more heavily.
 double blendedImportanceMultiplier(
   VibeImportance mine,
   VibeImportance theirs,
 ) {
   final myMult = importanceMultiplier(mine);
   final theirMult = importanceMultiplier(theirs);
-  return ((myMult + theirMult) / 2).toDouble();
+  return max(myMult, theirMult).toDouble();
 }

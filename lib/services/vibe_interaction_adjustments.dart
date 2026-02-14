@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import '/models/vibe_profile.dart';
+import '/vibe/vibe_tuning.dart';
 
 class AppliedRule {
   const AppliedRule({
@@ -30,7 +31,8 @@ class AdjustmentResult {
   final List<AppliedRule> appliedRules;
 }
 
-const double _interactionBonusCap = 0.12;
+/// Phase 1: removed hardcoded _interactionBonusCap = 0.12.
+/// Now uses VibeTuning.interactionBonusCap (0.04).
 
 AdjustmentResult interactionAdjustments(
   Map<VibeCategory, double> scoresByCategory,
@@ -67,7 +69,7 @@ AdjustmentResult interactionAdjustments(
     if (!isMismatched(category)) {
       return;
     }
-    final remaining = _interactionBonusCap - bonusTotal;
+    final remaining = VibeTuning.interactionBonusCap - bonusTotal;
     if (remaining <= 0) {
       return;
     }
@@ -93,11 +95,16 @@ AdjustmentResult interactionAdjustments(
   final competitive = scoreOf(VibeCategory.competitive);
   final money = scoreOf(VibeCategory.money);
 
-  if (pace >= 0.85 && chat >= 0.75) {
+  // Phase 1: tightened trigger thresholds — bonuses should only
+  // apply when the supporting categories are genuinely strong matches,
+  // not just "okay." Individual bonus amounts also reduced since the
+  // total cap is now 0.04.
+
+  if (pace >= 0.90 && chat >= 0.85) {
     applyRule(
       ruleId: 'drinking_pace_chat',
       category: VibeCategory.drinking,
-      bonus: 0.05,
+      bonus: 0.02,
       reason:
           'Drinking difference is likely fine because you both match strongly on pace and conversation.',
       debugSnapshot: {
@@ -107,11 +114,11 @@ AdjustmentResult interactionAdjustments(
     );
   }
 
-  if (competitive >= 0.80 || chat <= 0.45) {
+  if (competitive >= 0.90 || chat <= 0.30) {
     applyRule(
       ruleId: 'music_competitive_or_quiet',
       category: VibeCategory.music,
-      bonus: 0.04,
+      bonus: 0.02,
       reason:
           'Music preferences are less important here because your play style is focused or you both prefer a quieter round.',
       debugSnapshot: {
@@ -121,11 +128,11 @@ AdjustmentResult interactionAdjustments(
     );
   }
 
-  if (pace >= 0.85 && money >= 0.75) {
+  if (pace >= 0.90 && money >= 0.85) {
     applyRule(
       ruleId: 'weed_pace_money',
       category: VibeCategory.weed,
-      bonus: 0.05,
+      bonus: 0.02,
       reason:
           'Weed difference is less likely to matter because you align on pace and how seriously you treat the round.',
       debugSnapshot: {
@@ -135,11 +142,11 @@ AdjustmentResult interactionAdjustments(
     );
   }
 
-  if (competitive <= 0.45) {
+  if (competitive <= 0.30) {
     applyRule(
       ruleId: 'chat_casual_competitive',
       category: VibeCategory.chat,
-      bonus: 0.04,
+      bonus: 0.02,
       reason:
           'Different chat levels can work because you both seem to prefer a more casual round.',
       debugSnapshot: {
@@ -148,11 +155,11 @@ AdjustmentResult interactionAdjustments(
     );
   }
 
-  if (money >= 0.65 && pace >= 0.70) {
+  if (money >= 0.85 && pace >= 0.85) {
     applyRule(
       ruleId: 'competitive_pace_money',
       category: VibeCategory.competitive,
-      bonus: 0.04,
+      bonus: 0.02,
       reason:
           'Different competitiveness can still work because you align on pace and shared expectations around the round.',
       debugSnapshot: {
@@ -162,7 +169,11 @@ AdjustmentResult interactionAdjustments(
     );
   }
 
-  final clampedBonus = clampDouble(bonusTotal, 0, _interactionBonusCap);
+  final clampedBonus = clampDouble(
+    bonusTotal,
+    0,
+    VibeTuning.interactionBonusCap,
+  );
 
   return AdjustmentResult(
     bonusTotal: clampedBonus,

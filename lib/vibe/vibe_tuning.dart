@@ -26,15 +26,45 @@ class VibeTuning {
   static const double confidenceHighThreshold = 0.8;
   static const double confidenceMediumThreshold = 0.6;
 
-  static const double hardMargin = 2.0;
-  static const double riskScale = 1.75;
-  static const double riskCurveP = 2.0;
-  static const double riskMaxDefault = 0.45;
+  // ── Phase 1 tuning changes ──────────────────────────────────
+
+  /// Was 2.0 → now 1.0
+  /// Dealbreakers trigger a hard block much sooner.
+  /// On a 0-5 scale, threshold + 1 is enough to block
+  /// instead of needing a 3+ point gap.
+  static const double hardMargin = 1.0;
+
+  /// Was 1.75 → now 1.0
+  /// Moderate tolerance overruns now produce meaningful
+  /// penalties instead of being absorbed.
+  static const double riskScale = 1.0;
+
+  /// Was 2.0 → now 1.3
+  /// Flattens the curve so mid-range mismatches aren't
+  /// nearly zeroed out by the square. A 1-point overrun
+  /// now contributes real penalty weight.
+  static const double riskCurveP = 1.3;
+
+  /// Was 0.45 → now 0.65
+  /// Each category's max penalty contribution is higher,
+  /// so a single bad mismatch can drag the score further.
+  static const double riskMaxDefault = 0.65;
+
+  /// Unchanged — 0.25 is a reasonable caution threshold
+  /// given the more aggressive penalties above.
   static const double riskCautionThreshold = 0.25;
+
+  // ── End Phase 1 tuning changes ──────────────────────────────
 
   static const double importanceTopMultiplier = 1.30;
   static const double importanceBottomMultiplier = 0.80;
   static const double importanceNormalMultiplier = 1.0;
+
+  /// Cap for interaction bonus adjustments.
+  /// Was 0.12 (in vibe_interaction_adjustments.dart) → now 0.04.
+  /// Kept here as a single source of truth so the interaction
+  /// layer can reference VibeTuning.interactionBonusCap.
+  static const double interactionBonusCap = 0.04;
 
   static const Map<VibeCategory, int> defaultValuesByCategory = {
     VibeCategory.drinking: VibePreference.defaultValue,

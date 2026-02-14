@@ -4,6 +4,13 @@ import '/models/vibe_profile.dart';
 import '/vibe/vibe_match_types.dart';
 import '/vibe/vibe_tuning.dart';
 
+/// Determines the effective tolerance threshold for a dealbreaker check
+/// between two players on a single category.
+///
+/// When both sides have a dealbreaker, we use the stricter (lower) threshold.
+/// When only one side does, we respect that side's threshold.
+/// Fallback (neither dealbreaker) returns the stricter of the two — though
+/// callers should typically skip non-dealbreaker categories.
 int dealbreakerConflictThreshold({
   required bool mineDealbreaker,
   required bool theirsDealbreaker,
@@ -19,6 +26,8 @@ int dealbreakerConflictThreshold({
   if (theirsDealbreaker) {
     return theirThreshold;
   }
+  // Fallback — neither is a dealbreaker. Callers should not typically
+  // reach here, but we return the stricter threshold defensively.
   return min(myThreshold, theirThreshold);
 }
 
@@ -32,6 +41,14 @@ class HardBlockResult {
   final List<VibeHardConflict> conflicts;
 }
 
+/// Evaluates all categories for hard-block dealbreaker conflicts.
+///
+/// Phase 1 change: hardMargin is now 1.0 (via VibeTuning), so a dealbreaker
+/// with threshold=1 blocks at distance >= 2 instead of >= 3.
+///
+/// Phase 1 change: when both players set a dealbreaker on the same category,
+/// we now use hardMargin 0.0 (just the raw threshold) — two people who both
+/// feel strongly should trigger on a smaller gap.
 HardBlockResult evaluateHardBlocks(VibeProfile a, VibeProfile b) {
   final conflicts = <VibeHardConflict>[];
 
@@ -43,14 +60,20 @@ HardBlockResult evaluateHardBlocks(VibeProfile a, VibeProfile b) {
     }
 
     final distance = (aPref.value - bPref.value).abs();
-    // Use the same threshold selection as the existing dealbreaker logic.
+
     final tolerance = dealbreakerConflictThreshold(
       mineDealbreaker: aPref.dealbreaker,
       theirsDealbreaker: bPref.dealbreaker,
       myThreshold: aPref.threshold,
       theirThreshold: bPref.threshold,
     );
-    final hardLimit = tolerance + VibeTuning.hardMargin;
+
+    // Phase 1: when BOTH sides flag a dealbreaker, apply no extra margin —
+    // the raw threshold is the limit. When only one side flags it, apply
+    // the standard hardMargin (now 1.0 from VibeTuning).
+    final double effectiveMargin =
+        (aPref.dealbreaker && bPref.dealbreaker) ? 0.0 : VibeTuning.hardMargin;
+    final hardLimit = tolerance + effectiveMargin;
 
     if (distance >= hardLimit) {
       conflicts.add(
@@ -74,6 +97,11 @@ HardBlockResult evaluateHardBlocks(VibeProfile a, VibeProfile b) {
   );
 }
 
+/// Checks whether a dealbreaker is triggered for a single category
+/// using the bounds-based approach (anchor/forbidden zone logic).
+///
+/// Returns false if either side has default/unset data — we don't
+/// penalize incomplete profiles with hard blocks.
 bool dealbreakerTriggeredForCategory({
   required VibeCategory category,
   required int aValue,
@@ -87,8 +115,8 @@ bool dealbreakerTriggeredForCategory({
     return false;
   }
 
-  final defaultValue =
-      VibeTuning.defaultValuesByCategory[category] ?? VibePreference.defaultValue;
+  final defaultValue = VibeTuning.defaultValuesByCategory[category] ??
+      VibePreference.defaultValue;
   final aDefault = aIsDefault || aValue == defaultValue;
   final bDefault = bIsDefault || bValue == defaultValue;
   if (aDefault || bDefault) {
