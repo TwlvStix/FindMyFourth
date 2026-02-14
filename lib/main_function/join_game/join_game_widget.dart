@@ -8,7 +8,6 @@ import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/models/game.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
@@ -123,7 +122,7 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                               style: AppTheme.of(context)
                                   .headlineMedium
                                   .override(
-                                    font: GoogleFonts.outfit(
+                                    font: TextStyle(fontFamily: 'Outfit',
                                       fontWeight: AppTheme.of(context)
                                           .headlineMedium
                                           .fontWeight,

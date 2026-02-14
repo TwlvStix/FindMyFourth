@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 
@@ -52,7 +51,7 @@ class ToggleSwitch extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(fontFamily: 'Outfit',
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -61,7 +60,7 @@ class ToggleSwitch extends StatelessWidget {
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   description,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(fontFamily: 'Outfit',
                     color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 13,
                   ),

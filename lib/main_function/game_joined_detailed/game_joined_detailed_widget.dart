@@ -17,13 +17,13 @@ import '/main_function/player_list/player_list_widget.dart';
 import '/models/game.dart';
 import '/models/vibe_profile.dart';
 import '/vibe/vibe_match_types.dart';
+import '/vibe/vibe_recommendation_rank.dart';
 import '/services/vibe_group_matcher.dart';
 import '/services/vibe_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
@@ -95,33 +95,50 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
       if (!mounted) {
         return;
       }
-      _loadGroupVibeMatch(gameRecord, currentUserRef);
+      final profileProvider = context.read<ProfileProvider>();
+      final groupRefs = _groupMemberRefs(gameRecord);
+      _loadGroupVibeMatch(gameRecord, currentUserRef, groupRefs, profileProvider);
     });
+  }
+
+  List<DocumentReference> _groupMemberRefs(Game gameRecord) {
+    final groupRefs = gameRecord.joinedPlayers.toList();
+    final owner = gameRecord.userRef;
+    if (owner != null && !groupRefs.contains(owner)) {
+      groupRefs.insert(0, owner);
+    }
+    return groupRefs;
   }
 
   Future<void> _loadGroupVibeMatch(
     Game gameRecord,
     DocumentReference currentUserRef,
+    List<DocumentReference> groupRefs,
+    ProfileProvider profileProvider,
   ) async {
     setState(() {
       _isGroupVibeLoading = true;
     });
     try {
       final myVibes = await _vibeRepository.getMyVibesCached();
+      final userIds = groupRefs
+          .where((ref) => ref.id != currentUserRef.id)
+          .map((ref) => ref.id)
+          .toList();
+
+      final profileMap = await profileProvider.batchGetProfiles(userIds);
       final members = <GroupVibeMember>[];
-      for (final ref in gameRecord.joinedPlayers) {
-        if (ref.id == currentUserRef.id) {
-          continue;
-        }
-        final snapshot = await ref.get();
-        final data =
-            (snapshot.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
-        final displayName = _stringValue(data, 'display_name', 'Player');
+      for (final entry in profileMap.entries) {
+        final userId = entry.key;
+        final userRecord = entry.value;
+        final displayName = userRecord.displayName.isNotEmpty
+            ? userRecord.displayName
+            : 'Player';
         members.add(
           GroupVibeMember(
-            id: ref.id,
+            id: userId,
             name: displayName,
-            profile: _vibeRepository.profileFromSnapshot(snapshot),
+            profile: VibeProfile.fromFirestore(userRecord.vibeProfile),
           ),
         );
       }
@@ -714,8 +731,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                           style: AppTheme.of(context)
                                                               .bodyLarge
                                                               .override(
-                                                                font: GoogleFonts
-                                                                    .outfit(
+                                                                font: TextStyle(fontFamily: 'Outfit',
                                                                   fontWeight:
                                                                       FontWeight.w500,
                                                                   fontStyle:
@@ -755,8 +771,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                     style: AppTheme.of(context)
                                                         .bodySmall
                                                         .override(
-                                                          font: GoogleFonts
-                                                              .outfit(
+                                                          font: TextStyle(fontFamily: 'Outfit',
                                                             fontWeight:
                                                                 FontWeight
                                                                     .normal,
@@ -862,7 +877,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                             style: AppTheme.of(context)
                                                 .titleMedium
                                                 .override(
-                                                  font: GoogleFonts.outfit(
+                                                  font: TextStyle(fontFamily: 'Outfit',
                                                     fontWeight: FontWeight.w600,
                                                     fontStyle:
                                                         AppTheme.of(context)
@@ -893,7 +908,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                               style: AppTheme.of(context)
                                                   .bodyLarge
                                                   .override(
-                                                    font: GoogleFonts.outfit(
+                                                    font: TextStyle(fontFamily: 'Outfit',
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
@@ -918,7 +933,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                               style: AppTheme.of(context)
                                                   .bodySmall
                                                   .override(
-                                                    font: GoogleFonts.outfit(
+                                                    font: TextStyle(fontFamily: 'Outfit',
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
@@ -1466,8 +1481,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
   ) {
     final sorted = result.memberResults.toList()
       ..sort((a, b) {
-        final rankA = _recommendationRank(a.matchResult.recommendation);
-        final rankB = _recommendationRank(b.matchResult.recommendation);
+        final rankA = recommendationRank(a.matchResult.recommendation);
+        final rankB = recommendationRank(b.matchResult.recommendation);
         if (rankA != rankB) {
           return rankA.compareTo(rankB);
         }
@@ -1488,23 +1503,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     if (bMatch == null) {
       return -1;
     }
-    final rankA = _recommendationRank(aMatch.matchResult.recommendation);
-    final rankB = _recommendationRank(bMatch.matchResult.recommendation);
+    final rankA = recommendationRank(aMatch.matchResult.recommendation);
+    final rankB = recommendationRank(bMatch.matchResult.recommendation);
     if (rankA != rankB) {
       return rankA.compareTo(rankB);
     }
     return bMatch.displayScore.compareTo(aMatch.displayScore);
-  }
-
-  int _recommendationRank(VibeRecommendation recommendation) {
-    switch (recommendation) {
-      case VibeRecommendation.recommended:
-        return 0;
-      case VibeRecommendation.caution:
-        return 1;
-      case VibeRecommendation.notRecommended:
-        return 2;
-    }
   }
 
   // Helper method to get player count
@@ -1688,7 +1692,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
             child: Text(
               text,
               style: AppTheme.of(context).bodyLarge.override(
-                    font: GoogleFonts.outfit(
+                    font: TextStyle(fontFamily: 'Outfit',
                       fontWeight: FontWeight.w600,
                       fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                     ),

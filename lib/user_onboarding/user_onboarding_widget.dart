@@ -9,7 +9,6 @@ import '/core/design_tokens/spacing.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/profile/create_profile/create_profile_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class UserOnboardingWidget extends StatefulWidget {
   const UserOnboardingWidget({super.key});
@@ -87,7 +86,7 @@ class _UserOnboardingWidgetState extends State<UserOnboardingWidget> {
                 Text(
                   'Welcome to Find My Fourth',
                   style: AppTheme.of(context).headlineMedium.override(
-                        font: GoogleFonts.outfit(
+                        font: TextStyle(fontFamily: 'Outfit',
                           fontWeight:
                               AppTheme.of(context).headlineMedium.fontWeight,
                           fontStyle:
@@ -104,7 +103,7 @@ class _UserOnboardingWidgetState extends State<UserOnboardingWidget> {
                   child: Text(
                     'A quick primer before you tee off.',
                     style: AppTheme.of(context).bodyLarge.override(
-                          font: GoogleFonts.outfit(
+                          font: TextStyle(fontFamily: 'Outfit',
                             fontWeight:
                                 AppTheme.of(context).bodyLarge.fontWeight,
                             fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
@@ -214,7 +213,7 @@ class _OnboardingFeature extends StatelessWidget {
                   Text(
                     title,
                     style: AppTheme.of(context).titleMedium.override(
-                          font: GoogleFonts.outfit(
+                          font: TextStyle(fontFamily: 'Outfit',
                             fontWeight:
                                 AppTheme.of(context).titleMedium.fontWeight,
                             fontStyle:
@@ -231,7 +230,7 @@ class _OnboardingFeature extends StatelessWidget {
                     child: Text(
                       description,
                       style: AppTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.outfit(
+                            font: TextStyle(fontFamily: 'Outfit',
                               fontWeight:
                                   AppTheme.of(context).bodyMedium.fontWeight,
                               fontStyle:

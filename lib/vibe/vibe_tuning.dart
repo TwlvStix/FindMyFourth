@@ -13,8 +13,8 @@ class VibeTuning {
   static const double maxScore = 100.0;
 
   static const double defaultMultNone = 1.0;
-  static const double defaultMultOne = 0.7;
-  static const double defaultMultBoth = 0.5;
+  static const double defaultMultOne = 0.15;
+  static const double defaultMultBoth = 0.0;
 
   static const double completenessNone = 1.0;
   static const double completenessOne = 0.6;
@@ -55,7 +55,10 @@ class VibeTuning {
   static const double riskCautionThreshold = 0.25;
 
   // ── End Phase 1 tuning changes ──────────────────────────────
-
+  /// Phase 2: max percentage points the soft-risk layer can subtract.
+  /// Used in the additive penalty model:
+  ///   finalScore = baseScore - (softPenalty * softPenaltyMaxPoints)
+  static const double softPenaltyMaxPoints = 45.0;
   static const double importanceTopMultiplier = 1.30;
   static const double importanceBottomMultiplier = 0.80;
   static const double importanceNormalMultiplier = 1.0;

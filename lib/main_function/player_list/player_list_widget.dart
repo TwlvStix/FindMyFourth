@@ -13,7 +13,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class PlayerListWidget extends StatefulWidget {
   const PlayerListWidget({
@@ -296,7 +295,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                           children: [
                             Text(
                               'Add Player',
-                              style: GoogleFonts.outfit(
+                              style: TextStyle(fontFamily: 'Outfit',
                                 fontSize: 20.0,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFF1A4D2E),
@@ -324,7 +323,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                           decoration: InputDecoration(
                             hintText: 'Search members or add Guest',
                             hintStyle: AppTheme.of(context).bodyMedium.override(
-                              font: GoogleFonts.outfit(),
+                              font: TextStyle(fontFamily: 'Outfit',),
                               color: Color(0xFF718096),
                             ),
                             prefixIcon: Icon(Icons.search, size: 20.0),
@@ -365,7 +364,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                           alignment: Alignment.centerLeft,
                           child: Text(
                             'Tap a player to add them to this slot',
-                            style: GoogleFonts.outfit(
+                            style: TextStyle(fontFamily: 'Outfit',
                               fontSize: 13.0,
                               color: Color(0xFF718096),
                             ),
@@ -398,7 +397,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                 padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
                                 child: Text(
                                   'Type at least $_minSearchChars characters to search members.',
-                                  style: GoogleFonts.outfit(
+                                  style: TextStyle(fontFamily: 'Outfit',
                                     fontSize: 13.0,
                                     color: Color(0xFF718096),
                                   ),
@@ -419,7 +418,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                 padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
                                 child: Text(
                                   'No members found.',
-                                  style: GoogleFonts.outfit(
+                                  style: TextStyle(fontFamily: 'Outfit',
                                     fontSize: 13.0,
                                     color: Color(0xFF718096),
                                   ),
@@ -532,7 +531,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 children: [
                   Text(
                     name,
-                    style: GoogleFonts.outfit(
+                    style: TextStyle(fontFamily: 'Outfit',
                       fontSize: 15.0,
                       fontWeight: FontWeight.w600,
                       color: isDisabled ? Color(0xFF718096) : Color(0xFF1A4D2E),
@@ -541,7 +540,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   if (subtitle != null)
                     Text(
                       subtitle,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(fontFamily: 'Outfit',
                         fontSize: 13.0,
                         color: Color(0xFF718096),
                       ),
@@ -603,7 +602,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               Expanded(
                 child: Text(
                   slotLabel,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(fontFamily: 'Outfit',
                     fontSize: 15.0,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF718096),
@@ -621,7 +620,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 ),
                 child: Text(
                   'Add',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(fontFamily: 'Outfit',
                     fontSize: 14.0,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
@@ -691,7 +690,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               children: [
                 Text(
                   name,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(fontFamily: 'Outfit',
                     fontSize: 15.0,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF1A4D2E),
@@ -700,7 +699,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 SizedBox(height: 2.0),
                 Text(
                   isGuest ? 'Guest' : 'Member',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(fontFamily: 'Outfit',
                     fontSize: 13.0,
                     color: Color(0xFF718096),
                   ),
@@ -799,7 +798,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               automaticallyImplyLeading: false,
               title: Text(
                 'Add Your Group',
-                style: GoogleFonts.outfit(
+                style: TextStyle(fontFamily: 'Outfit',
                   fontSize: 20.0,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -823,7 +822,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                       padding: EdgeInsets.all(AppSpacing.md),
                       child: Text(
                         'Build your group by adding friends or guests',
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(fontFamily: 'Outfit',
                           fontSize: 14.0,
                           color: Colors.white.withValues(alpha: 0.9),
                           letterSpacing: 0.0,
@@ -865,7 +864,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         // Section header
                                         Text(
                                           'Your Group',
-                                          style: GoogleFonts.outfit(
+                                          style: TextStyle(fontFamily: 'Outfit',
                                             fontSize: 16.0,
                                             fontWeight: FontWeight.w600,
                                             color: Color(0xFF1A4D2E),
@@ -924,8 +923,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                               ? profile!
                                                                   .displayName
                                                               : 'You',
-                                                          style: GoogleFonts
-                                                              .outfit(
+                                                          style: TextStyle(fontFamily: 'Outfit',
                                                             fontSize: 16.0,
                                                             fontWeight:
                                                                 FontWeight.w600,
@@ -936,8 +934,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                         SizedBox(height: 2.0),
                                                         Text(
                                                           'Game Creator',
-                                                          style: GoogleFonts
-                                                              .outfit(
+                                                          style: TextStyle(fontFamily: 'Outfit',
                                                             fontSize: 13.0,
                                                             color: Color(
                                                                 0xFF718096),
@@ -960,7 +957,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                     ),
                                                     child: Text(
                                                       'You',
-                                                      style: GoogleFonts.outfit(
+                                                      style: TextStyle(fontFamily: 'Outfit',
                                                         fontSize: 13.0,
                                                         fontWeight:
                                                             FontWeight.w600,
@@ -981,7 +978,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                             children: [
                                               Text(
                                                 'Add Friends',
-                                                style: GoogleFonts.outfit(
+                                                style: TextStyle(fontFamily: 'Outfit',
                                                   fontSize: 16.0,
                                                   fontWeight: FontWeight.w600,
                                                   color: Color(0xFF1A4D2E),
@@ -989,7 +986,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                               ),
                                               Text(
                                                 'Tap a slot to add',
-                                                style: GoogleFonts.outfit(
+                                                style: TextStyle(fontFamily: 'Outfit',
                                                   fontSize: 13.0,
                                                   color: Color(0xFF718096),
                                                 ),
@@ -1011,7 +1008,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         if (remainingSlots == 0) ...[
                                           Text(
                                             'This game is already full.',
-                                            style: GoogleFonts.outfit(
+                                            style: TextStyle(fontFamily: 'Outfit',
                                               fontSize: 13.0,
                                               color: Color(0xFF718096),
                                             ),
@@ -1182,7 +1179,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         SizedBox(width: 8.0),
                                         Text(
                                           'Game Summary',
-                                          style: GoogleFonts.outfit(
+                                          style: TextStyle(fontFamily: 'Outfit',
                                             fontSize: 16.0,
                                             fontWeight: FontWeight.w600,
                                             color: Color(0xFF1A4D2E),
@@ -1242,7 +1239,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         Expanded(
           child: Text(
             text,
-            style: GoogleFonts.outfit(
+            style: TextStyle(fontFamily: 'Outfit',
               fontSize: 14.0,
               color: Color(0xFF4A5568),
             ),

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/app_theme.dart';
@@ -464,7 +463,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                   child: Text(
                     'Please sign in to view notifications.',
                     style: AppTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.outfit(
+                          font: TextStyle(fontFamily: 'Outfit',
                             fontWeight:
                                 AppTheme.of(context).bodyMedium.fontWeight,
                             fontStyle:
@@ -487,7 +486,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                         child: Text(
                           'Failed to load notifications.',
                           style: AppTheme.of(context).bodyMedium.override(
-                                font: GoogleFonts.outfit(
+                                font: TextStyle(fontFamily: 'Outfit',
                                   fontWeight:
                                       AppTheme.of(context).bodyMedium.fontWeight,
                                   fontStyle:
@@ -512,7 +511,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                         child: Text(
                           'No notifications yet.',
                           style: AppTheme.of(context).bodyMedium.override(
-                                font: GoogleFonts.outfit(
+                                font: TextStyle(fontFamily: 'Outfit',
                                   fontWeight:
                                       AppTheme.of(context).bodyMedium.fontWeight,
                                   fontStyle:
@@ -704,7 +703,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                   style: AppTheme.of(context)
                                                       .bodyLarge
                                                       .override(
-                                                        font: GoogleFonts.outfit(
+                                                        font: TextStyle(fontFamily: 'Outfit',
                                                           fontWeight: AppTheme.of(
                                                                   context)
                                                               .bodyLarge
@@ -738,7 +737,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                         .labelSmall
                                                         .override(
                                                           font:
-                                                              GoogleFonts.outfit(
+                                                              TextStyle(fontFamily: 'Outfit',
                                                             fontWeight:
                                                                 AppTheme.of(context)
                                                                     .labelSmall
@@ -782,7 +781,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                 style: AppTheme.of(context)
                                                     .bodyMedium
                                                     .override(
-                                                      font: GoogleFonts.outfit(
+                                                      font: TextStyle(fontFamily: 'Outfit',
                                                         fontWeight:
                                                             AppTheme.of(context)
                                                                 .bodyMedium

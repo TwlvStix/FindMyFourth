@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// "Elevated Country Club Modernism" Typography System
 ///
@@ -102,7 +101,7 @@ class AppTypography {
 
   /// Display Extra Large - Hero headlines
   /// Usage: Landing page hero, major section headers
-  static TextStyle get displayXL => GoogleFonts.fraunces(
+  static TextStyle get displayXL => const TextStyle(fontFamily: displayFamily,
         fontSize: size72,
         fontWeight: black,
         height: lineHeightTight,
@@ -111,7 +110,7 @@ class AppTypography {
 
   /// Display Large - Primary headlines
   /// Usage: Page titles, major headers
-  static TextStyle get displayLarge => GoogleFonts.fraunces(
+  static TextStyle get displayLarge => const TextStyle(fontFamily: displayFamily,
         fontSize: size56,
         fontWeight: bold,
         height: lineHeightTight,
@@ -120,7 +119,7 @@ class AppTypography {
 
   /// Display Medium - Section headers
   /// Usage: Section titles, card headers
-  static TextStyle get displayMedium => GoogleFonts.fraunces(
+  static TextStyle get displayMedium => const TextStyle(fontFamily: displayFamily,
         fontSize: size40,
         fontWeight: bold,
         height: lineHeightSnug,
@@ -129,7 +128,7 @@ class AppTypography {
 
   /// Display Small - Subsection headers
   /// Usage: Subsection titles, prominent labels
-  static TextStyle get displaySmall => GoogleFonts.fraunces(
+  static TextStyle get displaySmall => const TextStyle(fontFamily: displayFamily,
         fontSize: size32,
         fontWeight: semiBold,
         height: lineHeightSnug,
@@ -141,7 +140,7 @@ class AppTypography {
   // ============================================================================
 
   /// Headline Large - Major headings
-  static TextStyle get headlineLarge => GoogleFonts.fraunces(
+  static TextStyle get headlineLarge => const TextStyle(fontFamily: displayFamily,
         fontSize: size28,
         fontWeight: semiBold,
         height: lineHeightSnug,
@@ -149,7 +148,7 @@ class AppTypography {
       );
 
   /// Headline Medium - Standard headings
-  static TextStyle get headlineMedium => GoogleFonts.fraunces(
+  static TextStyle get headlineMedium => const TextStyle(fontFamily: displayFamily,
         fontSize: size24,
         fontWeight: semiBold,
         height: lineHeightSnug,
@@ -157,7 +156,7 @@ class AppTypography {
       );
 
   /// Headline Small - Minor headings
-  static TextStyle get headlineSmall => GoogleFonts.fraunces(
+  static TextStyle get headlineSmall => const TextStyle(fontFamily: displayFamily,
         fontSize: size20,
         fontWeight: medium,
         height: lineHeightNormal,
@@ -169,7 +168,7 @@ class AppTypography {
   // ============================================================================
 
   /// Title Large - Large UI headings
-  static TextStyle get titleLarge => GoogleFonts.manrope(
+  static TextStyle get titleLarge => const TextStyle(fontFamily: bodyFamily,
         fontSize: size20,
         fontWeight: semiBold,
         height: lineHeightNormal,
@@ -177,7 +176,7 @@ class AppTypography {
       );
 
   /// Title Medium - Standard UI headings
-  static TextStyle get titleMedium => GoogleFonts.manrope(
+  static TextStyle get titleMedium => const TextStyle(fontFamily: bodyFamily,
         fontSize: size18,
         fontWeight: semiBold,
         height: lineHeightNormal,
@@ -185,7 +184,7 @@ class AppTypography {
       );
 
   /// Title Small - Small UI headings
-  static TextStyle get titleSmall => GoogleFonts.manrope(
+  static TextStyle get titleSmall => const TextStyle(fontFamily: bodyFamily,
         fontSize: size16,
         fontWeight: semiBold,
         height: lineHeightNormal,
@@ -198,7 +197,7 @@ class AppTypography {
 
   /// Body Large - Large body text
   /// Usage: Lead paragraphs, important content
-  static TextStyle get bodyLarge => GoogleFonts.manrope(
+  static TextStyle get bodyLarge => const TextStyle(fontFamily: bodyFamily,
         fontSize: size18,
         fontWeight: regular,
         height: lineHeightRelaxed,
@@ -207,7 +206,7 @@ class AppTypography {
 
   /// Body Medium - Standard body text (base size)
   /// Usage: Most paragraph text, descriptions
-  static TextStyle get bodyMedium => GoogleFonts.manrope(
+  static TextStyle get bodyMedium => const TextStyle(fontFamily: bodyFamily,
         fontSize: size16,
         fontWeight: regular,
         height: lineHeightNormal,
@@ -216,7 +215,7 @@ class AppTypography {
 
   /// Body Small - Small body text
   /// Usage: Secondary descriptions, helper text
-  static TextStyle get bodySmall => GoogleFonts.manrope(
+  static TextStyle get bodySmall => const TextStyle(fontFamily: bodyFamily,
         fontSize: size14,
         fontWeight: regular,
         height: lineHeightNormal,
@@ -228,7 +227,7 @@ class AppTypography {
   // ============================================================================
 
   /// Label Large - Large buttons, prominent labels
-  static TextStyle get labelLarge => GoogleFonts.manrope(
+  static TextStyle get labelLarge => const TextStyle(fontFamily: bodyFamily,
         fontSize: size16,
         fontWeight: semiBold,
         height: 1.0,
@@ -236,7 +235,7 @@ class AppTypography {
       );
 
   /// Label Medium - Standard buttons, labels
-  static TextStyle get labelMedium => GoogleFonts.manrope(
+  static TextStyle get labelMedium => const TextStyle(fontFamily: bodyFamily,
         fontSize: size14,
         fontWeight: semiBold,
         height: 1.0,
@@ -244,7 +243,7 @@ class AppTypography {
       );
 
   /// Label Small - Small buttons, compact labels
-  static TextStyle get labelSmall => GoogleFonts.manrope(
+  static TextStyle get labelSmall => const TextStyle(fontFamily: bodyFamily,
         fontSize: size12,
         fontWeight: semiBold,
         height: 1.0,
@@ -257,7 +256,7 @@ class AppTypography {
 
   /// Mono Display - Large scores, hero numbers
   /// Usage: Big score displays, countdown timers
-  static TextStyle get monoDisplay => GoogleFonts.dmMono(
+  static TextStyle get monoDisplay => const TextStyle(fontFamily: monoFamily,
         fontSize: size64,
         fontWeight: bold,
         height: 1.0,
@@ -267,7 +266,7 @@ class AppTypography {
 
   /// Mono Large - Prominent scores/stats
   /// Usage: Game scores, important statistics
-  static TextStyle get monoLarge => GoogleFonts.dmMono(
+  static TextStyle get monoLarge => const TextStyle(fontFamily: monoFamily,
         fontSize: size48,
         fontWeight: bold,
         height: 1.0,
@@ -277,7 +276,7 @@ class AppTypography {
 
   /// Mono Medium - Standard data display
   /// Usage: Stats, numerical data, timestamps
-  static TextStyle get monoMedium => GoogleFonts.dmMono(
+  static TextStyle get monoMedium => const TextStyle(fontFamily: monoFamily,
         fontSize: size20,
         fontWeight: medium,
         height: 1.2,
@@ -287,7 +286,7 @@ class AppTypography {
 
   /// Mono Small - Compact data, code
   /// Usage: Small stats, metadata, technical info
-  static TextStyle get monoSmall => GoogleFonts.dmMono(
+  static TextStyle get monoSmall => const TextStyle(fontFamily: monoFamily,
         fontSize: size14,
         fontWeight: regular,
         height: 1.4,
@@ -300,7 +299,7 @@ class AppTypography {
   // ============================================================================
 
   /// Button Text - Optimized for buttons
-  static TextStyle get button => GoogleFonts.manrope(
+  static TextStyle get button => const TextStyle(fontFamily: bodyFamily,
         fontSize: size16,
         fontWeight: semiBold,
         height: 1.0,
@@ -308,7 +307,7 @@ class AppTypography {
       );
 
   /// Button Large - Large button text
-  static TextStyle get buttonLarge => GoogleFonts.manrope(
+  static TextStyle get buttonLarge => const TextStyle(fontFamily: bodyFamily,
         fontSize: size18,
         fontWeight: bold,
         height: 1.0,
@@ -317,7 +316,7 @@ class AppTypography {
 
   /// Overline - Small caps labels
   /// Usage: Category labels, section markers
-  static TextStyle get overline => GoogleFonts.manrope(
+  static TextStyle get overline => const TextStyle(fontFamily: bodyFamily,
         fontSize: size12,
         fontWeight: bold,
         height: 1.0,
@@ -326,7 +325,7 @@ class AppTypography {
 
   /// Caption - Fine print
   /// Usage: Image captions, footnotes, legal text
-  static TextStyle get caption => GoogleFonts.manrope(
+  static TextStyle get caption => const TextStyle(fontFamily: bodyFamily,
         fontSize: size12,
         fontWeight: regular,
         height: lineHeightNormal,

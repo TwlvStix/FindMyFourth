@@ -12,6 +12,7 @@ import '/core/design_tokens/typography.dart';
 import '/models/game.dart';
 import '/models/vibe_profile.dart';
 import '/vibe/vibe_match_types.dart';
+import '/vibe/vibe_recommendation_rank.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
@@ -22,7 +23,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
@@ -89,7 +89,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
       if (!mounted) {
         return;
       }
-      _loadGroupVibeMatch(gameRecord, currentUserRef, groupRefs);
+      final profileProvider = context.read<ProfileProvider>();
+      _loadGroupVibeMatch(gameRecord, currentUserRef, groupRefs, profileProvider);
     });
   }
 
@@ -201,26 +202,31 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     Game gameRecord,
     DocumentReference currentUserRef,
     List<DocumentReference> groupRefs,
+    ProfileProvider profileProvider,
   ) async {
     setState(() {
       _isGroupVibeLoading = true;
     });
     try {
       final myVibes = await _vibeRepository.getMyVibesCached();
+      final userIds = groupRefs
+          .where((ref) => ref.id != currentUserRef.id)
+          .map((ref) => ref.id)
+          .toList();
+
+      final profileMap = await profileProvider.batchGetProfiles(userIds);
       final members = <GroupVibeMember>[];
-      for (final ref in groupRefs) {
-        if (ref.id == currentUserRef.id) {
-          continue;
-        }
-        final snapshot = await ref.get();
-        final data =
-            (snapshot.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
-        final displayName = _stringValue(data, 'display_name', 'Player');
+      for (final entry in profileMap.entries) {
+        final userId = entry.key;
+        final userRecord = entry.value;
+        final displayName = userRecord.displayName.isNotEmpty
+            ? userRecord.displayName
+            : 'Player';
         members.add(
           GroupVibeMember(
-            id: ref.id,
+            id: userId,
             name: displayName,
-            profile: _vibeRepository.profileFromSnapshot(snapshot),
+            profile: VibeProfile.fromFirestore(userRecord.vibeProfile),
           ),
         );
       }
@@ -453,8 +459,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
   ) {
     final sorted = result.memberResults.toList()
       ..sort((a, b) {
-        final rankA = _recommendationRank(a.matchResult.recommendation);
-        final rankB = _recommendationRank(b.matchResult.recommendation);
+        final rankA = recommendationRank(a.matchResult.recommendation);
+        final rankB = recommendationRank(b.matchResult.recommendation);
         if (rankA != rankB) {
           return rankA.compareTo(rankB);
         }
@@ -486,23 +492,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     if (bMatch == null) {
       return -1;
     }
-    final rankA = _recommendationRank(aMatch.matchResult.recommendation);
-    final rankB = _recommendationRank(bMatch.matchResult.recommendation);
+    final rankA = recommendationRank(aMatch.matchResult.recommendation);
+    final rankB = recommendationRank(bMatch.matchResult.recommendation);
     if (rankA != rankB) {
       return rankA.compareTo(rankB);
     }
     return bMatch.displayScore.compareTo(aMatch.displayScore);
-  }
-
-  int _recommendationRank(VibeRecommendation recommendation) {
-    switch (recommendation) {
-      case VibeRecommendation.recommended:
-        return 0;
-      case VibeRecommendation.caution:
-        return 1;
-      case VibeRecommendation.notRecommended:
-        return 2;
-    }
   }
 
   Widget _buildPlayerMatchChip(String userId, String name) {
@@ -1101,8 +1096,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                               style: AppTheme.of(context)
                                                                   .bodyLarge
                                                                   .override(
-                                                                    font: GoogleFonts
-                                                                        .outfit(
+                                                                    font: TextStyle(fontFamily: 'Outfit',
                                                                       fontWeight:
                                                                           FontWeight.w500,
                                                                       fontStyle:
@@ -1142,8 +1136,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                         style: AppTheme.of(context)
                                                             .bodySmall
                                                             .override(
-                                                              font: GoogleFonts
-                                                                  .outfit(
+                                                              font: TextStyle(fontFamily: 'Outfit',
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .normal,
@@ -1227,7 +1220,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                 style: AppTheme.of(context)
                                                     .titleMedium
                                                     .override(
-                                                      font: GoogleFonts.outfit(
+                                                      font: TextStyle(fontFamily: 'Outfit',
                                                         fontWeight: FontWeight.w600,
                                                         fontStyle:
                                                             AppTheme.of(context)
@@ -1258,7 +1251,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                   style: AppTheme.of(context)
                                                       .bodyLarge
                                                       .override(
-                                                        font: GoogleFonts.outfit(
+                                                        font: TextStyle(fontFamily: 'Outfit',
                                                           fontWeight:
                                                               FontWeight.w500,
                                                           fontStyle:
@@ -1283,7 +1276,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                   style: AppTheme.of(context)
                                                       .bodySmall
                                                       .override(
-                                                        font: GoogleFonts.outfit(
+                                                        font: TextStyle(fontFamily: 'Outfit',
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:

@@ -9,7 +9,6 @@ import '/models/game.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
@@ -123,7 +122,7 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                               style: AppTheme.of(context)
                                   .headlineMedium
                                   .override(
-                                    font: GoogleFonts.outfit(
+                                    font: TextStyle(fontFamily: 'Outfit',
                                       fontWeight: AppTheme.of(context)
                                           .headlineMedium
                                           .fontWeight,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -58,7 +57,7 @@ class QuickCreateBanner extends StatelessWidget {
               children: [
                 Text(
                   'Quick Create',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(fontFamily: 'Outfit',
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -67,7 +66,7 @@ class QuickCreateBanner extends StatelessWidget {
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   'Use smart defaults for faster setup',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(fontFamily: 'Outfit',
                     color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 13,
                   ),

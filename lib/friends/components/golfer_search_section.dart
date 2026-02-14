@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '/backend/backend.dart';
 import '/core/app_theme.dart';
@@ -241,7 +240,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                         color: Colors.white,
                       ),
                       labelStyle: AppTheme.of(context).labelMedium.override(
-                            font: GoogleFonts.outfit(
+                            font: TextStyle(fontFamily: 'Outfit',
                               fontWeight:
                                   AppTheme.of(context).labelMedium.fontWeight,
                               fontStyle:
@@ -255,7 +254,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                                 AppTheme.of(context).labelMedium.fontStyle,
                           ),
                       hintStyle: AppTheme.of(context).labelMedium.override(
-                            font: GoogleFonts.outfit(
+                            font: TextStyle(fontFamily: 'Outfit',
                               fontWeight:
                                   AppTheme.of(context).labelMedium.fontWeight,
                               fontStyle:
@@ -302,7 +301,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                       ),
                     ),
                     style: AppTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.outfit(
+                          font: TextStyle(fontFamily: 'Outfit',
                             fontWeight:
                                 AppTheme.of(context).bodyMedium.fontWeight,
                             fontStyle:

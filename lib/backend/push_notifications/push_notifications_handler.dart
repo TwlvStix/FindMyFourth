@@ -244,6 +244,14 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
     });
   }
 
+  /// Static cleanup method for app shutdown (if needed)
+  /// Call this only when the app is being completely terminated
+  static void cleanupListener() {
+    _messageSubscription?.cancel();
+    _messageSubscription = null;
+    _listenerInitialized = false;
+  }
+
   @override
   void dispose() {
     _loadingTimeout?.cancel();

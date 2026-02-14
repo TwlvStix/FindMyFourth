@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
@@ -51,7 +50,7 @@ class SectionHeader extends StatelessWidget {
           Text(
             title,
             style: AppTheme.of(context).labelMedium.override(
-                  font: GoogleFonts.outfit(
+                  font: TextStyle(fontFamily: 'Outfit',
                     fontWeight: AppTheme.of(context).labelMedium.fontWeight,
                     fontStyle: AppTheme.of(context).labelMedium.fontStyle,
                   ),

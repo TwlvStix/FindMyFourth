@@ -627,11 +627,18 @@ class ChatProvider extends ChangeNotifier {
     }
     _messageStreamManagers.clear();
 
+    for (final manager in _chatListStreamManagers.values) {
+      manager.clear();
+    }
+    _chatListStreamManagers.clear();
+
     // Clear all caches
     _chatCache.clear();
     _chatCacheTimestamps.clear();
     _messagesCache.clear();
     _messagesCacheTimestamps.clear();
+    _chatListCache.clear();
+    _chatListCacheTimestamps.clear();
 
     super.dispose();
   }

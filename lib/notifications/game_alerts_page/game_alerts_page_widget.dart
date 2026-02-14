@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/design_tokens/colors.dart';
@@ -122,7 +121,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
           SnackBar(
             content: Text(
               'Alert settings saved',
-              style: GoogleFonts.outfit(color: Colors.white),
+              style: TextStyle(fontFamily: 'Outfit',color: Colors.white),
             ),
             backgroundColor: AppColors.fairway,
             duration: const Duration(seconds: 2),

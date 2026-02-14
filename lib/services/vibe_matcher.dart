@@ -83,6 +83,48 @@ class VibeMatchResult {
     required this.defaultPercent,
   });
 
+  /// Serializes the match result and both profiles into a map suitable
+  /// for storing in a match_feedback document. Call this at the time
+  /// the score is displayed so the snapshot reflects exactly what the
+  /// user saw, even if profiles change later.
+  Map<String, dynamic> toFeedbackSnapshot({
+    required VibeProfile reviewerProfile,
+    required VibeProfile reviewedProfile,
+  }) {
+    return <String, dynamic>{
+      'vibe_score_shown': finalScorePercent,
+      'base_score_shown': baseScorePercent,
+      'recommendation_shown': recommendation.name,
+      'confidence_shown': confidenceLabel,
+      'soft_risk_penalty': softRiskPenalty01,
+      'interaction_bonus': interactionBonus,
+      'hard_blocked': !isRecommended,
+      'category_scores': {
+        for (final entry in perCategory.entries)
+          entry.key.key: {
+            'match': entry.value.categoryMatch,
+            'distance': entry.value.distance,
+            'weight': entry.value.weight,
+          },
+      },
+      'profile_snapshot_reviewer': _profileToSnapshot(reviewerProfile),
+      'profile_snapshot_reviewed': _profileToSnapshot(reviewedProfile),
+    };
+  }
+
+  static Map<String, dynamic> _profileToSnapshot(VibeProfile profile) {
+    return <String, dynamic>{
+      for (final category in VibeCategory.values)
+        category.key: {
+          'value': profile.preferenceFor(category).value,
+          'importance': profile.importanceFor(category).key,
+          'dealbreaker': profile.preferenceFor(category).dealbreaker,
+          'threshold': profile.preferenceFor(category).threshold,
+          'is_default': profile.preferenceFor(category).isDefault,
+        },
+    };
+  }
+
   final double totalScore;
   final double? cappedScore;
   final bool isRecommended;
@@ -296,10 +338,16 @@ class VibeMatcher {
       }
     }
 
+    // Phase 2: additive penalty model
+    // Old: finalScore = baseScore * (1 - softPenalty) — inconsistent effect
+    // New: finalScore = baseScore - (softPenalty * maxPoints) — predictable subtraction
     final baseScorePercent = totalScore;
-    final finalScorePercent = (baseScorePercent * (1 - softRiskPenalty01))
+    final softPenaltyPoints =
+        softRiskPenalty01 * VibeTuning.softPenaltyMaxPoints;
+    final finalScorePercent = (baseScorePercent - softPenaltyPoints)
         .clamp(VibeTuning.minScore, VibeTuning.maxScore)
         .toDouble();
+
     final recommendation = hardBlockResult.isHardBlocked
         ? VibeRecommendation.notRecommended
         : softRiskPenalty01 >= VibeTuning.riskCautionThreshold

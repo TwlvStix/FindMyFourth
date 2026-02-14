@@ -8,7 +8,6 @@ import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/utils/upload_data.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class ChangePhotoWidget extends StatefulWidget {
   const ChangePhotoWidget({super.key});
@@ -83,7 +82,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                   style: AppTheme.of(context)
                                       .headlineMedium
                                       .override(
-                                        font: GoogleFonts.outfit(
+                                        font: TextStyle(fontFamily: 'Outfit',
                                           fontWeight: FontWeight.bold,
                                           fontStyle:
                                               AppTheme.of(context)
@@ -112,7 +111,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                   style: AppTheme.of(context)
                                       .labelMedium
                                       .override(
-                                        font: GoogleFonts.outfit(
+                                        font: TextStyle(fontFamily: 'Outfit',
                                           fontWeight:
                                               AppTheme.of(context)
                                                   .labelMedium

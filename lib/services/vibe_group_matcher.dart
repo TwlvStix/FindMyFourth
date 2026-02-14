@@ -149,7 +149,7 @@ class GroupVibeMatcher {
     final softRiskPenalty01 = _averageScore(
       pairwiseResults.map((entry) => entry.result.softRiskPenalty01),
     );
-    final finalScorePercent = (baseScorePercent * (1 - softRiskPenalty01))
+    final finalScorePercent = (baseScorePercent - (softRiskPenalty01 * VibeTuning.softPenaltyMaxPoints))
         .clamp(VibeTuning.minScore, VibeTuning.maxScore)
         .toDouble();
     final recommendation = groupHardBlocked

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '/core/design_tokens/colors.dart';
 
 /// A generic segmented control widget for binary or multi-option selections.
@@ -83,7 +82,7 @@ class SegmentedControl extends StatelessWidget {
                     SizedBox(width: 8),
                     Text(
                       option['label'] as String,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(fontFamily: 'Outfit',
                         color: isSelected
                             ? Colors.white
                             : Colors.white.withValues(alpha: 0.6),

@@ -132,7 +132,7 @@ class _SuggestedGolfersSectionState extends State<SuggestedGolfersSection> {
       try {
         final theirProfile = VibeProfile.fromFirestore(user.vibeProfile);
         final result = VibeMatcher.score(myVibes, theirProfile);
-        if (!result.isRecommended) {
+        if (result.recommendation != VibeRecommendation.recommended) {
           continue;
         }
         final score = result.finalScorePercent.round();

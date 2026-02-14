@@ -1,6 +1,5 @@
 import '/core/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class EmptyStateSimpleWidget extends StatefulWidget {
   const EmptyStateSimpleWidget({
@@ -46,7 +45,7 @@ class _EmptyStateSimpleWidgetState extends State<EmptyStateSimpleWidget> {
               widget.title,
               textAlign: TextAlign.center,
               style: AppTheme.of(context).headlineSmall.override(
-                    font: GoogleFonts.outfit(
+                    font: TextStyle(fontFamily: 'Outfit',
                       fontWeight:
                           AppTheme.of(context).headlineSmall.fontWeight,
                       fontStyle:
@@ -67,7 +66,7 @@ class _EmptyStateSimpleWidgetState extends State<EmptyStateSimpleWidget> {
               widget.body,
               textAlign: TextAlign.center,
               style: AppTheme.of(context).labelMedium.override(
-                    font: GoogleFonts.outfit(
+                    font: TextStyle(fontFamily: 'Outfit',
                       fontWeight:
                           AppTheme.of(context).labelMedium.fontWeight,
                       fontStyle:

@@ -264,7 +264,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                           ),
                         ],
                         const SizedBox(height: AppSpacing.lg),
-                        _buildConfidenceMeter(explanation),
+                        _buildConfidenceMeter(result.confidence, explanation.confidenceReason, explanation.defaultCategoryCount),
                         if (result.confidence == VibeConfidence.low) ...[
                           const SizedBox(height: AppSpacing.sm),
                           GestureDetector(
@@ -423,9 +423,9 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     return 'Strong fit on ${titles.first} and ${titles.last}.';
   }
 
-  Widget _buildConfidenceMeter(MatchExplanation explanation) {
-    final label = _confidenceLabelText(explanation.confidenceLevel);
-    final color = _confidenceColor(explanation.confidenceLevel);
+  Widget _buildConfidenceMeter(VibeConfidence confidence, String confidenceReason, int defaultCategoryCount) {
+    final label = _confidenceLabelText(confidence);
+    final color = _confidenceColor(confidence);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
@@ -447,7 +447,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  explanation.confidenceReason,
+                  confidenceReason,
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.slate,
                   ),
@@ -455,10 +455,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               ),
             ],
           ),
-          if (explanation.defaultCategoryCount > 0) ...[
+          if (defaultCategoryCount > 0) ...[
             const SizedBox(height: AppSpacing.xs),
             Text(
-              '${explanation.defaultCategoryCount} categories still default',
+              '$defaultCategoryCount categories still default',
               style: AppTypography.labelSmall.copyWith(
                 color: AppColors.stone,
               ),

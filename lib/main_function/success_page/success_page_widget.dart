@@ -5,7 +5,6 @@ import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class SuccessPageWidget extends StatefulWidget {
   const SuccessPageWidget({super.key});
@@ -75,7 +74,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                       child: Text(
                         'You are in!',
                         style: AppTheme.of(context).titleLarge.override(
-                              font: GoogleFonts.outfit(
+                              font: TextStyle(fontFamily: 'Outfit',
                                 fontWeight: AppTheme.of(context)
                                     .titleLarge
                                     .fontWeight,
@@ -98,7 +97,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                       child: Text(
                         'Enjoy the Game',
                         style: AppTheme.of(context).titleLarge.override(
-                              font: GoogleFonts.outfit(
+                              font: TextStyle(fontFamily: 'Outfit',
                                 fontWeight: AppTheme.of(context)
                                     .titleLarge
                                     .fontWeight,
@@ -121,7 +120,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                       child: Text(
                         'Enjoy the Group',
                         style: AppTheme.of(context).titleLarge.override(
-                              font: GoogleFonts.outfit(
+                              font: TextStyle(fontFamily: 'Outfit',
                                 fontWeight: AppTheme.of(context)
                                     .titleLarge
                                     .fontWeight,

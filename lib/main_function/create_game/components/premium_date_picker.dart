@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
 import '/utils/app_util.dart';
@@ -63,7 +62,7 @@ class PremiumDatePicker extends StatelessWidget {
                   children: [
                     Text(
                       'Pick a Date',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(fontFamily: 'Outfit',
                         fontSize: 22,
                         fontWeight: FontWeight.w600,
                         color: AppTheme.of(context).primaryText,
@@ -173,7 +172,7 @@ class PremiumDatePicker extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: GoogleFonts.outfit(
+                style: TextStyle(fontFamily: 'Outfit',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: isSelected
@@ -185,7 +184,7 @@ class PremiumDatePicker extends StatelessWidget {
               SizedBox(height: 4),
               Text(
                 dateTimeFormat("MMM d", date),
-                style: GoogleFonts.outfit(
+                style: TextStyle(fontFamily: 'Outfit',
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
                   color: isSelected
@@ -267,7 +266,7 @@ class PremiumDatePicker extends StatelessWidget {
                 SizedBox(width: AppSpacing.xs),
                 Text(
                   'Pick a Date',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(fontFamily: 'Outfit',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.of(context).primaryText,

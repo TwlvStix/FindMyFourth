@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
@@ -182,7 +181,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                 children: [
                   Text(
                     'Enter Tee Time',
-                    style: GoogleFonts.outfit(
+                    style: TextStyle(fontFamily: 'Outfit',
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.of(context).primaryText,
@@ -201,7 +200,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
               // Current time display
               Text(
                 '${_hour.toString().padLeft(2, '0')}:${_minute.toString().padLeft(2, '0')} ${_isPM ? 'PM' : 'AM'}',
-                style: GoogleFonts.outfit(
+                style: TextStyle(fontFamily: 'Outfit',
                   fontSize: 40,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.of(context).primaryText,
@@ -214,7 +213,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                 SizedBox(height: AppSpacing.xs),
                 Text(
                   _errorMessage!,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(fontFamily: 'Outfit',
                     fontSize: 13,
                     color: AppColors.error,
                     fontWeight: FontWeight.w500,
@@ -246,7 +245,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                             padding: EdgeInsets.only(top: AppSpacing.xs, bottom: 4),
                             child: Text(
                               'Hour',
-                              style: GoogleFonts.outfit(
+                              style: TextStyle(fontFamily: 'Outfit',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: AppTheme.of(context).secondaryText,
@@ -279,7 +278,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                                 return Center(
                                   child: Text(
                                     hour.toString().padLeft(2, '0'),
-                                    style: GoogleFonts.outfit(
+                                    style: TextStyle(fontFamily: 'Outfit',
                                       fontSize: 28,
                                       fontWeight: FontWeight.w600,
                                       color: AppTheme.of(context).primaryText,
@@ -298,7 +297,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                       padding: EdgeInsets.symmetric(horizontal: 4),
                       child: Text(
                         ':',
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(fontFamily: 'Outfit',
                           fontSize: 28,
                           fontWeight: FontWeight.w600,
                           color: AppTheme.of(context).primaryText,
@@ -315,7 +314,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                             padding: EdgeInsets.only(top: AppSpacing.xs, bottom: 4),
                             child: Text(
                               'Minutes',
-                              style: GoogleFonts.outfit(
+                              style: TextStyle(fontFamily: 'Outfit',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: AppTheme.of(context).secondaryText,
@@ -348,7 +347,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                                 return Center(
                                   child: Text(
                                     minute.toString().padLeft(2, '0'),
-                                    style: GoogleFonts.outfit(
+                                    style: TextStyle(fontFamily: 'Outfit',
                                       fontSize: 28,
                                       fontWeight: FontWeight.w600,
                                       color: AppTheme.of(context).primaryText,
@@ -399,7 +398,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                           child: Text(
                             'AM',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.outfit(
+                            style: TextStyle(fontFamily: 'Outfit',
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: !_isPM
@@ -431,7 +430,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                           child: Text(
                             'PM',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.outfit(
+                            style: TextStyle(fontFamily: 'Outfit',
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: _isPM
@@ -451,7 +450,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
               // Quick adjust controls
               Text(
                 'Quick Adjust',
-                style: GoogleFonts.outfit(
+                style: TextStyle(fontFamily: 'Outfit',
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: AppTheme.of(context).secondaryText,
@@ -508,7 +507,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
         ),
         child: Text(
           label,
-          style: GoogleFonts.outfit(
+          style: TextStyle(fontFamily: 'Outfit',
             fontSize: 12,
             fontWeight: FontWeight.w500,
             color: AppTheme.of(context).primaryText,

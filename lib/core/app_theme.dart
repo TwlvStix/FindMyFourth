@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'design_tokens/colors.dart';
 
 @immutable
@@ -296,17 +295,13 @@ extension TextStyleHelper on TextStyle {
     FontWeight? fontWeight,
     double? letterSpacing,
     FontStyle? fontStyle,
-    bool useGoogleFonts = false,
+    bool useGoogleFonts = false,  // Kept for backwards compatibility, ignored now
     TextDecoration? decoration,
     double? lineHeight,
     List<Shadow>? shadows,
     String? package,
   }) {
-    if (useGoogleFonts && fontFamily != null) {
-      font = GoogleFonts.getFont(fontFamily,
-          fontWeight: fontWeight ?? this.fontWeight,
-          fontStyle: fontStyle ?? this.fontStyle);
-    }
+    // Note: useGoogleFonts parameter is ignored now that fonts are bundled
 
     return font != null
         ? font.copyWith(

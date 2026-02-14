@@ -10,7 +10,6 @@ import '/user_auth/sign_up_account/sign_up_account_widget.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class SignInWidget extends StatefulWidget {
   const SignInWidget({super.key});
@@ -101,7 +100,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                 style: AppTheme.of(context)
                                     .displaySmall
                                     .override(
-                                      font: GoogleFonts.outfit(
+                                      font: TextStyle(fontFamily: 'Outfit',
                                         fontWeight: AppTheme.of(context)
                                             .displaySmall
                                             .fontWeight,
@@ -128,7 +127,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                   style: AppTheme.of(context)
                                       .labelMedium
                                       .override(
-                                        font: GoogleFonts.outfit(
+                                        font: TextStyle(fontFamily: 'Outfit',
                                           fontWeight:
                                               AppTheme.of(context)
                                                   .labelMedium
@@ -165,7 +164,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       labelStyle: AppTheme.of(context)
                                           .labelLarge
                                           .override(
-                                            font: GoogleFonts.outfit(
+                                            font: TextStyle(fontFamily: 'Outfit',
                                               fontWeight:
                                                   AppTheme.of(context)
                                                       .labelLarge
@@ -228,7 +227,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     style: AppTheme.of(context)
                                         .bodyLarge
                                         .override(
-                                          font: GoogleFonts.outfit(
+                                          font: TextStyle(fontFamily: 'Outfit',
                                             fontWeight:
                                                 AppTheme.of(context)
                                                     .bodyLarge
@@ -270,7 +269,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       labelStyle: AppTheme.of(context)
                                           .labelLarge
                                           .override(
-                                            font: GoogleFonts.outfit(
+                                            font: TextStyle(fontFamily: 'Outfit',
                                               fontWeight:
                                                   AppTheme.of(context)
                                                       .labelLarge
@@ -351,7 +350,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     style: AppTheme.of(context)
                                         .bodyLarge
                                         .override(
-                                          font: GoogleFonts.outfit(
+                                          font: TextStyle(fontFamily: 'Outfit',
                                             fontWeight:
                                                 AppTheme.of(context)
                                                     .bodyLarge
@@ -464,7 +463,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                             style: AppTheme.of(context)
                                                 .labelLarge
                                                 .override(
-                                                  font: GoogleFonts.outfit(
+                                                  font: TextStyle(fontFamily: 'Outfit',
                                                     fontWeight:
                                                         AppTheme.of(
                                                                 context)
@@ -626,7 +625,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                             style: AppTheme.of(context)
                                                 .bodyMedium
                                                 .override(
-                                                  font: GoogleFonts.outfit(
+                                                  font: TextStyle(fontFamily: 'Outfit',
                                                     fontWeight: FontWeight.w600,
                                                     fontStyle:
                                                         AppTheme.of(
@@ -650,7 +649,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                         style: AppTheme.of(context)
                                             .bodyMedium
                                             .override(
-                                              font: GoogleFonts.outfit(
+                                              font: TextStyle(fontFamily: 'Outfit',
                                                 fontWeight:
                                                     AppTheme.of(context)
                                                         .bodyMedium
@@ -717,7 +716,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                         style: AppTheme.of(context)
                                             .bodyMedium
                                             .override(
-                                              font: GoogleFonts.outfit(
+                                              font: TextStyle(fontFamily: 'Outfit',
                                                 fontWeight:
                                                     AppTheme.of(context)
                                                         .bodyMedium
@@ -851,7 +850,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                       .titleMedium
                                                       .override(
                                                         font:
-                                                            GoogleFonts.outfit(
+                                                            TextStyle(fontFamily: 'Outfit',
                                                           fontWeight:
                                                               AppTheme.of(
                                                                       context)
@@ -890,7 +889,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                       .bodySmall
                                                       .override(
                                                         font:
-                                                            GoogleFonts.outfit(
+                                                            TextStyle(fontFamily: 'Outfit',
                                                           fontWeight:
                                                               AppTheme.of(
                                                                       context)
@@ -928,8 +927,8 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                             context)
                                                         .headlineMedium
                                                         .override(
-                                                          font: GoogleFonts
-                                                              .outfit(
+                                                          font: TextStyle(
+                                                            fontFamily: 'Outfit',
                                                             fontWeight:
                                                                 AppTheme.of(
                                                                         context)
@@ -981,7 +980,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                             style: AppTheme.of(context)
                                                 .bodyMedium
                                                 .override(
-                                                  font: GoogleFonts.outfit(
+                                                  font: TextStyle(fontFamily: 'Outfit',
                                                     fontWeight:
                                                         AppTheme.of(
                                                                 context)

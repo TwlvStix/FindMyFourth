@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 
@@ -57,7 +56,7 @@ class DraftBanner extends StatelessWidget {
               children: [
                 Text(
                   'Continue where you left off',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(fontFamily: 'Outfit',
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -66,7 +65,7 @@ class DraftBanner extends StatelessWidget {
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   'Your draft has been restored',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(fontFamily: 'Outfit',
                     color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 13,
                   ),
@@ -78,7 +77,7 @@ class DraftBanner extends StatelessWidget {
             onPressed: onClear,
             child: Text(
               'Clear',
-              style: GoogleFonts.outfit(
+              style: TextStyle(fontFamily: 'Outfit',
                 color: AppColors.sunsetGold,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,

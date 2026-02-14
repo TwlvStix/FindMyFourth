@@ -5,7 +5,6 @@ import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class SuccessLeaveWidget extends StatefulWidget {
   const SuccessLeaveWidget({super.key});
@@ -76,7 +75,7 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                     child: Text(
                       'Enjoy Your Boring Existence',
                       style: AppTheme.of(context).titleLarge.override(
-                            font: GoogleFonts.outfit(
+                            font: TextStyle(fontFamily: 'Outfit',
                               fontWeight: AppTheme.of(context)
                                   .titleLarge
                                   .fontWeight,
@@ -99,7 +98,7 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                     child: Text(
                       'We will have fun without you!',
                       style: AppTheme.of(context).titleLarge.override(
-                            font: GoogleFonts.outfit(
+                            font: TextStyle(fontFamily: 'Outfit',
                               fontWeight: AppTheme.of(context)
                                   .titleLarge
                                   .fontWeight,

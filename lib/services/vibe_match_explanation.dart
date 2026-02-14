@@ -138,8 +138,12 @@ MatchExplanation buildMatchExplanation({
     final score = perCategory[category]?.categoryMatch ?? 0;
     final weight = perCategory[category]?.weight ?? 0;
     final distance = (prefA.value - prefB.value).abs();
-    final tolerance = min(prefA.threshold, prefB.threshold);
-    final withinTolerance = distance <= tolerance;
+    final combinedTol = combinedTolerance(
+      prefA.threshold.toDouble(),
+      prefB.threshold.toDouble(),
+    );
+    final tolerance = combinedTol.round();
+    final withinTolerance = distance <= combinedTol;
     final isDefaultA = isDefault(
       category,
       prefA.value,
@@ -433,8 +437,11 @@ double _strictnessFactor(
   if (seed.prefA.dealbreaker || seed.prefB.dealbreaker) {
     return 2.0;
   }
-  final minTolerance = min(seed.prefA.threshold, seed.prefB.threshold);
-  if (minTolerance <= 1) {
+  final combined = combinedTolerance(
+    seed.prefA.threshold.toDouble(),
+    seed.prefB.threshold.toDouble(),
+  );
+  if (combined <= 1) {
     return 1.5;
   }
   return 1.0;

@@ -9,7 +9,6 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
@@ -458,8 +457,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                     style: AppTheme.of(context)
                                                                         .titleMedium
                                                                         .override(
-                                                                          font: GoogleFonts
-                                                                              .outfit(
+                                                                          font: TextStyle(fontFamily: 'Outfit',
                                                                             fontWeight: AppTheme.of(context)
                                                                                 .titleMedium
                                                                                 .fontWeight,
@@ -524,7 +522,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                 style: AppTheme.of(context)
                                                                     .titleMedium
                                                                     .override(
-                                                                      font: GoogleFonts.outfit(
+                                                                      font: TextStyle(fontFamily: 'Outfit',
                                                                         fontWeight: AppTheme.of(context)
                                                                             .titleMedium
                                                                             .fontWeight,
@@ -712,8 +710,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                               'Friend request accepted!',
                                                               style: titleMediumStyle
                                                                   .override(
-                                                                    font: GoogleFonts
-                                                                        .outfit(
+                                                                    font: TextStyle(fontFamily: 'Outfit',
                                                                       fontWeight: titleMediumStyle
                                                                           .fontWeight,
                                                                       fontStyle: titleMediumStyle
@@ -768,8 +765,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                         context)
                                                                     .titleMedium
                                                                     .override(
-                                                                      font: GoogleFonts
-                                                                          .outfit(
+                                                                      font: TextStyle(fontFamily: 'Outfit',
                                                                         fontWeight: AppTheme.of(context)
                                                                             .titleMedium
                                                                             .fontWeight,

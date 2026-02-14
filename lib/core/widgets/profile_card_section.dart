@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Premium white card section for profile content.
 ///
@@ -54,7 +53,7 @@ class ProfileCardSection extends StatelessWidget {
           // Section title
           Text(
             title,
-            style: GoogleFonts.outfit(
+            style: TextStyle(fontFamily: 'Outfit',
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: AppColors.fairwayDark,
@@ -113,7 +112,7 @@ class ProfilePreferenceItem extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: GoogleFonts.outfit(
+          style: TextStyle(fontFamily: 'Outfit',
             fontSize: 13,
             fontWeight: FontWeight.w500,
             color: AppColors.stone,
