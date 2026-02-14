@@ -1,6 +1,7 @@
 import '/core/widgets/app_drop_down.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_text_field.dart';
+import '/core/widgets/premium_back_button.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
@@ -505,7 +506,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             SnackBar(
               content: Text(
                 'You have created a game!',
-                style: TextStyle(fontFamily: 'Outfit',
+                style: TextStyle(fontFamily: 'Manrope',
                   color: AppTheme.of(context).secondaryBackground,
                   fontWeight: FontWeight.w500,
                 ),
@@ -535,7 +536,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         SnackBar(
           content: Text(
             'Failed to create game: $errorMsg',
-            style: TextStyle(fontFamily: 'Outfit',color: Colors.white),
+            style: TextStyle(fontFamily: 'Manrope',color: Colors.white),
           ),
           duration: Duration(milliseconds: 6000),
           backgroundColor: Colors.red,
@@ -622,7 +623,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               SizedBox(height: AppSpacing.md),
               Text(
                 title,
-                style: TextStyle(fontFamily: 'Outfit',
+                style: TextStyle(fontFamily: 'Manrope',
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -632,7 +633,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               SizedBox(height: AppSpacing.sm),
               Text(
                 message,
-                style: TextStyle(fontFamily: 'Outfit',
+                style: TextStyle(fontFamily: 'Manrope',
                   fontSize: 15,
                   color: Colors.white.withValues(alpha: 0.9),
                   height: 1.5,
@@ -686,25 +687,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             elevation: 0.0,
             shadowColor: Colors.transparent,
             automaticallyImplyLeading: false,
-            leading: AppIconButton(
-              borderColor: Colors.transparent,
-              borderRadius: 30.0,
-              borderWidth: 1.0,
-              buttonSize: 55.0,
-              tooltip: 'Back',
-              icon: Icon(
-                Icons.arrow_back_sharp,
-                color: AppColors.pure,
-                size: 25.0,
-              ),
-              onPressed: () async {
-                context.pop();
-              },
-            ),
+            leading: const PremiumBackButton(),
             title: Text(
               'Create Game',
               style: AppTheme.of(context).headlineLarge.override(
-                    font: TextStyle(fontFamily: 'Outfit',
+                    font: TextStyle(fontFamily: 'Manrope',
                       fontWeight: FontWeight.w500,
                       fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
                     ),
@@ -734,7 +721,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                         SizedBox(height: AppSpacing.md),
                         Text(
                           'Loading...',
-                          style: TextStyle(fontFamily: 'Outfit',
+                          style: TextStyle(fontFamily: 'Manrope',
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -863,7 +850,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             children: [
                                               Text(
                                                 'Tee Time',
-                                                style: TextStyle(fontFamily: 'Outfit',
+                                                style: TextStyle(fontFamily: 'Manrope',
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.w500,
                                                   color: AppTheme.of(context).secondaryText,
@@ -872,7 +859,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               SizedBox(height: 2),
                                               Text(
                                                 dateTimeFormat("jm", datePicked),
-                                                style: TextStyle(fontFamily: 'Outfit',
+                                                style: TextStyle(fontFamily: 'Manrope',
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,
                                                   color: AppTheme.of(context).primaryText,
@@ -917,7 +904,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                       Expanded(
                                         child: Text(
                                           '${dateTimeFormat("EEEE, MMM d", datePicked)} at ${dateTimeFormat("jm", datePicked)}',
-                                          style: TextStyle(fontFamily: 'Outfit',
+                                          style: TextStyle(fontFamily: 'Manrope',
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
                                             color: Colors.white,
@@ -1007,7 +994,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               SizedBox(height: AppSpacing.sm),
                                               Text(
                                                 'No courses available',
-                                                style: TextStyle(fontFamily: 'Outfit',
+                                                style: TextStyle(fontFamily: 'Manrope',
                                                   color: Colors.white.withValues(alpha: 0.7),
                                                   fontSize: 15,
                                                 ),
@@ -1041,7 +1028,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                 context)
                                             .labelMedium
                                             .override(
-                                              font: TextStyle(fontFamily: 'Outfit',
+                                              font: TextStyle(fontFamily: 'Manrope',
                                                 fontWeight: AppTheme.of(context)
                                                     .labelMedium
                                                     .fontWeight,
@@ -1060,7 +1047,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         searchTextStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .override(
-                                              font: TextStyle(fontFamily: 'Outfit',
+                                              font: TextStyle(fontFamily: 'Manrope',
                                                 fontWeight: AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontWeight,
@@ -1079,7 +1066,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         textStyle: AppTheme.of(context)
                                             .bodyMedium
                                             .override(
-                                              font: TextStyle(fontFamily: 'Outfit',
+                                              font: TextStyle(fontFamily: 'Manrope',
                                                 fontWeight: AppTheme.of(context)
                                                     .bodyMedium
                                                     .fontWeight,
@@ -1355,7 +1342,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                       children: [
                                         Text(
                                           'Game Summary',
-                                          style: TextStyle(fontFamily: 'Outfit',
+                                          style: TextStyle(fontFamily: 'Manrope',
                                             fontSize: 13,
                                             fontWeight: FontWeight.w500,
                                             color: Colors.white.withValues(alpha: 0.7),
@@ -1364,7 +1351,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         SizedBox(height: AppSpacing.xs),
                                         Text(
                                           _buildGameSummary(),
-                                          style: TextStyle(fontFamily: 'Outfit',
+                                          style: TextStyle(fontFamily: 'Manrope',
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
                                             color: Colors.white,

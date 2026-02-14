@@ -84,7 +84,9 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                 top: MediaQuery.of(context).padding.top + 56,
               ),
               child: AppStreamBuilder<List<GamesRecord>>(
-              stream: context.read<GameProvider>().userGamesStream(currentUserUid),
+              stream: currentUserUid.isEmpty
+                  ? Stream.value(const <GamesRecord>[])
+                  : context.read<GameProvider>().userGamesStream(currentUserUid),
               initialData: _cachedGames ?? const <GamesRecord>[],
               onRetry: () => setState(() {}),
               builder: (context, listViewGamesRecordList) {

@@ -57,7 +57,7 @@ class QuickCreateBanner extends StatelessWidget {
               children: [
                 Text(
                   'Quick Create',
-                  style: TextStyle(fontFamily: 'Outfit',
+                  style: TextStyle(fontFamily: 'Manrope',
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -66,7 +66,7 @@ class QuickCreateBanner extends StatelessWidget {
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   'Use smart defaults for faster setup',
-                  style: TextStyle(fontFamily: 'Outfit',
+                  style: TextStyle(fontFamily: 'Manrope',
                     color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 13,
                   ),

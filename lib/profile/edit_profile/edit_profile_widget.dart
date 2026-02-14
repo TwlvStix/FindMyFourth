@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/widgets/app_count_controller.dart';
+import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/widgets/app_text_field.dart';
 import '/core/motion/motion_helpers.dart';
@@ -225,21 +226,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           elevation: 0,
-          leading: InkWell(
-            splashColor: Colors.transparent,
-            focusColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            onTap: () {
-              HapticFeedback.lightImpact();
-              context.pop();
-            },
-            child: Icon(
-              Icons.chevron_left_rounded,
-              color: Colors.white,
-              size: 32.0,
-            ),
-          ),
+          leading: const PremiumBackButton(),
           title: Text(
             'Edit Profile',
             style: AppTypography.headlineSmall.copyWith(

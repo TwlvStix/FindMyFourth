@@ -45,7 +45,7 @@ class _EmptyStateSimpleWidgetState extends State<EmptyStateSimpleWidget> {
               widget.title,
               textAlign: TextAlign.center,
               style: AppTheme.of(context).headlineSmall.override(
-                    font: TextStyle(fontFamily: 'Outfit',
+                    font: TextStyle(fontFamily: 'Manrope',
                       fontWeight:
                           AppTheme.of(context).headlineSmall.fontWeight,
                       fontStyle:
@@ -66,7 +66,7 @@ class _EmptyStateSimpleWidgetState extends State<EmptyStateSimpleWidget> {
               widget.body,
               textAlign: TextAlign.center,
               style: AppTheme.of(context).labelMedium.override(
-                    font: TextStyle(fontFamily: 'Outfit',
+                    font: TextStyle(fontFamily: 'Manrope',
                       fontWeight:
                           AppTheme.of(context).labelMedium.fontWeight,
                       fontStyle:

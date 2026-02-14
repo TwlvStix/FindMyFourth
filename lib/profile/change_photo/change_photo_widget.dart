@@ -82,7 +82,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                   style: AppTheme.of(context)
                                       .headlineMedium
                                       .override(
-                                        font: TextStyle(fontFamily: 'Outfit',
+                                        font: TextStyle(fontFamily: 'Manrope',
                                           fontWeight: FontWeight.bold,
                                           fontStyle:
                                               AppTheme.of(context)
@@ -111,7 +111,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                   style: AppTheme.of(context)
                                       .labelMedium
                                       .override(
-                                        font: TextStyle(fontFamily: 'Outfit',
+                                        font: TextStyle(fontFamily: 'Manrope',
                                           fontWeight:
                                               AppTheme.of(context)
                                                   .labelMedium

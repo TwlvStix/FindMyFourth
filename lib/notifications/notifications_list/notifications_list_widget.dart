@@ -7,6 +7,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/widgets/premium_back_button.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/utils/app_util.dart';
 
@@ -367,24 +368,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
           backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           elevation: 0.0,
-          leading: GestureDetector(
-            onTap: () => context.pop(),
-            child: Container(
-              margin: EdgeInsets.only(left: AppSpacing.sm),
-              decoration: BoxDecoration(
-                color: AppColors.fairway.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(12.0),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
-                ),
-              ),
-              child: Icon(
-                Icons.chevron_left_rounded,
-                color: Colors.white,
-                size: 28.0,
-              ),
-            ),
-          ),
+          leading: const PremiumBackButton(),
           title: Text(
             'Notifications',
             style: AppTypography.headlineMedium.copyWith(
@@ -463,7 +447,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                   child: Text(
                     'Please sign in to view notifications.',
                     style: AppTheme.of(context).bodyMedium.override(
-                          font: TextStyle(fontFamily: 'Outfit',
+                          font: TextStyle(fontFamily: 'Manrope',
                             fontWeight:
                                 AppTheme.of(context).bodyMedium.fontWeight,
                             fontStyle:
@@ -486,7 +470,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                         child: Text(
                           'Failed to load notifications.',
                           style: AppTheme.of(context).bodyMedium.override(
-                                font: TextStyle(fontFamily: 'Outfit',
+                                font: TextStyle(fontFamily: 'Manrope',
                                   fontWeight:
                                       AppTheme.of(context).bodyMedium.fontWeight,
                                   fontStyle:
@@ -511,7 +495,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                         child: Text(
                           'No notifications yet.',
                           style: AppTheme.of(context).bodyMedium.override(
-                                font: TextStyle(fontFamily: 'Outfit',
+                                font: TextStyle(fontFamily: 'Manrope',
                                   fontWeight:
                                       AppTheme.of(context).bodyMedium.fontWeight,
                                   fontStyle:
@@ -703,7 +687,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                   style: AppTheme.of(context)
                                                       .bodyLarge
                                                       .override(
-                                                        font: TextStyle(fontFamily: 'Outfit',
+                                                        font: TextStyle(fontFamily: 'Manrope',
                                                           fontWeight: AppTheme.of(
                                                                   context)
                                                               .bodyLarge
@@ -737,7 +721,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                         .labelSmall
                                                         .override(
                                                           font:
-                                                              TextStyle(fontFamily: 'Outfit',
+                                                              TextStyle(fontFamily: 'Manrope',
                                                             fontWeight:
                                                                 AppTheme.of(context)
                                                                     .labelSmall
@@ -781,7 +765,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                 style: AppTheme.of(context)
                                                     .bodyMedium
                                                     .override(
-                                                      font: TextStyle(fontFamily: 'Outfit',
+                                                      font: TextStyle(fontFamily: 'Manrope',
                                                         fontWeight:
                                                             AppTheme.of(context)
                                                                 .bodyMedium

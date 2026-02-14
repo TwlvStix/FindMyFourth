@@ -16,6 +16,7 @@ import '/core/motion/motion_helpers.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/widgets/premium_back_button.dart';
 import 'components/chat_date_divider.dart';
 import 'components/chat_message_bubble.dart';
 import 'components/chat_header_title.dart';
@@ -837,13 +838,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
             foregroundColor: AppTheme.of(context).primaryBtnText,
             elevation: 0.0,
             shadowColor: Colors.transparent,
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back_rounded,
-                color: AppTheme.of(context).primaryBtnText,
-              ),
-              tooltip: 'Back',
-              onPressed: () => Navigator.of(context).maybePop(),
+            leading: PremiumBackButton(
+              onTap: () => Navigator.of(context).maybePop(),
             ),
             title: _chatUi != null
                 ? ChatHeaderTitle(

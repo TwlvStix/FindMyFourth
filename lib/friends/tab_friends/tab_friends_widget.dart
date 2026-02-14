@@ -67,7 +67,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
   }
 
   // Section collapse tracking
-  bool clubMembersCollapsed = false;
   bool allFriendsCollapsed = false;
 
   // Refresh tracking
@@ -457,7 +456,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                     style: AppTheme.of(context)
                                                                         .titleMedium
                                                                         .override(
-                                                                          font: TextStyle(fontFamily: 'Outfit',
+                                                                          font: TextStyle(fontFamily: 'Manrope',
                                                                             fontWeight: AppTheme.of(context)
                                                                                 .titleMedium
                                                                                 .fontWeight,
@@ -522,7 +521,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                 style: AppTheme.of(context)
                                                                     .titleMedium
                                                                     .override(
-                                                                      font: TextStyle(fontFamily: 'Outfit',
+                                                                      font: TextStyle(fontFamily: 'Manrope',
                                                                         fontWeight: AppTheme.of(context)
                                                                             .titleMedium
                                                                             .fontWeight,
@@ -710,7 +709,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                               'Friend request accepted!',
                                                               style: titleMediumStyle
                                                                   .override(
-                                                                    font: TextStyle(fontFamily: 'Outfit',
+                                                                    font: TextStyle(fontFamily: 'Manrope',
                                                                       fontWeight: titleMediumStyle
                                                                           .fontWeight,
                                                                       fontStyle: titleMediumStyle
@@ -765,7 +764,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                         context)
                                                                     .titleMedium
                                                                     .override(
-                                                                      font: TextStyle(fontFamily: 'Outfit',
+                                                                      font: TextStyle(fontFamily: 'Manrope',
                                                                         fontWeight: AppTheme.of(context)
                                                                             .titleMedium
                                                                             .fontWeight,

@@ -240,7 +240,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                         color: Colors.white,
                       ),
                       labelStyle: AppTheme.of(context).labelMedium.override(
-                            font: TextStyle(fontFamily: 'Outfit',
+                            font: TextStyle(fontFamily: 'Manrope',
                               fontWeight:
                                   AppTheme.of(context).labelMedium.fontWeight,
                               fontStyle:
@@ -254,7 +254,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                                 AppTheme.of(context).labelMedium.fontStyle,
                           ),
                       hintStyle: AppTheme.of(context).labelMedium.override(
-                            font: TextStyle(fontFamily: 'Outfit',
+                            font: TextStyle(fontFamily: 'Manrope',
                               fontWeight:
                                   AppTheme.of(context).labelMedium.fontWeight,
                               fontStyle:
@@ -301,7 +301,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                       ),
                     ),
                     style: AppTheme.of(context).bodyMedium.override(
-                          font: TextStyle(fontFamily: 'Outfit',
+                          font: TextStyle(fontFamily: 'Manrope',
                             fontWeight:
                                 AppTheme.of(context).bodyMedium.fontWeight,
                             fontStyle:

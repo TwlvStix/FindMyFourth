@@ -103,10 +103,15 @@ class GameService {
   /// Ordered by date descending (most recent first)
   static Stream<List<GamesRecord>> queryUserGames(String userId) {
     try {
+      final normalizedUserId = userId.trim();
+      if (normalizedUserId.isEmpty) {
+        AppLog.d('GameService.queryUserGames: Empty userId, returning empty stream');
+        return Stream.value(<GamesRecord>[]);
+      }
       final userRef =
-          FirebaseFirestore.instance.collection('users').doc(userId);
+          FirebaseFirestore.instance.collection('users').doc(normalizedUserId);
       return FirebaseAuth.instance.authStateChanges().switchMap((user) {
-        if (user == null || user.uid != userId) {
+        if (user == null || user.uid != normalizedUserId) {
           return Stream.value(<GamesRecord>[]);
         }
         return FirebaseFirestore.instance

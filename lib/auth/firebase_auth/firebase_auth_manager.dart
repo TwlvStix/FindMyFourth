@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../auth_manager.dart';
 import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/utils/app_log.dart';
@@ -360,6 +361,12 @@ class FirebaseAuthManager extends AuthManager
       final errorMsg = _firebaseAuthErrorMessage(e);
       _showAuthError(context, errorMsg);
       return null;
+    } on GoogleSignInException catch (e) {
+      final authProviderInfo =
+          'authProvider=$authProvider, code=${e.code}, description=${e.description}';
+      AppLog.d('🔐 AUTH ERROR: $authProviderInfo');
+      _showAuthError(context, _googleSignInErrorMessage(e));
+      return null;
     } catch (e, stackTrace) {
       AppLog.d('❌ AUTH: Unexpected error during sign in/create account');
       AppLog.d('❌ AUTH: Error: $e');
@@ -490,6 +497,23 @@ class FirebaseAuthManager extends AuthManager
         return 'Password is too weak. Choose a stronger password.';
       default:
         return 'Error: ${e.message ?? 'An unexpected error occurred'}';
+    }
+  }
+
+  String _googleSignInErrorMessage(GoogleSignInException e) {
+    switch (e.code) {
+      case GoogleSignInExceptionCode.clientConfigurationError:
+      case GoogleSignInExceptionCode.providerConfigurationError:
+        return 'Google Sign-In is not configured correctly for this build.';
+      case GoogleSignInExceptionCode.uiUnavailable:
+        return 'Google Sign-In is unavailable right now. Please try again.';
+      case GoogleSignInExceptionCode.userMismatch:
+        return 'Google account mismatch. Please try signing in again.';
+      case GoogleSignInExceptionCode.canceled:
+      case GoogleSignInExceptionCode.interrupted:
+        return 'Google Sign-In was canceled. Please try again.';
+      case GoogleSignInExceptionCode.unknownError:
+        return e.description ?? _genericAuthErrorMessage;
     }
   }
 

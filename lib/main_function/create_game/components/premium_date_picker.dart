@@ -62,7 +62,7 @@ class PremiumDatePicker extends StatelessWidget {
                   children: [
                     Text(
                       'Pick a Date',
-                      style: TextStyle(fontFamily: 'Outfit',
+                      style: TextStyle(fontFamily: 'Manrope',
                         fontSize: 22,
                         fontWeight: FontWeight.w600,
                         color: AppTheme.of(context).primaryText,
@@ -172,7 +172,7 @@ class PremiumDatePicker extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: TextStyle(fontFamily: 'Outfit',
+                style: TextStyle(fontFamily: 'Manrope',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: isSelected
@@ -184,7 +184,7 @@ class PremiumDatePicker extends StatelessWidget {
               SizedBox(height: 4),
               Text(
                 dateTimeFormat("MMM d", date),
-                style: TextStyle(fontFamily: 'Outfit',
+                style: TextStyle(fontFamily: 'Manrope',
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
                   color: isSelected
@@ -266,7 +266,7 @@ class PremiumDatePicker extends StatelessWidget {
                 SizedBox(width: AppSpacing.xs),
                 Text(
                   'Pick a Date',
-                  style: TextStyle(fontFamily: 'Outfit',
+                  style: TextStyle(fontFamily: 'Manrope',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.of(context).primaryText,

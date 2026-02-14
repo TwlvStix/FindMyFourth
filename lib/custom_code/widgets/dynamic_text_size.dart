@@ -27,7 +27,7 @@ class _DynamicTextSizeState extends State<DynamicTextSize> {
     final theme = Theme.of(context);
     final resolvedTextStyle = widget.textStyle ??
         theme.textTheme.bodyMedium?.copyWith(
-          fontFamily: 'Outfit',
+          fontFamily: 'Manrope',
           fontSize: 14,
           color: theme.colorScheme.onPrimary,
         );

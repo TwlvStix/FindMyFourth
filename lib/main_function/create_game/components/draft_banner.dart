@@ -56,7 +56,7 @@ class DraftBanner extends StatelessWidget {
               children: [
                 Text(
                   'Continue where you left off',
-                  style: TextStyle(fontFamily: 'Outfit',
+                  style: TextStyle(fontFamily: 'Manrope',
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -65,7 +65,7 @@ class DraftBanner extends StatelessWidget {
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   'Your draft has been restored',
-                  style: TextStyle(fontFamily: 'Outfit',
+                  style: TextStyle(fontFamily: 'Manrope',
                     color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 13,
                   ),
@@ -77,7 +77,7 @@ class DraftBanner extends StatelessWidget {
             onPressed: onClear,
             child: Text(
               'Clear',
-              style: TextStyle(fontFamily: 'Outfit',
+              style: TextStyle(fontFamily: 'Manrope',
                 color: AppColors.sunsetGold,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,

@@ -160,7 +160,12 @@ class GameProvider extends ChangeNotifier {
     String userId, {
     bool overrideCache = false,
   }) {
-    final queryKey = 'user_games_$userId';
+    final normalizedUserId = userId.trim();
+    if (normalizedUserId.isEmpty) {
+      return Stream.value(const <GamesRecord>[]);
+    }
+
+    final queryKey = 'user_games_$normalizedUserId';
 
     // Get or create StreamRequestManager for this query
     if (!_gameStreamManagers.containsKey(queryKey)) {
@@ -171,7 +176,7 @@ class GameProvider extends ChangeNotifier {
     return _gameStreamManagers[queryKey]!.performRequest(
       uniqueQueryKey: queryKey,
       overrideCache: overrideCache,
-      requestFn: () => GameService.queryUserGames(userId),
+      requestFn: () => GameService.queryUserGames(normalizedUserId),
     ).map((games) {
       // Cache query results when they come through the stream
       _queryResultCache[queryKey] = games;
@@ -200,7 +205,11 @@ class GameProvider extends ChangeNotifier {
 
   /// Get cached user games list if available (no fetch)
   List<GamesRecord>? getCachedUserGames(String userId) {
-    final queryKey = 'user_games_$userId';
+    final normalizedUserId = userId.trim();
+    if (normalizedUserId.isEmpty) {
+      return null;
+    }
+    final queryKey = 'user_games_$normalizedUserId';
 
     // Check query result cache first
     if (isQueryCacheValid(queryKey)) {

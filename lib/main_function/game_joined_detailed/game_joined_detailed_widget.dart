@@ -731,7 +731,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                           style: AppTheme.of(context)
                                                               .bodyLarge
                                                               .override(
-                                                                font: TextStyle(fontFamily: 'Outfit',
+                                                                font: TextStyle(fontFamily: 'Manrope',
                                                                   fontWeight:
                                                                       FontWeight.w500,
                                                                   fontStyle:
@@ -771,7 +771,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                     style: AppTheme.of(context)
                                                         .bodySmall
                                                         .override(
-                                                          font: TextStyle(fontFamily: 'Outfit',
+                                                          font: TextStyle(fontFamily: 'Manrope',
                                                             fontWeight:
                                                                 FontWeight
                                                                     .normal,
@@ -877,7 +877,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                             style: AppTheme.of(context)
                                                 .titleMedium
                                                 .override(
-                                                  font: TextStyle(fontFamily: 'Outfit',
+                                                  font: TextStyle(fontFamily: 'Manrope',
                                                     fontWeight: FontWeight.w600,
                                                     fontStyle:
                                                         AppTheme.of(context)
@@ -908,7 +908,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                               style: AppTheme.of(context)
                                                   .bodyLarge
                                                   .override(
-                                                    font: TextStyle(fontFamily: 'Outfit',
+                                                    font: TextStyle(fontFamily: 'Manrope',
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
@@ -933,7 +933,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                               style: AppTheme.of(context)
                                                   .bodySmall
                                                   .override(
-                                                    font: TextStyle(fontFamily: 'Outfit',
+                                                    font: TextStyle(fontFamily: 'Manrope',
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
@@ -1692,7 +1692,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
             child: Text(
               text,
               style: AppTheme.of(context).bodyLarge.override(
-                    font: TextStyle(fontFamily: 'Outfit',
+                    font: TextStyle(fontFamily: 'Manrope',
                       fontWeight: FontWeight.w600,
                       fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                     ),

@@ -101,6 +101,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   final Map<DocumentReference, CancelledGameHandling>
       _cancelledGameHandlingByGame = {};
   late final Stream<List<Game>> _gamesStream;
+  bool _didInitDependencies = false;
   List<Game>? _cachedGames;
   GameListFilters _filters = GameListFilters();
   bool _showLockedGames = false;
@@ -136,7 +137,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     super.didChangeDependencies();
 
     // Initialize streams and cache on first call (safe to access context here)
-    if (_cachedGames == null) {
+    if (!_didInitDependencies) {
       final gameProvider = context.read<GameProvider>();
 
       // Retrieve cached data (no filters initially)
@@ -150,6 +151,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       _gamesStream = gameProvider
           .availableGamesStream()
           .map((records) => records.map((record) => Game.fromRecord(record)).toList());
+      _didInitDependencies = true;
     }
   }
 

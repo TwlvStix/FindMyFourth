@@ -6,6 +6,7 @@ import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/models/game.dart';
 import '/models/user_profile.dart';
@@ -77,9 +78,20 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   List<UserProfile> _searchResults = [];
   final Map<String, String> _labelCache = {};
   StateSetter? _modalSetState;
+  BuildContext? _modalContext;
 
   void _refreshModalIfOpen() {
-    _modalSetState?.call(() {});
+    final modalSetState = _modalSetState;
+    final modalContext = _modalContext;
+    if (!mounted || modalSetState == null || modalContext == null) {
+      return;
+    }
+    if (!modalContext.mounted) {
+      _modalSetState = null;
+      _modalContext = null;
+      return;
+    }
+    modalSetState(() {});
   }
 
   @override
@@ -91,6 +103,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   @override
   void dispose() {
     _searchDebounce?.cancel();
+    _modalSetState = null;
+    _modalContext = null;
     _searchController.dispose();
     super.dispose();
   }
@@ -262,6 +276,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
             _modalSetState = setModalState;
+            _modalContext = context;
             return DraggableScrollableSheet(
               initialChildSize: 0.9,
               minChildSize: 0.5,
@@ -295,9 +310,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                           children: [
                             Text(
                               'Add Player',
-                              style: TextStyle(fontFamily: 'Outfit',
-                                fontSize: 20.0,
-                                fontWeight: FontWeight.w600,
+                              style: AppTypography.sectionHeader.copyWith(
                                 color: Color(0xFF1A4D2E),
                               ),
                             ),
@@ -322,8 +335,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                           style: AppTheme.of(context).bodyMedium,
                           decoration: InputDecoration(
                             hintText: 'Search members or add Guest',
-                            hintStyle: AppTheme.of(context).bodyMedium.override(
-                              font: TextStyle(fontFamily: 'Outfit',),
+                            hintStyle: AppTypography.bodyMedium.copyWith(
                               color: Color(0xFF718096),
                             ),
                             prefixIcon: Icon(Icons.search, size: 20.0),
@@ -364,8 +376,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                           alignment: Alignment.centerLeft,
                           child: Text(
                             'Tap a player to add them to this slot',
-                            style: TextStyle(fontFamily: 'Outfit',
-                              fontSize: 13.0,
+                            style: AppTypography.text13.copyWith(
                               color: Color(0xFF718096),
                             ),
                           ),
@@ -397,8 +408,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                 padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
                                 child: Text(
                                   'Type at least $_minSearchChars characters to search members.',
-                                  style: TextStyle(fontFamily: 'Outfit',
-                                    fontSize: 13.0,
+                                  style: AppTypography.text13.copyWith(
                                     color: Color(0xFF718096),
                                   ),
                                   textAlign: TextAlign.center,
@@ -418,8 +428,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                 padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
                                 child: Text(
                                   'No members found.',
-                                  style: TextStyle(fontFamily: 'Outfit',
-                                    fontSize: 13.0,
+                                  style: AppTypography.text13.copyWith(
                                     color: Color(0xFF718096),
                                   ),
                                   textAlign: TextAlign.center,
@@ -470,6 +479,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       },
     ).whenComplete(() {
       _modalSetState = null;
+      _modalContext = null;
     });
   }
 
@@ -531,8 +541,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 children: [
                   Text(
                     name,
-                    style: TextStyle(fontFamily: 'Outfit',
-                      fontSize: 15.0,
+                    style: AppTypography.text15.copyWith(
                       fontWeight: FontWeight.w600,
                       color: isDisabled ? Color(0xFF718096) : Color(0xFF1A4D2E),
                     ),
@@ -540,8 +549,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   if (subtitle != null)
                     Text(
                       subtitle,
-                      style: TextStyle(fontFamily: 'Outfit',
-                        fontSize: 13.0,
+                      style: AppTypography.text13.copyWith(
                         color: Color(0xFF718096),
                       ),
                     ),
@@ -602,8 +610,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               Expanded(
                 child: Text(
                   slotLabel,
-                  style: TextStyle(fontFamily: 'Outfit',
-                    fontSize: 15.0,
+                  style: AppTypography.text15.copyWith(
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF718096),
                   ),
@@ -620,9 +627,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 ),
                 child: Text(
                   'Add',
-                  style: TextStyle(fontFamily: 'Outfit',
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w600,
+                  style: AppTypography.labelMedium.copyWith(
                     color: Colors.white,
                   ),
                 ),
@@ -690,8 +695,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               children: [
                 Text(
                   name,
-                  style: TextStyle(fontFamily: 'Outfit',
-                    fontSize: 15.0,
+                  style: AppTypography.text15.copyWith(
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF1A4D2E),
                   ),
@@ -699,8 +703,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 SizedBox(height: 2.0),
                 Text(
                   isGuest ? 'Guest' : 'Member',
-                  style: TextStyle(fontFamily: 'Outfit',
-                    fontSize: 13.0,
+                  style: AppTypography.text13.copyWith(
                     color: Color(0xFF718096),
                   ),
                 ),
@@ -798,11 +801,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               automaticallyImplyLeading: false,
               title: Text(
                 'Add Your Group',
-                style: TextStyle(fontFamily: 'Outfit',
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w600,
+                style: AppTypography.sectionHeader.copyWith(
                   color: Colors.white,
-                  letterSpacing: 0.0,
                 ),
               ),
               actions: [],
@@ -822,10 +822,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                       padding: EdgeInsets.all(AppSpacing.md),
                       child: Text(
                         'Build your group by adding friends or guests',
-                        style: TextStyle(fontFamily: 'Outfit',
-                          fontSize: 14.0,
+                        style: AppTypography.bodySmall.copyWith(
                           color: Colors.white.withValues(alpha: 0.9),
-                          letterSpacing: 0.0,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -864,9 +862,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         // Section header
                                         Text(
                                           'Your Group',
-                                          style: TextStyle(fontFamily: 'Outfit',
-                                            fontSize: 16.0,
-                                            fontWeight: FontWeight.w600,
+                                          style: AppTypography.titleSmall.copyWith(
                                             color: Color(0xFF1A4D2E),
                                           ),
                                         ),
@@ -923,10 +919,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                               ? profile!
                                                                   .displayName
                                                               : 'You',
-                                                          style: TextStyle(fontFamily: 'Outfit',
-                                                            fontSize: 16.0,
-                                                            fontWeight:
-                                                                FontWeight.w600,
+                                                          style: AppTypography.titleSmall.copyWith(
                                                             color: Color(
                                                                 0xFF1A4D2E),
                                                           ),
@@ -934,8 +927,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                         SizedBox(height: 2.0),
                                                         Text(
                                                           'Game Creator',
-                                                          style: TextStyle(fontFamily: 'Outfit',
-                                                            fontSize: 13.0,
+                                                          style: AppTypography.text13.copyWith(
                                                             color: Color(
                                                                 0xFF718096),
                                                           ),
@@ -957,8 +949,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                     ),
                                                     child: Text(
                                                       'You',
-                                                      style: TextStyle(fontFamily: 'Outfit',
-                                                        fontSize: 13.0,
+                                                      style: AppTypography.text13.copyWith(
                                                         fontWeight:
                                                             FontWeight.w600,
                                                         color: Colors.white,
@@ -978,16 +969,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                             children: [
                                               Text(
                                                 'Add Friends',
-                                                style: TextStyle(fontFamily: 'Outfit',
-                                                  fontSize: 16.0,
-                                                  fontWeight: FontWeight.w600,
+                                                style: AppTypography.titleSmall.copyWith(
                                                   color: Color(0xFF1A4D2E),
                                                 ),
                                               ),
                                               Text(
                                                 'Tap a slot to add',
-                                                style: TextStyle(fontFamily: 'Outfit',
-                                                  fontSize: 13.0,
+                                                style: AppTypography.text13.copyWith(
                                                   color: Color(0xFF718096),
                                                 ),
                                               ),
@@ -1008,8 +996,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         if (remainingSlots == 0) ...[
                                           Text(
                                             'This game is already full.',
-                                            style: TextStyle(fontFamily: 'Outfit',
-                                              fontSize: 13.0,
+                                            style: AppTypography.text13.copyWith(
                                               color: Color(0xFF718096),
                                             ),
                                           ),
@@ -1179,9 +1166,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         SizedBox(width: 8.0),
                                         Text(
                                           'Game Summary',
-                                          style: TextStyle(fontFamily: 'Outfit',
-                                            fontSize: 16.0,
-                                            fontWeight: FontWeight.w600,
+                                          style: AppTypography.titleSmall.copyWith(
                                             color: Color(0xFF1A4D2E),
                                           ),
                                         ),
@@ -1239,8 +1224,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         Expanded(
           child: Text(
             text,
-            style: TextStyle(fontFamily: 'Outfit',
-              fontSize: 14.0,
+            style: AppTypography.bodySmall.copyWith(
               color: Color(0xFF4A5568),
             ),
           ),

@@ -132,7 +132,7 @@ class GamesMultiSelect extends StatelessWidget {
                     Text(
                       option['label'] as String,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontFamily: 'Outfit',
+                      style: TextStyle(fontFamily: 'Manrope',
                         color: Colors.white,
                         fontSize: 11,
                         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,

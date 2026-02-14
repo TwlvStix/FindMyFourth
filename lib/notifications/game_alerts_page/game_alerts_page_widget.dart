@@ -6,6 +6,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/widgets/premium_back_button.dart';
 import '/main_function/create_game/create_game_constants.dart';
 import '/models/alert_subscription.dart';
 import '/models/course.dart';
@@ -121,7 +122,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
           SnackBar(
             content: Text(
               'Alert settings saved',
-              style: TextStyle(fontFamily: 'Outfit',color: Colors.white),
+              style: TextStyle(fontFamily: 'Manrope',color: Colors.white),
             ),
             backgroundColor: AppColors.fairway,
             duration: const Duration(seconds: 2),
@@ -529,26 +530,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
         backgroundColor: Colors.transparent,
         automaticallyImplyLeading: false,
         elevation: 0.0,
-        leading: GestureDetector(
-          onTap: () async {
-            context.pop();
-          },
-          child: Container(
-            margin: EdgeInsets.only(left: AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: AppColors.fairway.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(12.0),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
-            ),
-            child: Icon(
-              Icons.chevron_left_rounded,
-              color: Colors.white,
-              size: 28.0,
-            ),
-          ),
-        ),
+        leading: const PremiumBackButton(),
         title: Text(
           'Game Alerts',
           style: AppTypography.headlineMedium.copyWith(

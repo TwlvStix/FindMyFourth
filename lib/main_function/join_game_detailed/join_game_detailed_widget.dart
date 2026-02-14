@@ -2,6 +2,7 @@ import '/backend/backend.dart';
 import '/core/exceptions/app_exceptions.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/widgets/premium_back_button.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/utils/firebase_error_utils.dart';
@@ -541,27 +542,11 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     return AppBar(
       backgroundColor: Colors.transparent,
       automaticallyImplyLeading: false,
-      leading: GestureDetector(
+      leading: PremiumBackButton(
         onTap: () {
-          HapticFeedback.lightImpact();
           final router = GoRouter.of(context);
           router.go('/gamesList');
         },
-        child: Container(
-          margin: EdgeInsets.only(left: AppSpacing.sm),
-          decoration: BoxDecoration(
-            color: AppColors.fairway.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(12.0),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          ),
-          child: Icon(
-            Icons.chevron_left_rounded,
-            color: Colors.white,
-            size: 28.0,
-          ),
-        ),
       ),
       title: Text(
         title,
@@ -1096,7 +1081,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                               style: AppTheme.of(context)
                                                                   .bodyLarge
                                                                   .override(
-                                                                    font: TextStyle(fontFamily: 'Outfit',
+                                                                    font: TextStyle(fontFamily: 'Manrope',
                                                                       fontWeight:
                                                                           FontWeight.w500,
                                                                       fontStyle:
@@ -1136,7 +1121,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                         style: AppTheme.of(context)
                                                             .bodySmall
                                                             .override(
-                                                              font: TextStyle(fontFamily: 'Outfit',
+                                                              font: TextStyle(fontFamily: 'Manrope',
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .normal,
@@ -1220,7 +1205,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                 style: AppTheme.of(context)
                                                     .titleMedium
                                                     .override(
-                                                      font: TextStyle(fontFamily: 'Outfit',
+                                                      font: TextStyle(fontFamily: 'Manrope',
                                                         fontWeight: FontWeight.w600,
                                                         fontStyle:
                                                             AppTheme.of(context)
@@ -1251,7 +1236,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                   style: AppTheme.of(context)
                                                       .bodyLarge
                                                       .override(
-                                                        font: TextStyle(fontFamily: 'Outfit',
+                                                        font: TextStyle(fontFamily: 'Manrope',
                                                           fontWeight:
                                                               FontWeight.w500,
                                                           fontStyle:
@@ -1276,7 +1261,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                   style: AppTheme.of(context)
                                                       .bodySmall
                                                       .override(
-                                                        font: TextStyle(fontFamily: 'Outfit',
+                                                        font: TextStyle(fontFamily: 'Manrope',
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:

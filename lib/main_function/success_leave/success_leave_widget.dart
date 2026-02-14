@@ -75,7 +75,7 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                     child: Text(
                       'Enjoy Your Boring Existence',
                       style: AppTheme.of(context).titleLarge.override(
-                            font: TextStyle(fontFamily: 'Outfit',
+                            font: TextStyle(fontFamily: 'Manrope',
                               fontWeight: AppTheme.of(context)
                                   .titleLarge
                                   .fontWeight,
@@ -98,7 +98,7 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                     child: Text(
                       'We will have fun without you!',
                       style: AppTheme.of(context).titleLarge.override(
-                            font: TextStyle(fontFamily: 'Outfit',
+                            font: TextStyle(fontFamily: 'Manrope',
                               fontWeight: AppTheme.of(context)
                                   .titleLarge
                                   .fontWeight,

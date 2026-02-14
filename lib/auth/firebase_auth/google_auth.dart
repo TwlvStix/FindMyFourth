@@ -26,8 +26,12 @@ Future<UserCredential?> googleSignInFunc() async {
     account = await _googleSignIn.authenticate(
       scopeHint: const ['profile', 'email'],
     );
-  } catch (_) {
-    return null;
+  } on GoogleSignInException catch (e) {
+    if (e.code == GoogleSignInExceptionCode.canceled ||
+        e.code == GoogleSignInExceptionCode.interrupted) {
+      return null;
+    }
+    rethrow;
   }
   final auth = account.authentication;
   final credential = GoogleAuthProvider.credential(idToken: auth.idToken);

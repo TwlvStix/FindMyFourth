@@ -95,7 +95,7 @@ class SelectionCard extends StatelessWidget {
             Text(
               label,
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Outfit',
+              style: TextStyle(fontFamily: 'Manrope',
                 color: Colors.white,
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,

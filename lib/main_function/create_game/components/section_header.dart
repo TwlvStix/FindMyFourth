@@ -50,7 +50,7 @@ class SectionHeader extends StatelessWidget {
           Text(
             title,
             style: AppTheme.of(context).labelMedium.override(
-                  font: TextStyle(fontFamily: 'Outfit',
+                  font: TextStyle(fontFamily: 'Manrope',
                     fontWeight: AppTheme.of(context).labelMedium.fontWeight,
                     fontStyle: AppTheme.of(context).labelMedium.fontStyle,
                   ),

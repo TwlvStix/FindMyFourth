@@ -86,7 +86,7 @@ class _UserOnboardingWidgetState extends State<UserOnboardingWidget> {
                 Text(
                   'Welcome to Find My Fourth',
                   style: AppTheme.of(context).headlineMedium.override(
-                        font: TextStyle(fontFamily: 'Outfit',
+                        font: TextStyle(fontFamily: 'Manrope',
                           fontWeight:
                               AppTheme.of(context).headlineMedium.fontWeight,
                           fontStyle:
@@ -103,7 +103,7 @@ class _UserOnboardingWidgetState extends State<UserOnboardingWidget> {
                   child: Text(
                     'A quick primer before you tee off.',
                     style: AppTheme.of(context).bodyLarge.override(
-                          font: TextStyle(fontFamily: 'Outfit',
+                          font: TextStyle(fontFamily: 'Manrope',
                             fontWeight:
                                 AppTheme.of(context).bodyLarge.fontWeight,
                             fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
@@ -213,7 +213,7 @@ class _OnboardingFeature extends StatelessWidget {
                   Text(
                     title,
                     style: AppTheme.of(context).titleMedium.override(
-                          font: TextStyle(fontFamily: 'Outfit',
+                          font: TextStyle(fontFamily: 'Manrope',
                             fontWeight:
                                 AppTheme.of(context).titleMedium.fontWeight,
                             fontStyle:
@@ -230,7 +230,7 @@ class _OnboardingFeature extends StatelessWidget {
                     child: Text(
                       description,
                       style: AppTheme.of(context).bodyMedium.override(
-                            font: TextStyle(fontFamily: 'Outfit',
+                            font: TextStyle(fontFamily: 'Manrope',
                               fontWeight:
                                   AppTheme.of(context).bodyMedium.fontWeight,
                               fontStyle:

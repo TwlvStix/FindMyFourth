@@ -51,7 +51,7 @@ class ToggleSwitch extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: TextStyle(fontFamily: 'Outfit',
+                  style: TextStyle(fontFamily: 'Manrope',
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -60,7 +60,7 @@ class ToggleSwitch extends StatelessWidget {
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   description,
-                  style: TextStyle(fontFamily: 'Outfit',
+                  style: TextStyle(fontFamily: 'Manrope',
                     color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 13,
                   ),

@@ -397,7 +397,7 @@ class _ProgressiveOnboardingWidgetState
           Text(
             'Welcome to\nFind My Fourth',
             style: AppTheme.of(context).displaySmall.override(
-                  font: TextStyle(fontFamily: 'Outfit',
+                  font: TextStyle(fontFamily: 'Manrope',
                     fontWeight: FontWeight.bold,
                     fontStyle: AppTheme.of(context).displaySmall.fontStyle,
                   ),
@@ -411,7 +411,7 @@ class _ProgressiveOnboardingWidgetState
             child: Text(
               'Connect with golfers, join games, and never play alone again.',
               style: AppTheme.of(context).bodyLarge.override(
-                    font: TextStyle(fontFamily: 'Outfit',
+                    font: TextStyle(fontFamily: 'Manrope',
                       fontWeight: AppTheme.of(context).bodyLarge.fontWeight,
                       fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                     ),
@@ -467,7 +467,7 @@ class _ProgressiveOnboardingWidgetState
             Text(
               'Let\'s set up your profile',
               style: AppTheme.of(context).headlineMedium.override(
-                    font: TextStyle(fontFamily: 'Outfit',
+                    font: TextStyle(fontFamily: 'Manrope',
                       fontWeight: FontWeight.bold,
                       fontStyle:
                           AppTheme.of(context).headlineMedium.fontStyle,
@@ -482,7 +482,7 @@ class _ProgressiveOnboardingWidgetState
               child: Text(
                 'This helps other golfers find and connect with you.',
                 style: AppTheme.of(context).bodyMedium.override(
-                      font: TextStyle(fontFamily: 'Outfit',
+                      font: TextStyle(fontFamily: 'Manrope',
                         fontWeight:
                             AppTheme.of(context).bodyMedium.fontWeight,
                         fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
@@ -724,7 +724,7 @@ class _ProgressiveOnboardingWidgetState
           Text(
             'Your golf profile',
             style: AppTheme.of(context).headlineMedium.override(
-                  font: TextStyle(fontFamily: 'Outfit',
+                  font: TextStyle(fontFamily: 'Manrope',
                     fontWeight: FontWeight.bold,
                     fontStyle: AppTheme.of(context).headlineMedium.fontStyle,
                   ),
@@ -738,7 +738,7 @@ class _ProgressiveOnboardingWidgetState
             child: Text(
               'Help us match you with the right players and games.',
               style: AppTheme.of(context).bodyMedium.override(
-                    font: TextStyle(fontFamily: 'Outfit',
+                    font: TextStyle(fontFamily: 'Manrope',
                       fontWeight: AppTheme.of(context).bodyMedium.fontWeight,
                       fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
                     ),
@@ -798,7 +798,7 @@ class _ProgressiveOnboardingWidgetState
           Text(
             'Handicap',
             style: AppTheme.of(context).titleMedium.override(
-                  font: TextStyle(fontFamily: 'Outfit',
+                  font: TextStyle(fontFamily: 'Manrope',
                     fontWeight: FontWeight.w600,
                     fontStyle: AppTheme.of(context).titleMedium.fontStyle,
                   ),
@@ -838,7 +838,7 @@ class _ProgressiveOnboardingWidgetState
                 countBuilder: (count) => Text(
                   count < 0 ? '+${count.abs()}' : count.toString(),
                   style: AppTheme.of(context).headlineSmall.override(
-                        font: TextStyle(fontFamily: 'Outfit',
+                        font: TextStyle(fontFamily: 'Manrope',
                           fontWeight:
                               AppTheme.of(context).headlineSmall.fontWeight,
                           fontStyle:
@@ -876,7 +876,7 @@ class _ProgressiveOnboardingWidgetState
           Text(
             'Your play style',
             style: AppTheme.of(context).headlineMedium.override(
-                  font: TextStyle(fontFamily: 'Outfit',
+                  font: TextStyle(fontFamily: 'Manrope',
                     fontWeight: FontWeight.bold,
                     fontStyle: AppTheme.of(context).headlineMedium.fontStyle,
                   ),
@@ -890,7 +890,7 @@ class _ProgressiveOnboardingWidgetState
             child: Text(
               'Rate your preferences from 0 (not at all) to 5 (very much).',
               style: AppTheme.of(context).bodyMedium.override(
-                    font: TextStyle(fontFamily: 'Outfit',
+                    font: TextStyle(fontFamily: 'Manrope',
                       fontWeight: AppTheme.of(context).bodyMedium.fontWeight,
                       fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
                     ),
@@ -953,7 +953,7 @@ class _ProgressiveOnboardingWidgetState
             Text(
               title,
               style: AppTheme.of(context).titleMedium.override(
-                    font: TextStyle(fontFamily: 'Outfit',
+                    font: TextStyle(fontFamily: 'Manrope',
                       fontWeight: FontWeight.w600,
                       fontStyle: AppTheme.of(context).titleMedium.fontStyle,
                     ),
@@ -995,7 +995,7 @@ class _ProgressiveOnboardingWidgetState
               countBuilder: (count) => Text(
                 count.toString(),
                 style: AppTheme.of(context).headlineSmall.override(
-                      font: TextStyle(fontFamily: 'Outfit',
+                      font: TextStyle(fontFamily: 'Manrope',
                         fontWeight:
                             AppTheme.of(context).headlineSmall.fontWeight,
                         fontStyle: AppTheme.of(context).headlineSmall.fontStyle,
@@ -1094,7 +1094,7 @@ class _OnboardingFeature extends StatelessWidget {
                   Text(
                     title,
                     style: AppTheme.of(context).titleMedium.override(
-                          font: TextStyle(fontFamily: 'Outfit',
+                          font: TextStyle(fontFamily: 'Manrope',
                             fontWeight: FontWeight.w600,
                             fontStyle:
                                 AppTheme.of(context).titleMedium.fontStyle,
@@ -1109,7 +1109,7 @@ class _OnboardingFeature extends StatelessWidget {
                     child: Text(
                       description,
                       style: AppTheme.of(context).bodyMedium.override(
-                            font: TextStyle(fontFamily: 'Outfit',
+                            font: TextStyle(fontFamily: 'Manrope',
                               fontWeight:
                                   AppTheme.of(context).bodyMedium.fontWeight,
                               fontStyle:

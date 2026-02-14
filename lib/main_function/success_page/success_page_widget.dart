@@ -74,7 +74,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                       child: Text(
                         'You are in!',
                         style: AppTheme.of(context).titleLarge.override(
-                              font: TextStyle(fontFamily: 'Outfit',
+                              font: TextStyle(fontFamily: 'Manrope',
                                 fontWeight: AppTheme.of(context)
                                     .titleLarge
                                     .fontWeight,
@@ -97,7 +97,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                       child: Text(
                         'Enjoy the Game',
                         style: AppTheme.of(context).titleLarge.override(
-                              font: TextStyle(fontFamily: 'Outfit',
+                              font: TextStyle(fontFamily: 'Manrope',
                                 fontWeight: AppTheme.of(context)
                                     .titleLarge
                                     .fontWeight,
@@ -120,7 +120,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                       child: Text(
                         'Enjoy the Group',
                         style: AppTheme.of(context).titleLarge.override(
-                              font: TextStyle(fontFamily: 'Outfit',
+                              font: TextStyle(fontFamily: 'Manrope',
                                 fontWeight: AppTheme.of(context)
                                     .titleLarge
                                     .fontWeight,

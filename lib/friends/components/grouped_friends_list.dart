@@ -38,7 +38,6 @@ class GroupedFriendsList extends StatefulWidget {
 }
 
 class _GroupedFriendsListState extends State<GroupedFriendsList> {
-  bool clubMembersCollapsed = false;
   bool allFriendsCollapsed = false;
   bool favoritesCollapsed = false;
   bool _profilesWarmed = false;
@@ -107,22 +106,8 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
             .where((u) => widget.favoriteFriends.contains(u.reference.id))
             .toList();
 
-        final clubMembers = allFriends
-            .where((u) =>
-                !widget.favoriteFriends.contains(u.reference.id) &&
-                widget.currentUserHomeCourse != null &&
-                widget.currentUserHomeCourse!.isNotEmpty &&
-                u.homeCourse.isNotEmpty &&
-                u.homeCourse == widget.currentUserHomeCourse)
-            .toList();
-
         final otherFriends = allFriends
-            .where((u) =>
-                !widget.favoriteFriends.contains(u.reference.id) &&
-                (widget.currentUserHomeCourse == null ||
-                    widget.currentUserHomeCourse!.isEmpty ||
-                    u.homeCourse.isEmpty ||
-                    u.homeCourse != widget.currentUserHomeCourse))
+            .where((u) => !widget.favoriteFriends.contains(u.reference.id))
             .toList();
 
         return Padding(
@@ -149,26 +134,6 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
                 ),
                 if (!favoritesCollapsed)
                   ...favorites.map((friend) => _buildFriendCard(friend, true)),
-              ],
-
-              // Club Members Section
-              if (clubMembers.isNotEmpty) ...[
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                  child: FriendSectionHeader(
-                    icon: Icons.golf_course_rounded,
-                    title: 'Club Members',
-                    count: clubMembers.length,
-                    color: AppColors.fairway,
-                    isCollapsed: clubMembersCollapsed,
-                    onTap: () {
-                      setState(
-                          () => clubMembersCollapsed = !clubMembersCollapsed);
-                    },
-                  ),
-                ),
-                if (!clubMembersCollapsed)
-                  ...clubMembers.map((friend) => _buildFriendCard(friend, false)),
               ],
 
               // Other friends (no section header since it's redundant on Friends tab)

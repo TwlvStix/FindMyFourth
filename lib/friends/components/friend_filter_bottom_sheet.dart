@@ -60,11 +60,26 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Filter Golfers',
-                    style: AppTypography.titleLarge.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        icon: Icon(Icons.close),
+                        color: AppColors.onyx,
+                        iconSize: 24,
+                        padding: EdgeInsets.zero,
+                        constraints: BoxConstraints(),
+                      ),
+                      SizedBox(width: AppSpacing.sm),
+                      Text(
+                        'Filter Golfers',
+                        style: AppTypography.titleLarge.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                   TextButton(
                     onPressed: () {

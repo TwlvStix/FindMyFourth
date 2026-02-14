@@ -82,7 +82,7 @@ class SegmentedControl extends StatelessWidget {
                     SizedBox(width: 8),
                     Text(
                       option['label'] as String,
-                      style: TextStyle(fontFamily: 'Outfit',
+                      style: TextStyle(fontFamily: 'Manrope',
                         color: isSelected
                             ? Colors.white
                             : Colors.white.withValues(alpha: 0.6),

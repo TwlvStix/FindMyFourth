@@ -2,6 +2,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -70,12 +71,8 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
         appBar: AppBar(
           backgroundColor: AppTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back,
-              color: AppTheme.of(context).primary,
-            ),
-            onPressed: _returnToSignIn,
+          leading: PremiumBackButton(
+            onTap: _returnToSignIn,
           ),
           title: AppText.screenTitle(
             'Recover Password',

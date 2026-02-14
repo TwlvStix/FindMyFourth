@@ -13,6 +13,7 @@ import '/core/navigation/app_router.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/widgets/premium_back_button.dart';
 import '/models/vibe_profile.dart';
 import '/providers/chat_provider.dart';
 import '/providers/user_provider.dart';
@@ -207,22 +208,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                     top: AppSpacing.sm,
                     bottom: AppSpacing.xs,
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                      },
-                      borderRadius: BorderRadius.circular(30),
-                      child: Container(
-                        padding: EdgeInsets.all(12),
-                        child: Icon(
-                          Icons.arrow_back,
-                          color: AppColors.onyx,
-                          size: 24,
-                        ),
-                      ),
-                    ),
+                  child: PremiumBackButton(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                    },
                   ),
                 ),
                 // Scrollable content
@@ -1510,32 +1499,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               backgroundColor: Colors.transparent,
               automaticallyImplyLeading: false,
               elevation: 0.0,
-              leading: Padding(
-                padding: EdgeInsets.only(left: AppSpacing.md),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.fairway.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(12.0),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.1),
-                    ),
-                  ),
-                  child: AppIconButton(
-                    borderColor: Colors.transparent,
-                    borderRadius: 12.0,
-                    borderWidth: 0,
-                    buttonSize: 44.0,
-                    tooltip: 'Back',
-                    icon: Icon(
-                      Icons.arrow_back_rounded,
-                      color: Colors.white,
-                      size: 24.0,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).maybePop();
-                    },
-                  ),
-                ),
+              leading: PremiumBackButton(
+                onTap: () {
+                  Navigator.of(context).maybePop();
+                },
               ),
             ),
             body: FairwayBackgroundDark(

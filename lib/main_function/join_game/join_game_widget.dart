@@ -122,7 +122,7 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                               style: AppTheme.of(context)
                                   .headlineMedium
                                   .override(
-                                    font: TextStyle(fontFamily: 'Outfit',
+                                    font: TextStyle(fontFamily: 'Manrope',
                                       fontWeight: AppTheme.of(context)
                                           .headlineMedium
                                           .fontWeight,

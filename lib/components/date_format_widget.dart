@@ -38,7 +38,7 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
             'Friday',
           ),
           style: AppTheme.of(context).bodyLarge.override(
-                font: TextStyle(fontFamily: 'Outfit',
+                font: TextStyle(fontFamily: 'Manrope',
                   fontWeight: AppTheme.of(context).bodyLarge.fontWeight,
                   fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
                 ),
@@ -51,7 +51,7 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
         Text(
           ',',
           style: AppTheme.of(context).headlineMedium.override(
-                font: TextStyle(fontFamily: 'Outfit',
+                font: TextStyle(fontFamily: 'Manrope',
                   fontWeight:
                       AppTheme.of(context).headlineMedium.fontWeight,
                   fontStyle:
@@ -73,7 +73,7 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
               'July',
             ),
             style: AppTheme.of(context).bodyLarge.override(
-                  font: TextStyle(fontFamily: 'Outfit',
+                  font: TextStyle(fontFamily: 'Manrope',
                     fontWeight:
                         AppTheme.of(context).bodyLarge.fontWeight,
                     fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
@@ -93,7 +93,7 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
               '1',
             ),
             style: AppTheme.of(context).bodyLarge.override(
-                  font: TextStyle(fontFamily: 'Outfit',
+                  font: TextStyle(fontFamily: 'Manrope',
                     fontWeight:
                         AppTheme.of(context).bodyLarge.fontWeight,
                     fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
@@ -113,7 +113,7 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
               '00:00',
             ),
             style: AppTheme.of(context).bodyLarge.override(
-                  font: TextStyle(fontFamily: 'Outfit',
+                  font: TextStyle(fontFamily: 'Manrope',
                     fontWeight:
                         AppTheme.of(context).bodyLarge.fontWeight,
                     fontStyle: AppTheme.of(context).bodyLarge.fontStyle,

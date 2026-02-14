@@ -181,7 +181,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                 children: [
                   Text(
                     'Enter Tee Time',
-                    style: TextStyle(fontFamily: 'Outfit',
+                    style: TextStyle(fontFamily: 'Manrope',
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.of(context).primaryText,
@@ -200,7 +200,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
               // Current time display
               Text(
                 '${_hour.toString().padLeft(2, '0')}:${_minute.toString().padLeft(2, '0')} ${_isPM ? 'PM' : 'AM'}',
-                style: TextStyle(fontFamily: 'Outfit',
+                style: TextStyle(fontFamily: 'Manrope',
                   fontSize: 40,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.of(context).primaryText,
@@ -213,7 +213,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                 SizedBox(height: AppSpacing.xs),
                 Text(
                   _errorMessage!,
-                  style: TextStyle(fontFamily: 'Outfit',
+                  style: TextStyle(fontFamily: 'Manrope',
                     fontSize: 13,
                     color: AppColors.error,
                     fontWeight: FontWeight.w500,
@@ -245,7 +245,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                             padding: EdgeInsets.only(top: AppSpacing.xs, bottom: 4),
                             child: Text(
                               'Hour',
-                              style: TextStyle(fontFamily: 'Outfit',
+                              style: TextStyle(fontFamily: 'Manrope',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: AppTheme.of(context).secondaryText,
@@ -278,7 +278,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                                 return Center(
                                   child: Text(
                                     hour.toString().padLeft(2, '0'),
-                                    style: TextStyle(fontFamily: 'Outfit',
+                                    style: TextStyle(fontFamily: 'Manrope',
                                       fontSize: 28,
                                       fontWeight: FontWeight.w600,
                                       color: AppTheme.of(context).primaryText,
@@ -297,7 +297,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                       padding: EdgeInsets.symmetric(horizontal: 4),
                       child: Text(
                         ':',
-                        style: TextStyle(fontFamily: 'Outfit',
+                        style: TextStyle(fontFamily: 'Manrope',
                           fontSize: 28,
                           fontWeight: FontWeight.w600,
                           color: AppTheme.of(context).primaryText,
@@ -314,7 +314,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                             padding: EdgeInsets.only(top: AppSpacing.xs, bottom: 4),
                             child: Text(
                               'Minutes',
-                              style: TextStyle(fontFamily: 'Outfit',
+                              style: TextStyle(fontFamily: 'Manrope',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: AppTheme.of(context).secondaryText,
@@ -347,7 +347,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                                 return Center(
                                   child: Text(
                                     minute.toString().padLeft(2, '0'),
-                                    style: TextStyle(fontFamily: 'Outfit',
+                                    style: TextStyle(fontFamily: 'Manrope',
                                       fontSize: 28,
                                       fontWeight: FontWeight.w600,
                                       color: AppTheme.of(context).primaryText,
@@ -398,7 +398,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                           child: Text(
                             'AM',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontFamily: 'Outfit',
+                            style: TextStyle(fontFamily: 'Manrope',
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: !_isPM
@@ -430,7 +430,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                           child: Text(
                             'PM',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontFamily: 'Outfit',
+                            style: TextStyle(fontFamily: 'Manrope',
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: _isPM
@@ -450,7 +450,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
               // Quick adjust controls
               Text(
                 'Quick Adjust',
-                style: TextStyle(fontFamily: 'Outfit',
+                style: TextStyle(fontFamily: 'Manrope',
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: AppTheme.of(context).secondaryText,
@@ -507,7 +507,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
         ),
         child: Text(
           label,
-          style: TextStyle(fontFamily: 'Outfit',
+          style: TextStyle(fontFamily: 'Manrope',
             fontSize: 12,
             fontWeight: FontWeight.w500,
             color: AppTheme.of(context).primaryText,

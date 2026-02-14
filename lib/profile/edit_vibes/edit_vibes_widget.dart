@@ -4,6 +4,7 @@ import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_text.dart';
+import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/fairway_background.dart';
 import '/models/vibe_profile.dart';
 import '/profile/edit_vibe_importance/edit_vibe_importance_widget.dart';
@@ -165,21 +166,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
         backgroundColor: Colors.transparent,
         automaticallyImplyLeading: false,
         elevation: 0,
-        leading: AppIconButton(
-          borderColor: Colors.transparent,
-          borderRadius: 30.0,
-          borderWidth: 1.0,
-          buttonSize: 60.0,
-          tooltip: 'Back',
-          icon: Icon(
-            Icons.arrow_back_rounded,
-            color: AppColors.pure,
-            size: 30.0,
-          ),
-          onPressed: () async {
-            context.pop();
-          },
-        ),
+        leading: const PremiumBackButton(),
         title: AppText.sectionHeader(
           'Edit Vibes',
           color: AppColors.pure,

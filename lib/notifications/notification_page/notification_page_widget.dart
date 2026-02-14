@@ -6,6 +6,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/widgets/premium_back_button.dart';
 import '/models/alert_subscription.dart';
 import '/models/notification_preferences.dart';
 import '/notifications/game_alerts_page/game_alerts_page_widget.dart';
@@ -177,7 +178,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
           SnackBar(
             content: Text(
               'Settings saved successfully',
-              style: TextStyle(fontFamily: 'Outfit',color: Colors.white),
+              style: TextStyle(fontFamily: 'Manrope',color: Colors.white),
             ),
             backgroundColor: AppColors.fairway,
             duration: const Duration(seconds: 2),
@@ -804,24 +805,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
         backgroundColor: Colors.transparent,
         automaticallyImplyLeading: false,
         elevation: 0.0,
-        leading: GestureDetector(
-          onTap: () => context.pop(),
-          child: Container(
-            margin: EdgeInsets.only(left: AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: AppColors.fairway.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(12.0),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
-            ),
-            child: Icon(
-              Icons.chevron_left_rounded,
-              color: Colors.white,
-              size: 28.0,
-            ),
-          ),
-        ),
+        leading: const PremiumBackButton(),
         title: Text(
           'Notification Settings',
           style: AppTypography.headlineMedium.copyWith(
