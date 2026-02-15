@@ -61,6 +61,9 @@ class GroupVibeDifference {
 class GroupVibeMatchResult {
   const GroupVibeMatchResult({
     required this.groupFitScore,
+    required this.yourFitScore,
+    required this.hasCohesionIssue,
+    this.cohesionWarning,
     required this.baseScorePercent,
     required this.finalScorePercent,
     required this.softRiskPenalty01,
@@ -79,6 +82,9 @@ class GroupVibeMatchResult {
   });
 
   final double groupFitScore;
+  final double yourFitScore;        // your one-sided average vs all members
+  final bool hasCohesionIssue;      // true if any other-other pair is hard-blocked or < 40%
+  final String? cohesionWarning;    // explanation text when cohesion issue exists
   final double baseScorePercent;
   final double finalScorePercent;
   final double softRiskPenalty01;
@@ -139,34 +145,96 @@ class GroupVibeMatcher {
         (completenessSum / max(1, VibeCategory.values.length)).toDouble();
     final confidence = _confidenceFromCompleteness(completeness);
 
-    final memberResults = _memberResults(mine, others);
-    final pairwiseResults = _pairwiseResults(mine, others);
-    final groupHardBlocked = pairwiseResults
-        .any((entry) => entry.result.recommendation == VibeRecommendation.notRecommended);
-    final baseScorePercent = _averageScore(
-      pairwiseResults.map((entry) => entry.result.baseScorePercent),
-    );
-    final softRiskPenalty01 = _averageScore(
-      pairwiseResults.map((entry) => entry.result.softRiskPenalty01),
-    );
-    final finalScorePercent = (baseScorePercent - (softRiskPenalty01 * VibeTuning.softPenaltyMaxPoints))
-        .clamp(VibeTuning.minScore, VibeTuning.maxScore)
-        .toDouble();
+    // Step 1: compute your one-sided fit against each member
+    final memberResults = <GroupVibeMemberResult>[];
+    var yourFitSum = 0.0;
+
+    for (final member in others) {
+      final matchResult = VibeMatcher.score(mine, member.profile);
+      // Use myFitPercent (your perspective) as the display score
+      final displayScore = matchResult.myFitPercent;
+      yourFitSum += displayScore;
+      memberResults.add(GroupVibeMemberResult(
+        member: member,
+        matchResult: matchResult,
+        displayScore: displayScore,
+      ));
+    }
+
+    final yourFitScore = others.isEmpty
+        ? 0.0
+        : (yourFitSum / others.length);
+
+    // Step 2: check cohesion among other members (other-other pairs only)
+    var hasCohesionIssue = false;
+    final otherOtherResults = <_PairwiseMatch>[];
+    for (var i = 0; i < others.length; i++) {
+      for (var j = i + 1; j < others.length; j++) {
+        final result = VibeMatcher.score(others[i].profile, others[j].profile);
+        otherOtherResults.add(_PairwiseMatch(
+          a: _PairwiseMember(id: others[i].id, name: others[i].name, profile: others[i].profile, isSelf: false),
+          b: _PairwiseMember(id: others[j].id, name: others[j].name, profile: others[j].profile, isSelf: false),
+          result: result,
+        ));
+        if (result.recommendation == VibeRecommendation.notRecommended ||
+            result.finalScorePercent < 40.0) {
+          hasCohesionIssue = true;
+        }
+      }
+    }
+
+    // Step 3: apply cohesion penalty (15% reduction when other members clash)
+    final adjustedFitScore = hasCohesionIssue
+        ? (yourFitScore * VibeTuning.groupCohesionPenaltyFactor)
+        : yourFitScore;
+
+    final String? cohesionWarning = hasCohesionIssue
+        ? 'Some players in this group may not mesh well together.'
+        : null;
+
+    // Step 4: determine recommendation from YOUR matches (me-vs-others only)
+    final myHardBlocked = memberResults
+        .any((r) => r.matchResult.recommendation == VibeRecommendation.notRecommended);
+    // Also check other-other hard blocks — a group fight ruins everyone's round
+    final groupHardBlocked = myHardBlocked ||
+        otherOtherResults.any((p) => p.result.recommendation == VibeRecommendation.notRecommended);
+
+    final finalScore = groupHardBlocked
+        ? min(adjustedFitScore, 40.0)
+        : adjustedFitScore.clamp(VibeTuning.minScore, VibeTuning.maxScore).toDouble();
+
+    // Soft risk penalty — average from your matches only
+    final yourSoftPenalty = memberResults.isEmpty
+        ? 0.0
+        : memberResults.map((r) => r.matchResult.softRiskPenalty01).reduce((a, b) => a + b) / memberResults.length;
+
     final recommendation = groupHardBlocked
         ? VibeRecommendation.notRecommended
-        : softRiskPenalty01 >= VibeTuning.riskCautionThreshold
+        : yourSoftPenalty >= VibeTuning.riskCautionThreshold
             ? VibeRecommendation.caution
             : VibeRecommendation.recommended;
 
-    final conflicts = _collectConflicts(pairwiseResults);
-    final softRisks = _collectSoftRisks(pairwiseResults);
+    // Collect conflicts from ALL pairwise (me-vs-other + other-other)
+    final allPairwise = <_PairwiseMatch>[
+      ...memberResults.map((r) => _PairwiseMatch(
+        a: _PairwiseMember(id: 'me', name: 'You', profile: mine, isSelf: true),
+        b: _PairwiseMember(id: r.member.id, name: r.member.name, profile: r.member.profile, isSelf: false),
+        result: r.matchResult,
+      )),
+      ...otherOtherResults,
+    ];
+    final conflicts = _collectConflicts(allPairwise);
+    final softRisks = _collectSoftRisks(allPairwise);
     final lowestMatch = _lowestMatch(memberResults);
 
     return GroupVibeMatchResult(
-      groupFitScore: finalScorePercent,
-      baseScorePercent: baseScorePercent,
-      finalScorePercent: finalScorePercent,
-      softRiskPenalty01: softRiskPenalty01,
+      groupFitScore: finalScore,
+      yourFitScore: yourFitScore,
+      hasCohesionIssue: hasCohesionIssue,
+      cohesionWarning: cohesionWarning,
+      baseScorePercent: yourFitScore,
+      finalScorePercent: finalScore,
+      softRiskPenalty01: yourSoftPenalty,
       recommendation: recommendation,
       conflicts: conflicts,
       softRisks: softRisks,

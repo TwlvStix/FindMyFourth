@@ -171,7 +171,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
       enableDrag: true,
       useRootNavigator: true,
       builder: (context) {
-        final displayScore = result.finalScorePercent.round();
+        final myFitScore = result.myFitPercent.round();
+        final theirFitScore = result.theirFitPercent.round();
         final isCapped = result.cappedScore != null;
         final explanation = buildMatchExplanation(
           matchResult: result,
@@ -226,11 +227,51 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '$displayScore%',
-                          style: AppTypography.displayMedium.copyWith(
-                            color: AppColors.fairwayDark,
-                          ),
+                        // Asymmetric scores display
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Your fit',
+                                  style: AppTypography.labelMedium.copyWith(
+                                    color: AppColors.stone,
+                                    letterSpacing: AppTypography.letterSpacingNormal,
+                                  ),
+                                ),
+                                Text(
+                                  '$myFitScore%',
+                                  style: AppTypography.displayMedium.copyWith(
+                                    color: AppColors.fairwayDark,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(width: AppSpacing.lg),
+                            Padding(
+                              padding: EdgeInsets.only(bottom: AppSpacing.md),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Their fit',
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: AppColors.stone,
+                                      letterSpacing: AppTypography.letterSpacingNormal,
+                                    ),
+                                  ),
+                                  Text(
+                                    '$theirFitScore%',
+                                    style: AppTypography.headlineMedium.copyWith(
+                                      color: AppColors.slate,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                         if (subtitle != null) ...[
                           const SizedBox(height: AppSpacing.xs),
@@ -827,8 +868,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
   Widget _buildVibeMatchRow() {
     final result = _vibeMatchResult;
     final displayScore =
-        result == null ? '--' : '${result.finalScorePercent.round()}%';
-    final label = 'Vibe Match $displayScore';
+        result == null ? '--' : '${result.myFitPercent.round()}%';
+    final label = 'Your Fit $displayScore';
     final canOpenSheet = result != null;
 
     return Padding(
@@ -1206,9 +1247,9 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
 
           final result = showVibeMatch ? _vibeMatchResult : null;
           final vibeScore =
-              result == null ? null : result.finalScorePercent.round();
+              result == null ? null : result.myFitPercent.round();
           final vibeLabel =
-              vibeScore == null ? 'Vibe Match' : 'Vibe $vibeScore%';
+              vibeScore == null ? 'Your Fit' : 'Your Fit $vibeScore%';
           final canOpenVibe = vibeScore != null;
 
           final cards = <Widget>[

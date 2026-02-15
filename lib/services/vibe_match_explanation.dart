@@ -117,10 +117,10 @@ MatchExplanation buildMatchExplanation({
       isActivityBased: false,
     );
   }).toList();
-  final softRiskReasons =
-      List<VibeSoftRisk>.from(matchResult.softRisks)..sort(
-          (a, b) => b.severity01.compareTo(a.severity01),
-        );
+  final softRiskReasons = List<VibeSoftRisk>.from(matchResult.softRisks)
+    ..sort(
+      (a, b) => b.severity01.compareTo(a.severity01),
+    );
   final topSoftRisks = softRiskReasons.take(3).map((risk) {
     return InsightItem(
       title: VibeLabels.titleFor(risk.category),
@@ -195,8 +195,8 @@ MatchExplanation buildMatchExplanation({
         : lowSet.contains(seed.category)
             ? VibeWeightLevel.low
             : VibeWeightLevel.medium;
-    final aligned = seed.matchPercent >= 85 &&
-        !(seed.isDefaultA && seed.isDefaultB);
+    final aligned =
+        seed.matchPercent >= 85 && !(seed.isDefaultA && seed.isDefaultB);
     final watchPoint = !seed.withinTolerance &&
         (weightLevel != VibeWeightLevel.low || seed.matchPercent < 75);
     final statusBadge = seed.dealbreakerRisk
@@ -277,14 +277,11 @@ MatchExplanation buildMatchExplanation({
     );
   }).toList();
 
-  final positives = breakdowns
-      .where((breakdown) {
-        final goodFit =
-            breakdown.withinTolerance || breakdown.matchPercent >= 85;
-        final bothDefault = breakdown.isDefaultA && breakdown.isDefaultB;
-        return goodFit && !bothDefault;
-      })
-      .toList()
+  final positives = breakdowns.where((breakdown) {
+    final goodFit = breakdown.withinTolerance || breakdown.matchPercent >= 85;
+    final bothDefault = breakdown.isDefaultA && breakdown.isDefaultB;
+    return goodFit && !bothDefault;
+  }).toList()
     ..sort((a, b) => b.weight.compareTo(a.weight));
 
   final whatHelped = positives.take(2).map((breakdown) {
@@ -303,8 +300,7 @@ MatchExplanation buildMatchExplanation({
   final defaultWeight = breakdowns
       .where((breakdown) => breakdown.isDefaultA || breakdown.isDefaultB)
       .fold<double>(0, (sum, breakdown) => sum + breakdown.weight);
-  final defaultWeightShare =
-      totalWeight > 0 ? defaultWeight / totalWeight : 0;
+  final defaultWeightShare = totalWeight > 0 ? defaultWeight / totalWeight : 0;
 
   final highWeightBreakdowns = breakdowns
       .where((breakdown) => breakdown.weightLevel == VibeWeightLevel.high)

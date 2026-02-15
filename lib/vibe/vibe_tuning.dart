@@ -6,7 +6,7 @@ class VibeTuning {
   static const int scaleMax = maxValue;
   static const int defaultTolerance = VibePreference.defaultThreshold;
 
-  static const double gamma = 2.0;
+  static const double gamma = 1.2;
   static const double nearPerfect = 100.0;
 
   static const double minScore = 0.0;
@@ -25,6 +25,7 @@ class VibeTuning {
 
   static const double confidenceHighThreshold = 0.8;
   static const double confidenceMediumThreshold = 0.6;
+  static const double groupCohesionPenaltyFactor = 0.85;
 
   // ── Phase 1 tuning changes ──────────────────────────────────
 

@@ -1600,6 +1600,38 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
             ],
           ),
           if (hasResult) ...[
+            // Cohesion warning banner
+            if (result.hasCohesionIssue && result.cohesionWarning != null) ...[
+              SizedBox(height: AppSpacing.sm),
+              Container(
+                padding: EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: AppColors.sunsetRose.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.sunsetRose.withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    SizedBox(width: AppSpacing.xs),
+                    Expanded(
+                      child: Text(
+                        result.cohesionWarning!,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             SizedBox(height: AppSpacing.md),
             GestureDetector(
               onTap: _openGroupVibeBreakdown,

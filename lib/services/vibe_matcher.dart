@@ -76,6 +76,8 @@ class VibeMatchResult {
     required this.softRiskPenalty01,
     required this.baseScorePercent,
     required this.finalScorePercent,
+    required this.myFitPercent,
+    required this.theirFitPercent,
     required this.confidence,
     required this.confidenceLabel,
     required this.confidenceScore,
@@ -94,6 +96,8 @@ class VibeMatchResult {
     return <String, dynamic>{
       'vibe_score_shown': finalScorePercent,
       'base_score_shown': baseScorePercent,
+      'my_fit_shown': myFitPercent,
+      'their_fit_shown': theirFitPercent,
       'recommendation_shown': recommendation.name,
       'confidence_shown': confidenceLabel,
       'soft_risk_penalty': softRiskPenalty01,
@@ -140,6 +144,8 @@ class VibeMatchResult {
   final double softRiskPenalty01;
   final double baseScorePercent;
   final double finalScorePercent;
+  final double myFitPercent;    // score from MY perspective only
+  final double theirFitPercent; // score from THEIR perspective only
   final VibeConfidence confidence;
   final String confidenceLabel;
   final double confidenceScore;
@@ -157,6 +163,61 @@ class VibeMatcher {
     VibeCategory.chat: 10,
     VibeCategory.competitive: 10,
   };
+
+  /// Computes a one-sided fit score: how much will [viewer] enjoy playing
+  /// with [other], using only [viewer]'s tolerances, importance, and weights.
+  static double _computeOneSidedFit({
+    required VibeProfile viewer,
+    required VibeProfile other,
+  }) {
+    var weightedSum = 0.0;
+    var weightTotal = 0.0;
+
+    for (final category in VibeCategory.values) {
+      final viewerPref = viewer.preferenceFor(category);
+      final otherPref = other.preferenceFor(category);
+
+      final viewerIsDefault = isDefault(
+        category,
+        viewerPref.value,
+        isDefaultFlag: viewerPref.isDefault,
+      );
+      final otherIsDefault = isDefault(
+        category,
+        otherPref.value,
+        isDefaultFlag: otherPref.isDefault,
+      );
+
+      final distance = (viewerPref.value - otherPref.value).abs();
+
+      // One-sided: only use VIEWER's tolerance
+      final matchScore01 = oneSidedCategoryScore(
+        distance: distance,
+        tolerance: viewerPref.threshold,
+        gamma: VibeTuning.gamma,
+        scaleMax: VibeTuning.scaleMax,
+      );
+      final matchPercent = (matchScore01 * 100.0)
+          .clamp(VibeTuning.minScore, VibeTuning.maxScore);
+
+      // Weight uses VIEWER's importance only (not blended)
+      final viewerImportanceMult = importanceMultiplier(
+        viewer.importanceFor(category),
+      );
+      final baseWeight = weights[category] ?? 0;
+      final weight = baseWeight *
+          getDefaultMultiplier(viewerIsDefault, otherIsDefault) *
+          viewerImportanceMult;
+
+      weightedSum += matchPercent * weight;
+      weightTotal += weight;
+    }
+
+    if (weightTotal <= 0) return 0.0;
+    return (weightedSum / weightTotal)
+        .clamp(VibeTuning.minScore, VibeTuning.maxScore)
+        .toDouble();
+  }
 
   static VibeMatchResult score(
     VibeProfile mine,
@@ -293,13 +354,12 @@ class VibeMatcher {
     final confidence = _confidenceFromCompleteness(completeness);
 
     // ── Soft-risk penalty computation ──
-    // Phase 1 changes flow through from VibeTuning:
-    //   riskScale: 1.75 → 1.0 (overruns hit ceiling faster)
-    //   riskCurveP: 2.0 → 1.3 (moderate mismatches penalize more)
-    //   riskMaxDefault: 0.45 → 0.65 (each category can penalize harder)
+    // Always computed, even on hard-blocked matches, so the score
+    // reflects the full severity of mismatches rather than relying
+    // solely on the hard-block cap.
     final softRisks = <VibeSoftRisk>[];
     var softRiskPenalty01 = 0.0;
-    if (!hardBlockResult.isHardBlocked) {
+    {
       var weightedPenaltySum = 0.0;
       for (final category in VibeCategory.values) {
         final myPref = mine.preferenceFor(category);
@@ -339,20 +399,77 @@ class VibeMatcher {
     }
 
     // Phase 2: additive penalty model
-    // Old: finalScore = baseScore * (1 - softPenalty) — inconsistent effect
-    // New: finalScore = baseScore - (softPenalty * maxPoints) — predictable subtraction
     final baseScorePercent = totalScore;
     final softPenaltyPoints =
         softRiskPenalty01 * VibeTuning.softPenaltyMaxPoints;
-    final finalScorePercent = (baseScorePercent - softPenaltyPoints)
+
+    // ── Compatibility floor ──
+    // A single category scoring below 15% with meaningful weight
+    // represents a non-compensatory mismatch — great pace can't make
+    // up for a total drinking conflict. For each such category,
+    // subtract a penalty proportional to its weight so the average
+    // can't bury it.
+    var floorPenalty = 0.0;
+    if (weightTotal > 0) {
+      for (final category in VibeCategory.values) {
+        final catScore = scoresByCategory[category] ?? 1.0;
+        final catWeight = weightsByCategory[category] ?? 0;
+        if (catWeight <= 0) continue;
+
+        // Skip default categories — no real signal to penalize
+        final myPref = mine.preferenceFor(category);
+        final theirPref = theirs.preferenceFor(category);
+        final myIsDefault =
+            isDefault(category, myPref.value, isDefaultFlag: myPref.isDefault);
+        final theirIsDefault = isDefault(category, theirPref.value,
+            isDefaultFlag: theirPref.isDefault);
+        if (myIsDefault || theirIsDefault) continue;
+
+        // If category match is below 15%, apply a floor penalty
+        // scaled by the category's share of total weight.
+        if (catScore < 0.15) {
+          final weightShare = catWeight / weightTotal;
+          floorPenalty += weightShare * 30.0;
+        }
+      }
+    }
+
+    final finalScorePercent =
+        (baseScorePercent - softPenaltyPoints - floorPenalty)
+            .clamp(VibeTuning.minScore, VibeTuning.maxScore)
+            .toDouble();
+
+    // ── Asymmetric per-user scoring ──
+    // Compute how much each player will enjoy the other from their own perspective.
+    final myFitRaw = _computeOneSidedFit(viewer: mine, other: theirs);
+    final theirFitRaw = _computeOneSidedFit(viewer: theirs, other: mine);
+
+    // Apply the same soft penalty and floor penalty to each one-sided score
+    final myFitPercent = (myFitRaw - softPenaltyPoints - floorPenalty)
         .clamp(VibeTuning.minScore, VibeTuning.maxScore)
         .toDouble();
+    final theirFitPercent = (theirFitRaw - softPenaltyPoints - floorPenalty)
+        .clamp(VibeTuning.minScore, VibeTuning.maxScore)
+        .toDouble();
+
+    // Apply hard-block cap to both one-sided scores
+    final myFitDisplay = hardBlockResult.isHardBlocked
+        ? min(myFitPercent, 40.0)
+        : myFitPercent;
+    final theirFitDisplay = hardBlockResult.isHardBlocked
+        ? min(theirFitPercent, 40.0)
+        : theirFitPercent;
 
     final recommendation = hardBlockResult.isHardBlocked
         ? VibeRecommendation.notRecommended
         : softRiskPenalty01 >= VibeTuning.riskCautionThreshold
             ? VibeRecommendation.caution
             : VibeRecommendation.recommended;
+
+    // Hard-block cap: "Not recommended" should never show a high score.
+    final displayScore = hardBlockResult.isHardBlocked
+        ? min(finalScorePercent, 40.0)
+        : finalScorePercent;
 
     VibeAnalytics.logMatchScore(
       VibeAnalyticsPayload(
@@ -378,7 +495,9 @@ class VibeMatcher {
       softRisks: softRisks,
       softRiskPenalty01: softRiskPenalty01,
       baseScorePercent: baseScorePercent,
-      finalScorePercent: finalScorePercent,
+      finalScorePercent: displayScore,
+      myFitPercent: myFitDisplay,
+      theirFitPercent: theirFitDisplay,
       confidence: confidence,
       confidenceLabel: _confidenceLabel(confidence),
       confidenceScore: completeness,
