@@ -12,6 +12,7 @@ import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
+import '/main_function/games_list/components/flexible_badge.dart';
 import '/models/game.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
@@ -1339,11 +1340,15 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  valueOrDefault<String>(
-                                      game.coursePlay, 'Course Name'),
+                                  game.coursePlay.isEmpty
+                                      ? 'Course TBD'
+                                      : game.coursePlay,
                                   style: AppTypography.titleSmall.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
+                                    fontStyle: game.coursePlay.isEmpty
+                                        ? FontStyle.italic
+                                        : FontStyle.normal,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -1386,36 +1391,54 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
-                              Icons.calendar_today_rounded,
+                              game.isFlexible
+                                  ? Icons.event_note_rounded
+                                  : Icons.calendar_today_rounded,
                               color: AppColors.sunsetPeach,
                               size: 16,
                             ),
                           ),
                           SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${dateTimeFormat("EEEE", game.date)}, ${dateTimeFormat("MMM d", game.date)}',
-                                  style: AppTypography.bodySmall.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                          if (game.isFlexible) ...[
+                            FlexibleBadge(),
+                            SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: Text(
+                                game.flexibleSummary,
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.warning,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                                Text(
-                                  dateTimeFormat("jm", game.date),
-                                  style: AppTypography.labelSmall.copyWith(
-                                    color: Colors.white.withOpacity(0.6),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
+                          ] else ...[
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${dateTimeFormat("EEEE", game.date)}, ${dateTimeFormat("MMM d", game.date)}',
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    dateTimeFormat("jm", game.date),
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: Colors.white.withOpacity(0.6),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                           // Player count indicator
                           Container(
                             padding: EdgeInsets.symmetric(

@@ -420,6 +420,10 @@ service cloud.firestore {
         changed.hasOnly([
           'name_game',
           'date',
+          'schedule_type',
+          'flexible_week',
+          'flexible_days',
+          'flexible_time_of_day',
           'num_players',
           'style_game',
           'game_type',

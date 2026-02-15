@@ -28,76 +28,98 @@ class SegmentedControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.fairway.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
-      ),
-      padding: EdgeInsets.all(4),
-      child: Row(
-        children: options.map((option) {
-          final isSelected = selectedValue == option['value'];
-          return Expanded(
-            child: GestureDetector(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                onChanged(option['value']);
-              },
-              child: AnimatedContainer(
-                duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
-                padding: EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  gradient: isSelected
-                      ? LinearGradient(
-                          colors: [
-                            AppColors.sunsetGold,
-                            AppColors.sunsetPeach,
-                          ],
-                        )
-                      : null,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: AppColors.sunsetGold.withValues(alpha: 0.4),
-                            blurRadius: 8,
-                            offset: Offset(0, 2),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      option['icon'] as IconData,
-                      color: isSelected
-                          ? Colors.white
-                          : Colors.white.withValues(alpha: 0.6),
-                      size: 20,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      option['label'] as String,
-                      style: TextStyle(fontFamily: 'Manrope',
-                        color: isSelected
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.6),
-                        fontSize: 15,
-                        fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate responsive sizes based on available width
+        final width = constraints.maxWidth;
+        final isCompact = width < 360; // Small phones
+        final iconSize = isCompact ? 18.0 : 20.0;
+        final fontSize = isCompact ? 13.0 : 15.0;
+        final spacing = isCompact ? 4.0 : 8.0;
+        final verticalPadding = isCompact ? 12.0 : 14.0;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.fairway.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.1),
             ),
-          );
-        }).toList(),
-      ),
+          ),
+          padding: EdgeInsets.all(4),
+          child: Row(
+            children: options.map((option) {
+              final isSelected = selectedValue == option['value'];
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onChanged(option['value']);
+                  },
+                  child: AnimatedContainer(
+                    duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
+                    padding: EdgeInsets.symmetric(
+                      vertical: verticalPadding,
+                      horizontal: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: isSelected
+                          ? LinearGradient(
+                              colors: [
+                                AppColors.sunsetGold,
+                                AppColors.sunsetPeach,
+                              ],
+                            )
+                          : null,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: AppColors.sunsetGold.withValues(alpha: 0.4),
+                                blurRadius: 8,
+                                offset: Offset(0, 2),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          option['icon'] as IconData,
+                          color: isSelected
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.6),
+                          size: iconSize,
+                        ),
+                        SizedBox(width: spacing),
+                        Flexible(
+                          child: Text(
+                            option['label'] as String,
+                            style: TextStyle(
+                              fontFamily: 'Manrope',
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.white.withValues(alpha: 0.6),
+                              fontSize: fontSize,
+                              fontWeight:
+                                  isSelected ? FontWeight.w700 : FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        );
+      },
     );
   }
 }

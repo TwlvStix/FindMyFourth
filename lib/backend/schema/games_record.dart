@@ -111,6 +111,26 @@ class GamesRecord extends FirestoreRecord {
   bool get isCancelled => _isCancelled ?? false;
   bool hasIsCancelled() => _isCancelled != null;
 
+  // "schedule_type" field.
+  String? _scheduleType;
+  String get scheduleType => _scheduleType ?? 'confirmed';
+  bool hasScheduleType() => _scheduleType != null;
+
+  // "flexible_days" field.
+  List<int>? _flexibleDays;
+  List<int> get flexibleDays => _flexibleDays ?? const [];
+  bool hasFlexibleDays() => _flexibleDays != null;
+
+  // "flexible_time_of_day" field.
+  String? _flexibleTimeOfDay;
+  String? get flexibleTimeOfDay => _flexibleTimeOfDay;
+  bool hasFlexibleTimeOfDay() => _flexibleTimeOfDay != null;
+
+  // "flexible_week" field.
+  String? _flexibleWeek;
+  String? get flexibleWeek => _flexibleWeek;
+  bool hasFlexibleWeek() => _flexibleWeek != null;
+
   void _initializeFields() {
     _nameGame = snapshotData['name_game'] as String?;
     _date = snapshotData['date'] as DateTime?;
@@ -131,6 +151,10 @@ class GamesRecord extends FirestoreRecord {
     _uid = snapshotData['uid'] as String?;
     _chatRef = snapshotData['chatRef'] as DocumentReference?;
     _isCancelled = snapshotData['isCancelled'] as bool?;
+    _scheduleType = snapshotData['schedule_type'] as String?;
+    _flexibleDays = getDataList(snapshotData['flexible_days']);
+    _flexibleTimeOfDay = snapshotData['flexible_time_of_day'] as String?;
+    _flexibleWeek = snapshotData['flexible_week'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -185,6 +209,10 @@ Map<String, dynamic> createGamesRecordData({
   String? uid,
   DocumentReference? chatRef,
   bool? isCancelled,
+  String? scheduleType,
+  List<int>? flexibleDays,
+  String? flexibleTimeOfDay,
+  String? flexibleWeek,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -206,6 +234,10 @@ Map<String, dynamic> createGamesRecordData({
       'uid': uid,
       'chatRef': chatRef,
       'isCancelled': isCancelled,
+      'schedule_type': scheduleType,
+      'flexible_days': flexibleDays,
+      'flexible_time_of_day': flexibleTimeOfDay,
+      'flexible_week': flexibleWeek,
     }.withoutNulls,
   );
 

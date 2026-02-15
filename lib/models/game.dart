@@ -25,6 +25,10 @@ class Game {
     required this.courseRef,
     required this.userRef,
     required this.uid,
+    required this.scheduleType,
+    this.flexibleDays,
+    this.flexibleTimeOfDay,
+    this.flexibleWeek,
   });
 
   final DocumentReference reference;
@@ -48,11 +52,16 @@ class Game {
   final DocumentReference? courseRef;
   final DocumentReference? userRef;
   final String uid;
+  final String scheduleType;
+  final List<int>? flexibleDays;
+  final String? flexibleTimeOfDay;
+  final String? flexibleWeek;
 
   static Game fromDoc(DocumentSnapshot doc) {
     final data = (doc.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
 
     // For backward compatibility, derive status from isCancelled if status field doesn't exist
+    final scheduleType = (data['schedule_type'] as String?) ?? 'confirmed';
     String gameStatus = (data['status'] as String?) ?? 'active';
     if (gameStatus == 'active') {
       // Check if game should be marked as expired based on date
@@ -61,7 +70,30 @@ class Game {
 
       if (isCancelled) {
         gameStatus = 'cancelled';
+      } else if (scheduleType == 'flexible') {
+        // Flexible game expiration logic
+        final flexibleWeek = data['flexible_week'] as String?;
+        final createdTime = (data['created_time'] as Timestamp?)?.toDate();
+
+        if (flexibleWeek == 'this_week') {
+          final endOfWeek = _getEndOfWeek(DateTime.now());
+          if (DateTime.now().isAfter(endOfWeek)) {
+            gameStatus = 'expired';
+          }
+        } else if (flexibleWeek == 'next_week') {
+          final endOfNextWeek = _getEndOfWeek(DateTime.now().add(Duration(days: 7)));
+          if (DateTime.now().isAfter(endOfNextWeek)) {
+            gameStatus = 'expired';
+          }
+        } else if (flexibleWeek == 'flexible' && createdTime != null) {
+          // Expire after 30 days
+          final expireDate = createdTime.add(Duration(days: 30));
+          if (DateTime.now().isAfter(expireDate)) {
+            gameStatus = 'expired';
+          }
+        }
       } else if (gameDate != null && gameDate.isBefore(DateTime.now())) {
+        // Confirmed game expiration logic
         gameStatus = 'expired';
       }
     }
@@ -94,6 +126,12 @@ class Game {
       courseRef: data['courseRef'] as DocumentReference?,
       userRef: data['userRef'] as DocumentReference?,
       uid: (data['uid'] as String?) ?? doc.id,
+      scheduleType: scheduleType,
+      flexibleDays: (data['flexible_days'] as List<dynamic>?)
+              ?.whereType<int>()
+              .toList(),
+      flexibleTimeOfDay: data['flexible_time_of_day'] as String?,
+      flexibleWeek: data['flexible_week'] as String?,
     );
   }
 
@@ -105,6 +143,25 @@ class Game {
 
       if (isCancelled) {
         gameStatus = 'cancelled';
+      } else if (record.scheduleType == 'flexible') {
+        // Flexible game expiration logic
+        if (record.flexibleWeek == 'this_week') {
+          final endOfWeek = _getEndOfWeek(DateTime.now());
+          if (DateTime.now().isAfter(endOfWeek)) {
+            gameStatus = 'expired';
+          }
+        } else if (record.flexibleWeek == 'next_week') {
+          final endOfNextWeek = _getEndOfWeek(DateTime.now().add(Duration(days: 7)));
+          if (DateTime.now().isAfter(endOfNextWeek)) {
+            gameStatus = 'expired';
+          }
+        } else if (record.flexibleWeek == 'flexible' && record.createdTime != null) {
+          // Expire after 30 days
+          final expireDate = record.createdTime!.add(Duration(days: 30));
+          if (DateTime.now().isAfter(expireDate)) {
+            gameStatus = 'expired';
+          }
+        }
       } else if (gameDate != null && gameDate.isBefore(DateTime.now())) {
         gameStatus = 'expired';
       }
@@ -132,6 +189,10 @@ class Game {
       courseRef: record.courseRef,
       userRef: record.userRef,
       uid: record.uid,
+      scheduleType: record.scheduleType,
+      flexibleDays: record.flexibleDays.isEmpty ? null : record.flexibleDays,
+      flexibleTimeOfDay: record.flexibleTimeOfDay,
+      flexibleWeek: record.flexibleWeek,
     );
   }
 
@@ -140,4 +201,58 @@ class Game {
   bool get isCancelledStatus => status == 'cancelled';
   bool get isExpired => status == 'expired';
   bool get isCompleted => status == 'completed';
+  bool get isFlexible => scheduleType == 'flexible';
+  bool get isConfirmed => scheduleType == 'confirmed';
+
+  String get flexibleSummary {
+    if (!isFlexible) return '';
+
+    final parts = <String>[];
+
+    if (flexibleWeek != null) {
+      switch (flexibleWeek) {
+        case 'this_week':
+          parts.add('This Week');
+          break;
+        case 'next_week':
+          parts.add('Next Week');
+          break;
+        case 'flexible':
+          parts.add('Flexible');
+          break;
+      }
+    }
+
+    if (flexibleDays != null && flexibleDays!.isNotEmpty) {
+      final dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      parts.add(flexibleDays!.map((d) => dayNames[d]).join(', '));
+    }
+
+    if (flexibleTimeOfDay != null) {
+      switch (flexibleTimeOfDay) {
+        case 'morning':
+          parts.add('Morning');
+          break;
+        case 'afternoon':
+          parts.add('Afternoon');
+          break;
+        case 'twilight':
+          parts.add('Twilight');
+          break;
+      }
+    }
+
+    return parts.isEmpty ? 'Flexible' : parts.join(' · ');
+  }
+
+  static DateTime _getEndOfWeek(DateTime date) {
+    return DateTime(
+      date.year,
+      date.month,
+      date.day + (7 - date.weekday),
+      23,
+      59,
+      59,
+    );
+  }
 }

@@ -69,6 +69,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   DocumentReference? gameRef;
   bool memberDiscount = false;
 
+  // Flexible Time
+  String _scheduleType = 'confirmed'; // 'confirmed' | 'flexible'
+  String? _flexibleWeek;
+  Set<int> _selectedDays = {};
+  String? _flexibleTimeOfDay;
+
   // Team Setup
   bool _is2v2 = false;
   String? _teamStyle;
@@ -221,6 +227,21 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           _ensureGameName();
         }
 
+        // Load flexible time fields
+        if (draft['scheduleType'] != null) {
+          _scheduleType = draft['scheduleType'];
+        }
+        if (draft['flexibleWeek'] != null) {
+          _flexibleWeek = draft['flexibleWeek'];
+        }
+        if (draft['flexibleDays'] != null) {
+          final days = draft['flexibleDays'] as List<dynamic>;
+          _selectedDays = Set.from(days.cast<int>());
+        }
+        if (draft['flexibleTimeOfDay'] != null) {
+          _flexibleTimeOfDay = draft['flexibleTimeOfDay'];
+        }
+
         _hasDraft = true;
       }
     } catch (e) {
@@ -246,6 +267,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         'selectedGames': _selectedGames.toList(),
         'otherGame': _otherGameText,
         'gameName': gameName.isEmpty ? null : gameName,
+        'scheduleType': _scheduleType,
+        'flexibleWeek': _flexibleWeek,
+        'flexibleDays': _selectedDays.toList(),
+        'flexibleTimeOfDay': _flexibleTimeOfDay,
       };
 
       final prefs = await SharedPreferences.getInstance();
@@ -279,7 +304,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     }
     debugPrint('✅ CREATE GAME: Form validation passed');
 
-    if (courseValue == null) {
+    // Course is required for confirmed games but optional for flexible games
+    if (_scheduleType == 'confirmed' && courseValue == null) {
       debugPrint('❌ CREATE GAME: courseValue is null');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -331,15 +357,30 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     }
     debugPrint('✅ CREATE GAME: All values present');
 
-    if (datePicked == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please select a date and time.'),
-          duration: Duration(milliseconds: 4000),
-          backgroundColor: AppTheme.of(context).primary,
-        ),
-      );
-      return;
+    // Validate schedule based on type
+    if (_scheduleType == 'confirmed') {
+      if (datePicked == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please select a date and time.'),
+            duration: Duration(milliseconds: 4000),
+            backgroundColor: AppTheme.of(context).primary,
+          ),
+        );
+        return;
+      }
+    } else {
+      // Flexible mode validation
+      if (_flexibleWeek == null && _selectedDays.isEmpty && _flexibleTimeOfDay == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please select at least a week, days, or time of day for flexible games.'),
+            duration: Duration(milliseconds: 4000),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
     }
 
     // Validate Team Style is required if 2v2 is enabled
@@ -433,7 +474,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       try {
         await gamesRecordReference.set({
           'name_game': gameName,
-          'date': datePicked,
+          'date': _scheduleType == 'confirmed' ? datePicked : null,
           'num_players': numPlayers,
           'style_game': styleGameValue,
           'game_type': gameTypeValue,
@@ -452,6 +493,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           'joined_players': [currentUserRef],
           'guest_players': [],
           'uid': currentUser.uid,
+          'schedule_type': _scheduleType,
+          if (_scheduleType == 'flexible') ...{
+            'flexible_week': _flexibleWeek,
+            'flexible_days': _selectedDays.toList(),
+            'flexible_time_of_day': _flexibleTimeOfDay,
+          },
         });
         gameRef = gamesRecordReference;
         await _clearDraft();
@@ -664,6 +711,360 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     super.dispose();
   }
 
+  // Flexible Time UI Components
+  Widget _buildFlexibleTimeUI() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: AppSpacing.sm),
+
+        // Info hint
+        Container(
+          padding: EdgeInsets.all(AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: AppColors.info.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.info_outline_rounded, color: AppColors.info, size: 20),
+              SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  'No tee time yet? Pick when you\'re available — lock it in once you have your group.',
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 13,
+                    color: AppColors.info,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        SizedBox(height: AppSpacing.md),
+
+        // Week selector
+        Text('Week', style: _labelStyle()),
+        SizedBox(height: AppSpacing.xs),
+        _buildWeekChips(),
+
+        SizedBox(height: AppSpacing.md),
+
+        // Day selector
+        Text('Days (Optional)', style: _labelStyle()),
+        SizedBox(height: AppSpacing.xs),
+        _buildDayChips(),
+
+        SizedBox(height: AppSpacing.md),
+
+        // Time of day
+        Text('Time of Day (Optional)', style: _labelStyle()),
+        SizedBox(height: AppSpacing.xs),
+        _buildTimeOfDayCards(),
+
+        // Summary bar
+        if (_buildFlexibleSummary().isNotEmpty && _buildFlexibleSummary() != 'Select your availability') ...[
+          SizedBox(height: AppSpacing.md),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.fairwayLight, AppColors.fairway],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.event_note_rounded, color: Colors.white, size: 20),
+                SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    _buildFlexibleSummary(),
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  TextStyle _labelStyle() => TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+    color: Colors.white.withValues(alpha: 0.7),
+  );
+
+  Widget _buildWeekChips() {
+    final weeks = [
+      {'value': 'this_week', 'label': 'This Week'},
+      {'value': 'next_week', 'label': 'Next Week'},
+      {'value': 'flexible', 'label': 'Flexible'},
+    ];
+
+    return Row(
+      children: weeks.map((week) {
+        final isSelected = _flexibleWeek == week['value'];
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(
+              right: week == weeks.last ? 0 : AppSpacing.xs,
+            ),
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                setState(() => _flexibleWeek = week['value'] as String);
+                _saveDraft();
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppTheme.of(context).primary
+                      : AppTheme.of(context).secondaryBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppTheme.of(context).primary
+                        : AppTheme.of(context).accent4.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
+                ),
+                child: Text(
+                  week['label'] as String,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected
+                        ? AppTheme.of(context).primaryBtnText
+                        : AppTheme.of(context).primaryText,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildDayChips() {
+    final days = [
+      {'value': 0, 'label': 'Sun'},
+      {'value': 1, 'label': 'Mon'},
+      {'value': 2, 'label': 'Tue'},
+      {'value': 3, 'label': 'Wed'},
+      {'value': 4, 'label': 'Thu'},
+      {'value': 5, 'label': 'Fri'},
+      {'value': 6, 'label': 'Sat'},
+    ];
+
+    return Wrap(
+      spacing: AppSpacing.xs,
+      runSpacing: AppSpacing.xs,
+      children: days.map((day) {
+        final dayIndex = day['value'] as int;
+        final isSelected = _selectedDays.contains(dayIndex);
+
+        return InkWell(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            setState(() {
+              if (isSelected) {
+                _selectedDays.remove(dayIndex);
+              } else {
+                _selectedDays.add(dayIndex);
+              }
+            });
+            _saveDraft();
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.xs,
+            ),
+            decoration: BoxDecoration(
+              gradient: isSelected
+                  ? LinearGradient(
+                      colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                    )
+                  : null,
+              color: isSelected ? null : AppTheme.of(context).secondaryBackground,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isSelected
+                    ? AppColors.sunsetGold
+                    : AppTheme.of(context).accent4.withValues(alpha: 0.3),
+                width: 1.5,
+              ),
+            ),
+            child: Text(
+              day['label'] as String,
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: isSelected
+                    ? Colors.white
+                    : AppTheme.of(context).primaryText,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildTimeOfDayCards() {
+    final times = [
+      {
+        'value': 'morning',
+        'label': 'Morning',
+        'emoji': '🌅',
+        'subtitle': 'Before 11am',
+      },
+      {
+        'value': 'afternoon',
+        'label': 'Afternoon',
+        'emoji': '☀️',
+        'subtitle': '11am-3pm',
+      },
+      {
+        'value': 'twilight',
+        'label': 'Twilight',
+        'emoji': '🌇',
+        'subtitle': 'After 3pm',
+      },
+    ];
+
+    return GridView.count(
+      crossAxisCount: 3,
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      crossAxisSpacing: AppSpacing.sm,
+      mainAxisSpacing: AppSpacing.sm,
+      childAspectRatio: 0.85,
+      padding: EdgeInsets.zero,
+      children: times.map((time) {
+        final isSelected = _flexibleTimeOfDay == time['value'];
+
+        return GestureDetector(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            setState(() {
+              _flexibleTimeOfDay = isSelected ? null : time['value'] as String;
+            });
+            _saveDraft();
+          },
+          child: Container(
+            padding: EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              gradient: isSelected
+                  ? LinearGradient(
+                      colors: [
+                        AppColors.fairway.withValues(alpha: 0.5),
+                        AppColors.fairwayDark.withValues(alpha: 0.7),
+                      ],
+                    )
+                  : null,
+              color: isSelected ? null : AppColors.fairway.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected
+                    ? AppColors.sunsetGold
+                    : Colors.white.withValues(alpha: 0.1),
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(time['emoji'] as String, style: TextStyle(fontSize: 28)),
+                SizedBox(height: AppSpacing.xxs),
+                Text(
+                  time['label'] as String,
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 2),
+                Text(
+                  time['subtitle'] as String,
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 10,
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  String _buildFlexibleSummary() {
+    final parts = <String>[];
+
+    if (_flexibleWeek != null) {
+      switch (_flexibleWeek) {
+        case 'this_week':
+          parts.add('This Week');
+          break;
+        case 'next_week':
+          parts.add('Next Week');
+          break;
+        case 'flexible':
+          parts.add('Flexible');
+          break;
+      }
+    }
+
+    if (_selectedDays.isNotEmpty) {
+      final dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      final sortedDays = _selectedDays.toList()..sort();
+      parts.add(sortedDays.map((d) => dayNames[d]).join(', '));
+    }
+
+    if (_flexibleTimeOfDay != null) {
+      switch (_flexibleTimeOfDay) {
+        case 'morning':
+          parts.add('Morning');
+          break;
+        case 'afternoon':
+          parts.add('Afternoon');
+          break;
+        case 'twilight':
+          parts.add('Twilight');
+          break;
+      }
+    }
+
+    return parts.isEmpty ? 'Select your availability' : parts.join(' · ');
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -783,22 +1184,33 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                               SectionHeader(
                                 emoji: '📅',
                                 title: 'Schedule',
-                                helpText: 'Select when you want to play. Choose a quick date or pick from the calendar, then set your exact tee time.',
+                                helpText: 'Choose if you have a confirmed tee time or flexible availability.',
                                 onHelpTap: () => _showHelpDialog(
                                     context,
                                     'Schedule',
-                                    'Select when you want to play. Choose a quick date or pick from the calendar, then set your exact tee time.'),
+                                    'Choose if you have a confirmed tee time or flexible availability.'),
                               ),
 
-                              // Premium date picker
+                              // Schedule Type Selector
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                child: PremiumDatePicker(
-                                  selectedDate: datePicked,
-                                  onDateSelected: (date) {
+                                child: SegmentedControl(
+                                  options: [
+                                    {'value': 'confirmed', 'label': 'I Have a Tee Time', 'icon': Icons.event_available_rounded},
+                                    {'value': 'flexible', 'label': 'Flexible Time', 'icon': Icons.event_note_rounded},
+                                  ],
+                                  selectedValue: _scheduleType,
+                                  onChanged: (val) {
                                     if (mounted) {
                                       setState(() {
-                                        datePicked = date;
+                                        _scheduleType = val;
+                                        if (val == 'flexible') {
+                                          datePicked = null;
+                                        } else {
+                                          _flexibleWeek = null;
+                                          _selectedDays.clear();
+                                          _flexibleTimeOfDay = null;
+                                        }
                                       });
                                       _saveDraft();
                                     }
@@ -806,114 +1218,134 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                 ),
                               ),
 
-                              // Tee time picker row
-                              if (datePicked != null) ...[
-                                SizedBox(height: AppSpacing.sm),
-                                InkWell(
-                                  onTap: () {
-                                    showTeeTimePicker(
-                                      context: context,
-                                      selectedDateTime: datePicked,
-                                      onTimeSelected: (dateTime) {
-                                        if (mounted) {
-                                          setState(() {
-                                            datePicked = dateTime;
-                                          });
-                                          _saveDraft();
-                                        }
-                                      },
-                                    );
-                                  },
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Container(
+                              if (_scheduleType == 'confirmed') ...[
+                                // Premium date picker
+                                Padding(
+                                  padding: EdgeInsets.only(top: AppSpacing.sm),
+                                  child: PremiumDatePicker(
+                                    selectedDate: datePicked,
+                                    onDateSelected: (date) {
+                                      if (mounted) {
+                                        setState(() {
+                                          datePicked = date;
+                                        });
+                                        _saveDraft();
+                                      }
+                                    },
+                                  ),
+                                ),
+
+                                // Tee time picker row
+                                if (datePicked != null) ...[
+                                  SizedBox(height: AppSpacing.sm),
+                                  InkWell(
+                                    onTap: () {
+                                      showTeeTimePicker(
+                                        context: context,
+                                        selectedDateTime: datePicked,
+                                        onTimeSelected: (dateTime) {
+                                          if (mounted) {
+                                            setState(() {
+                                              datePicked = dateTime;
+                                            });
+                                            _saveDraft();
+                                          }
+                                        },
+                                      );
+                                    },
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: EdgeInsets.all(AppSpacing.md),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.of(context).secondaryBackground,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: AppTheme.of(context).primary,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.access_time_rounded,
+                                            color: AppTheme.of(context).primary,
+                                            size: 24,
+                                          ),
+                                          SizedBox(width: AppSpacing.sm),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Tee Time',
+                                                  style: TextStyle(fontFamily: 'Manrope',
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: AppTheme.of(context).secondaryText,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 2),
+                                                Text(
+                                                  dateTimeFormat("jm", datePicked),
+                                                  style: TextStyle(fontFamily: 'Manrope',
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppTheme.of(context).primaryText,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.edit_rounded,
+                                            color: AppTheme.of(context).secondaryText,
+                                            size: 20,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+
+                                // Human-readable summary
+                                if (datePicked != null) ...[
+                                  SizedBox(height: AppSpacing.sm),
+                                  Container(
                                     width: double.infinity,
                                     padding: EdgeInsets.all(AppSpacing.md),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.of(context).secondaryBackground,
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: AppTheme.of(context).primary,
-                                        width: 1.5,
+                                      gradient: LinearGradient(
+                                        colors: [AppColors.fairwayLight, AppColors.fairway],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
                                       ),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Row(
                                       children: [
                                         Icon(
-                                          Icons.access_time_rounded,
-                                          color: AppTheme.of(context).primary,
-                                          size: 24,
+                                          Icons.golf_course_rounded,
+                                          color: Colors.white,
+                                          size: 20,
                                         ),
                                         SizedBox(width: AppSpacing.sm),
                                         Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Tee Time',
-                                                style: TextStyle(fontFamily: 'Manrope',
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: AppTheme.of(context).secondaryText,
-                                                ),
-                                              ),
-                                              SizedBox(height: 2),
-                                              Text(
-                                                dateTimeFormat("jm", datePicked),
-                                                style: TextStyle(fontFamily: 'Manrope',
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: AppTheme.of(context).primaryText,
-                                                ),
-                                              ),
-                                            ],
+                                          child: Text(
+                                            '${dateTimeFormat("EEEE, MMM d", datePicked)} at ${dateTimeFormat("jm", datePicked)}',
+                                            style: TextStyle(fontFamily: 'Manrope',
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.white,
+                                            ),
                                           ),
-                                        ),
-                                        Icon(
-                                          Icons.edit_rounded,
-                                          color: AppTheme.of(context).secondaryText,
-                                          size: 20,
                                         ),
                                       ],
                                     ),
                                   ),
-                                ),
-                              ],
-
-                              // Human-readable summary
-                              if (datePicked != null) ...[
-                                SizedBox(height: AppSpacing.sm),
-                                Container(
-                                  width: double.infinity,
-                                  padding: EdgeInsets.all(AppSpacing.md),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [AppColors.fairwayLight, AppColors.fairway],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.golf_course_rounded,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                      SizedBox(width: AppSpacing.sm),
-                                      Expanded(
-                                        child: Text(
-                                          '${dateTimeFormat("EEEE, MMM d", datePicked)} at ${dateTimeFormat("jm", datePicked)}',
-                                          style: TextStyle(fontFamily: 'Manrope',
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                ],
+                              ] else ...[
+                                _buildFlexibleTimeUI(),
                               ],
                               SectionHeader(
                                 emoji: '👁️',

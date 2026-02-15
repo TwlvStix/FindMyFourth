@@ -32,6 +32,8 @@ import 'components/premium_hero_section.dart';
 import 'components/quick_stats_row.dart';
 import 'components/group_vibe_summary.dart';
 import 'components/player_match_chip.dart';
+import 'components/firm_it_up_banner.dart';
+import 'components/firm_it_up_bottom_sheet.dart';
 
 enum _CancelListingHandling {
   removeNow,
@@ -349,6 +351,111 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                         game: gameJoinedDetailedGamesRecord,
                       ),
                     ),
+
+                    // Firm It Up Banner (only for flexible games created by current user)
+                    if (gameJoinedDetailedGamesRecord.scheduleType == 'flexible' &&
+                        FirebaseAuth.instance.currentUser != null &&
+                        gameJoinedDetailedGamesRecord.userRef ==
+                            FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(FirebaseAuth.instance.currentUser!.uid))
+                      FirmItUpBanner(
+                        onPressed: () async {
+                          final result = await showModalBottomSheet<Map<String, dynamic>?>(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => FirmItUpBottomSheet(
+                              gameRef: gameJoinedDetailedGamesRecord.reference,
+                            ),
+                          );
+
+                          if (result != null && mounted) {
+                            // Show loading indicator
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) => Center(
+                                child: Card(
+                                  margin: EdgeInsets.all(AppSpacing.xl),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(AppSpacing.lg),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        CircularProgressIndicator(
+                                          color: AppColors.sunsetGold,
+                                        ),
+                                        SizedBox(height: AppSpacing.md),
+                                        Text(
+                                          'Confirming tee time...',
+                                          style: TextStyle(
+                                            fontFamily: 'Manrope',
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+
+                            try {
+                              debugPrint('🎯 Firm It Up: Updating Firestore...');
+                              debugPrint('🎯 Game ref path: ${gameJoinedDetailedGamesRecord.reference.path}');
+
+                              // Build update map
+                              final updateData = <String, dynamic>{
+                                'schedule_type': 'confirmed',
+                                'date': result['date'],
+                                'course_play': result['course'],
+                                'courseRef': result['courseRef'],
+                                'flexible_week': null,
+                                'flexible_days': null,
+                                'flexible_time_of_day': null,
+                              };
+
+                              debugPrint('🎯 Update data: $updateData');
+                              await gameJoinedDetailedGamesRecord.reference.update(updateData);
+
+                              debugPrint('✅ Firm It Up: Update successful');
+
+                              // Close loading dialog
+                              if (mounted) Navigator.pop(context);
+
+                              // Show success message
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Tee time confirmed!'),
+                                    backgroundColor: AppColors.success,
+                                  ),
+                                );
+                                // Refresh game data
+                                setState(() {});
+                              }
+                            } catch (e, stackTrace) {
+                              debugPrint('❌ Firm It Up: Error occurred');
+                              debugPrint('❌ Error: $e');
+                              debugPrint('❌ Stack trace: $stackTrace');
+
+                              // Close loading dialog
+                              if (mounted) Navigator.pop(context);
+
+                              // Show error message
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Failed to confirm tee time: $e'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          }
+                        },
+                      ),
 
                     // Quick Stats Row (Date, Players, Chat)
                     Padding(
