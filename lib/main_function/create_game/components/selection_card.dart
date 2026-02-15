@@ -72,10 +72,11 @@ class SelectionCard extends StatelessWidget {
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 gradient: isSelected
                     ? LinearGradient(
@@ -83,22 +84,28 @@ class SelectionCard extends StatelessWidget {
                       )
                     : null,
                 color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: emoji != null
                   ? Center(
-                      child: Text(emoji!, style: TextStyle(fontSize: 20)),
+                      child: Text(emoji!, style: TextStyle(fontSize: 18)),
                     )
-                  : Icon(icon, color: Colors.white, size: 22),
+                  : Icon(icon, color: Colors.white, size: 20),
             ),
-            SizedBox(height: AppSpacing.xs),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Manrope',
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            SizedBox(height: AppSpacing.xxs),
+            Flexible(
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: 'Manrope',
+                  color: Colors.white,
+                  fontSize: 12,
+                  height: 1.2,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                ),
               ),
             ),
           ],

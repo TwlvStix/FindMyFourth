@@ -57,7 +57,7 @@ class VibePreference {
   static const int minValue = 0;
   static const int maxValue = 5;
   static const int defaultValue = 3;
-  static const int defaultThreshold = 2;
+  static const int defaultThreshold = 1;
 
   final int value;
   final bool dealbreaker;
@@ -139,8 +139,7 @@ class VibeProfile {
     DateTime? importanceUpdatedAt,
     this.confirmedAt,
   })  : prefs = Map.unmodifiable(prefs),
-        importance =
-            Map.unmodifiable(importance ?? _defaultImportanceMap()),
+        importance = Map.unmodifiable(importance ?? _defaultImportanceMap()),
         importanceVersion = importanceVersion ?? 1,
         importanceUpdatedAt = importanceUpdatedAt;
 
@@ -339,8 +338,7 @@ class VibeLabels {
         'How do you feel about gambling and side games (skins, presses, bets) in your group during a round?',
     VibeCategory.competitive:
         'How competitive do you like the group atmosphere to be?',
-    VibeCategory.pace:
-        'How do you feel about pace expectations in your group?',
+    VibeCategory.pace: 'How do you feel about pace expectations in your group?',
   };
 
   static const Map<VibeCategory, String> _helpers = {

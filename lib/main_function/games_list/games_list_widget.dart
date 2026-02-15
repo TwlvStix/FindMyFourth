@@ -117,8 +117,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
 
   // Track last warmed profile UIDs to avoid redundant warming calls
   Set<String> _lastWarmedProfileUids = {};
-  static const Map<CancelledGameHandling, String>
-      _cancelledHandlingStorageMap = {
+  static const Map<CancelledGameHandling, String> _cancelledHandlingStorageMap =
+      {
     CancelledGameHandling.removeNow: 'removeNow',
     CancelledGameHandling.removeEndOfDay: 'removeEndOfDay',
     CancelledGameHandling.removeAfter7Days: 'removeAfter7Days',
@@ -143,14 +143,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       // Retrieve cached data (no filters initially)
       final cachedRecords = gameProvider.getCachedAvailableGames();
       if (cachedRecords != null) {
-        _cachedGames = cachedRecords
-            .map((record) => Game.fromRecord(record))
-            .toList();
+        _cachedGames =
+            cachedRecords.map((record) => Game.fromRecord(record)).toList();
       }
 
-      _gamesStream = gameProvider
-          .availableGamesStream()
-          .map((records) => records.map((record) => Game.fromRecord(record)).toList());
+      _gamesStream = gameProvider.availableGamesStream().map((records) =>
+          records.map((record) => Game.fromRecord(record)).toList());
       _didInitDependencies = true;
     }
   }
@@ -211,8 +209,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       return getCurrentTimestamp.isAfter(endOfDay);
     }
     if (handling == CancelledGameHandling.removeAfter7Days) {
-      final hideAt =
-          AppState().getCancelledGameHideAt(game.reference.path);
+      final hideAt = AppState().getCancelledGameHideAt(game.reference.path);
       if (hideAt == null) {
         return false;
       }
@@ -386,8 +383,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     return gamesList.where((game) {
       if (filters.selectedGameTypes.isNotEmpty) {
         final gameType = _gameTypeForFilters(game);
-        if (gameType == null ||
-            !filters.selectedGameTypes.contains(gameType)) {
+        if (gameType == null || !filters.selectedGameTypes.contains(gameType)) {
           return false;
         }
       }
@@ -405,8 +401,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       }
       if (filters.selectedHandicaps.isNotEmpty) {
         final handicap = _handicapForFilters(game);
-        if (handicap == null ||
-            !filters.selectedHandicaps.contains(handicap)) {
+        if (handicap == null || !filters.selectedHandicaps.contains(handicap)) {
           return false;
         }
       }
@@ -524,9 +519,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     final currentUser = FirebaseAuth.instance.currentUser;
     final currentUserReference = currentUser == null
         ? null
-        : FirebaseFirestore.instance
-            .collection('users')
-            .doc(currentUser.uid);
+        : FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -661,7 +654,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                 builder: (context, gamesList) {
                   // Debug logging wrapped in assertions (only runs in debug mode)
                   assert(() {
-                    debugPrint('📋 GAME LIST: StreamBuilder triggered with ${gamesList.length} games');
+                    debugPrint(
+                        '📋 GAME LIST: StreamBuilder triggered with ${gamesList.length} games');
                     return true;
                   }());
 
@@ -669,7 +663,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   // For cancelled games, respect user preference
                   final activeGames = gamesList.where((game) {
                     // Always hide expired and completed games
-                    if (game.status == 'expired' || game.status == 'completed') {
+                    if (game.status == 'expired' ||
+                        game.status == 'completed') {
                       return false;
                     }
 
@@ -683,7 +678,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   }).toList();
 
                   assert(() {
-                    debugPrint('📊 GAME LIST: After status filter: ${activeGames.length} games');
+                    debugPrint(
+                        '📊 GAME LIST: After status filter: ${activeGames.length} games');
                     return true;
                   }());
 
@@ -703,7 +699,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   final visibleGames = _applyFilters(activeGames, _filters);
 
                   assert(() {
-                    debugPrint('✅ GAME LIST: Final visible games: ${visibleGames.length}');
+                    debugPrint(
+                        '✅ GAME LIST: Final visible games: ${visibleGames.length}');
                     return true;
                   }());
 
@@ -712,8 +709,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                         ? null
                         : UsersRecord.getDocument(currentUserReference),
                     builder: (context, userSnapshot) {
-                      final friendIds =
-                          _friendIdsFromRecord(userSnapshot.data);
+                      final friendIds = _friendIdsFromRecord(userSnapshot.data);
                       final joinableGames = <Game>[];
                       final lockedGames = <Game>[];
                       for (final game in visibleGames) {
@@ -761,7 +757,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               padding: EdgeInsets.only(
                                 top: AppSpacing.md,
                                 // Account for bottom nav bar (56) + FAB (56) + spacing (16) + safe area
-                                bottom: MediaQuery.of(context).padding.bottom + 128.0,
+                                bottom: MediaQuery.of(context).padding.bottom +
+                                    128.0,
                               ),
                               sliver: joinableGames.isEmpty
                                   ? SliverToBoxAdapter(
@@ -771,26 +768,30 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                           vertical: AppSpacing.xl,
                                         ),
                                         child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Container(
                                               width: 120,
                                               height: 120,
                                               decoration: BoxDecoration(
-                                                color: AppColors.fairway.withOpacity(0.3),
+                                                color: AppColors.fairway
+                                                    .withOpacity(0.3),
                                                 shape: BoxShape.circle,
                                               ),
                                               child: Icon(
                                                 Icons.golf_course_rounded,
                                                 size: 56,
-                                                color: Colors.white.withOpacity(0.5),
+                                                color: Colors.white
+                                                    .withOpacity(0.5),
                                               ),
                                             ),
                                             SizedBox(height: AppSpacing.lg),
                                             if (_filters.hasActiveFilters) ...[
                                               Text(
                                                 'No games match these filters',
-                                                style: AppTypography.titleMedium.copyWith(
+                                                style: AppTypography.titleMedium
+                                                    .copyWith(
                                                   color: Colors.white,
                                                   fontWeight: FontWeight.w600,
                                                 ),
@@ -799,8 +800,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                               SizedBox(height: AppSpacing.xs),
                                               Text(
                                                 'Try adjusting or clearing your filters.',
-                                                style: AppTypography.bodyMedium.copyWith(
-                                                  color: Colors.white.withOpacity(0.7),
+                                                style: AppTypography.bodyMedium
+                                                    .copyWith(
+                                                  color: Colors.white
+                                                      .withOpacity(0.7),
                                                 ),
                                                 textAlign: TextAlign.center,
                                               ),
@@ -809,21 +812,25 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 width: 220,
                                                 child: AppButtonEnhanced(
                                                   text: 'Clear filters',
-                                                  variant: AppButtonVariant.secondary,
+                                                  variant: AppButtonVariant
+                                                      .secondary,
                                                   size: AppButtonSize.medium,
                                                   onPressed: () {
                                                     if (mounted) {
                                                       setState(() {
-                                                        _filters = GameListFilters();
+                                                        _filters =
+                                                            GameListFilters();
                                                       });
                                                     }
                                                   },
                                                 ),
                                               ),
-                                            ] else if (lockedGames.isNotEmpty) ...[
+                                            ] else if (lockedGames
+                                                .isNotEmpty) ...[
                                               Text(
                                                 'No joinable games right now',
-                                                style: AppTypography.titleMedium.copyWith(
+                                                style: AppTypography.titleMedium
+                                                    .copyWith(
                                                   color: Colors.white,
                                                   fontWeight: FontWeight.w600,
                                                 ),
@@ -832,8 +839,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                               SizedBox(height: AppSpacing.xs),
                                               Text(
                                                 'There are friends-only games you can view below.',
-                                                style: AppTypography.bodyMedium.copyWith(
-                                                  color: Colors.white.withOpacity(0.7),
+                                                style: AppTypography.bodyMedium
+                                                    .copyWith(
+                                                  color: Colors.white
+                                                      .withOpacity(0.7),
                                                 ),
                                                 textAlign: TextAlign.center,
                                               ),
@@ -844,7 +853,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                   text: _showLockedGames
                                                       ? 'Hide locked games'
                                                       : 'Show locked games',
-                                                  variant: AppButtonVariant.secondary,
+                                                  variant: AppButtonVariant
+                                                      .secondary,
                                                   size: AppButtonSize.medium,
                                                   onPressed: () {
                                                     if (mounted) {
@@ -859,7 +869,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                             ] else ...[
                                               Text(
                                                 'No games yet',
-                                                style: AppTypography.titleMedium.copyWith(
+                                                style: AppTypography.titleMedium
+                                                    .copyWith(
                                                   color: Colors.white,
                                                   fontWeight: FontWeight.w600,
                                                 ),
@@ -868,8 +879,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                               SizedBox(height: AppSpacing.xs),
                                               Text(
                                                 'Be the first to create a game.',
-                                                style: AppTypography.bodyMedium.copyWith(
-                                                  color: Colors.white.withOpacity(0.7),
+                                                style: AppTypography.bodyMedium
+                                                    .copyWith(
+                                                  color: Colors.white
+                                                      .withOpacity(0.7),
                                                 ),
                                                 textAlign: TextAlign.center,
                                               ),
@@ -878,14 +891,17 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 width: 220,
                                                 child: AppButtonEnhanced(
                                                   text: 'Create a game',
-                                                  variant: AppButtonVariant.primary,
+                                                  variant:
+                                                      AppButtonVariant.primary,
                                                   size: AppButtonSize.medium,
                                                   onPressed: () {
                                                     context.pushNamed(
-                                                      CreateGameWidget.routeName,
+                                                      CreateGameWidget
+                                                          .routeName,
                                                       extra: <String, dynamic>{
                                                         kTransitionInfoKey:
-                                                            TransitionStandards.detailTransition,
+                                                            TransitionStandards
+                                                                .detailTransition,
                                                       },
                                                     );
                                                   },
@@ -899,12 +915,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   : SliverList(
                                       delegate: SliverChildBuilderDelegate(
                                         (context, index) {
-                                          final containerVarItem = joinableGames[index];
+                                          final containerVarItem =
+                                              joinableGames[index];
                                           final isLast =
                                               index == joinableGames.length - 1;
                                           return Padding(
                                             padding: EdgeInsets.only(
-                                              bottom: isLast ? 0.0 : AppSpacing.sm,
+                                              bottom:
+                                                  isLast ? 0.0 : AppSpacing.sm,
                                             ),
                                             child: _buildPremiumGameCard(
                                               context,
@@ -936,7 +954,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                       ),
                                     ),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
@@ -944,12 +963,15 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                               width: 32,
                                               height: 32,
                                               decoration: BoxDecoration(
-                                                color: Colors.white.withOpacity(0.12),
-                                                borderRadius: BorderRadius.circular(10),
+                                                color: Colors.white
+                                                    .withOpacity(0.12),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
                                               ),
                                               child: Icon(
                                                 Icons.lock_rounded,
-                                                color: Colors.white.withOpacity(0.8),
+                                                color: Colors.white
+                                                    .withOpacity(0.8),
                                                 size: 18,
                                               ),
                                             ),
@@ -957,7 +979,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                             Expanded(
                                               child: Text(
                                                 'Friends-only games',
-                                                style: AppTypography.titleSmall.copyWith(
+                                                style: AppTypography.titleSmall
+                                                    .copyWith(
                                                   color: Colors.white,
                                                   fontWeight: FontWeight.w600,
                                                 ),
@@ -967,13 +990,17 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                               onPressed: () {
                                                 if (mounted) {
                                                   setState(() {
-                                                    _showLockedGames = !_showLockedGames;
+                                                    _showLockedGames =
+                                                        !_showLockedGames;
                                                   });
                                                 }
                                               },
                                               child: Text(
-                                                _showLockedGames ? 'Hide' : 'Show',
-                                                style: AppTypography.labelMedium.copyWith(
+                                                _showLockedGames
+                                                    ? 'Hide'
+                                                    : 'Show',
+                                                style: AppTypography.labelMedium
+                                                    .copyWith(
                                                   color: AppColors.sunsetGold,
                                                   fontWeight: FontWeight.w600,
                                                 ),
@@ -984,8 +1011,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                         SizedBox(height: AppSpacing.xs),
                                         Text(
                                           'Become friends with the host to join.',
-                                          style: AppTypography.bodySmall.copyWith(
-                                            color: Colors.white.withOpacity(0.7),
+                                          style:
+                                              AppTypography.bodySmall.copyWith(
+                                            color:
+                                                Colors.white.withOpacity(0.7),
                                           ),
                                         ),
                                       ],
@@ -998,13 +1027,16 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 padding: EdgeInsets.only(
                                   top: AppSpacing.sm,
                                   // Account for bottom nav bar (56) + FAB (56) + spacing (16) + safe area
-                                  bottom: MediaQuery.of(context).padding.bottom + 128.0,
+                                  bottom:
+                                      MediaQuery.of(context).padding.bottom +
+                                          128.0,
                                 ),
                                 sliver: SliverList(
                                   delegate: SliverChildBuilderDelegate(
                                     (context, index) {
                                       final lockedGame = lockedGames[index];
-                                      final isLast = index == lockedGames.length - 1;
+                                      final isLast =
+                                          index == lockedGames.length - 1;
                                       return Padding(
                                         padding: EdgeInsets.only(
                                           bottom: isLast ? 0.0 : AppSpacing.sm,
@@ -1039,17 +1071,15 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   // PREMIUM GAME CARD - Matching Profile Page Style
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildPremiumGameCard(
-    BuildContext context,
-    Game game,
-    DocumentReference? currentUserReference,
-    {bool isLocked = false}
-  ) {
+      BuildContext context, Game game, DocumentReference? currentUserReference,
+      {bool isLocked = false}) {
     final isUserGame = currentUserReference != null &&
         (game.userRef == currentUserReference ||
             game.joinedPlayers.contains(currentUserReference));
     final isCancelled = game.status == 'cancelled';
     final isExpired = game.status == 'expired';
-    final spotsLeft = game.maxPlayers - (game.joinedPlayers.length + game.guestPlayers.length);
+    final spotsLeft = game.maxPlayers -
+        (game.joinedPlayers.length + game.guestPlayers.length);
     final isFull = spotsLeft <= 0;
     final ownerRef = game.userRef;
 
@@ -1080,423 +1110,510 @@ class _GamesListWidgetState extends State<GamesListWidget> {
         }
       },
       child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: AppColors.fairway.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(20.0),
-          border: Border.all(
+          width: double.infinity,
+          decoration: BoxDecoration(
             color: isUserGame
-                ? AppColors.sunsetGold.withOpacity(0.4)
-                : Colors.white.withOpacity(0.1),
-            width: isUserGame ? 2.0 : 1.0,
+                ? AppColors.fairway.withOpacity(
+                    0.15) // Much darker for joined games - faded background
+                : AppColors.fairway
+                    .withOpacity(0.3), // Normal background for un-joined games
+            borderRadius: BorderRadius.circular(20.0),
+            border: Border.all(
+              color: isUserGame
+                  ? Colors.white
+                      .withOpacity(0.12) // Subtle muted border for joined games
+                  : Colors.white
+                      .withOpacity(0.1), // Normal border for un-joined games
+              width: 1.0,
+            ),
+            boxShadow: null, // No shadow for any games
           ),
-          boxShadow: isUserGame
-              ? [
-                  BoxShadow(
-                    color: AppColors.sunsetGold.withOpacity(0.15),
-                    blurRadius: 20,
-                    offset: Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Column(
-          children: [
-            // Main content
-            Padding(
-              padding: EdgeInsets.all(AppSpacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Top row: Game Type Badge + Status + Spots indicator
-                  Row(
-                    children: [
-                      if (isLocked)
-                        Tooltip(
-                          message: 'Friends-only game',
-                          child: Container(
+          child: Column(
+            children: [
+              // Main content
+              Padding(
+                padding: EdgeInsets.all(AppSpacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top row: Game Type Badge + Status + Spots indicator
+                    Row(
+                      children: [
+                        if (isLocked)
+                          Tooltip(
+                            message: 'Friends-only game',
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppSpacing.sm,
+                                vertical: AppSpacing.xxs,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.lock_rounded,
+                                    size: 12,
+                                    color: Colors.white.withOpacity(0.85),
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Friends Only',
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: Colors.white.withOpacity(0.85),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        if (isLocked) SizedBox(width: AppSpacing.xs),
+                        // Game Type Badge with gradient
+                        if (game.gameType.isNotEmpty)
+                          Opacity(
+                            opacity: isUserGame ? 0.65 : 1.0,  // Dim badge for joined games
+                            child: Container(
                             padding: EdgeInsets.symmetric(
                               horizontal: AppSpacing.sm,
                               vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.12),
+                              gradient: LinearGradient(
+                                colors: game.styleGame == 'Money Game'
+                                    ? [
+                                        AppColors.sunsetGold,
+                                        AppColors.sunsetPeach
+                                      ]
+                                    : [
+                                        AppColors.fairwayLight,
+                                        AppColors.fairway
+                                      ],
+                              ),
                               borderRadius: BorderRadius.circular(20.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (game.styleGame == 'Money Game'
+                                          ? AppColors.sunsetGold
+                                          : AppColors.fairway)
+                                      .withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              game.gameType,
+                              style: AppTypography.labelSmall.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            ),  // Close Opacity wrapper for game type badge
+                          ),
+                        if (game.styleGame == 'Money Game') ...[
+                          SizedBox(width: AppSpacing.xs),
+                          Opacity(
+                            opacity: isUserGame ? 0.65 : 1.0,  // Dim money badge for joined games
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppSpacing.xs,
+                                vertical: AppSpacing.xxs,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.sunsetGold.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                '\$\$\$',
+                                style: AppTypography.labelSmall.copyWith(
+                                  color: AppColors.sunsetGold,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                        Spacer(),
+                        // Status badges
+                        if (isCancelled)
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xxs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.error.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12.0),
+                              border: Border.all(
+                                color: AppColors.error.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Text(
+                              'Cancelled',
+                              style: AppTypography.labelSmall.copyWith(
+                                color: AppColors.error,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          )
+                        else if (isExpired)
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xxs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.warning.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            child: Text(
+                              'Expired',
+                              style: AppTypography.labelSmall.copyWith(
+                                color: AppColors.warning,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          )
+                        else if (isUserGame)
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xxs,
+                            ),
+                            decoration: BoxDecoration(
+                              // Muted sage/gray-green instead of vibrant gold
+                              color: Color(0xFF6B7C6E).withOpacity(0.85),
+                              borderRadius: BorderRadius.circular(12.0),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.lock_rounded,
-                                  size: 12,
-                                  color: Colors.white.withOpacity(0.85),
-                                ),
+                                Icon(Icons.check_circle_rounded,
+                                    color: Colors.white, size: 14),
                                 SizedBox(width: 4),
                                 Text(
-                                  'Friends Only',
+                                  'Joined',
                                   style: AppTypography.labelSmall.copyWith(
-                                    color: Colors.white.withOpacity(0.85),
+                                    color: Colors.white,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ),
-                      if (isLocked) SizedBox(width: AppSpacing.xs),
-                      // Game Type Badge with gradient
-                      if (game.gameType.isNotEmpty)
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xxs,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: game.styleGame == 'Money Game'
-                                  ? [AppColors.sunsetGold, AppColors.sunsetPeach]
-                                  : [AppColors.fairwayLight, AppColors.fairway],
-                            ),
-                            borderRadius: BorderRadius.circular(20.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: (game.styleGame == 'Money Game'
-                                        ? AppColors.sunsetGold
-                                        : AppColors.fairway)
-                                    .withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            game.gameType,
-                            style: AppTypography.labelSmall.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      if (game.styleGame == 'Money Game') ...[
-                        SizedBox(width: AppSpacing.xs),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppSpacing.xs,
-                            vertical: AppSpacing.xxs,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.sunsetGold.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '\$\$\$',
-                            style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.sunsetGold,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
                       ],
-                      Spacer(),
-                      // Status badges
-                      if (isCancelled)
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xxs,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.error.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12.0),
-                            border: Border.all(
-                              color: AppColors.error.withOpacity(0.3),
-                            ),
-                          ),
-                          child: Text(
-                            'Cancelled',
-                            style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.error,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        )
-                      else if (isExpired)
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xxs,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.warning.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: Text(
-                            'Expired',
-                            style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.warning,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        )
-                      else if (isUserGame)
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xxs,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                            ),
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.check_circle_rounded,
-                                  color: Colors.white, size: 14),
-                              SizedBox(width: 4),
-                              Text(
-                                'Joined',
-                                style: AppTypography.labelSmall.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-
-                  SizedBox(height: AppSpacing.md),
-
-                  // Course Name - Hero Element with icon
-                  Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [AppColors.fairwayLight, AppColors.fairway],
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          Icons.golf_course_rounded,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                      SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              valueOrDefault<String>(game.coursePlay, 'Course Name'),
-                              style: AppTypography.titleSmall.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              valueOrDefault<String>(game.nameGame, 'Game Name'),
-                              style: AppTypography.bodySmall.copyWith(
-                                color: AppColors.sunsetGold,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            if (isLocked)
-                              _LockedGameHostLabel(ownerRef: ownerRef),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: AppSpacing.md),
-
-                  // Date & Time with premium styling
-                  Container(
-                    padding: EdgeInsets.all(AppSpacing.sm),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: AppColors.sunsetPeach.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            Icons.calendar_today_rounded,
-                            color: AppColors.sunsetPeach,
-                            size: 16,
-                          ),
-                        ),
-                        SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${dateTimeFormat("EEEE", game.date)}, ${dateTimeFormat("MMM d", game.date)}',
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+
+                    SizedBox(height: AppSpacing.md),
+
+                    // Course Name - Hero Element with icon
+                    Opacity(
+                      opacity: isUserGame ? 0.65 : 1.0,  // Dim course info for joined games
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.fairwayLight,
+                                  AppColors.fairway
+                                ],
                               ),
-                              Text(
-                                dateTimeFormat("jm", game.date),
-                                style: AppTypography.labelSmall.copyWith(
-                                  color: Colors.white.withOpacity(0.6),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Player count indicator
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xs,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isFull
-                                ? AppColors.sunsetRose.withOpacity(0.2)
-                                : AppColors.fairwayLight.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: isFull
-                                  ? AppColors.sunsetRose.withOpacity(0.3)
-                                  : Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.golf_course_rounded,
+                              color: Colors.white,
+                              size: 18,
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.people_rounded,
+                          SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  valueOrDefault<String>(
+                                      game.coursePlay, 'Course Name'),
+                                  style: AppTypography.titleSmall.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  valueOrDefault<String>(
+                                      game.nameGame, 'Game Name'),
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: AppColors.sunsetGold,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                if (isLocked)
+                                  _LockedGameHostLabel(ownerRef: ownerRef),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: AppSpacing.md),
+
+                    // Date & Time with premium styling
+                    Opacity(
+                      opacity: isUserGame ? 0.65 : 1.0,  // Dim date/time for joined games
+                      child: Container(
+                        padding: EdgeInsets.all(AppSpacing.sm),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: AppColors.sunsetPeach.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.calendar_today_rounded,
+                              color: AppColors.sunsetPeach,
+                              size: 16,
+                            ),
+                          ),
+                          SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${dateTimeFormat("EEEE", game.date)}, ${dateTimeFormat("MMM d", game.date)}',
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  dateTimeFormat("jm", game.date),
+                                  style: AppTypography.labelSmall.copyWith(
+                                    color: Colors.white.withOpacity(0.6),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Player count indicator
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isFull
+                                  ? AppColors.sunsetRose.withOpacity(0.2)
+                                  : AppColors.fairwayLight.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
                                 color: isFull
-                                    ? AppColors.sunsetRose
-                                    : Colors.white,
-                                size: 16,
+                                    ? AppColors.sunsetRose.withOpacity(0.3)
+                                    : Colors.white.withOpacity(0.1),
                               ),
-                              SizedBox(width: 4),
-                              Text(
-                                '${game.joinedPlayers.length + game.guestPlayers.length}/${game.maxPlayers}',
-                                style: AppTypography.labelSmall.copyWith(
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.people_rounded,
                                   color: isFull
                                       ? AppColors.sunsetRose
                                       : Colors.white,
-                                  fontWeight: FontWeight.w600,
+                                  size: 16,
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 4),
+                                Text(
+                                  '${game.joinedPlayers.length + game.guestPlayers.length}/${game.maxPlayers}',
+                                  style: AppTypography.labelSmall.copyWith(
+                                    color: isFull
+                                        ? AppColors.sunsetRose
+                                        : Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                      ),  // Close Opacity wrapper for date/time
+                    ),
+                  ],
+                ),
+              ),
+
+              // Bottom action bar
+              if (!isCancelled && !isExpired)
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
                     ),
                   ),
-                ],
-              ),
-            ),
-
-            // Bottom action bar
-            if (!isCancelled && !isExpired)
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    // Member discount badge
-                    if (game.memberDiscount == 'Yes')
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xs,
-                          vertical: AppSpacing.xxs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.fairwayLight.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.local_offer_rounded,
-                              color: AppColors.fairwayLight,
-                              size: 12,
+                  child: Row(
+                    children: [
+                      // Member discount badge
+                      if (game.memberDiscount == 'Yes')
+                        Opacity(
+                          opacity: isUserGame ? 0.65 : 1.0,  // Dim discount badge for joined games
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.xs,
+                              vertical: AppSpacing.xxs,
                             ),
-                            SizedBox(width: 4),
-                            Text(
-                              'Discount',
-                              style: AppTypography.text10.copyWith(
-                                color: AppTheme.of(context).primaryBtnText,
-                                fontWeight: FontWeight.w500,
+                            decoration: BoxDecoration(
+                              color: AppColors.fairwayLight.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.local_offer_rounded,
+                                  color: AppColors.fairwayLight,
+                                  size: 12,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Discount',
+                                  style: AppTypography.text10.copyWith(
+                                    color: AppTheme.of(context).primaryBtnText,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      Spacer(),
+                      // Action button
+                      isLocked
+                          ? InkWell(
+                              onTap: () {
+                                context.pushNamed(TabFriendsWidget.routeName);
+                              },
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md,
+                                  vertical: AppSpacing.xs,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      AppColors.sunsetGold,
+                                      AppColors.sunsetPeach
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          AppColors.sunsetGold.withOpacity(0.3),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.person_add_rounded,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Add Friend',
+                                      style: AppTypography.labelSmall.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    Spacer(),
-                    // Action button
-                    isLocked
-                        ? InkWell(
-                            onTap: () {
-                              context.pushNamed(TabFriendsWidget.routeName);
-                            },
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
+                            )
+                          : Container(
                               padding: EdgeInsets.symmetric(
                                 horizontal: AppSpacing.md,
                                 vertical: AppSpacing.xs,
                               ),
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                                ),
+                                // Ghost/outline style for joined games, gradient for un-joined
+                                gradient: isUserGame
+                                    ? null // No gradient for joined game button
+                                    : LinearGradient(
+                                        colors: [
+                                          AppColors.sunsetGold,
+                                          AppColors.sunsetPeach
+                                        ],
+                                      ),
+                                // Outline border for joined games
+                                border: isUserGame
+                                    ? Border.all(
+                                        color: Colors.white.withOpacity(0.25),
+                                        width: 1.5,
+                                      )
+                                    : null,
                                 borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.sunsetGold.withOpacity(0.3),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
+                                boxShadow: isUserGame
+                                    ? null // No shadow for joined game button
+                                    : [
+                                        BoxShadow(
+                                          color: AppColors.sunsetGold
+                                              .withOpacity(0.3),
+                                          blurRadius: 8,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    Icons.person_add_rounded,
+                                    isUserGame
+                                        ? Icons.visibility_rounded
+                                        : (isFull
+                                            ? Icons.hourglass_empty_rounded
+                                            : Icons.add_rounded),
                                     color: Colors.white,
                                     size: 16,
                                   ),
                                   SizedBox(width: 6),
                                   Text(
-                                    'Add Friend',
+                                    isUserGame
+                                        ? 'View Details'
+                                        : (isFull ? 'Full' : 'Join Game'),
                                     style: AppTypography.labelSmall.copyWith(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
@@ -1505,63 +1622,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 ],
                               ),
                             ),
-                          )
-                        : Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: AppSpacing.md,
-                              vertical: AppSpacing.xs,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: isUserGame
-                                  ? LinearGradient(
-                                      colors: [AppColors.fairwayLight, AppColors.fairway],
-                                    )
-                                  : LinearGradient(
-                                      colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                                    ),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: (isUserGame
-                                          ? AppColors.fairway
-                                          : AppColors.sunsetGold)
-                                      .withOpacity(0.3),
-                                  blurRadius: 8,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  isUserGame
-                                      ? Icons.visibility_rounded
-                                      : (isFull
-                                          ? Icons.hourglass_empty_rounded
-                                          : Icons.add_rounded),
-                                  color: Colors.white,
-                                  size: 16,
-                                ),
-                                SizedBox(width: 6),
-                                Text(
-                                  isUserGame
-                                      ? 'View Details'
-                                      : (isFull ? 'Full' : 'Join Game'),
-                                  style: AppTypography.labelSmall.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
-      ),
     );
   }
 }
