@@ -124,19 +124,12 @@ void _setupErrorHandlers() {
 }
 
 /// Initialize non-critical services after first frame
-/// This includes Crashlytics metadata, persisted state, and notification service
+/// This includes Crashlytics metadata and persisted state
+/// Note: Notification service is initialized by the auth stream listener
 Future<void> _initializeNonCriticalServices(AppState appState) async {
   try {
     // Load persisted state in background (doesn't block UI)
     await appState.initializePersistedState();
-
-    // Initialize notification service if user is authenticated
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null && !kIsWeb) {
-      debugPrint(
-          '🔔 APP: Initializing notification service for user: ${currentUser.uid}');
-      await NotificationPermissionService().init(currentUser.uid);
-    }
 
     // Set Crashlytics metadata (just metadata, not critical)
     await _configureCrashlyticsMetadata();

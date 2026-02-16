@@ -1668,10 +1668,11 @@ class _LockedGameHostLabel extends StatelessWidget {
 
     // PERFORMANCE FIX #7: Read from cached profile (no StreamBuilder, no N+1)
     // Profile was batch-warmed at screen level via ProfileProvider.warmProfiles()
-    return Consumer<ProfileProvider>(
-      builder: (context, profileProvider, _) {
-        final profile = profileProvider.getCachedProfile(ownerRef!.id);
-        final hostName = profile?.displayName;
+    // PERFORMANCE FIX #8: Use Selector to only rebuild when host's displayName changes
+    return Selector<ProfileProvider, String?>(
+      selector: (context, profileProvider) =>
+          profileProvider.getCachedProfile(ownerRef!.id)?.displayName,
+      builder: (context, hostName, _) {
         final label = hostName != null && hostName.trim().isNotEmpty
             ? hostName.trim()
             : 'Unknown';

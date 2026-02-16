@@ -43,6 +43,8 @@ class HostInfoSection extends StatelessWidget {
                 ? Image.network(
                     hostUser.photoUrl,
                     fit: BoxFit.cover,
+                    cacheWidth: 96,
+                    cacheHeight: 96,
                     errorBuilder: (_, __, ___) => const Icon(
                       Icons.person_rounded,
                       color: Colors.white,

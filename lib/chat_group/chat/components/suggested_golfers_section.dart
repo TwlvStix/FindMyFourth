@@ -342,6 +342,8 @@ class _Avatar extends StatelessWidget {
             ? Image.network(
                 photoUrl,
                 fit: BoxFit.cover,
+                cacheWidth: 88,
+                cacheHeight: 88,
                 errorBuilder: (context, error, stackTrace) => Icon(
                   Icons.person_rounded,
                   color: Colors.white,

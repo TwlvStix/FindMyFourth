@@ -385,88 +385,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                       SizedBox(height: AppSpacing.sm),
                       // Results list
                       Expanded(
-                        child: ListView(
+                        child: ListView.builder(
                           controller: scrollController,
                           padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                          children: [
-                            // Guest option (always shown at top)
-                            _buildPlayerOption(
-                              context: context,
-                              name: 'Guest',
-                              subtitle: 'Add a guest player',
-                              photoUrl: null,
-                              isGuest: true,
-                              onTap: () {
-                                _addPlayerToSlot(slotIndex, isGuest: true);
-                                Navigator.pop(context);
-                              },
-                            ),
-                            SizedBox(height: AppSpacing.sm),
-                            // Search status or results
-                            if (_activeQuery.length < _minSearchChars) ...[
-                              Padding(
-                                padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-                                child: Text(
-                                  'Type at least $_minSearchChars characters to search members.',
-                                  style: AppTypography.text13.copyWith(
-                                    color: Color(0xFF718096),
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ] else if (_isSearching) ...[
-                              Center(
-                                child: Padding(
-                                  padding: EdgeInsets.all(AppSpacing.lg),
-                                  child: CircularProgressIndicator(
-                                    color: AppTheme.of(context).primary,
-                                  ),
-                                ),
-                              ),
-                            ] else if (_searchResults.isEmpty) ...[
-                              Padding(
-                                padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-                                child: Text(
-                                  'No members found.',
-                                  style: AppTypography.text13.copyWith(
-                                    color: Color(0xFF718096),
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ] else ...[
-                              ...(_searchResults.map((profile) {
-                                final isInGame = joinedPlayerIds.contains(profile.uid);
-                                final isSelected = _playerSlots.values.any((slot) => slot['uid'] == profile.uid);
-                                final canAdd = !isInGame && !isSelected;
-
-                                return _buildPlayerOption(
-                                  context: context,
-                                  name: profile.displayName.isNotEmpty ? profile.displayName : 'Player',
-                                  subtitle: isInGame ? 'Already in game' : (isSelected ? 'Already selected' : null),
-                                  photoUrl: profile.photoUrl,
-                                  isGuest: false,
-                                  onTap: canAdd ? () {
-                                    _addPlayerToSlot(slotIndex, profile: profile);
-                                    Navigator.pop(context);
-                                  } : null,
-                                );
-                              }).toList()),
-                              if (_hasMoreResults)
-                                Padding(
-                                  padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                                  child: Center(
-                                    child: TextButton(
-                                      onPressed: () async {
-                                        await _loadMoreResults();
-                                        setModalState(() {});
-                                      },
-                                      child: Text('Load more'),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ],
+                          itemCount: _calculateItemCount(),
+                          itemBuilder: (context, index) {
+                            return _buildListItem(context, index, slotIndex, joinedPlayerIds);
+                          },
                         ),
                       ),
                     ],
@@ -481,6 +406,124 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       _modalSetState = null;
       _modalContext = null;
     });
+  }
+
+  int _calculateItemCount() {
+    // Item 0: Guest option (always shown)
+    int count = 1;
+
+    // Item 1+: Status message or search results
+    if (_activeQuery.length < _minSearchChars) {
+      count += 1; // Status message
+    } else if (_isSearching) {
+      count += 1; // Loading spinner
+    } else if (_searchResults.isEmpty) {
+      count += 1; // No results message
+    } else {
+      count += _searchResults.length; // Search results
+      if (_hasMoreResults) {
+        count += 1; // Load more button
+      }
+    }
+
+    return count;
+  }
+
+  Widget _buildListItem(BuildContext context, int index, int slotIndex, Set<String> joinedPlayerIds) {
+    // Index 0: Guest option
+    if (index == 0) {
+      return Column(
+        children: [
+          _buildPlayerOption(
+            context: context,
+            name: 'Guest',
+            subtitle: 'Add a guest player',
+            photoUrl: null,
+            isGuest: true,
+            onTap: () {
+              _addPlayerToSlot(slotIndex, isGuest: true);
+              Navigator.pop(context);
+            },
+          ),
+          SizedBox(height: AppSpacing.sm),
+        ],
+      );
+    }
+
+    // Index 1+: Status messages or search results
+    final contentIndex = index - 1;
+
+    if (_activeQuery.length < _minSearchChars) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+        child: Text(
+          'Type at least $_minSearchChars characters to search members.',
+          style: AppTypography.text13.copyWith(
+            color: Color(0xFF718096),
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+    } else if (_isSearching) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(AppSpacing.lg),
+          child: CircularProgressIndicator(
+            color: AppTheme.of(context).primary,
+          ),
+        ),
+      );
+    } else if (_searchResults.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+        child: Text(
+          'No members found.',
+          style: AppTypography.text13.copyWith(
+            color: Color(0xFF718096),
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+    } else {
+      // Search results
+      if (contentIndex < _searchResults.length) {
+        final profile = _searchResults[contentIndex];
+        final isInGame = joinedPlayerIds.contains(profile.uid);
+        final isSelected = _playerSlots.values.any((slot) => slot['uid'] == profile.uid);
+        final canAdd = !isInGame && !isSelected;
+
+        return _buildPlayerOption(
+          context: context,
+          name: profile.displayName.isNotEmpty ? profile.displayName : 'Player',
+          subtitle: isInGame ? 'Already in game' : (isSelected ? 'Already selected' : null),
+          photoUrl: profile.photoUrl,
+          isGuest: false,
+          onTap: canAdd ? () {
+            _addPlayerToSlot(slotIndex, profile: profile);
+            Navigator.pop(context);
+          } : null,
+        );
+      } else if (_hasMoreResults) {
+        // Load more button
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+          child: Center(
+            child: TextButton(
+              onPressed: () async {
+                await _loadMoreResults();
+                final modalSetState = _modalSetState;
+                if (modalSetState != null) {
+                  modalSetState(() {});
+                }
+              },
+              child: Text('Load more'),
+            ),
+          ),
+        );
+      }
+    }
+
+    return SizedBox.shrink();
   }
 
   Widget _buildPlayerOption({
@@ -903,6 +946,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                       width: 48.0,
                                                       height: 48.0,
                                                       fit: BoxFit.cover,
+                                                      cacheWidth: 96,
+                                                      cacheHeight: 96,
                                                     ),
                                                   ),
                                                   SizedBox(width: 12.0),

@@ -23,11 +23,19 @@ class FriendFilterBottomSheet extends StatefulWidget {
 
 class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
   late FriendFilters _filters;
+  late TextEditingController _homeCourseController;
 
   @override
   void initState() {
     super.initState();
     _filters = widget.currentFilters.copy();
+    _homeCourseController = TextEditingController(text: _filters.homeCourse ?? '');
+  }
+
+  @override
+  void dispose() {
+    _homeCourseController.dispose();
+    super.dispose();
   }
 
   @override
@@ -334,7 +342,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
                   _filters.homeCourse = value.trim().isEmpty ? null : value;
                 });
               },
-              controller: TextEditingController(text: _filters.homeCourse ?? ''),
+              controller: _homeCourseController,
               decoration: InputDecoration(
                 hintText: 'Enter course name...',
                 border: InputBorder.none,

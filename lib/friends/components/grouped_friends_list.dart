@@ -83,13 +83,26 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
   Widget build(BuildContext context) {
     // PERFORMANCE FIX #7: Read friends from cache instead of creating N streams
     // Profiles were batch-warmed in initState via ProfileProvider.warmProfiles()
-    return Consumer<ProfileProvider>(
-      builder: (context, profileProvider, _) {
+    // PERFORMANCE FIX #8: Use Selector to only rebuild when friend profiles change
+    return Selector<ProfileProvider, List<UsersRecord>>(
+      selector: (context, profileProvider) {
         // Read all friends from cache
-        final allFriends = widget.friendRefs
+        return widget.friendRefs
             .map((ref) => profileProvider.getCachedProfile(ref.id))
             .whereType<UsersRecord>()
             .toList();
+      },
+      shouldRebuild: (previous, next) {
+        // Only rebuild if the list of friends or their data changed
+        if (previous.length != next.length) return true;
+        for (int i = 0; i < previous.length; i++) {
+          if (previous[i].uid != next[i].uid) return true;
+          if (previous[i].displayName != next[i].displayName) return true;
+          if (previous[i].photoUrl != next[i].photoUrl) return true;
+        }
+        return false;
+      },
+      builder: (context, allFriends, _) {
 
         // Show loading if profiles aren't cached yet
         if (allFriends.isEmpty && widget.friendRefs.isNotEmpty) {

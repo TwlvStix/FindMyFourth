@@ -230,6 +230,8 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
                   ? Image.network(
                       widget.user.photoUrl,
                       fit: BoxFit.cover,
+                      cacheWidth: 124,
+                      cacheHeight: 124,
                       errorBuilder: (context, error, stackTrace) =>
                           _buildAvatarFallback(),
                     )

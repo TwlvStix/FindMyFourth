@@ -600,9 +600,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                           .toList() ??
                                                       [])
                                                   .toList();
-                                          print(
-                                            'Requests tab friend_requests raw: ${currentUserDocument?.snapshotData['friend_requests']}',
-                                          );
 
                                           // ═══════════════════════════════════════════════════════
                                           // PERFORMANCE FIX #7: Batch-warm profiles for friend requests
@@ -798,9 +795,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                           );
                                                         }
                                                       } catch (e) {
-                                                        print(
-                                                          'Deny request failed: $e',
-                                                        );
+                                                        debugPrint('Deny request failed: $e');
                                                         if (mounted) {
                                                           showSnackbar(
                                                             context,

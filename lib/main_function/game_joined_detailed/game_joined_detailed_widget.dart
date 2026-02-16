@@ -822,6 +822,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                     ? Image.network(
                                                         photoUrl,
                                                         fit: BoxFit.cover,
+                                                        cacheWidth: 96,
+                                                        cacheHeight: 96,
                                                         errorBuilder: (context, error, stackTrace) =>
                                                             Icon(
                                                           Icons.person_rounded,

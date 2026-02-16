@@ -32,11 +32,13 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
   TextEditingController? passwordTextController;
   bool passwordVisibility = false;
   String? Function(BuildContext, String?)? passwordTextControllerValidator;
+  FocusNode? passwordVisibilityIconFocusNode;
   FocusNode? passwordConfirmFocusNode;
   TextEditingController? passwordConfirmTextController;
   bool passwordConfirmVisibility = false;
   String? Function(BuildContext, String?)?
       passwordConfirmTextControllerValidator;
+  FocusNode? passwordConfirmVisibilityIconFocusNode;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -48,9 +50,11 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
 
     passwordTextController = TextEditingController();
     passwordFocusNode = FocusNode();
+    passwordVisibilityIconFocusNode = FocusNode(skipTraversal: true);
 
     passwordConfirmTextController = TextEditingController();
     passwordConfirmFocusNode = FocusNode();
+    passwordConfirmVisibilityIconFocusNode = FocusNode(skipTraversal: true);
 
     // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
@@ -62,9 +66,11 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
 
     passwordFocusNode?.dispose();
     passwordTextController?.dispose();
+    passwordVisibilityIconFocusNode?.dispose();
 
     passwordConfirmFocusNode?.dispose();
     passwordConfirmTextController?.dispose();
+    passwordConfirmVisibilityIconFocusNode?.dispose();
 
     super.dispose();
   }
@@ -279,7 +285,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             }
                                           },
                                           focusNode:
-                                              FocusNode(skipTraversal: true),
+                                              passwordVisibilityIconFocusNode,
                                           child: Icon(
                                             passwordVisibility
                                                 ? Icons.visibility_outlined
@@ -362,7 +368,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             }
                                           },
                                           focusNode:
-                                              FocusNode(skipTraversal: true),
+                                              passwordConfirmVisibilityIconFocusNode,
                                           child: Icon(
                                             passwordConfirmVisibility
                                                 ? Icons.visibility_outlined

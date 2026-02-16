@@ -31,6 +31,7 @@ class _SignInWidgetState extends State<SignInWidget> {
   TextEditingController? passwordTextController;
   bool passwordVisibility = false;
   String? Function(BuildContext, String?)? passwordTextControllerValidator;
+  FocusNode? passwordVisibilityIconFocusNode;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -42,6 +43,7 @@ class _SignInWidgetState extends State<SignInWidget> {
 
     passwordTextController = TextEditingController();
     passwordFocusNode = FocusNode();
+    passwordVisibilityIconFocusNode = FocusNode(skipTraversal: true);
 
     // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
@@ -53,6 +55,7 @@ class _SignInWidgetState extends State<SignInWidget> {
 
     passwordFocusNode?.dispose();
     passwordTextController?.dispose();
+    passwordVisibilityIconFocusNode?.dispose();
 
     super.dispose();
   }
@@ -296,7 +299,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           }
                                         },
                                         focusNode:
-                                            FocusNode(skipTraversal: true),
+                                            passwordVisibilityIconFocusNode,
                                         child: Icon(
                                           passwordVisibility
                                               ? Icons.visibility_outlined
