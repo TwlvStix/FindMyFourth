@@ -8,6 +8,8 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/create_game/create_game_widget.dart';
+import '/main_function/games_list/components/flexible_time_display.dart';
+import '/models/game.dart';
 import '/providers/game_provider.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import 'package:flutter/material.dart';
@@ -212,7 +214,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
   // ═══════════════════════════════════════════════════════════════════════════
   // PREMIUM MY GAME CARD
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildPremiumMyGameCard(BuildContext context, GamesRecord game) {
+  Widget _buildPremiumMyGameCard(BuildContext context, GamesRecord gameRecord) {
+    final game = Game.fromRecord(gameRecord);
     final isCancelled = game.isCancelled;
     final isExpired = game.date != null && game.date!.isBefore(getCurrentTimestamp) && !isCancelled;
     final spotsLeft = game.maxPlayers - (game.joinedPlayers.length + game.guestPlayers.length);
@@ -513,35 +516,43 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
-                            Icons.calendar_today_rounded,
+                            game.isFlexible
+                                ? Icons.event_note_rounded
+                                : Icons.calendar_today_rounded,
                             color: AppColors.sunsetPeach,
                             size: 16,
                           ),
                         ),
                         SizedBox(width: AppSpacing.sm),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${dateTimeFormat("EEEE", game.date)}, ${dateTimeFormat("MMM d", game.date)}',
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
+                          child: game.isFlexible
+                              ? FlexibleTimeDisplay(
+                                  game: game,
+                                  showWeekLabel: true,
+                                  compact: false,
+                                )
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${dateTimeFormat("EEEE", game.date)}, ${dateTimeFormat("MMM d", game.date)}',
+                                      style: AppTypography.bodySmall.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      dateTimeFormat("jm", game.date),
+                                      style: AppTypography.labelSmall.copyWith(
+                                        color: Colors.white.withOpacity(0.6),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                dateTimeFormat("jm", game.date),
-                                style: AppTypography.labelSmall.copyWith(
-                                  color: Colors.white.withOpacity(0.6),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
                         ),
                         // Player count indicator
                         Container(

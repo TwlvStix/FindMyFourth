@@ -38,6 +38,8 @@ import '/user_auth/sign_up_account/sign_up_account_widget.dart';
 import '/user_onboarding/progressive_onboarding_widget.dart';
 import '/user_onboarding/user_onboarding_widget.dart';
 import '/user_onboarding/vibe_onboarding_widget.dart';
+import '/vibe/premium_vibe_page/premium_vibe_page_data.dart';
+import '/vibe/premium_vibe_page/premium_vibe_page_widget.dart';
 
 export 'package:go_router/go_router.dart';
 export '/utils/serialization_util.dart';
@@ -418,6 +420,20 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         GoRoute(
+          name: 'PremiumVibePage',
+          path: '/premium-vibe/:userId',
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            PremiumVibePageWidget(
+              userId: state.pathParameters['userId']!,
+              data: state.extra as PremiumVibePageData,
+            ),
+          ),
+        ),
+        GoRoute(
           name: PlayerListWidget.routeName,
           path: PlayerListWidget.routePath,
           redirect: _buildRedirect(appStateNotifier, requireAuth: true),
@@ -604,13 +620,23 @@ Page<dynamic> _buildPageWithTransition(
 ) {
   fixStatusBarOniOS16AndBelow(context);
   final isLoading = appStateNotifier.loading;
+  final logoSize =
+      (MediaQuery.sizeOf(context).shortestSide * 0.42).clamp(140.0, 220.0);
 
   final child = isLoading
-      ? Container(
+      ? ColoredBox(
           color: AppTheme.of(context).primaryBackground,
-          child: Image.asset(
-            'assets/images/Blackfixed.png',
-            fit: BoxFit.contain,
+          child: SafeArea(
+            child: Center(
+              child: SizedBox.square(
+                dimension: logoSize.toDouble(),
+                child: Image.asset(
+                  'assets/icon/FM4_icon.png',
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                ),
+              ),
+            ),
           ),
         )
       : PushNotificationsHandler(child: page);

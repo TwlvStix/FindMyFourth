@@ -95,7 +95,6 @@ void main() {
         VibeCategory.money: 0.8,
         VibeCategory.drinking: 0.2,
         VibeCategory.music: 0.4,
-        VibeCategory.weed: 0.4,
       };
       final mismatches = {
         for (final value in VibeCategory.values)

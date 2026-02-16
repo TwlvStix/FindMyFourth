@@ -7,7 +7,6 @@
       "pace",
       "chat",
       "music",
-      "weed",
       "money",
       "competitive",
       "alcohol"
@@ -33,13 +32,6 @@
       "music": {
         "value": 2.0,
         "tolerance": 2.5,
-        "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
-      "weed": {
-        "value": 0.0,
-        "tolerance": 3.0,
         "dealbreaker": false,
         "isDefault": false,
         "weight": 1.0
@@ -88,13 +80,6 @@
         "isDefault": false,
         "weight": 1.0
       },
-      "weed": {
-        "value": 2.0,
-        "tolerance": 3.0,
-        "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
       "money": {
         "value": 1.0,
         "tolerance": 3.0,
@@ -139,13 +124,6 @@
         "isDefault": false,
         "weight": 1.0
       },
-      "weed": {
-        "value": 0.0,
-        "tolerance": 3.0,
-        "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
       "money": {
         "value": 1.0,
         "tolerance": 3.0,
@@ -185,13 +163,6 @@
       },
       "music": {
         "value": 3.0,
-        "tolerance": 3.0,
-        "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
-      "weed": {
-        "value": 1.0,
         "tolerance": 3.0,
         "dealbreaker": false,
         "isDefault": false,
@@ -241,13 +212,6 @@
         "isDefault": false,
         "weight": 1.0
       },
-      "weed": {
-        "value": 0.0,
-        "tolerance": 1.5,
-        "dealbreaker": true,
-        "isDefault": false,
-        "weight": 1.0
-      },
       "money": {
         "value": 2.0,
         "tolerance": 3.0,
@@ -292,13 +256,6 @@
         "isDefault": false,
         "weight": 1.0
       },
-      "weed": {
-        "value": 4.0,
-        "tolerance": 2.0,
-        "dealbreaker": true,
-        "isDefault": false,
-        "weight": 1.0
-      },
       "money": {
         "value": 2.0,
         "tolerance": 3.0,
@@ -338,13 +295,6 @@
       },
       "music": {
         "value": 2.0,
-        "tolerance": 3.0,
-        "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
-      "weed": {
-        "value": 1.0,
         "tolerance": 3.0,
         "dealbreaker": false,
         "isDefault": false,
@@ -394,13 +344,6 @@
         "isDefault": false,
         "weight": 1.0
       },
-      "weed": {
-        "value": 1.0,
-        "tolerance": 3.0,
-        "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
       "money": {
         "value": 0.0,
         "tolerance": 1.5,
@@ -439,13 +382,6 @@
         "weight": 1.0
       },
       "music": {
-        "value": 3.0,
-        "tolerance": 2.5,
-        "dealbreaker": false,
-        "isDefault": true,
-        "weight": 1.0
-      },
-      "weed": {
         "value": 3.0,
         "tolerance": 2.5,
         "dealbreaker": false,
@@ -496,13 +432,6 @@
         "isDefault": false,
         "weight": 1.0
       },
-      "weed": {
-        "value": 0.0,
-        "tolerance": 3.0,
-        "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
       "money": {
         "value": 3.0,
         "tolerance": 2.5,
@@ -543,13 +472,6 @@
       "music": {
         "value": 2.0,
         "tolerance": 2.5,
-        "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
-      "weed": {
-        "value": 0.0,
-        "tolerance": 3.0,
         "dealbreaker": false,
         "isDefault": false,
         "weight": 1.0
@@ -598,13 +520,6 @@
         "isDefault": false,
         "weight": 1.0
       },
-      "weed": {
-        "value": 0.0,
-        "tolerance": 3.0,
-        "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
       "money": {
         "value": 3.0,
         "tolerance": 2.5,
@@ -645,13 +560,6 @@
       "music": {
         "value": 2.0,
         "tolerance": 2.5,
-        "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
-      "weed": {
-        "value": 0.0,
-        "tolerance": 3.0,
         "dealbreaker": false,
         "isDefault": false,
         "weight": 1.0
@@ -700,13 +608,6 @@
         "isDefault": false,
         "weight": 1.0
       },
-      "weed": {
-        "value": 0.0,
-        "tolerance": 3.0,
-        "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
       "money": {
         "value": 3.0,
         "tolerance": 2.5,
@@ -747,13 +648,6 @@
       "music": {
         "value": 4.0,
         "tolerance": 2.5,
-        "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
-      "weed": {
-        "value": 2.0,
-        "tolerance": 3.0,
         "dealbreaker": false,
         "isDefault": false,
         "weight": 1.0
@@ -802,13 +696,6 @@
         "isDefault": false,
         "weight": 1.0
       },
-      "weed": {
-        "value": 2.0,
-        "tolerance": 3.0,
-        "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
       "money": {
         "value": 1.0,
         "tolerance": 3.0,
@@ -849,13 +736,6 @@
       "music": {
         "value": 4.0,
         "tolerance": 2.5,
-        "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
-      "weed": {
-        "value": 2.0,
-        "tolerance": 3.0,
         "dealbreaker": false,
         "isDefault": false,
         "weight": 1.0
@@ -904,13 +784,6 @@
         "isDefault": false,
         "weight": 1.0
       },
-      "weed": {
-        "value": 2.0,
-        "tolerance": 2.0,
-        "dealbreaker": true,
-        "isDefault": false,
-        "weight": 1.0
-      },
       "money": {
         "value": 2.0,
         "tolerance": 3.0,
@@ -952,13 +825,6 @@
         "value": 4.0,
         "tolerance": 2.5,
         "dealbreaker": false,
-        "isDefault": false,
-        "weight": 1.0
-      },
-      "weed": {
-        "value": 4.0,
-        "tolerance": 2.0,
-        "dealbreaker": true,
         "isDefault": false,
         "weight": 1.0
       },
@@ -1012,13 +878,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 3.0,
           "tolerance": 2.5,
@@ -1059,13 +918,6 @@
         "music": {
           "value": 2.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -1125,13 +977,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 3.0,
           "tolerance": 2.5,
@@ -1172,13 +1017,6 @@
         "music": {
           "value": 4.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 2.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -1242,13 +1080,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 1.0,
           "tolerance": 3.0,
@@ -1288,13 +1119,6 @@
         },
         "music": {
           "value": 3.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 1.0,
           "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
@@ -1359,13 +1183,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 1.5,
-          "dealbreaker": true,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 2.0,
           "tolerance": 3.0,
@@ -1410,13 +1227,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 4.0,
-          "tolerance": 2.0,
-          "dealbreaker": true,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 2.0,
           "tolerance": 3.0,
@@ -1442,7 +1252,6 @@
       "expected": {
         "recommendation": "NotRecommended",
         "hardConflicts": [
-          "weed",
           "alcohol"
         ],
         "topSoftRisks": [
@@ -1472,13 +1281,6 @@
         },
         "music": {
           "value": 2.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 1.0,
           "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
@@ -1523,13 +1325,6 @@
         },
         "music": {
           "value": 2.5,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 1.0,
           "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
@@ -1594,13 +1389,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 2.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 1.0,
           "tolerance": 3.0,
@@ -1640,13 +1428,6 @@
         },
         "music": {
           "value": 3.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 1.0,
           "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
@@ -1709,13 +1490,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 2.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 1.0,
           "tolerance": 3.0,
@@ -1760,13 +1534,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 4.0,
-          "tolerance": 2.0,
-          "dealbreaker": true,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 2.0,
           "tolerance": 3.0,
@@ -1793,7 +1560,6 @@
         "recommendation": "Caution",
         "hardConflicts": [],
         "topSoftRisks": [
-          "weed",
           "alcohol"
         ],
         "expectedBucket": "Okay"
@@ -1821,13 +1587,6 @@
         "music": {
           "value": 2.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -1872,13 +1631,6 @@
         "music": {
           "value": 1.0,
           "tolerance": 2.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -1941,13 +1693,6 @@
           "isDefault": true,
           "weight": 1.0
         },
-        "weed": {
-          "value": 3.0,
-          "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": true,
-          "weight": 1.0
-        },
         "money": {
           "value": 3.0,
           "tolerance": 2.5,
@@ -1988,13 +1733,6 @@
         "music": {
           "value": 2.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -2055,13 +1793,6 @@
           "isDefault": true,
           "weight": 1.0
         },
-        "weed": {
-          "value": 3.0,
-          "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": true,
-          "weight": 1.0
-        },
         "money": {
           "value": 3.0,
           "tolerance": 2.5,
@@ -2100,13 +1831,6 @@
           "weight": 1.0
         },
         "music": {
-          "value": 3.0,
-          "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": true,
-          "weight": 1.0
-        },
-        "weed": {
           "value": 3.0,
           "tolerance": 2.5,
           "dealbreaker": false,
@@ -2169,13 +1893,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 3.0,
           "tolerance": 2.5,
@@ -2216,13 +1933,6 @@
         "music": {
           "value": 2.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -2284,13 +1994,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 3.0,
           "tolerance": 2.5,
@@ -2331,13 +2034,6 @@
         "music": {
           "value": 2.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -2399,13 +2095,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 3.0,
           "tolerance": 2.5,
@@ -2446,13 +2135,6 @@
         "music": {
           "value": 2.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -2514,13 +2196,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 3.0,
           "tolerance": 2.5,
@@ -2561,13 +2236,6 @@
         "music": {
           "value": 2.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -2629,13 +2297,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 3.0,
           "tolerance": 2.5,
@@ -2676,13 +2337,6 @@
         "music": {
           "value": 2.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -2744,13 +2398,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 2.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 1.0,
           "tolerance": 3.0,
@@ -2791,13 +2438,6 @@
         "music": {
           "value": 4.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 2.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -2859,13 +2499,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 2.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 1.0,
           "tolerance": 3.0,
@@ -2906,13 +2539,6 @@
         "music": {
           "value": 4.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 2.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -2974,13 +2600,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 2.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 1.0,
           "tolerance": 3.0,
@@ -3021,13 +2640,6 @@
         "music": {
           "value": 4.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 2.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -3089,13 +2701,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 4.0,
-          "tolerance": 2.0,
-          "dealbreaker": true,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 2.0,
           "tolerance": 3.0,
@@ -3140,13 +2745,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 2.0,
-          "tolerance": 2.0,
-          "dealbreaker": true,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 2.0,
           "tolerance": 3.0,
@@ -3172,9 +2770,7 @@
       "expected": {
         "recommendation": "Caution",
         "hardConflicts": [],
-        "topSoftRisks": [
-          "weed"
-        ],
+        "topSoftRisks": [],
         "expectedBucket": "Good"
       }
     },
@@ -3204,13 +2800,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 4.0,
-          "tolerance": 2.0,
-          "dealbreaker": true,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 2.0,
           "tolerance": 3.0,
@@ -3252,13 +2841,6 @@
           "value": 4.0,
           "tolerance": 2.5,
           "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 4.0,
-          "tolerance": 2.0,
-          "dealbreaker": true,
           "isDefault": false,
           "weight": 1.0
         },
@@ -3319,13 +2901,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 1.5,
-          "dealbreaker": true,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 2.0,
           "tolerance": 3.0,
@@ -3366,13 +2941,6 @@
         "music": {
           "value": 4.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 2.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -3434,13 +3002,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 1.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 0.0,
           "tolerance": 1.5,
@@ -3481,13 +3042,6 @@
         "music": {
           "value": 4.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 2.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -3549,13 +3103,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 1.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 5.0,
           "tolerance": 1.5,
@@ -3596,13 +3143,6 @@
         "music": {
           "value": 4.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 2.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -3664,13 +3204,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 1.0,
           "tolerance": 3.0,
@@ -3711,13 +3244,6 @@
         "music": {
           "value": 2.0,
           "tolerance": 2.5,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
-        "weed": {
-          "value": 0.0,
-          "tolerance": 3.0,
           "dealbreaker": false,
           "isDefault": false,
           "weight": 1.0
@@ -3780,13 +3306,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 1.0,
-          "tolerance": 3.0,
-          "dealbreaker": false,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 2.0,
           "tolerance": 3.0,
@@ -3831,13 +3350,6 @@
           "isDefault": false,
           "weight": 1.0
         },
-        "weed": {
-          "value": 4.0,
-          "tolerance": 2.0,
-          "dealbreaker": true,
-          "isDefault": false,
-          "weight": 1.0
-        },
         "money": {
           "value": 2.0,
           "tolerance": 3.0,
@@ -3864,7 +3376,6 @@
         "recommendation": "Recommended",
         "hardConflicts": [],
         "topSoftRisks": [
-          "weed",
           "alcohol"
         ],
         "expectedBucket": "Good"

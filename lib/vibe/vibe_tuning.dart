@@ -75,7 +75,6 @@ class VibeTuning {
     VibeCategory.music: VibePreference.defaultValue,
     VibeCategory.pace: VibePreference.defaultValue,
     VibeCategory.money: VibePreference.defaultValue,
-    VibeCategory.weed: VibePreference.defaultValue,
     VibeCategory.chat: VibePreference.defaultValue,
     VibeCategory.competitive: VibePreference.defaultValue,
   };
@@ -83,12 +82,6 @@ class VibeTuning {
   // Conservative boundaries to avoid over-triggering dealbreakers.
   static const Map<VibeCategory, DealbreakerBounds> dealbreakerBounds = {
     VibeCategory.drinking: DealbreakerBounds(
-      lowAnchor: 1,
-      lowForbiddenMin: 3,
-      highAnchor: 4,
-      highForbiddenMax: 2,
-    ),
-    VibeCategory.weed: DealbreakerBounds(
       lowAnchor: 1,
       lowForbiddenMin: 3,
       highAnchor: 4,

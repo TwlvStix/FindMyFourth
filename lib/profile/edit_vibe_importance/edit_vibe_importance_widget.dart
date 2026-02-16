@@ -472,7 +472,6 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
     VibeCategory.chat,
     VibeCategory.music,
     VibeCategory.drinking,
-    VibeCategory.weed,
     VibeCategory.money,
   ];
 
@@ -482,7 +481,6 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
     VibeCategory.chat: 'Chat level',
     VibeCategory.music: 'Music',
     VibeCategory.drinking: 'Drinking',
-    VibeCategory.weed: 'Weed',
     VibeCategory.money: 'Money / stakes',
   };
 }

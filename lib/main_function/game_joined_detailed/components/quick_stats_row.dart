@@ -2,17 +2,23 @@ import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/widgets/app_icon_button.dart';
 import '/models/game.dart';
 import '/utils/app_util.dart';
+import '/main_function/games_list/components/flexible_time_display.dart';
 
 /// Quick stats row displaying player count, tee time, and available spots
 class QuickStatsRow extends StatelessWidget {
   const QuickStatsRow({
     super.key,
     required this.game,
+    required this.isOwner,
+    this.onEditPressed,
   });
 
   final Game game;
+  final bool isOwner;
+  final VoidCallback? onEditPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -45,25 +51,46 @@ class QuickStatsRow extends StatelessWidget {
                 ),
                 SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        dateTimeFormat("MMM d", game.date),
-                        style: AppTypography.titleSmall.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
+                  child: game.isFlexible
+                      ? FlexibleTimeDisplay(
+                          game: game,
+                          showWeekLabel: true,
+                          compact: false,
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              dateTimeFormat("MMM d", game.date),
+                              style: AppTypography.titleSmall.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              dateTimeFormat("jm", game.date),
+                              style: AppTypography.labelSmall.copyWith(
+                                color: Colors.white.withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      Text(
-                        dateTimeFormat("jm", game.date),
-                        style: AppTypography.labelSmall.copyWith(
-                          color: Colors.white.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
+                if (isOwner && !game.isFlexible && onEditPressed != null) ...[
+                  SizedBox(width: AppSpacing.xs),
+                  AppIconButton(
+                    icon: Icon(
+                      Icons.edit_rounded,
+                      color: AppColors.sunsetGold,
+                      size: 18,
+                    ),
+                    borderRadius: 8.0,
+                    buttonSize: 32.0,
+                    fillColor: AppColors.sunsetGold.withValues(alpha: 0.15),
+                    onPressed: onEditPressed,
+                    tooltip: 'Edit game details',
+                  ),
+                ],
               ],
             ),
           ),

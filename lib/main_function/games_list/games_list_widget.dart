@@ -13,6 +13,7 @@ import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
 import '/main_function/games_list/components/flexible_badge.dart';
+import '/main_function/games_list/components/flexible_time_display.dart';
 import '/models/game.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
@@ -1400,17 +1401,11 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                           ),
                           SizedBox(width: AppSpacing.sm),
                           if (game.isFlexible) ...[
-                            FlexibleBadge(),
-                            SizedBox(width: AppSpacing.sm),
                             Expanded(
-                              child: Text(
-                                game.flexibleSummary,
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: AppColors.warning,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              child: FlexibleTimeDisplay(
+                                game: game,
+                                showWeekLabel: true,
+                                compact: true,
                               ),
                             ),
                           ] else ...[

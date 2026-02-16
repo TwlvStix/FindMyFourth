@@ -128,20 +128,6 @@ AdjustmentResult interactionAdjustments(
     );
   }
 
-  if (pace >= 0.90 && money >= 0.85) {
-    applyRule(
-      ruleId: 'weed_pace_money',
-      category: VibeCategory.weed,
-      bonus: 0.02,
-      reason:
-          'Weed difference is less likely to matter because you align on pace and how seriously you treat the round.',
-      debugSnapshot: {
-        'pace': pace,
-        'money': money,
-      },
-    );
-  }
-
   if (competitive <= 0.30) {
     applyRule(
       ruleId: 'chat_casual_competitive',

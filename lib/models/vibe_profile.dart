@@ -3,7 +3,6 @@ enum VibeCategory {
   music('music'),
   pace('pace'),
   money('money'),
-  weed('weed'),
   chat('chat'),
   competitive('competitive');
 
@@ -304,8 +303,6 @@ class VibeLabels {
         return 'Money';
       case VibeCategory.drinking:
         return 'Drinking';
-      case VibeCategory.weed:
-        return 'Weed';
       case VibeCategory.music:
         return 'Music';
       case VibeCategory.competitive:
@@ -330,8 +327,6 @@ class VibeLabels {
         'How do you feel about alcohol in your group during a round?',
     VibeCategory.music:
         'How do you feel about music being played during the round?',
-    VibeCategory.weed:
-        'How do you feel about cannabis around the group during a round?',
     VibeCategory.chat:
         'How talkative do you like the group to be during the round?',
     VibeCategory.money:
@@ -346,8 +341,6 @@ class VibeLabels {
         "Rate what you're comfortable being around, not whether you personally drink.",
     VibeCategory.music:
         "Rate what you enjoy being around, even if you don't play music yourself.\nRespectful behavior matters. Rate what you enjoy being around.",
-    VibeCategory.weed:
-        "Rate what you're comfortable being around, not whether you personally use it.",
     VibeCategory.chat:
         "Rate the group energy you enjoy, not how talkative you are as a person.\nRespectful behavior matters. Rate what you enjoy being around.",
     VibeCategory.money:
@@ -359,61 +352,53 @@ class VibeLabels {
   };
 
   static const Map<VibeCategory, Map<int, String>> _labels = {
-    VibeCategory.chat: {
-      0: 'Very quiet, minimal talking',
-      1: 'Mostly quiet with brief check-ins',
-      2: 'Light conversation here and there',
-      3: 'Balanced mix of golf and chat',
-      4: 'Very social and talkative',
-      5: 'Constant conversation, very social',
-    },
     VibeCategory.pace: {
-      0: "Very relaxed, pace isn't a priority",
-      1: 'Easygoing pace, no rushing',
-      2: 'Reasonable pace, no stress',
-      3: 'Steady pace, keep things moving',
-      4: 'Fast pace is important',
-      5: 'Very fast, pace-focused round',
+      0: 'I play deliberate. I read every putt.',
+      1: 'No rush. I play at my own pace.',
+      2: 'Keep it moving but I\'m not stressing.',
+      3: 'Steady pace. I don\'t like waiting.',
+      4: 'Ready golf. Let\'s go.',
+      5: 'If you\'re not ready, I\'m hitting.',
     },
-    VibeCategory.money: {
-      0: 'Prefer none around me',
-      1: 'Very limited, only if everyone agrees (low stakes)',
-      2: 'Occasional small game is fine',
-      3: 'Skins or a casual game is fine',
-      4: 'Regular games and action most rounds',
-      5: 'Love gambling, bring the games and bets',
-    },
-    VibeCategory.drinking: {
-      0: 'Prefer none around me',
-      1: 'Very limited, keep it barely noticeable',
-      2: "Occasional is fine if it doesn't affect the round",
-      3: 'A couple is fine',
-      4: 'Regular drinking is part of the vibe',
-      5: 'Love a few drinks in the group',
-    },
-    VibeCategory.weed: {
-      0: 'Prefer none around me',
-      1: 'Very limited, discreet only',
-      2: "Occasional is fine if it doesn't affect play",
-      3: 'Casual use is fine',
-      4: 'Regular use is part of the vibe',
-      5: 'Fully comfortable with it around the group',
+    VibeCategory.chat: {
+      0: 'I keep to myself out there.',
+      1: 'A few words here and there.',
+      2: 'I\'ll chat between shots.',
+      3: 'I like a good conversation on the course.',
+      4: 'I\'m the one keeping the group laughing.',
+      5: 'Non-stop. I might talk during your backswing.',
     },
     VibeCategory.music: {
-      0: 'Prefer silence around me',
-      1: 'Rare, very low volume only',
-      2: 'Occasional background music is fine',
-      3: 'Music is usually fine at a respectful level',
-      4: 'Music most of the round',
-      5: 'Music is a big part of the vibe',
+      0: 'No music. I like the sounds of the course.',
+      1: 'Low and quiet if anything.',
+      2: 'Background music is fine.',
+      3: 'I like music going most of the round.',
+      4: 'Speaker\'s on from the first tee.',
+      5: 'I\'ve got a playlist ready. It\'s non-negotiable.',
+    },
+    VibeCategory.drinking: {
+      0: 'I don\'t drink on the course.',
+      1: 'Maybe one, keep it light.',
+      2: 'A couple beers through the round.',
+      3: 'A drink in hand most of the round.',
+      4: 'Cart girl every time. Cooler\'s stocked.',
+      5: 'We\'re here to golf and drink. In that order. Maybe.',
+    },
+    VibeCategory.money: {
+      0: 'No games, no bets. I\'m just playing golf.',
+      1: 'A friendly bet for a beer or bragging rights.',
+      2: 'Skins or dots. A few bucks to keep it interesting.',
+      3: 'A few games running. Enough to make it sting a little.',
+      4: 'Multiple games, real money. That\'s how I play.',
+      5: 'Big stakes, big action. The bet makes the round.',
     },
     VibeCategory.competitive: {
-      0: 'Very relaxed, no competitive pressure',
-      1: 'Light competition, mostly casual',
-      2: 'Friendly competition',
-      3: 'Structured competition but approachable',
-      4: 'Highly competitive',
-      5: 'Tournament-level intensity',
+      0: 'I\'m just out here having fun.',
+      1: 'I don\'t really keep score.',
+      2: 'I keep score for my own game and handicap.',
+      3: 'I\'m trying to beat my group. Every time.',
+      4: 'I secretly wish the worst for my playing partners.',
+      5: 'Every shot feels like the Masters.',
     },
   };
 }

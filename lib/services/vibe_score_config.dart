@@ -16,7 +16,6 @@ class VibeScoreConfig {
     VibeCategory.music: VibePreference.defaultValue,
     VibeCategory.pace: VibePreference.defaultValue,
     VibeCategory.money: VibePreference.defaultValue,
-    VibeCategory.weed: VibePreference.defaultValue,
     VibeCategory.chat: VibePreference.defaultValue,
     VibeCategory.competitive: VibePreference.defaultValue,
   };

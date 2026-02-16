@@ -11,7 +11,6 @@ import '/core/design_tokens/typography.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/navigation/app_router.dart';
 import '/core/widgets/app_button_enhanced.dart';
-import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/models/vibe_profile.dart';
@@ -23,6 +22,8 @@ import '/profile/edit_vibes/edit_vibes_widget.dart';
 import '/services/vibe_match_explanation.dart';
 import '/services/vibe_matcher.dart';
 import '/services/vibe_repository.dart';
+import '/utils/vibe_archetypes.dart';
+import '/vibe/premium_vibe_page/premium_vibe_page_data.dart';
 import '/vibe/vibe_scoring.dart';
 import '/vibe/vibe_tuning.dart';
 
@@ -50,6 +51,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
   VibeProfile? _theirVibes;
   bool _isVibeMatchLoading = false;
   String? _vibeMatchUserId;
+  String _cachedUserName = '';
+  String _cachedUserPhotoUrl = '';
 
   Future<void> _openChatWithUser(DocumentReference userRef) async {
     final currentUserRef = currentUserReference;
@@ -155,7 +158,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     }
   }
 
-  void _openVibeMatchSheet() {
+  void _openVibePage() {
     final result = _vibeMatchResult;
     final myVibes = _myVibes;
     final theirVibes = _theirVibes;
@@ -163,279 +166,44 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
       return;
     }
 
-    showAppBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      isDismissible: true,
-      enableDrag: true,
-      useRootNavigator: true,
-      builder: (context) {
-        final myFitScore = result.myFitPercent.round();
-        final theirFitScore = result.theirFitPercent.round();
-        final isCapped = result.cappedScore != null;
-        final explanation = buildMatchExplanation(
-          matchResult: result,
-          a: myVibes,
-          b: theirVibes,
-        );
-        final subtitle = _matchSubtitle(explanation);
-        return Container(
-          decoration: BoxDecoration(
-            color: AppColors.pure,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(20),
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Drag handle
-                SizedBox(height: AppSpacing.sm),
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.cloud,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                // Header with back button - larger tap area
-                Container(
-                  alignment: Alignment.centerLeft,
-                  padding: EdgeInsets.only(
-                    left: AppSpacing.xs,
-                    top: AppSpacing.sm,
-                    bottom: AppSpacing.xs,
-                  ),
-                  child: PremiumBackButton(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ),
-                // Scrollable content
-                Flexible(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(
-                      AppSpacing.lg,
-                      0,
-                      AppSpacing.lg,
-                      AppSpacing.xxl,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Asymmetric scores display
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Your fit',
-                                  style: AppTypography.labelMedium.copyWith(
-                                    color: AppColors.stone,
-                                    letterSpacing: AppTypography.letterSpacingNormal,
-                                  ),
-                                ),
-                                Text(
-                                  '$myFitScore%',
-                                  style: AppTypography.displayMedium.copyWith(
-                                    color: AppColors.fairwayDark,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: AppSpacing.lg),
-                            Padding(
-                              padding: EdgeInsets.only(bottom: AppSpacing.md),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Their fit',
-                                    style: AppTypography.labelSmall.copyWith(
-                                      color: AppColors.stone,
-                                      letterSpacing: AppTypography.letterSpacingNormal,
-                                    ),
-                                  ),
-                                  Text(
-                                    '$theirFitScore%',
-                                    style: AppTypography.headlineMedium.copyWith(
-                                      color: AppColors.slate,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (subtitle != null) ...[
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            subtitle,
-                            textAlign: TextAlign.center,
-                            style: AppTypography.bodySmall.copyWith(
-                              color: AppColors.slate,
-                            ),
-                          ),
-                        ],
-                        if (isCapped || !result.isRecommended) ...[
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            'Not recommended',
-                            style: AppTypography.bodyMedium.copyWith(
-                              color: AppColors.error,
-                              fontWeight: AppTypography.semiBold,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: AppSpacing.lg),
-                        _buildConfidenceMeter(result.confidence, explanation.confidenceReason, explanation.defaultCategoryCount),
-                        if (result.confidence == VibeConfidence.low) ...[
-                          const SizedBox(height: AppSpacing.sm),
-                          GestureDetector(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              context.pushNamed(
-                                EditVibesWidget.routeName,
-                                extra: <String, dynamic>{
-                                  kTransitionInfoKey:
-                                      TransitionStandards.detailTransition,
-                                },
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(AppSpacing.sm),
-                              decoration: BoxDecoration(
-                                color: AppColors.sand,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: AppColors.cloud,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.tune_rounded,
-                                    color: AppColors.fairway,
-                                    size: 18,
-                                  ),
-                                  const SizedBox(width: AppSpacing.sm),
-                                  Expanded(
-                                    child: Text(
-                                      'Finish your VIBE to improve match accuracy',
-                                      style: AppTypography.bodySmall.copyWith(
-                                        color: AppColors.slate,
-                                      ),
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    color: AppColors.stone,
-                                    size: 14,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: AppSpacing.lg),
-                        Text(
-                          'Per-category breakdown',
-                          style: AppTypography.titleSmall.copyWith(
-                            color: AppColors.onyx,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        _buildCategoryBreakdown(explanation),
-                        const SizedBox(height: AppSpacing.lg),
-                        if (explanation.whyThisMatchWorks.isNotEmpty) ...[
-                          Text(
-                            'Why this match works',
-                            style: AppTypography.titleSmall.copyWith(
-                              color: AppColors.onyx,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.sm),
-                          ...explanation.whyThisMatchWorks.map(
-                            (item) => _buildInsightRow(
-                              icon: Icons.check_circle_rounded,
-                              title: item.title,
-                              description: item.description,
-                              iconColor: AppColors.fairway,
-                              showActivityBadge: item.isActivityBased,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
-                        ],
-                        Text(
-                          'Top differences that matter',
-                          style: AppTypography.titleSmall.copyWith(
-                            color: AppColors.onyx,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        if (explanation.topDifferencesThatMatter.isEmpty)
-                          Text(
-                            'No major differences found.',
-                            style: AppTypography.bodySmall.copyWith(
-                              color: AppColors.stone,
-                            ),
-                          )
-                        else
-                          ...explanation.topDifferencesThatMatter.map(
-                            (item) => _buildInsightRow(
-                              icon: Icons.priority_high_rounded,
-                              title: item.title,
-                              description: item.description,
-                              iconColor: AppColors.stone,
-                            ),
-                          ),
-                        const SizedBox(height: AppSpacing.lg),
-                        Text(
-                          'You vs Them',
-                          style: AppTypography.titleSmall.copyWith(
-                            color: AppColors.onyx,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        ...VibeCategory.values.map((category) {
-                          return _buildVibeComparisonRow(
-                            category,
-                            myVibes.preferenceFor(category),
-                            theirVibes.preferenceFor(category),
-                          );
-                        }),
-                        if (explanation.defaultCategoryCount > 0) ...[
-                          const SizedBox(height: AppSpacing.md),
-                          Text(
-                            'Defaults reduce certainty. You can update any category anytime.',
-                            style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.stone,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: AppSpacing.lg),
-                        AppButtonEnhanced(
-                          text: 'Close',
-                          variant: AppButtonVariant.secondary,
-                          size: AppButtonSize.medium,
-                          fullWidth: true,
-                          onPressed: () => Navigator.of(context).pop(),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+    // Build explanation
+    final explanation = buildMatchExplanation(
+      matchResult: result,
+      a: myVibes,
+      b: theirVibes,
+    );
+
+    // Get archetypes
+    final myArchetype = VibeArchetypes.classifyProfile(myVibes);
+    final theirArchetype = VibeArchetypes.classifyProfile(theirVibes);
+
+    // Use cached user data (set from StreamBuilder)
+    final userName = _cachedUserName.isNotEmpty ? _cachedUserName : 'Golfer';
+    final userPhotoUrl = _cachedUserPhotoUrl.isNotEmpty
+        ? _cachedUserPhotoUrl
+        : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+
+    // Create data model
+    final pageData = PremiumVibePageData(
+      userId: widget.userRef.id,
+      userName: userName,
+      userPhotoUrl: userPhotoUrl,
+      userRef: widget.userRef,
+      matchResult: result,
+      explanation: explanation,
+      myProfile: myVibes,
+      theirProfile: theirVibes,
+      myArchetype: myArchetype,
+      theirArchetype: theirArchetype,
+    );
+
+    // Navigate
+    context.pushNamed(
+      'PremiumVibePage',
+      pathParameters: {
+        'userId': widget.userRef.id,
       },
+      extra: pageData,
     );
   }
 
@@ -451,6 +219,110 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
       return 'Strong fit on ${titles.first}.';
     }
     return 'Strong fit on ${titles.first} and ${titles.last}.';
+  }
+
+  Widget _buildArchetypesSection(VibeProfile myVibes, VibeProfile theirVibes) {
+    final myArchetype = VibeArchetypes.classifyProfile(myVibes);
+    final theirArchetype = VibeArchetypes.classifyProfile(theirVibes);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Vibe styles',
+          style: AppTypography.titleSmall.copyWith(
+            color: AppColors.onyx,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: AppColors.fairwayLight.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.fairway.withOpacity(0.3),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'You',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.stone,
+                        letterSpacing: AppTypography.letterSpacingNormal,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      myArchetype.name,
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.fairwayDark,
+                        fontWeight: AppTypography.semiBold,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      myArchetype.description,
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.slate,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: AppColors.sand.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.cloud,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Them',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.stone,
+                        letterSpacing: AppTypography.letterSpacingNormal,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      theirArchetype.name,
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.onyx,
+                        fontWeight: AppTypography.semiBold,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      theirArchetype.description,
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.slate,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   Widget _buildConfidenceMeter(VibeConfidence confidence, String confidenceReason, int defaultCategoryCount) {
@@ -918,7 +790,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           ),
           const SizedBox(width: AppSpacing.sm),
           InkWell(
-            onTap: canOpenSheet ? _openVibeMatchSheet : null,
+            onTap: canOpenSheet ? _openVibePage : null,
             child: Text(
               'Why?',
               style: AppTypography.bodySmall.copyWith(
@@ -1270,7 +1142,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                   icon: Icons.auto_awesome_rounded,
                   label: vibeLabel,
                   gradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                  onTap: canOpenVibe ? _openVibeMatchSheet : null,
+                  onTap: canOpenVibe ? _openVibePage : null,
                   isDisabled: !canOpenVibe,
                 ),
               ),
@@ -1488,6 +1360,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           }
 
           final userRecord = snapshot.data!;
+
           // Create data map for legacy _buildQuickActionsGrid method
           final data = <String, dynamic>{
             'friend_requests': userRecord.friendRequests,
@@ -1510,6 +1383,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           final displayName = userRecord.displayName.isNotEmpty
               ? userRecord.displayName
               : 'Golfer';
+          _cachedUserName = displayName;
+          _cachedUserPhotoUrl = photoUrl;
           final phoneNumber = userRecord.phoneNumber.isNotEmpty
               ? userRecord.phoneNumber
               : 'Not set';

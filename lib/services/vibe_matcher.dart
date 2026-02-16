@@ -144,7 +144,7 @@ class VibeMatchResult {
   final double softRiskPenalty01;
   final double baseScorePercent;
   final double finalScorePercent;
-  final double myFitPercent;    // score from MY perspective only
+  final double myFitPercent; // score from MY perspective only
   final double theirFitPercent; // score from THEIR perspective only
   final VibeConfidence confidence;
   final String confidenceLabel;
@@ -155,13 +155,12 @@ class VibeMatchResult {
 
 class VibeMatcher {
   static const Map<VibeCategory, double> weights = {
-    VibeCategory.pace: 25,
-    VibeCategory.money: 20,
-    VibeCategory.drinking: 15,
-    VibeCategory.weed: 10,
-    VibeCategory.music: 10,
-    VibeCategory.chat: 10,
-    VibeCategory.competitive: 10,
+    VibeCategory.pace: 28,
+    VibeCategory.competitive: 22,
+    VibeCategory.drinking: 18,
+    VibeCategory.chat: 14,
+    VibeCategory.money: 12,
+    VibeCategory.music: 6,
   };
 
   /// Computes a one-sided fit score: how much will [viewer] enjoy playing
@@ -222,7 +221,7 @@ class VibeMatcher {
   static VibeMatchResult score(
     VibeProfile mine,
     VibeProfile theirs, {
-    bool enableInteractionLayer = true,
+    bool enableInteractionLayer = false, // was true
   }) {
     final perCategory = <VibeCategory, VibeCategoryScore>{};
     final conflicts = <VibeConflict>[];
@@ -453,9 +452,8 @@ class VibeMatcher {
         .toDouble();
 
     // Apply hard-block cap to both one-sided scores
-    final myFitDisplay = hardBlockResult.isHardBlocked
-        ? min(myFitPercent, 40.0)
-        : myFitPercent;
+    final myFitDisplay =
+        hardBlockResult.isHardBlocked ? min(myFitPercent, 40.0) : myFitPercent;
     final theirFitDisplay = hardBlockResult.isHardBlocked
         ? min(theirFitPercent, 40.0)
         : theirFitPercent;

@@ -24,9 +24,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '/auth/firebase_auth/auth_util.dart';
 import '/providers/chat_provider.dart';
+import '/services/vibe_match_explanation.dart';
+import '/services/vibe_matcher.dart';
+import '/utils/vibe_archetypes.dart';
+import '/vibe/premium_vibe_page/premium_vibe_page_data.dart';
 import 'components/premium_app_bar.dart';
 import 'components/premium_hero_section.dart';
 import 'components/quick_stats_row.dart';
@@ -34,6 +40,8 @@ import 'components/group_vibe_summary.dart';
 import 'components/player_match_chip.dart';
 import 'components/firm_it_up_banner.dart';
 import 'components/firm_it_up_bottom_sheet.dart';
+import 'components/edit_game_details_bottom_sheet.dart';
+import '/backend/push_notifications/push_notifications_util.dart';
 
 enum _CancelListingHandling {
   removeNow,
@@ -460,7 +468,13 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                     // Quick Stats Row (Date, Players, Chat)
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      child: QuickStatsRow(game: gameJoinedDetailedGamesRecord),
+                      child: QuickStatsRow(
+                        game: gameJoinedDetailedGamesRecord,
+                        isOwner: gameJoinedDetailedGamesRecord.userRef == currentUserRef,
+                        onEditPressed: gameJoinedDetailedGamesRecord.userRef == currentUserRef
+                            ? () => _handleEditGameDetails(context, gameJoinedDetailedGamesRecord)
+                            : null,
+                      ),
                     ),
 
                     SizedBox(height: AppSpacing.md),
@@ -911,6 +925,13 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                 name: displayName,
                                                 memberMatch:
                                                     _memberMatchesById[groupPlayersItem.id],
+                                                onTap: () => _openPremiumVibePage(
+                                                  context,
+                                                  userRef,
+                                                  displayName,
+                                                  photoUrl,
+                                                  _memberMatchesById[groupPlayersItem.id],
+                                                ),
                                               ),
                                             ),
                                             // Show remove button for owner, checkmark for others
@@ -1548,6 +1569,64 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     );
   }
 
+  Future<void> _openPremiumVibePage(
+    BuildContext context,
+    DocumentReference userRef,
+    String userName,
+    String userPhotoUrl,
+    GroupVibeMemberResult? memberMatch,
+  ) async {
+    if (memberMatch == null) return;
+
+    try {
+      // Get vibe profiles
+      final myVibes = await _vibeRepository.getMyVibesCached();
+      final theirVibes = memberMatch.member.profile;
+
+      // Calculate one-on-one match (not group match)
+      final result = VibeMatcher.score(myVibes, theirVibes);
+      final explanation = buildMatchExplanation(
+        matchResult: result,
+        a: myVibes,
+        b: theirVibes,
+      );
+
+      final myArchetype = VibeArchetypes.classifyProfile(myVibes);
+      final theirArchetype = VibeArchetypes.classifyProfile(theirVibes);
+
+      final pageData = PremiumVibePageData(
+        userId: userRef.id,
+        userName: userName,
+        userPhotoUrl: userPhotoUrl,
+        userRef: userRef,
+        matchResult: result,
+        explanation: explanation,
+        myProfile: myVibes,
+        theirProfile: theirVibes,
+        myArchetype: myArchetype,
+        theirArchetype: theirArchetype,
+      );
+
+      if (!mounted) return;
+
+      context.pushNamed(
+        'PremiumVibePage',
+        pathParameters: {
+          'userId': userRef.id,
+        },
+        extra: pageData,
+      );
+    } catch (error) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to load vibe match. Please try again.'),
+        ),
+      );
+    }
+  }
+
   Widget _buildGroupMatchRow(GroupVibeMemberResult memberResult) {
     final matchScore = memberResult.displayScore.round();
     return Container(
@@ -1886,5 +1965,167 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
         ],
       ),
     );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Edit Game Details
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Future<void> _handleEditGameDetails(
+    BuildContext context,
+    Game gameRecord,
+  ) async {
+    debugPrint('🎯 Edit Game Details: Starting edit flow');
+
+    // Validate 2-hour restriction
+    final teeTime = gameRecord.date;
+    if (teeTime != null) {
+      final hoursUntilTeeTime = teeTime.difference(DateTime.now()).inHours;
+      debugPrint('🎯 Hours until tee time: $hoursUntilTeeTime');
+
+      if (hoursUntilTeeTime < 2) {
+        debugPrint('❌ Edit blocked: Less than 2 hours until tee time');
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Cannot Edit'),
+            content: Text(
+              'Tee time is less than 2 hours away. Consider cancelling this game and creating a new one instead.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+    }
+
+    // Show edit bottom sheet
+    final result = await showModalBottomSheet<Map<String, dynamic>?>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => EditGameDetailsBottomSheet(
+        gameRef: gameRecord.reference,
+        initialDate: gameRecord.date ?? DateTime.now(),
+        initialCourse: gameRecord.coursePlay,
+        initialCourseRef: gameRecord.courseRef,
+      ),
+    );
+
+    if (result != null && mounted) {
+      debugPrint('🎯 Edit result received: $result');
+      await _updateGameDetails(context, gameRecord, result);
+    }
+  }
+
+  Future<void> _updateGameDetails(
+    BuildContext context,
+    Game gameRecord,
+    Map<String, dynamic> updateData,
+  ) async {
+    debugPrint('🎯 Update Game Details: Starting update');
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(
+        child: Card(
+          margin: EdgeInsets.all(AppSpacing.xl),
+          child: Padding(
+            padding: EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: AppColors.sunsetGold),
+                SizedBox(height: AppSpacing.md),
+                Text(
+                  'Updating game details...',
+                  style: TextStyle(fontFamily: 'Manrope', fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      // Update Firestore
+      final firestoreUpdate = <String, dynamic>{
+        'date': updateData['date'],
+        'course_play': updateData['course'],
+        'courseRef': updateData['courseRef'],
+      };
+
+      debugPrint('🎯 Updating Firestore: $firestoreUpdate');
+      await gameRecord.reference.update(firestoreUpdate);
+
+      // Send notifications to all players (except owner)
+      final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
+      final recipients = gameRecord.joinedPlayers
+          .where((ref) => ref.id != currentUserUid)
+          .toList();
+
+      if (recipients.isNotEmpty) {
+        final newDate = updateData['date'] as DateTime;
+        final newCourse = updateData['course'] as String;
+
+        final dayName = dateTimeFormat("EEEE", newDate);
+        final dateStr = dateTimeFormat("MMM d", newDate);
+        final timeStr = dateTimeFormat("jm", newDate);
+
+        final notificationText =
+            'Game updated — now $dayName $dateStr, $timeStr at $newCourse';
+
+        debugPrint('🎯 Sending notifications to ${recipients.length} players');
+        debugPrint('🎯 Notification text: $notificationText');
+
+        triggerPushNotification(
+          notificationTitle: 'Game Details Updated',
+          notificationText: notificationText,
+          userRefs: recipients,
+          initialPageName: 'GameJoinedDetailed',
+          parameterData: {'gameRef': gameRecord.reference.path},
+        );
+      }
+
+      // Close loading dialog
+      if (mounted) Navigator.pop(context);
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Game details updated!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+
+      debugPrint('✅ Game details updated successfully');
+    } catch (e, stackTrace) {
+      debugPrint('❌ Edit Game Details: Error occurred');
+      debugPrint('❌ Error: $e');
+      debugPrint('❌ Stack trace: $stackTrace');
+
+      // Close loading dialog
+      if (mounted) Navigator.pop(context);
+
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update game details: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 }

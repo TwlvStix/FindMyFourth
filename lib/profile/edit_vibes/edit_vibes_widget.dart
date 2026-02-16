@@ -2,7 +2,6 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
-import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/fairway_background.dart';
@@ -12,6 +11,7 @@ import '/profile/edit_vibes/vibe_category_slider.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 import '/services/vibe_repository.dart';
 import '/utils/app_util.dart';
+import '/utils/vibe_archetypes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -191,241 +191,246 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                       AppSpacing.md,
                       AppSpacing.xxl,
                     ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // How this works header
-                      Container(
-                        padding: const EdgeInsets.all(AppSpacing.md),
-                        decoration: BoxDecoration(
-                          color: AppColors.fairwayLight.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.fairway.withOpacity(0.2),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Vibe Archetype Display
+                        Builder(
+                          builder: (context) {
+                            final archetypeMatch =
+                                VibeArchetypes.classifyProfile(_profile);
+                            return Container(
+                              padding: const EdgeInsets.all(AppSpacing.md),
+                              decoration: BoxDecoration(
+                                color: AppColors.sunsetGold.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: AppColors.sunsetGold.withOpacity(0.3),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.emoji_events_rounded,
+                                        size: 20,
+                                        color: AppColors.sunsetGold,
+                                      ),
+                                      const SizedBox(width: AppSpacing.sm),
+                                      Text(
+                                        'Your vibe style',
+                                        style: AppTypography.bodySmall.copyWith(
+                                          color: AppColors.sand,
+                                          fontWeight: AppTypography.medium,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: AppSpacing.xs),
+                                  Text(
+                                    archetypeMatch.name,
+                                    style: AppTypography.titleMedium.copyWith(
+                                      color: AppColors.pure,
+                                      fontWeight: AppTypography.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.xs),
+                                  Text(
+                                    archetypeMatch.description,
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: AppColors.sand,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(
+                          _profile.isComplete
+                              ? 'Vibe settings: up to date'
+                              : 'Vibe settings: incomplete',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.stone,
                           ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                        const SizedBox(height: AppSpacing.md),
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            context.pushNamed(
+                              EditVibeImportanceWidget.routeName,
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(AppSpacing.md),
+                            decoration: BoxDecoration(
+                              color: AppColors.sand,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: AppColors.cloud,
+                              ),
+                            ),
+                            child: Row(
                               children: [
-                                Icon(
-                                  Icons.lightbulb_outline_rounded,
-                                  size: 18,
-                                  color: AppColors.fairway,
-                                ),
-                                const SizedBox(width: AppSpacing.xs),
-                                Text(
-                                  'How this works',
-                                  style: AppTypography.bodyMedium.copyWith(
-                                    color: AppColors.pure,
-                                    fontWeight: AppTypography.semiBold,
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        AppColors.fairwayLight.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
+                                  child: Icon(
+                                    Icons.star_rounded,
+                                    color: AppColors.fairway,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.md),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Set your priorities',
+                                        style:
+                                            AppTypography.bodyMedium.copyWith(
+                                          color: AppColors.onyx,
+                                          fontWeight: AppTypography.semiBold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: AppSpacing.xxs),
+                                      Text(
+                                        'Pick the 2 things that matter most',
+                                        style: AppTypography.bodySmall.copyWith(
+                                          color: AppColors.stone,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: AppColors.stone,
+                                  size: 16,
                                 ),
                               ],
                             ),
-                            const SizedBox(height: AppSpacing.xs),
-                            Text(
-                              'Set what you enjoy being around. This helps match you with compatible groups.',
-                              style: AppTypography.bodySmall.copyWith(
-                                color: AppColors.sand,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.xxs),
-                            Text(
-                              'Slide left = prefer less, right = prefer more',
-                              style: AppTypography.labelSmall.copyWith(
-                                color: AppColors.stone,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      Text(
-                        _profile.isComplete
-                            ? 'Vibe settings: up to date'
-                            : 'Vibe settings: incomplete',
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.stone,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          context.pushNamed(
-                            EditVibeImportanceWidget.routeName,
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(AppSpacing.md),
-                          decoration: BoxDecoration(
-                            color: AppColors.sand,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: AppColors.cloud,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: AppColors.fairwayLight.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  Icons.star_rounded,
-                                  color: AppColors.fairway,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: AppSpacing.md),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Set your priorities',
-                                      style: AppTypography.bodyMedium.copyWith(
-                                        color: AppColors.onyx,
-                                        fontWeight: AppTypography.semiBold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: AppSpacing.xxs),
-                                    Text(
-                                      'Pick the 2 things that matter most',
-                                      style: AppTypography.bodySmall.copyWith(
-                                        color: AppColors.stone,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                color: AppColors.stone,
-                                size: 16,
-                              ),
-                            ],
                           ),
                         ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      Text(
-                        'Social Vibes',
-                        style: AppTypography.headlineSmall.copyWith(
-                          color: AppColors.pure,
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(
+                          'Social Vibes',
+                          style: AppTypography.headlineSmall.copyWith(
+                            color: AppColors.pure,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      VibeCategorySlider(
-                        category: VibeCategory.chat,
-                        pref: _profile.preferenceFor(VibeCategory.chat),
-                        onValueChanged: (value) =>
-                            _handleValueChanged(VibeCategory.chat, value),
-                        onValueCommitted: (value) =>
-                            _commitValueChanged(VibeCategory.chat, value),
-                        onDealbreakerChanged: (value) =>
-                            _handleDealbreakerChanged(VibeCategory.chat, value),
-                        margin: const EdgeInsets.only(bottom: AppSpacing.md),
-                      ),
-                      VibeCategorySlider(
-                        category: VibeCategory.music,
-                        pref: _profile.preferenceFor(VibeCategory.music),
-                        onValueChanged: (value) =>
-                            _handleValueChanged(VibeCategory.music, value),
-                        onValueCommitted: (value) =>
-                            _commitValueChanged(VibeCategory.music, value),
-                        onDealbreakerChanged: (value) => _handleDealbreakerChanged(
-                          VibeCategory.music,
-                          value,
+                        const SizedBox(height: AppSpacing.sm),
+                        VibeCategorySlider(
+                          category: VibeCategory.chat,
+                          pref: _profile.preferenceFor(VibeCategory.chat),
+                          onValueChanged: (value) =>
+                              _handleValueChanged(VibeCategory.chat, value),
+                          onValueCommitted: (value) =>
+                              _commitValueChanged(VibeCategory.chat, value),
+                          onDealbreakerChanged: (value) =>
+                              _handleDealbreakerChanged(
+                                  VibeCategory.chat, value),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.md),
                         ),
-                        margin: const EdgeInsets.only(bottom: AppSpacing.md),
-                      ),
-                      VibeCategorySlider(
-                        category: VibeCategory.drinking,
-                        pref: _profile.preferenceFor(VibeCategory.drinking),
-                        onValueChanged: (value) =>
-                            _handleValueChanged(VibeCategory.drinking, value),
-                        onValueCommitted: (value) =>
-                            _commitValueChanged(VibeCategory.drinking, value),
-                        onDealbreakerChanged: (value) => _handleDealbreakerChanged(
-                          VibeCategory.drinking,
-                          value,
+                        VibeCategorySlider(
+                          category: VibeCategory.music,
+                          pref: _profile.preferenceFor(VibeCategory.music),
+                          onValueChanged: (value) =>
+                              _handleValueChanged(VibeCategory.music, value),
+                          onValueCommitted: (value) =>
+                              _commitValueChanged(VibeCategory.music, value),
+                          onDealbreakerChanged: (value) =>
+                              _handleDealbreakerChanged(
+                            VibeCategory.music,
+                            value,
+                          ),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.md),
                         ),
-                        margin: const EdgeInsets.only(bottom: AppSpacing.md),
-                      ),
-                      VibeCategorySlider(
-                        category: VibeCategory.weed,
-                        pref: _profile.preferenceFor(VibeCategory.weed),
-                        onValueChanged: (value) =>
-                            _handleValueChanged(VibeCategory.weed, value),
-                        onValueCommitted: (value) =>
-                            _commitValueChanged(VibeCategory.weed, value),
-                        onDealbreakerChanged: (value) =>
-                            _handleDealbreakerChanged(VibeCategory.weed, value),
-                        margin: const EdgeInsets.only(bottom: AppSpacing.xl),
-                      ),
-                      Text(
-                        'Play Style',
-                        style: AppTypography.headlineSmall.copyWith(
-                          color: AppColors.pure,
+                        VibeCategorySlider(
+                          category: VibeCategory.drinking,
+                          pref: _profile.preferenceFor(VibeCategory.drinking),
+                          onValueChanged: (value) =>
+                              _handleValueChanged(VibeCategory.drinking, value),
+                          onValueCommitted: (value) =>
+                              _commitValueChanged(VibeCategory.drinking, value),
+                          onDealbreakerChanged: (value) =>
+                              _handleDealbreakerChanged(
+                            VibeCategory.drinking,
+                            value,
+                          ),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.md),
                         ),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      VibeCategorySlider(
-                        category: VibeCategory.pace,
-                        pref: _profile.preferenceFor(VibeCategory.pace),
-                        onValueChanged: (value) =>
-                            _handleValueChanged(VibeCategory.pace, value),
-                        onValueCommitted: (value) =>
-                            _commitValueChanged(VibeCategory.pace, value),
-                        onDealbreakerChanged: (value) =>
-                            _handleDealbreakerChanged(VibeCategory.pace, value),
-                        margin: const EdgeInsets.only(bottom: AppSpacing.md),
-                      ),
-                      VibeCategorySlider(
-                        category: VibeCategory.money,
-                        pref: _profile.preferenceFor(VibeCategory.money),
-                        onValueChanged: (value) =>
-                            _handleValueChanged(VibeCategory.money, value),
-                        onValueCommitted: (value) =>
-                            _commitValueChanged(VibeCategory.money, value),
-                        onDealbreakerChanged: (value) =>
-                            _handleDealbreakerChanged(VibeCategory.money, value),
-                        margin: const EdgeInsets.only(bottom: AppSpacing.md),
-                      ),
-                      VibeCategorySlider(
-                        category: VibeCategory.competitive,
-                        pref: _profile.preferenceFor(VibeCategory.competitive),
-                        onValueChanged: (value) => _handleValueChanged(
-                          VibeCategory.competitive,
-                          value,
+                        Text(
+                          'Play Style',
+                          style: AppTypography.headlineSmall.copyWith(
+                            color: AppColors.pure,
+                          ),
                         ),
-                        onValueCommitted: (value) =>
-                            _commitValueChanged(VibeCategory.competitive, value),
-                        onDealbreakerChanged: (value) =>
-                            _handleDealbreakerChanged(
-                          VibeCategory.competitive,
-                          value,
+                        const SizedBox(height: AppSpacing.sm),
+                        VibeCategorySlider(
+                          category: VibeCategory.pace,
+                          pref: _profile.preferenceFor(VibeCategory.pace),
+                          onValueChanged: (value) =>
+                              _handleValueChanged(VibeCategory.pace, value),
+                          onValueCommitted: (value) =>
+                              _commitValueChanged(VibeCategory.pace, value),
+                          onDealbreakerChanged: (value) =>
+                              _handleDealbreakerChanged(
+                                  VibeCategory.pace, value),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.md),
                         ),
-                        margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-                      ),
-                      AppButtonEnhanced(
-                        text: 'Confirm my vibes',
-                        leadingIcon: Icons.check_circle_rounded,
-                        variant: AppButtonVariant.primary,
-                        size: AppButtonSize.large,
-                        fullWidth: true,
-                        onPressed: _isConfirming ? null : _confirmVibes,
-                      ),
-                    ],
+                        VibeCategorySlider(
+                          category: VibeCategory.money,
+                          pref: _profile.preferenceFor(VibeCategory.money),
+                          onValueChanged: (value) =>
+                              _handleValueChanged(VibeCategory.money, value),
+                          onValueCommitted: (value) =>
+                              _commitValueChanged(VibeCategory.money, value),
+                          onDealbreakerChanged: (value) =>
+                              _handleDealbreakerChanged(
+                                  VibeCategory.money, value),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                        ),
+                        VibeCategorySlider(
+                          category: VibeCategory.competitive,
+                          pref:
+                              _profile.preferenceFor(VibeCategory.competitive),
+                          onValueChanged: (value) => _handleValueChanged(
+                            VibeCategory.competitive,
+                            value,
+                          ),
+                          onValueCommitted: (value) => _commitValueChanged(
+                              VibeCategory.competitive, value),
+                          onDealbreakerChanged: (value) =>
+                              _handleDealbreakerChanged(
+                            VibeCategory.competitive,
+                            value,
+                          ),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+                        ),
+                        AppButtonEnhanced(
+                          text: 'Confirm my vibes',
+                          leadingIcon: Icons.check_circle_rounded,
+                          variant: AppButtonVariant.primary,
+                          size: AppButtonSize.large,
+                          fullWidth: true,
+                          onPressed: _isConfirming ? null : _confirmVibes,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
         ),
       ),
     );

@@ -353,8 +353,6 @@ class _VibeCategoryConfig {
         return 'Set your music preference';
       case VibeCategory.drinking:
         return 'Set your alcohol comfort level';
-      case VibeCategory.weed:
-        return 'Set your cannabis comfort level';
       case VibeCategory.pace:
         return 'Set your preferred pace';
       case VibeCategory.money:
@@ -373,8 +371,6 @@ class _VibeCategoryConfig {
         return 'No music';
       case VibeCategory.drinking:
         return 'None';
-      case VibeCategory.weed:
-        return 'None';
       case VibeCategory.pace:
         return 'Relaxed';
       case VibeCategory.money:
@@ -392,8 +388,6 @@ class _VibeCategoryConfig {
       case VibeCategory.music:
         return 'Always on';
       case VibeCategory.drinking:
-        return 'Welcome';
-      case VibeCategory.weed:
         return 'Welcome';
       case VibeCategory.pace:
         return 'Fast';

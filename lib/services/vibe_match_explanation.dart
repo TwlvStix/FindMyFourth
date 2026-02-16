@@ -459,8 +459,6 @@ String _differenceDescription(VibeCategory category, bool outsideTolerance) {
       return 'Competitive intensity may feel uneven during the round.';
     case VibeCategory.drinking:
       return 'Drinking preferences may feel out of sync.';
-    case VibeCategory.weed:
-      return 'Cannabis comfort levels may feel mismatched.';
   }
 }
 
@@ -478,8 +476,6 @@ String _positiveDescription(VibeCategory category) {
       return 'Music vibe feels compatible.';
     case VibeCategory.drinking:
       return 'Drinking vibe feels compatible.';
-    case VibeCategory.weed:
-      return 'Cannabis comfort levels align.';
   }
 }
 

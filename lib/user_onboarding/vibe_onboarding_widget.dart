@@ -9,6 +9,7 @@ import '/profile/edit_vibes/vibe_category_slider.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 import '/services/vibe_repository.dart';
 import '/utils/app_util.dart';
+import '/utils/vibe_archetypes.dart';
 import 'package:flutter/material.dart';
 
 class VibeOnboardingWidget extends StatefulWidget {
@@ -30,7 +31,6 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     VibeCategory.chat,
     VibeCategory.music,
     VibeCategory.drinking,
-    VibeCategory.weed,
     VibeCategory.pace,
     VibeCategory.money,
     VibeCategory.competitive,
@@ -288,6 +288,8 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
   }
 
   Widget _buildPrioritiesPage() {
+    final archetypeMatch = VibeArchetypes.classifyProfile(_profile);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
@@ -295,6 +297,55 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Vibe Archetype Display
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.sunsetGold.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.sunsetGold.withOpacity(0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.emoji_events_rounded,
+                      size: 20,
+                      color: AppColors.sunsetGold,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      'Your vibe style',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.sand,
+                        fontWeight: AppTypography.medium,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  archetypeMatch.name,
+                  style: AppTypography.titleMedium.copyWith(
+                    color: AppColors.pure,
+                    fontWeight: AppTypography.bold,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  archetypeMatch.description,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.sand,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
           // Header
           Text(
             'What makes or breaks your round?',
@@ -523,7 +574,6 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     VibeCategory.chat: 'Chat level',
     VibeCategory.music: 'Music',
     VibeCategory.drinking: 'Drinking',
-    VibeCategory.weed: 'Weed',
     VibeCategory.money: 'Money / stakes',
   };
 
@@ -552,7 +602,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Set Your Vibes',
+                            'Tell us how you like to play.',
                             style: AppTypography.headlineSmall.copyWith(
                               color: AppColors.pure,
                             ),
@@ -565,16 +615,6 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                             ),
                           ),
                         ],
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: _isCompleting ? null : _skipOnboarding,
-                      child: Text(
-                        'Skip for now',
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.fairway,
-                          fontWeight: AppTypography.semiBold,
-                        ),
                       ),
                     ),
                   ],
@@ -648,7 +688,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                                       const SizedBox(width: AppSpacing.sm),
                                       Expanded(
                                         child: Text(
-                                          'Set what you enjoy being around. This helps match you with compatible groups.',
+                                          'We\'ll match you with golfers on the same wavelength.',
                                           style: AppTypography.bodySmall.copyWith(
                                             color: AppColors.sand,
                                           ),

@@ -10,10 +10,12 @@ class PlayerMatchChip extends StatelessWidget {
     super.key,
     required this.name,
     required this.memberMatch,
+    this.onTap,
   });
 
   final String name;
   final GroupVibeMemberResult? memberMatch;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -22,27 +24,30 @@ class PlayerMatchChip extends StatelessWidget {
         : '${memberMatch!.displayScore.round()}%';
     final label = '$name $scoreLabel';
 
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 160),
+    return GestureDetector(
+      onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xxs,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.fairway.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: AppColors.fairway.withValues(alpha: 0.3),
+        constraints: const BoxConstraints(maxWidth: 160),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xxs,
           ),
-        ),
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppTypography.labelSmall.copyWith(
-            color: AppColors.fairwayDark,
-            letterSpacing: AppTypography.letterSpacingNormal,
+          decoration: BoxDecoration(
+            color: AppColors.fairway.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: AppColors.fairway.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.labelSmall.copyWith(
+              color: AppColors.fairwayDark,
+              letterSpacing: AppTypography.letterSpacingNormal,
+            ),
           ),
         ),
       ),

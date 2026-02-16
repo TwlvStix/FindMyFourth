@@ -828,7 +828,10 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                       // Quick Stats Row (Date, Players, Spots)
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                        child: QuickStatsRow(game: joinGameDetailedGamesRecord),
+                        child: QuickStatsRow(
+                          game: joinGameDetailedGamesRecord,
+                          isOwner: false, // User is viewing a game to join, not their own game
+                        ),
                       ),
 
                       SizedBox(height: AppSpacing.md),
