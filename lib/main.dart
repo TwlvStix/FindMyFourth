@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -39,7 +40,8 @@ Future<void> main() async {
 
   await runZonedGuarded(() async {
     // ✅ CRITICAL: Must be in same zone as runApp
-    WidgetsFlutterBinding.ensureInitialized();
+    final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
     GoRouter.optionURLReflectsImperativeAPIs = true;
     usePathUrlStrategy();
@@ -131,7 +133,8 @@ Future<void> _initializeNonCriticalServices(AppState appState) async {
     // Initialize notification service if user is authenticated
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null && !kIsWeb) {
-      debugPrint('🔔 APP: Initializing notification service for user: ${currentUser.uid}');
+      debugPrint(
+          '🔔 APP: Initializing notification service for user: ${currentUser.uid}');
       await NotificationPermissionService().init(currentUser.uid);
     }
 
@@ -198,6 +201,10 @@ class _MyAppState extends State<MyApp> {
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
   Timer? _splashFallbackTimer;
+  bool _nativeSplashRemoved = false;
+  bool _startupRevealTriggered = false;
+  bool _startupOverlayVisible = true;
+  bool _startupOverlayDisposed = false;
   String getRoute([RouteMatchBase? routeMatch]) {
     final RouteMatchBase lastMatch =
         routeMatch ?? _router.routerDelegate.currentConfiguration.last;
@@ -217,6 +224,48 @@ class _MyAppState extends State<MyApp> {
   final authUserSub = authenticatedUserStream.listen((_) {});
   late StreamSubscription<BaseAuthUser> _userStreamSub;
   late StreamSubscription<dynamic> _jwtTokenSub;
+
+  void _removeNativeSplashIfNeeded() {
+    if (_nativeSplashRemoved) {
+      return;
+    }
+    _nativeSplashRemoved = true;
+    FlutterNativeSplash.remove();
+    _startStartupRevealIfNeeded();
+  }
+
+  void _startStartupRevealIfNeeded() {
+    if (_startupRevealTriggered || !mounted) {
+      return;
+    }
+    _startupRevealTriggered = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 180), () {
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _startupOverlayVisible = false;
+        });
+      });
+    });
+  }
+
+  void _navigateFromStartup() {
+    final targetPath = _appStateNotifier.loggedIn ? '/gamesList' : '/signIn';
+    _router.go(
+      targetPath,
+      extra: <String, dynamic>{
+        kTransitionInfoKey: const TransitionInfo(
+          hasTransition: true,
+          transitionType: PageTransitionType.fade,
+          enterDuration: Duration(milliseconds: 260),
+          exitDuration: Duration(milliseconds: 220),
+          scaleOnPush: false,
+        ),
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -240,26 +289,23 @@ class _MyAppState extends State<MyApp> {
       if (user.loggedIn && user.uid != null && !kIsWeb) {
         debugPrint('🔔 APP: User signed in, initializing notification service');
         NotificationPermissionService().init(user.uid!).catchError((error) {
-          debugPrint('⚠️  APP: Failed to initialize notification service: $error');
+          debugPrint(
+              '⚠️  APP: Failed to initialize notification service: $error');
         });
       }
 
       if (!_initialAuthHandled) {
         _initialAuthHandled = true;
         _splashFallbackTimer?.cancel();
-        debugPrint('✅ APP: Stopping splash screen and forcing navigation');
-        _appStateNotifier.stopShowingSplashImage();
+        debugPrint('✅ APP: Removing native splash and forcing navigation');
+        _removeNativeSplashIfNeeded();
 
         // Force GoRouter to refresh by navigating to the appropriate route
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             debugPrint(
                 '🚀 APP: Post-frame callback - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
-            if (_appStateNotifier.loggedIn) {
-              _router.go('/gamesList');
-            } else {
-              _router.go('/signIn');
-            }
+            _navigateFromStartup();
           }
         });
       }
@@ -271,18 +317,14 @@ class _MyAppState extends State<MyApp> {
         _appStateNotifier.update(
           FindMyFourthFirebaseUser(FirebaseAuth.instance.currentUser),
         );
-        debugPrint('✅ APP: Stopping splash screen (from error handler)');
-        _appStateNotifier.stopShowingSplashImage();
+        debugPrint('✅ APP: Removing native splash (from error handler)');
+        _removeNativeSplashIfNeeded();
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             debugPrint(
                 '🚀 APP: Error handler - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
-            if (_appStateNotifier.loggedIn) {
-              _router.go('/gamesList');
-            } else {
-              _router.go('/signIn');
-            }
+            _navigateFromStartup();
           }
         });
       }
@@ -299,18 +341,14 @@ class _MyAppState extends State<MyApp> {
         _appStateNotifier.update(
           FindMyFourthFirebaseUser(FirebaseAuth.instance.currentUser),
         );
-        debugPrint('✅ APP: Stopping splash screen (from fallback timer)');
-        _appStateNotifier.stopShowingSplashImage();
+        debugPrint('✅ APP: Removing native splash (from fallback timer)');
+        _removeNativeSplashIfNeeded();
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             debugPrint(
                 '🚀 APP: Fallback timer - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
-            if (_appStateNotifier.loggedIn) {
-              _router.go('/gamesList');
-            } else {
-              _router.go('/signIn');
-            }
+            _navigateFromStartup();
           }
         });
       }
@@ -323,6 +361,7 @@ class _MyAppState extends State<MyApp> {
     _userStreamSub.cancel();
     _jwtTokenSub.cancel();
     _splashFallbackTimer?.cancel();
+    _removeNativeSplashIfNeeded();
     super.dispose();
   }
 
@@ -348,15 +387,36 @@ class _MyAppState extends State<MyApp> {
       scaffoldMessengerKey: scaffoldMessengerKey,
       builder: (context, child) {
         final appChild = child ?? const SizedBox.shrink();
-        if (!kReleaseMode || !kAllowInternalCrashTest) {
-          return appChild;
+        final startupOverlay = _startupOverlayDisposed
+            ? const SizedBox.shrink()
+            : IgnorePointer(
+                child: AnimatedOpacity(
+                  opacity: _startupOverlayVisible ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 520),
+                  curve: Curves.easeInOutCubic,
+                  onEnd: () {
+                    if (!_startupOverlayVisible &&
+                        !_startupOverlayDisposed &&
+                        mounted) {
+                      setState(() {
+                        _startupOverlayDisposed = true;
+                      });
+                    }
+                  },
+                  child: ColoredBox(color: appColors.primaryBackground),
+                ),
+              );
+
+        final children = <Widget>[
+          appChild,
+          Positioned.fill(child: startupOverlay),
+        ];
+
+        if (kReleaseMode && kAllowInternalCrashTest) {
+          children.add(const _InternalCrashTestOverlay());
         }
-        return Stack(
-          children: [
-            appChild,
-            const _InternalCrashTestOverlay(),
-          ],
-        );
+
+        return Stack(children: children);
       },
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
@@ -497,10 +557,11 @@ class _NavBarPageState extends State<NavBarPage> {
     return Scaffold(
       resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
       // ✅ PERFORMANCE: IndexedStack preserves state and avoids rebuilds
-      body: _currentPage ?? IndexedStack(
-        index: currentIndex,
-        children: _tabs,
-      ),
+      body: _currentPage ??
+          IndexedStack(
+            index: currentIndex,
+            children: _tabs,
+          ),
       floatingActionButton: shouldShowFab
           ? FloatingActionButton(
               onPressed: () {

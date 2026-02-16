@@ -102,6 +102,7 @@ class _SuggestedGolfersSectionState extends State<SuggestedGolfersSection> {
                         return _SuggestedGolferCard(
                           user: suggestion.user,
                           score: suggestion.score,
+                          recommendation: suggestion.recommendation,
                           onTap: () => widget.onGolferTap(suggestion.user),
                         );
                       },
@@ -132,7 +133,7 @@ class _SuggestedGolfersSectionState extends State<SuggestedGolfersSection> {
       try {
         final theirProfile = VibeProfile.fromFirestore(user.vibeProfile);
         final result = VibeMatcher.score(myVibes, theirProfile);
-        if (result.recommendation != VibeRecommendation.recommended) {
+        if (result.recommendation == VibeRecommendation.notRecommended) {
           continue;
         }
         final score = result.finalScorePercent.round();
@@ -212,11 +213,13 @@ class _SuggestedGolferCard extends StatelessWidget {
   const _SuggestedGolferCard({
     required this.user,
     required this.score,
+    required this.recommendation,
     required this.onTap,
   });
 
   final UsersRecord user;
   final int score;
+  final VibeRecommendation recommendation;
   final VoidCallback onTap;
 
   @override
@@ -269,15 +272,22 @@ class _SuggestedGolferCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                      ),
+                      gradient: recommendation == VibeRecommendation.recommended
+                          ? LinearGradient(
+                              colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                            )
+                          : null,
+                      color: recommendation == VibeRecommendation.caution
+                          ? AppColors.stone.withOpacity(0.3)
+                          : null,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       'VIBE $score%',
                       style: AppTypography.text11.copyWith(
-                        color: Colors.white,
+                        color: recommendation == VibeRecommendation.recommended
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.7),
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.6,
                       ),

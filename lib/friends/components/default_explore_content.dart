@@ -249,7 +249,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
       try {
         final theirProfile = VibeProfile.fromFirestore(user.vibeProfile);
         final result = VibeMatcher.score(myVibes, theirProfile);
-        if (result.recommendation != VibeRecommendation.recommended) {
+        if (result.recommendation == VibeRecommendation.notRecommended) {
           continue;
         }
         final score = result.finalScorePercent.round();

@@ -319,7 +319,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
           runSpacing: 4,
           children: [
             if (_vibeMatch != null) _buildVibeBadge(),
-            if (widget.user.handicap > 0)
+            if (widget.user.handicap != 0)
               _buildHandicapBadge(widget.user.handicap),
           ],
         ),
@@ -400,12 +400,6 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.flag_rounded,
-            size: 10,
-            color: Colors.white,
-          ),
-          SizedBox(width: 4),
           Text(
             handicap < 0 ? '+${handicap.abs()}' : '$handicap',
             style: AppTypography.labelSmall.copyWith(

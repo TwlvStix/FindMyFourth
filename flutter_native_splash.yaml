@@ -1,14 +1,12 @@
 flutter_native_splash:
-  color: "#253551"
-  color_dark: "#253551"
-  # Removed image for smaller app size - using solid color only
-  # image: assets/icon/FM4_icon.png
-  # image_dark: assets/icon/FM4_icon.png
+  color: "#FFFFFF"
+  color_dark: "#FFFFFF"
+  image: assets/icon/FM4_icon.png
+  image_dark: assets/icon/FM4_icon.png
   android: true
   ios: true
   web: true
   android_12:
-    color: "#253551"
-    icon_background_color: "#253551"
-    # Removed image for smaller app size
-    # image: assets/icon/FM4_icon.png
+    color: "#FFFFFF"
+    icon_background_color: "#FFFFFF"
+    image: assets/icon/FM4_icon.png

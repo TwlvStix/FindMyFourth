@@ -60,6 +60,7 @@ class VibeTuning {
   /// Used in the additive penalty model:
   ///   finalScore = baseScore - (softPenalty * softPenaltyMaxPoints)
   static const double softPenaltyMaxPoints = 45.0;
+  static const double perDealbreakerPenalty = 15.0;
   static const double importanceTopMultiplier = 1.30;
   static const double importanceBottomMultiplier = 0.80;
   static const double importanceNormalMultiplier = 1.0;

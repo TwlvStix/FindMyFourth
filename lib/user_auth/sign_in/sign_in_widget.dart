@@ -4,6 +4,8 @@ import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
+import '/core/widgets/app_text.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/user_auth/recover_password/recover_password_widget.dart';
 import '/user_auth/sign_up_account/sign_up_account_widget.dart';
@@ -95,57 +97,15 @@ class _SignInWidgetState extends State<SignInWidget> {
                             mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Sign In',
-                                style: AppTheme.of(context)
-                                    .displaySmall
-                                    .override(
-                                      font: TextStyle(fontFamily: 'Manrope',
-                                        fontWeight: AppTheme.of(context)
-                                            .displaySmall
-                                            .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .displaySmall
-                                            .fontStyle,
-                                      ),
-                                      color: AppTheme.of(context)
-                                          .primaryBtnText,
-                                      letterSpacing: 0.0,
-                                      fontWeight: AppTheme.of(context)
-                                          .displaySmall
-                                          .fontWeight,
-                                      fontStyle: AppTheme.of(context)
-                                          .displaySmall
-                                          .fontStyle,
-                                    ),
-                              ),
+                              AppText.screenTitle('Sign In'),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, AppSpacing.sm, 0.0, AppSpacing.xl),
-                                child: Text(
+                                padding: EdgeInsets.only(
+                                    top: AppSpacing.xs,
+                                    bottom: AppSpacing.lg,
+                                ),
+                                child: AppText.bodySmall(
                                   'Welcome Back. Ready to Play a game?',
-                                  style: AppTheme.of(context)
-                                      .labelMedium
-                                      .override(
-                                        font: TextStyle(fontFamily: 'Manrope',
-                                          fontWeight:
-                                              AppTheme.of(context)
-                                                  .labelMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTheme.of(context)
-                                                  .labelMedium
-                                                  .fontStyle,
-                                        ),
-                                        color: AppTheme.of(context).primaryBtnText,
-                                        letterSpacing: 0.0,
-                                        fontWeight: AppTheme.of(context)
-                                            .labelMedium
-                                            .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .labelMedium
-                                            .fontStyle,
-                                      ),
+                                  color: AppTheme.of(context).secondaryText,
                                 ),
                               ),
                               Padding(

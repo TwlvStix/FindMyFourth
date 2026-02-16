@@ -451,11 +451,22 @@ class VibeMatcher {
         .clamp(VibeTuning.minScore, VibeTuning.maxScore)
         .toDouble();
 
-    // Apply hard-block cap to both one-sided scores
-    final myFitDisplay =
-        hardBlockResult.isHardBlocked ? min(myFitPercent, 40.0) : myFitPercent;
+    // Per-dealbreaker penalty: each dealbreaker subtracts 15 points.
+    // 1 dealbreaker = -15, 2 = -30, 3 = -45. This differentiates
+    // "one issue you might look past" from "fundamentally incompatible."
+    final dealbreakerCount = hardBlockResult.conflicts.length;
+    final dealbreakerPenalty =
+        dealbreakerCount * VibeTuning.perDealbreakerPenalty;
+
+    final myFitDisplay = hardBlockResult.isHardBlocked
+        ? (myFitPercent - dealbreakerPenalty)
+            .clamp(VibeTuning.minScore, VibeTuning.maxScore)
+            .toDouble()
+        : myFitPercent;
     final theirFitDisplay = hardBlockResult.isHardBlocked
-        ? min(theirFitPercent, 40.0)
+        ? (theirFitPercent - dealbreakerPenalty)
+            .clamp(VibeTuning.minScore, VibeTuning.maxScore)
+            .toDouble()
         : theirFitPercent;
 
     final recommendation = hardBlockResult.isHardBlocked
@@ -464,9 +475,10 @@ class VibeMatcher {
             ? VibeRecommendation.caution
             : VibeRecommendation.recommended;
 
-    // Hard-block cap: "Not recommended" should never show a high score.
     final displayScore = hardBlockResult.isHardBlocked
-        ? min(finalScorePercent, 40.0)
+        ? (finalScorePercent - dealbreakerPenalty)
+            .clamp(VibeTuning.minScore, VibeTuning.maxScore)
+            .toDouble()
         : finalScorePercent;
 
     VibeAnalytics.logMatchScore(

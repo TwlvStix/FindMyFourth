@@ -325,7 +325,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     );
   }
 
-  Widget _buildConfidenceMeter(VibeConfidence confidence, String confidenceReason, int defaultCategoryCount) {
+  Widget _buildConfidenceMeter(VibeConfidence confidence,
+      String confidenceReason, int defaultCategoryCount) {
     final label = _confidenceLabelText(confidence);
     final color = _confidenceColor(confidence);
     return Container(
@@ -1118,8 +1119,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           }
 
           final result = showVibeMatch ? _vibeMatchResult : null;
-          final vibeScore =
-              result == null ? null : result.myFitPercent.round();
+          final vibeScore = result == null ? null : result.myFitPercent.round();
           final vibeLabel =
               vibeScore == null ? 'Your Fit' : 'Your Fit $vibeScore%';
           final canOpenVibe = vibeScore != null;

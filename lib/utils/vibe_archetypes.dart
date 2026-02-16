@@ -27,18 +27,40 @@ class VibeArchetypeMatch {
   const VibeArchetypeMatch({
     required this.archetype,
     required this.score,
+    this.baseArchetype,
+    this.isWarden = false,
   });
 
   final VibeArchetype archetype;
   final double score;
 
+  /// The underlying archetype before the Warden modifier was applied.
+  /// Null if this is not a Warden.
+  final VibeArchetype? baseArchetype;
+
+  /// True if this player triggered the Warden modifier (2+ dealbreakers).
+  final bool isWarden;
+
   String get name => archetype.name;
   String get description => archetype.description;
+
+  /// Returns the display name with optional base archetype.
+  /// e.g. "The Warden" or "The Warden (Shark)"
+  String get displayName {
+    if (!isWarden || baseArchetype == null) return name;
+    return '$name (${baseArchetype!.name})';
+  }
+
+  /// Returns just the base archetype name for subtitle use.
+  /// e.g. "Shark at heart" or null if not a Warden.
+  String? get baseLabel {
+    if (!isWarden || baseArchetype == null) return null;
+    return '${baseArchetype!.name} at heart';
+  }
 }
 
-/// The 12 vibe style archetypes
+/// The 12 vibe style archetypes + The Warden modifier
 /// Note: Values in ideal profiles use 0-5 range (code values)
-/// Spec shows 1-6, so spec value 1 = code value 0, spec value 6 = code value 5
 class VibeArchetypes {
   static const grinder = VibeArchetype(
     name: 'The Grinder',
@@ -85,7 +107,7 @@ class VibeArchetypes {
   static const ghost = VibeArchetype(
     name: 'The Ghost',
     description:
-        'Do not mistake the silence for not caring. Takes their time, reads every putt, and might be quietly taking your money without saying a word. You will figure it out on 18. Let them play their game — you can talk after.',
+        'Do not mistake the silence for not caring. Takes their time, reads every putt, and might be quietly taking your money without saying a word. You will figure it out on 18. Let them play their game \u2014 you can talk after.',
     ideal: {
       VibeCategory.pace: 2,
       VibeCategory.competitive: 3,
@@ -208,6 +230,21 @@ class VibeArchetypes {
     },
   );
 
+  /// The Warden is not a value-based archetype — it is a modifier
+  /// applied when a player has 2+ dealbreakers. The ideal values
+  /// are unused for classification; only the name and description matter.
+  static const warden = VibeArchetype(
+    name: 'The Warden',
+    description:
+        'I know exactly what I want and what I will not put up with. Cross the line and you will know about it before the turn.',
+    ideal: {},
+  );
+
+  /// Minimum number of dealbreakers to trigger the Warden modifier.
+  static const int wardenDealbreakerThreshold = 2;
+
+  /// The base archetypes used for value-based classification.
+  /// The Warden is excluded — it is applied as a modifier, not matched on values.
   static const all = [
     grinder,
     shark,
@@ -223,11 +260,35 @@ class VibeArchetypes {
     mayor,
   ];
 
-  /// Classifies a vibe profile and returns the best-matching archetype
+  /// Classifies a vibe profile and returns the best-matching archetype.
   ///
-  /// Uses Euclidean distance to find the closest archetype to the user's profile.
-  /// Lower distance = better match.
+  /// Step 1: Find the closest base archetype using Euclidean distance.
+  /// Step 2: If the player has 2+ dealbreakers, apply the Warden modifier.
+  /// Step 3: Store the base archetype so the UI can show "The Warden (Shark)".
   static VibeArchetypeMatch classifyProfile(VibeProfile profile) {
+    // Step 1: classify on values
+    final baseMatch = _classifyByValues(profile);
+
+    // Step 2: count dealbreakers
+    final dealbreakerCount = VibeCategory.values
+        .where((c) => profile.preferenceFor(c).dealbreaker)
+        .length;
+
+    // Step 3: if 2+ dealbreakers, override to Warden
+    if (dealbreakerCount >= wardenDealbreakerThreshold) {
+      return VibeArchetypeMatch(
+        archetype: warden,
+        score: baseMatch.score,
+        baseArchetype: baseMatch.archetype,
+        isWarden: true,
+      );
+    }
+
+    return baseMatch;
+  }
+
+  /// Pure value-based classification using Euclidean distance.
+  static VibeArchetypeMatch _classifyByValues(VibeProfile profile) {
     VibeArchetype? bestMatch;
     double bestDistance = double.infinity;
 
@@ -241,7 +302,6 @@ class VibeArchetypes {
         distance += diff * diff;
       }
 
-      // Take square root to get actual Euclidean distance
       distance = math.sqrt(distance);
 
       if (distance < bestDistance) {
@@ -251,9 +311,8 @@ class VibeArchetypes {
     }
 
     // Convert distance to a 0-100 compatibility score
-    // Max possible distance is sqrt(6 * 5^2) = sqrt(150) ≈ 12.25
-    // We'll map 0 distance to 100 score, and max distance to 0 score
-    final maxPossibleDistance = math.sqrt(6 * 25.0); // sqrt(150)
+    // Max possible distance is sqrt(6 * 5^2) = sqrt(150)
+    final maxPossibleDistance = math.sqrt(6 * 25.0);
     final compatibilityScore =
         100 * (1 - (bestDistance / maxPossibleDistance)).clamp(0.0, 1.0);
 

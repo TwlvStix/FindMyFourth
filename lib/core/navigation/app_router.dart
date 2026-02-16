@@ -6,7 +6,6 @@ import '/auth/base_auth_user_provider.dart';
 import '/backend/push_notifications/push_notifications_handler.dart'
     show PushNotificationsHandler;
 import '/main.dart';
-import '/core/app_theme.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/utils/app_util.dart';
@@ -36,8 +35,8 @@ import '/user_auth/recover_password/recover_password_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import '/user_auth/sign_up_account/sign_up_account_widget.dart';
 import '/user_onboarding/progressive_onboarding_widget.dart';
-import '/user_onboarding/user_onboarding_widget.dart';
 import '/user_onboarding/vibe_onboarding_widget.dart';
+import '/user_onboarding/cinematic_onboarding_widget.dart';
 import '/vibe/premium_vibe_page/premium_vibe_page_data.dart';
 import '/vibe/premium_vibe_page/premium_vibe_page_widget.dart';
 
@@ -57,7 +56,6 @@ class AppStateNotifier extends ChangeNotifier {
 
   BaseAuthUser? initialUser;
   BaseAuthUser? user;
-  bool showSplashImage = true;
   String? _redirectLocation;
   bool _authStateReady = false;
 
@@ -68,10 +66,7 @@ class AppStateNotifier extends ChangeNotifier {
   /// Otherwise, this will trigger a refresh and interrupt the action(s).
   bool notifyOnAuthChange = true;
 
-  bool get loading {
-    final result = !_authStateReady || showSplashImage;
-    return result;
-  }
+  bool get loading => !_authStateReady;
   bool get loggedIn => user?.loggedIn ?? false;
   bool get initiallyLoggedIn => initialUser?.loggedIn ?? false;
   bool get shouldRedirect => loggedIn && _redirectLocation != null;
@@ -103,12 +98,6 @@ class AppStateNotifier extends ChangeNotifier {
     // Once again mark the notifier as needing to update on auth change
     // (in order to catch sign in / out events).
     updateNotifyOnAuthChange(true);
-  }
-
-  void stopShowingSplashImage() {
-    showSplashImage = false;
-    // Note: We don't call notifyListeners() here because update() will call it
-    // immediately after, and that single call will reflect the showSplashImage=false state
   }
 }
 
@@ -259,14 +248,14 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         GoRoute(
-          name: UserOnboardingWidget.routeName,
-          path: UserOnboardingWidget.routePath,
+          name: CinematicOnboardingWidget.routeName,
+          path: CinematicOnboardingWidget.routePath,
           redirect: _buildRedirect(appStateNotifier, requireAuth: true),
           pageBuilder: (context, state) => _buildPageWithTransition(
             context,
             state,
             appStateNotifier,
-            UserOnboardingWidget(),
+            CinematicOnboardingWidget(),
           ),
         ),
         GoRoute(
@@ -619,27 +608,7 @@ Page<dynamic> _buildPageWithTransition(
   Widget page,
 ) {
   fixStatusBarOniOS16AndBelow(context);
-  final isLoading = appStateNotifier.loading;
-  final logoSize =
-      (MediaQuery.sizeOf(context).shortestSide * 0.42).clamp(140.0, 220.0);
-
-  final child = isLoading
-      ? ColoredBox(
-          color: AppTheme.of(context).primaryBackground,
-          child: SafeArea(
-            child: Center(
-              child: SizedBox.square(
-                dimension: logoSize.toDouble(),
-                child: Image.asset(
-                  'assets/icon/FM4_icon.png',
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                ),
-              ),
-            ),
-          ),
-        )
-      : PushNotificationsHandler(child: page);
+  final child = PushNotificationsHandler(child: page);
 
   final transitionInfo = _transitionInfo(state);
 
@@ -704,7 +673,8 @@ Map<String, dynamic> _allParams(GoRouterState state) {
   return params;
 }
 
-dynamic _paramValue(GoRouterState state, String name) => _allParams(state)[name];
+dynamic _paramValue(GoRouterState state, String name) =>
+    _allParams(state)[name];
 
 T? _deserializeParam<T>(
   GoRouterState state,

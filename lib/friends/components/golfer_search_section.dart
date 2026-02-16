@@ -231,11 +231,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                     autofocus: widget.autofocus,
                     obscureText: false,
                     decoration: InputDecoration(
-                      helperText: widget.showFocusHelperText &&
-                              (_textFieldFocusNode?.hasFocus ?? false) &&
-                              (_textController?.text.trim().isEmpty ?? true)
-                          ? 'Try filters if you don’t know a name'
-                          : null,
+                      helperText: null,
                       helperStyle: AppTypography.labelSmall.copyWith(
                         color: Colors.white,
                       ),

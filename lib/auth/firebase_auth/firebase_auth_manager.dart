@@ -550,6 +550,9 @@ class FirebaseAuthManager extends AuthManager
     final backendConfirmed = userDocPath.isNotEmpty
         ? await _verifyOnboardingCompleted(userDocPath)
         : false;
+    if (!context.mounted) {
+      return;
+    }
 
     if (!completedOnboarding || !backendConfirmed) {
       if (user != null) {
@@ -557,6 +560,9 @@ class FirebaseAuthManager extends AuthManager
           final userDoc = await UsersRecord.getDocumentOnce(
             UsersRecord.collection.doc(user.uid),
           );
+          if (!context.mounted) {
+            return;
+          }
           final hasProfileData = userDoc.displayName.isNotEmpty ||
               userDoc.firstName.isNotEmpty ||
               userDoc.lastName.isNotEmpty;
@@ -565,6 +571,9 @@ class FirebaseAuthManager extends AuthManager
               'completeOnboarding',
               {'userDocPath': userDocPath},
             );
+            if (!context.mounted) {
+              return;
+            }
             if (replaceRoute) {
               context.goNamed(fallbackRouteName, extra: fallbackExtra);
             } else {
@@ -573,6 +582,9 @@ class FirebaseAuthManager extends AuthManager
             return;
           }
         } catch (_) {}
+      }
+      if (!context.mounted) {
+        return;
       }
       context.goNamed(
         'UserOnboarding',
@@ -583,6 +595,9 @@ class FirebaseAuthManager extends AuthManager
       return;
     }
 
+    if (!context.mounted) {
+      return;
+    }
     if (replaceRoute) {
       context.goNamed(fallbackRouteName, extra: fallbackExtra);
     } else {

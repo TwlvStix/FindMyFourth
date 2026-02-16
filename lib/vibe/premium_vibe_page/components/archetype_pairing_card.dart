@@ -155,6 +155,15 @@ class _ExpandableArchetypeCardState extends State<_ExpandableArchetypeCard> {
                           fontWeight: AppTypography.semiBold,
                         ),
                       ),
+                      if (widget.archetype.isWarden &&
+                          widget.archetype.baseArchetype != null)
+                        Text(
+                          '(${widget.archetype.baseArchetype!.name})',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: widget.nameColor.withValues(alpha: 0.6),
+                            fontWeight: AppTypography.semiBold,
+                          ),
+                        ),
                       const SizedBox(height: AppSpacing.xxs),
 
                       // Archetype description
