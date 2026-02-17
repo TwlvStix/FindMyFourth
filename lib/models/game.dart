@@ -26,6 +26,7 @@ class Game {
     required this.userRef,
     required this.uid,
     required this.scheduleType,
+    required this.isFunGame,
     this.flexibleDays,
     this.flexibleTimeOfDay,
     this.flexibleWeek,
@@ -53,6 +54,7 @@ class Game {
   final DocumentReference? userRef;
   final String uid;
   final String scheduleType;
+  final bool isFunGame;
   final List<int>? flexibleDays;
   final String? flexibleTimeOfDay;
   final String? flexibleWeek;
@@ -127,6 +129,7 @@ class Game {
       userRef: data['userRef'] as DocumentReference?,
       uid: (data['uid'] as String?) ?? doc.id,
       scheduleType: scheduleType,
+      isFunGame: (data['is_fun_game'] as bool?) ?? false,
       flexibleDays: (data['flexible_days'] as List<dynamic>?)
               ?.whereType<int>()
               .toList(),
@@ -190,6 +193,7 @@ class Game {
       userRef: record.userRef,
       uid: record.uid,
       scheduleType: record.scheduleType,
+      isFunGame: record.isFunGame,
       flexibleDays: record.flexibleDays.isEmpty ? null : record.flexibleDays,
       flexibleTimeOfDay: record.flexibleTimeOfDay,
       flexibleWeek: record.flexibleWeek,

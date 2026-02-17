@@ -79,6 +79,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   bool _is2v2 = false;
   String? _teamStyle;
 
+  // Just for Fun mode
+  bool _isJustForFun = false;
+
   // Games multi-select (max 3)
   final Set<String> _selectedGames = {};
   final TextEditingController _otherGameController = TextEditingController();
@@ -241,6 +244,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         if (draft['flexibleTimeOfDay'] != null) {
           _flexibleTimeOfDay = draft['flexibleTimeOfDay'];
         }
+        if (draft['isJustForFun'] != null) {
+          _isJustForFun = draft['isJustForFun'] as bool;
+        }
 
         _hasDraft = true;
       }
@@ -271,6 +277,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         'flexibleWeek': _flexibleWeek,
         'flexibleDays': _selectedDays.toList(),
         'flexibleTimeOfDay': _flexibleTimeOfDay,
+        'isJustForFun': _isJustForFun,
       };
 
       final prefs = await SharedPreferences.getInstance();
@@ -325,35 +332,37 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       );
       return;
     }
-    if (rulesSetValue == null) {
-      debugPrint('❌ CREATE GAME: rulesSetValue is null');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please select a game vibe'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-    if (styleGameValue == null) {
-      debugPrint('❌ CREATE GAME: styleGameValue is null');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please select stakes'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-    if (gameTypeValue == null) {
-      debugPrint('❌ CREATE GAME: gameTypeValue is null');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please select a primary format'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
+    if (!_isJustForFun) {
+      if (rulesSetValue == null) {
+        debugPrint('❌ CREATE GAME: rulesSetValue is null');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please select a game vibe'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      if (styleGameValue == null) {
+        debugPrint('❌ CREATE GAME: styleGameValue is null');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please select stakes'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      if (gameTypeValue == null) {
+        debugPrint('❌ CREATE GAME: gameTypeValue is null');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please select a primary format'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
     }
     debugPrint('✅ CREATE GAME: All values present');
 
@@ -383,28 +392,30 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       }
     }
 
-    // Validate Team Style is required if 2v2 is enabled
-    if (_is2v2 && (_teamStyle == null || _teamStyle!.isEmpty)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please select a team style for 2v2 games.'),
-          duration: Duration(milliseconds: 4000),
-          backgroundColor: AppTheme.of(context).primary,
-        ),
-      );
-      return;
-    }
+    if (!_isJustForFun) {
+      // Validate Team Style is required if 2v2 is enabled
+      if (_is2v2 && (_teamStyle == null || _teamStyle!.isEmpty)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please select a team style for 2v2 games.'),
+            duration: Duration(milliseconds: 4000),
+            backgroundColor: AppTheme.of(context).primary,
+          ),
+        );
+        return;
+      }
 
-    // Validate "Other" game requires description if selected
-    if (_selectedGames.contains('Other') && (_otherGameText == null || _otherGameText!.trim().isEmpty)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please describe the other game.'),
-          duration: Duration(milliseconds: 4000),
-          backgroundColor: AppTheme.of(context).primary,
-        ),
-      );
-      return;
+      // Validate "Other" game requires description if selected
+      if (_selectedGames.contains('Other') && (_otherGameText == null || _otherGameText!.trim().isEmpty)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please describe the other game.'),
+            duration: Duration(milliseconds: 4000),
+            backgroundColor: AppTheme.of(context).primary,
+          ),
+        );
+        return;
+      }
     }
 
     debugPrint('✅ CREATE GAME: Date validation passed');
@@ -493,6 +504,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           'joined_players': [currentUserRef],
           'guest_players': [],
           'uid': currentUser.uid,
+          'is_fun_game': _isJustForFun,
           'schedule_type': _scheduleType,
           if (_scheduleType == 'flexible') ...{
             'flexible_week': _flexibleWeek,
@@ -1541,6 +1553,20 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                               ),
                               SizedBox(height: AppSpacing.md),
                               ToggleSwitch(
+                                label: '⛳ Just for Fun',
+                                description: 'Skip all the details. Just show up and play.',
+                                value: _isJustForFun,
+                                onChanged: (val) {
+                                  if (mounted) {
+                                    setState(() {
+                                      _isJustForFun = val;
+                                    });
+                                    _saveDraft();
+                                  }
+                                },
+                              ),
+                              if (!_isJustForFun) ...[
+                              ToggleSwitch(
                                 label: '💰 Member Perk',
                                 description: 'Does the course offer a discount for members bringing guests?',
                                 value: memberDiscount,
@@ -1795,6 +1821,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                   ),
                                 ),
                               ],
+                              ], // end if (!_isJustForFun)
                               Padding(
                                 padding: EdgeInsets.only(top: AppSpacing.xxl),
                                 child: AppButtonEnhanced(

@@ -216,6 +216,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildPremiumMyGameCard(BuildContext context, GamesRecord gameRecord) {
     final game = Game.fromRecord(gameRecord);
+    final isOwner = currentUserUid.isNotEmpty && game.userRef?.id == currentUserUid;
     final isCancelled = game.isCancelled;
     final isExpired = game.date != null && game.date!.isBefore(getCurrentTimestamp) && !isCancelled;
     final spotsLeft = game.maxPlayers - (game.joinedPlayers.length + game.guestPlayers.length);
@@ -358,6 +359,32 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                               color: AppColors.warning,
                               fontWeight: FontWeight.w600,
                             ),
+                          ),
+                        )
+                      else if (isOwner)
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xxs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Color(0xFF4A7C59).withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.star_rounded,
+                                  color: Colors.white, size: 14),
+                              SizedBox(width: 4),
+                              Text(
+                                'Owner',
+                                style: AppTypography.labelSmall.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         )
                       else

@@ -616,59 +616,69 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                           SizedBox(height: AppSpacing.sm),
 
                           // Premium Info Grid
-                          GridView.count(
-                            crossAxisCount: 2,
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            padding: EdgeInsets.zero,
-                            crossAxisSpacing: AppSpacing.sm,
-                            mainAxisSpacing: AppSpacing.sm,
-                            childAspectRatio: 3.0,
-                            children: [
-                              _buildPremiumInfoCard(
-                                context,
-                                icon: Icons.attach_money_rounded,
-                                iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                                label: 'Betting',
-                                value: gameJoinedDetailedGamesRecord.styleGame,
-                              ),
-                              _buildPremiumInfoCard(
-                                context,
-                                icon: Icons.rule_rounded,
-                                iconColors: [AppColors.fairwayLight, AppColors.fairway],
-                                label: 'Rule Style',
-                                value: gameJoinedDetailedGamesRecord.rulesSetting,
-                              ),
-                              _buildPremiumInfoCard(
-                                context,
-                                icon: Icons.sports_golf_rounded,
-                                iconColors: [AppColors.fairwayLight, AppColors.fairway],
-                                label: 'Game Type',
-                                value: gameJoinedDetailedGamesRecord.gameType,
-                              ),
-                              _buildPremiumInfoCard(
-                                context,
-                                icon: Icons.scoreboard_rounded,
-                                iconColors: [AppColors.sunsetPeach, AppColors.sunsetRose],
-                                label: 'Scoring',
-                                value: gameJoinedDetailedGamesRecord.scoring,
-                              ),
-                              _buildPremiumInfoCard(
-                                context,
-                                icon: Icons.discount_rounded,
-                                iconColors: [AppColors.fairwayLight, AppColors.fairway],
-                                label: 'Member Discount',
-                                value: gameJoinedDetailedGamesRecord.memberDiscount,
-                              ),
-                              _buildPremiumInfoCard(
-                                context,
-                                icon: Icons.group_rounded,
-                                iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                                label: 'Friends Only',
-                                value: gameJoinedDetailedGamesRecord.friendGame,
-                              ),
-                            ],
-                          ),
+                          Builder(builder: (context) {
+                            final isFun = gameJoinedDetailedGamesRecord.isFunGame;
+                            String funOr(String val) =>
+                                isFun && val.isEmpty ? 'Just for Fun' : val;
+                            return GridView.count(
+                              crossAxisCount: 2,
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              padding: EdgeInsets.zero,
+                              crossAxisSpacing: AppSpacing.sm,
+                              mainAxisSpacing: AppSpacing.sm,
+                              childAspectRatio: 3.0,
+                              children: [
+                                _buildPremiumInfoCard(
+                                  context,
+                                  icon: Icons.attach_money_rounded,
+                                  iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                  label: 'Betting',
+                                  value: funOr(gameJoinedDetailedGamesRecord.styleGame),
+                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.styleGame.isEmpty,
+                                ),
+                                _buildPremiumInfoCard(
+                                  context,
+                                  icon: Icons.rule_rounded,
+                                  iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                  label: 'Rule Style',
+                                  value: funOr(gameJoinedDetailedGamesRecord.rulesSetting),
+                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.rulesSetting.isEmpty,
+                                ),
+                                _buildPremiumInfoCard(
+                                  context,
+                                  icon: Icons.sports_golf_rounded,
+                                  iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                  label: 'Game Type',
+                                  value: funOr(gameJoinedDetailedGamesRecord.gameType),
+                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.gameType.isEmpty,
+                                ),
+                                _buildPremiumInfoCard(
+                                  context,
+                                  icon: Icons.scoreboard_rounded,
+                                  iconColors: [AppColors.sunsetPeach, AppColors.sunsetRose],
+                                  label: 'Scoring',
+                                  value: funOr(gameJoinedDetailedGamesRecord.scoring),
+                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.scoring.isEmpty,
+                                ),
+                                _buildPremiumInfoCard(
+                                  context,
+                                  icon: Icons.discount_rounded,
+                                  iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                  label: 'Member Discount',
+                                  value: funOr(gameJoinedDetailedGamesRecord.memberDiscount),
+                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.memberDiscount.isEmpty,
+                                ),
+                                _buildPremiumInfoCard(
+                                  context,
+                                  icon: Icons.group_rounded,
+                                  iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                  label: 'Friends Only',
+                                  value: gameJoinedDetailedGamesRecord.friendGame,
+                                ),
+                              ],
+                            );
+                          }),
                           SizedBox(height: AppSpacing.lg),
 
                           // Players Section Header with gradient accent
@@ -1142,6 +1152,32 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                         context: context,
                         text: 'Leave game',
                         onPressed: () async {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (dialogContext) => AlertDialog(
+                              title: Text('Leave Game'),
+                              content: Text(
+                                'Are you sure you want to leave this game?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(dialogContext).pop(false),
+                                  child: Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(dialogContext).pop(true),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor:
+                                        AppTheme.of(context).error,
+                                  ),
+                                  child: Text('Leave Game'),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed != true) return;
                           if (currentUserRef == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -1904,14 +1940,19 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     required List<Color> iconColors,
     required String label,
     required String value,
+    bool isFunBadge = false,
   }) {
     return Container(
       padding: EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.fairway.withValues(alpha: 0.3),
+        color: isFunBadge
+            ? AppColors.fairway.withValues(alpha: 0.4)
+            : AppColors.fairway.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: isFunBadge
+              ? AppColors.sunsetGold.withValues(alpha: 0.4)
+              : Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Row(
@@ -1952,7 +1993,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                 Text(
                   value.isNotEmpty ? value : '--',
                   style: AppTypography.bodySmall.copyWith(
-                    color: Colors.white,
+                    color: isFunBadge ? AppColors.sunsetGold : Colors.white,
                     fontWeight: FontWeight.w600,
                     height: 1.0,
                   ),

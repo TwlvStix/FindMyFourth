@@ -1075,6 +1075,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   Widget _buildPremiumGameCard(
       BuildContext context, Game game, DocumentReference? currentUserReference,
       {bool isLocked = false}) {
+    final isOwner = currentUserReference != null &&
+        game.userRef == currentUserReference;
     final isUserGame = currentUserReference != null &&
         (game.userRef == currentUserReference ||
             game.joinedPlayers.contains(currentUserReference));
@@ -1174,8 +1176,49 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             ),
                           ),
                         if (isLocked) SizedBox(width: AppSpacing.xs),
+                        // Just for Fun pill (replaces game type badge for fun games)
+                        if (game.isFunGame)
+                          Opacity(
+                            opacity: isUserGame ? 0.65 : 1.0,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppSpacing.sm,
+                                vertical: AppSpacing.xxs,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.fairwayLight,
+                                    AppColors.fairway,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(20.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.fairway.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('⛳', style: TextStyle(fontSize: 11)),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Just for Fun',
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
                         // Game Type Badge with gradient
-                        if (game.gameType.isNotEmpty)
+                        else if (game.gameType.isNotEmpty)
                           Opacity(
                             opacity: isUserGame ? 0.65 : 1.0,  // Dim badge for joined games
                             child: Container(
@@ -1280,6 +1323,32 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               ),
                             ),
                           )
+                        else if (isOwner)
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xxs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Color(0xFF4A7C59).withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.star_rounded,
+                                    color: Colors.white, size: 14),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Owner',
+                                  style: AppTypography.labelSmall.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
                         else if (isUserGame)
                           Container(
                             padding: EdgeInsets.symmetric(
@@ -1287,7 +1356,6 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
-                              // Muted sage/gray-green instead of vibrant gold
                               color: Color(0xFF6B7C6E).withOpacity(0.85),
                               borderRadius: BorderRadius.circular(12.0),
                             ),

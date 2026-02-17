@@ -131,6 +131,11 @@ class GamesRecord extends FirestoreRecord {
   String? get flexibleWeek => _flexibleWeek;
   bool hasFlexibleWeek() => _flexibleWeek != null;
 
+  // "is_fun_game" field.
+  bool? _isFunGame;
+  bool get isFunGame => _isFunGame ?? false;
+  bool hasIsFunGame() => _isFunGame != null;
+
   void _initializeFields() {
     _nameGame = snapshotData['name_game'] as String?;
     _date = snapshotData['date'] as DateTime?;
@@ -155,6 +160,7 @@ class GamesRecord extends FirestoreRecord {
     _flexibleDays = getDataList(snapshotData['flexible_days']);
     _flexibleTimeOfDay = snapshotData['flexible_time_of_day'] as String?;
     _flexibleWeek = snapshotData['flexible_week'] as String?;
+    _isFunGame = snapshotData['is_fun_game'] as bool?;
   }
 
   static CollectionReference get collection =>
@@ -213,6 +219,7 @@ Map<String, dynamic> createGamesRecordData({
   List<int>? flexibleDays,
   String? flexibleTimeOfDay,
   String? flexibleWeek,
+  bool? isFunGame,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -238,6 +245,7 @@ Map<String, dynamic> createGamesRecordData({
       'flexible_days': flexibleDays,
       'flexible_time_of_day': flexibleTimeOfDay,
       'flexible_week': flexibleWeek,
+      'is_fun_game': isFunGame,
     }.withoutNulls,
   );
 
@@ -267,7 +275,8 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e1?.userRef == e2?.userRef &&
         e1?.uid == e2?.uid &&
         e1?.chatRef == e2?.chatRef &&
-        e1?.isCancelled == e2?.isCancelled;
+        e1?.isCancelled == e2?.isCancelled &&
+        e1?.isFunGame == e2?.isFunGame;
   }
 
   @override
@@ -289,7 +298,8 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e?.userRef,
         e?.uid,
         e?.chatRef,
-        e?.isCancelled
+        e?.isCancelled,
+        e?.isFunGame,
       ]);
 
   @override
