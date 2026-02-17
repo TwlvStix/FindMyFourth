@@ -22,6 +22,7 @@ import '/core/custom_functions.dart' as functions;
 import '/user_onboarding/vibe_onboarding_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -260,22 +261,29 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       try {
         final golfCanadaRaw = golfCanadaTextController?.text.trim() ?? '';
         debugPrint('Creating user document with friend fields initialized...');
-        await userRef.set(
-          createUsersRecordData(
-            photoUrl: currentUserPhoto,
-            phoneNumber: phoneNumTextController!.text,
-            handicap: handicapValue,
-            golfCanadaNumber:
-                golfCanadaRaw.isEmpty ? null : golfCanadaRaw,
-            homeCourse: coursesValue,
-            firstName: firstNameTextController!.text,
-            lastName: lastNameTextController!.text,
-            displayName: desiredUsername,
-            friends: [],
-            friendRequests: [],
+        final phoneText = phoneNumTextController!.text;
+        await Future.wait([
+          userRef.set(
+            createUsersRecordData(
+              photoUrl: currentUserPhoto,
+              handicap: handicapValue,
+              golfCanadaNumber:
+                  golfCanadaRaw.isEmpty ? null : golfCanadaRaw,
+              homeCourse: coursesValue,
+              firstName: firstNameTextController!.text,
+              lastName: lastNameTextController!.text,
+              displayName: desiredUsername,
+              friends: [],
+              friendRequests: [],
+            ),
+            SetOptions(merge: true),
           ),
-          SetOptions(merge: true),
-        );
+          if (phoneText.isNotEmpty)
+            userRef.collection('private').doc('info').set(
+              {'phone_number': phoneText},
+              SetOptions(merge: true),
+            ),
+        ]);
         debugPrint('User document created with friend fields initialized');
       } catch (e) {
         try {
@@ -407,12 +415,16 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     TextInputAction? textInputAction,
     String? Function(BuildContext, String?)? validator,
     bool readOnly = false,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
       textInputAction: textInputAction ?? TextInputAction.next,
       readOnly: readOnly,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       style: AppTypography.bodyMedium.copyWith(
         color: AppColors.onyx,
       ),
@@ -560,6 +572,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                   controller: phoneNumTextController!,
                                   focusNode: phoneNumFocusNode!,
                                   label: 'Phone',
+                                  keyboardType: TextInputType.phone,
+                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                 ),
                               ),
                             ],
@@ -669,6 +683,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                             controller: golfCanadaTextController!,
                             focusNode: golfCanadaFocusNode!,
                             label: 'Golf Canada #',
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                           ),
                         ],
                       ),

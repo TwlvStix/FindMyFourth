@@ -16,11 +16,6 @@ class UsersRecord extends FirestoreRecord {
     _initializeFields();
   }
 
-  // "email" field.
-  String? _email;
-  String get email => _email ?? '';
-  bool hasEmail() => _email != null;
-
   // "photo_url" field.
   String? _photoUrl;
   String get photoUrl => _photoUrl ?? '';
@@ -30,11 +25,6 @@ class UsersRecord extends FirestoreRecord {
   DateTime? _createdTime;
   DateTime? get createdTime => _createdTime;
   bool hasCreatedTime() => _createdTime != null;
-
-  // "phone_number" field.
-  String? _phoneNumber;
-  String get phoneNumber => _phoneNumber ?? '';
-  bool hasPhoneNumber() => _phoneNumber != null;
 
   // "last_active_time" field.
   DateTime? _lastActiveTime;
@@ -172,10 +162,8 @@ class UsersRecord extends FirestoreRecord {
   bool hasOnboardingCompleted() => _onboardingCompleted != null;
 
   void _initializeFields() {
-    _email = snapshotData['email'] as String?;
     _photoUrl = snapshotData['photo_url'] as String?;
     _createdTime = snapshotData['created_time'] as DateTime?;
-    _phoneNumber = snapshotData['phone_number'] as String?;
     _lastActiveTime = snapshotData['last_active_time'] as DateTime?;
     _handicap = castToType<int>(snapshotData['handicap']);
     _golfCanadaNumber = snapshotData['golf_canada_number'] as String?;
@@ -274,10 +262,8 @@ class UsersRecord extends FirestoreRecord {
 }
 
 Map<String, dynamic> createUsersRecordData({
-  String? email,
   String? photoUrl,
   DateTime? createdTime,
-  String? phoneNumber,
   DateTime? lastActiveTime,
   int? handicap,
   String? golfCanadaNumber,
@@ -309,10 +295,8 @@ Map<String, dynamic> createUsersRecordData({
   final displayNameLower = displayName?.toLowerCase();
   final firestoreData = mapToFirestore(
     <String, dynamic>{
-      'email': email,
       'photo_url': photoUrl,
       'created_time': createdTime,
-      'phone_number': phoneNumber,
       'last_active_time': lastActiveTime,
       'handicap': handicap,
       'golf_canada_number': golfCanadaNumber,
@@ -355,10 +339,8 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
   bool equals(UsersRecord? e1, UsersRecord? e2) {
     const listEquality = ListEquality();
     const mapEquality = DeepCollectionEquality();
-    return e1?.email == e2?.email &&
-        e1?.photoUrl == e2?.photoUrl &&
+    return e1?.photoUrl == e2?.photoUrl &&
         e1?.createdTime == e2?.createdTime &&
-        e1?.phoneNumber == e2?.phoneNumber &&
         e1?.lastActiveTime == e2?.lastActiveTime &&
         e1?.handicap == e2?.handicap &&
         e1?.golfCanadaNumber == e2?.golfCanadaNumber &&
@@ -390,10 +372,8 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
 
   @override
   int hash(UsersRecord? e) => const ListEquality().hash([
-        e?.email,
         e?.photoUrl,
         e?.createdTime,
-        e?.phoneNumber,
         e?.lastActiveTime,
         e?.handicap,
         e?.homeCourse,

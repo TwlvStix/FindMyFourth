@@ -108,6 +108,7 @@ class ChatService {
     required String chatId,
     int limit = 50,
     DocumentSnapshot? startAfter,
+    DateTime? visibleAfter,
   }) {
     Query query = _firestore
         .collection('chats')
@@ -115,6 +116,13 @@ class ChatService {
         .collection('messages')
         .orderBy('createdAt', descending: true)
         .limit(limit);
+
+    if (visibleAfter != null) {
+      query = query.where(
+        'createdAt',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(visibleAfter),
+      );
+    }
 
     if (startAfter != null) {
       query = query.startAfterDocument(startAfter);
@@ -128,20 +136,30 @@ class ChatService {
   Stream<QuerySnapshot> getMessagesSnapshotStream({
     required String chatId,
     int limit = 50,
+    DateTime? visibleAfter,
   }) {
-    return _firestore
+    Query query = _firestore
         .collection('chats')
         .doc(chatId)
         .collection('messages')
         .orderBy('createdAt', descending: true)
-        .limit(limit)
-        .snapshots();
+        .limit(limit);
+
+    if (visibleAfter != null) {
+      query = query.where(
+        'createdAt',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(visibleAfter),
+      );
+    }
+
+    return query.snapshots();
   }
 
   Future<MessagesPage> getMessagesPage({
     required String chatId,
     int limit = 50,
     DocumentSnapshot? startAfter,
+    DateTime? visibleAfter,
   }) async {
     Query query = _firestore
         .collection('chats')
@@ -149,6 +167,13 @@ class ChatService {
         .collection('messages')
         .orderBy('createdAt', descending: true)
         .limit(limit);
+
+    if (visibleAfter != null) {
+      query = query.where(
+        'createdAt',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(visibleAfter),
+      );
+    }
 
     if (startAfter != null) {
       query = query.startAfterDocument(startAfter);
@@ -264,6 +289,9 @@ class ChatService {
       'memberIds': FieldValue.arrayUnion([uid]),
       'updatedAt': FieldValue.serverTimestamp(),
       'unreadCountByUser.$uid': 0,
+      // Record join timestamp so the member sees only messages from this point
+      // forward if they previously left and are now rejoining.
+      'memberJoinedAt.$uid': FieldValue.serverTimestamp(),
     });
     await _userChatRef(uid, chatId).set({
       'chatId': chatId,
@@ -567,22 +595,32 @@ class ChatService {
     required String chatId,
     required String uid,
     int limit = 100,
+    DateTime? visibleAfter,
   }) async {
     try {
       // Query messages where user is NOT in readBy array
       // Note: Firestore doesn't support "not contains" queries directly,
       // so we fetch recent messages and filter client-side
-      final messagesSnapshot = await _firestore
+      Query query = _firestore
           .collection('chats')
           .doc(chatId)
           .collection('messages')
           .orderBy('createdAt', descending: true)
-          .limit(limit)
-          .get();
+          .limit(limit);
+
+      // Only consider messages visible to this user (fresh-start-on-rejoin)
+      if (visibleAfter != null) {
+        query = query.where(
+          'createdAt',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(visibleAfter),
+        );
+      }
+
+      final messagesSnapshot = await query.get();
 
       // Filter to only unread messages
       final unreadDocs = messagesSnapshot.docs.where((doc) {
-        final data = doc.data();
+        final data = doc.data() as Map<String, dynamic>;
         final readBy = (data['readBy'] as List<dynamic>?)
                 ?.whereType<String>()
                 .toList() ??

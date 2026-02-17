@@ -8,9 +8,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/motion/motion_helpers.dart';
 import '/core/navigation/app_router.dart';
-import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/models/vibe_profile.dart';
@@ -18,14 +16,11 @@ import '/providers/chat_provider.dart';
 import '/providers/user_provider.dart';
 import '/providers/profile_provider.dart';
 import '/backend/schema/users_record.dart';
-import '/profile/edit_vibes/edit_vibes_widget.dart';
 import '/services/vibe_match_explanation.dart';
 import '/services/vibe_matcher.dart';
 import '/services/vibe_repository.dart';
 import '/utils/vibe_archetypes.dart';
 import '/vibe/premium_vibe_page/premium_vibe_page_data.dart';
-import '/vibe/vibe_scoring.dart';
-import '/vibe/vibe_tuning.dart';
 
 class ProfileUserFirebaseWidget extends StatefulWidget {
   const ProfileUserFirebaseWidget({
@@ -205,537 +200,6 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
       },
       extra: pageData,
     );
-  }
-
-  String? _matchSubtitle(MatchExplanation explanation) {
-    if (explanation.whatHelpedThisMatch.isEmpty) {
-      return null;
-    }
-    final titles = explanation.whatHelpedThisMatch
-        .map((item) => item.title)
-        .take(2)
-        .toList();
-    if (titles.length == 1) {
-      return 'Strong fit on ${titles.first}.';
-    }
-    return 'Strong fit on ${titles.first} and ${titles.last}.';
-  }
-
-  Widget _buildArchetypesSection(VibeProfile myVibes, VibeProfile theirVibes) {
-    final myArchetype = VibeArchetypes.classifyProfile(myVibes);
-    final theirArchetype = VibeArchetypes.classifyProfile(theirVibes);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Vibe styles',
-          style: AppTypography.titleSmall.copyWith(
-            color: AppColors.onyx,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: AppColors.fairwayLight.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.fairway.withOpacity(0.3),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'You',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.stone,
-                        letterSpacing: AppTypography.letterSpacingNormal,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      myArchetype.name,
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.fairwayDark,
-                        fontWeight: AppTypography.semiBold,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      myArchetype.description,
-                      style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.slate,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: AppColors.sand.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.cloud,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Them',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.stone,
-                        letterSpacing: AppTypography.letterSpacingNormal,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      theirArchetype.name,
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.onyx,
-                        fontWeight: AppTypography.semiBold,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      theirArchetype.description,
-                      style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.slate,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildConfidenceMeter(VibeConfidence confidence,
-      String confidenceReason, int defaultCategoryCount) {
-    final label = _confidenceLabelText(confidence);
-    final color = _confidenceColor(confidence);
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: AppColors.sand,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.cloud),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _buildPill(
-                label,
-                background: color.withOpacity(0.12),
-                border: color.withOpacity(0.4),
-                textColor: color,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  confidenceReason,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.slate,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (defaultCategoryCount > 0) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              '$defaultCategoryCount categories still default',
-              style: AppTypography.labelSmall.copyWith(
-                color: AppColors.stone,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryBreakdown(MatchExplanation explanation) {
-    return Column(
-      children: explanation.categories.map((breakdown) {
-        final matchPct = breakdown.matchPercent.round();
-        return Padding(
-          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-          child: Container(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: AppColors.pure,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.cloud),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        breakdown.label,
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.onyx,
-                          fontWeight: AppTypography.semiBold,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      '$matchPct%',
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.fairwayDark,
-                        fontWeight: AppTypography.semiBold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Wrap(
-                  spacing: AppSpacing.xs,
-                  runSpacing: AppSpacing.xs,
-                  children: [
-                    _buildWeightLevelPill(breakdown.weightLevel),
-                    _buildStatusBadge(breakdown.statusBadge),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildInsightRow({
-    required IconData icon,
-    required String title,
-    required String description,
-    required Color iconColor,
-    bool showActivityBadge = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: iconColor, size: 18),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.onyx,
-                    fontWeight: AppTypography.semiBold,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xxs),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (showActivityBadge) ...[
-                      _buildActivityBadge(),
-                      const SizedBox(width: AppSpacing.xs),
-                    ],
-                    Expanded(
-                      child: Text(
-                        description,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.stone,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActivityBadge() {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.xs,
-        vertical: AppSpacing.xxs,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.cloud.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.cloud),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Based on activity',
-            style: AppTypography.labelSmall.copyWith(
-              color: AppColors.stone,
-              letterSpacing: AppTypography.letterSpacingNormal,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.xxs),
-          Tooltip(
-            message:
-                'Derived from in-app behavior signals (e.g., response time, invites, follow-through).',
-            child: Icon(
-              Icons.info_outline_rounded,
-              size: 12,
-              color: AppColors.stone,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWeightLevelPill(VibeWeightLevel level) {
-    final text = _weightLevelLabel(level);
-    final color = _weightLevelColor(level);
-    return _buildPill(
-      text,
-      background: color.withOpacity(0.12),
-      border: color.withOpacity(0.4),
-      textColor: color,
-    );
-  }
-
-  Widget _buildStatusBadge(VibeStatusBadge badge) {
-    final text = _statusLabel(badge);
-    final color = _statusColor(badge);
-    return _buildPill(
-      text,
-      background: color.withOpacity(0.12),
-      border: color.withOpacity(0.4),
-      textColor: color,
-    );
-  }
-
-  Widget _buildPill(
-    String text, {
-    required Color background,
-    required Color border,
-    required Color textColor,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: border),
-      ),
-      child: Text(
-        text,
-        style: AppTypography.labelSmall.copyWith(
-          color: textColor,
-          letterSpacing: AppTypography.letterSpacingNormal,
-        ),
-      ),
-    );
-  }
-
-  String _weightLevelLabel(VibeWeightLevel level) {
-    switch (level) {
-      case VibeWeightLevel.high:
-        return 'High';
-      case VibeWeightLevel.medium:
-        return 'Medium';
-      case VibeWeightLevel.low:
-        return 'Low';
-    }
-  }
-
-  String _statusLabel(VibeStatusBadge badge) {
-    switch (badge) {
-      case VibeStatusBadge.aligned:
-        return 'Aligned';
-      case VibeStatusBadge.withinTolerance:
-        return 'Within tolerance';
-      case VibeStatusBadge.watchPoint:
-        return 'Watch point';
-      case VibeStatusBadge.dealbreakerRisk:
-        return 'Dealbreaker risk';
-    }
-  }
-
-  Color _weightLevelColor(VibeWeightLevel level) {
-    switch (level) {
-      case VibeWeightLevel.high:
-        return AppColors.fairway;
-      case VibeWeightLevel.medium:
-        return AppColors.stone;
-      case VibeWeightLevel.low:
-        return AppColors.slate;
-    }
-  }
-
-  Color _statusColor(VibeStatusBadge badge) {
-    switch (badge) {
-      case VibeStatusBadge.aligned:
-        return AppColors.fairway;
-      case VibeStatusBadge.withinTolerance:
-        return AppColors.slate;
-      case VibeStatusBadge.watchPoint:
-        return AppColors.stone;
-      case VibeStatusBadge.dealbreakerRisk:
-        return AppColors.error;
-    }
-  }
-
-  String _confidenceLabelText(VibeConfidence confidence) {
-    switch (confidence) {
-      case VibeConfidence.high:
-        return 'High';
-      case VibeConfidence.medium:
-        return 'Medium';
-      case VibeConfidence.low:
-        return 'Low';
-    }
-  }
-
-  Color _confidenceColor(VibeConfidence confidence) {
-    switch (confidence) {
-      case VibeConfidence.high:
-        return AppColors.fairway;
-      case VibeConfidence.medium:
-        return AppColors.stone;
-      case VibeConfidence.low:
-        return AppColors.error;
-    }
-  }
-
-  Widget _buildVibeComparisonRow(
-    VibeCategory category,
-    VibePreference mine,
-    VibePreference theirs,
-  ) {
-    final myLabel =
-        VibeLabels.labelFor(category, mine.value) ?? mine.value.toString();
-    final theirLabel =
-        VibeLabels.labelFor(category, theirs.value) ?? theirs.value.toString();
-    final distance = (mine.value - theirs.value).abs();
-    final myFit = oneSidedCategoryScore(
-      distance: distance,
-      tolerance: mine.threshold,
-      gamma: VibeTuning.gamma,
-      scaleMax: VibeTuning.scaleMax,
-    );
-    final theirFit = oneSidedCategoryScore(
-      distance: distance,
-      tolerance: theirs.threshold,
-      gamma: VibeTuning.gamma,
-      scaleMax: VibeTuning.scaleMax,
-    );
-    final myFitPct = (myFit * 100).round();
-    final theirFitPct = (theirFit * 100).round();
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            VibeLabels.titleFor(category),
-            style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.onyx,
-              fontWeight: AppTypography.semiBold,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xxs),
-          Text(
-            'You: $myFitPct% · Them: $theirFitPct%',
-            style: AppTypography.labelSmall.copyWith(
-              color: AppColors.stone,
-              letterSpacing: AppTypography.letterSpacingNormal,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Row(
-            children: [
-              Expanded(
-                child: _buildVibeValueChip('You', mine.value, myLabel),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: _buildVibeValueChip('Them', theirs.value, theirLabel),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVibeValueChip(String label, int value, String meaning) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.sand,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.cloud),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: AppTypography.labelSmall.copyWith(
-              color: AppColors.stone,
-              letterSpacing: AppTypography.letterSpacingNormal,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xxs),
-          Text(
-            '$value • $meaning',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.slate,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _dealbreakerOwnerLabel(VibeDealbreakerOwner owner) {
-    switch (owner) {
-      case VibeDealbreakerOwner.me:
-        return 'your dealbreaker';
-      case VibeDealbreakerOwner.them:
-        return 'their dealbreaker';
-      case VibeDealbreakerOwner.both:
-        return 'both dealbreakers';
-    }
   }
 
   Widget _buildVibeMatchRow() {
@@ -1238,8 +702,11 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
   Widget _buildGolfInfoSection(
     BuildContext context, {
     required String golfCanadaNumber,
-    required String email,
-    required String phone,
+    // email and phone are only passed when viewing the current user's own
+    // profile (isSelf == true). They are intentionally omitted for other users
+    // so contact info is never exposed on public profiles.
+    String? email,
+    String? phone,
   }) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -1266,22 +733,26 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             label: 'Golf Canada #',
             value: golfCanadaNumber,
           ),
-          SizedBox(height: AppSpacing.sm),
-          _buildInfoRow(
-            context,
-            icon: Icons.email_outlined,
-            iconColor: AppColors.sunsetPeach,
-            label: 'Email',
-            value: email,
-          ),
-          SizedBox(height: AppSpacing.sm),
-          _buildInfoRow(
-            context,
-            icon: Icons.phone_outlined,
-            iconColor: AppColors.sunsetGold,
-            label: 'Phone',
-            value: phone,
-          ),
+          if (email != null) ...[
+            SizedBox(height: AppSpacing.sm),
+            _buildInfoRow(
+              context,
+              icon: Icons.email_outlined,
+              iconColor: AppColors.sunsetPeach,
+              label: 'Email',
+              value: email,
+            ),
+          ],
+          if (phone != null) ...[
+            SizedBox(height: AppSpacing.sm),
+            _buildInfoRow(
+              context,
+              icon: Icons.phone_outlined,
+              iconColor: AppColors.sunsetGold,
+              label: 'Phone',
+              value: phone,
+            ),
+          ],
         ],
       ),
     );
@@ -1385,11 +856,14 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               : 'Golfer';
           _cachedUserName = displayName;
           _cachedUserPhotoUrl = photoUrl;
-          final phoneNumber = userRecord.phoneNumber.isNotEmpty
-              ? userRecord.phoneNumber
-              : 'Not set';
-          final email =
-              userRecord.email.isNotEmpty ? userRecord.email : 'Not set';
+          // Contact info is private — only expose for the current user's own profile.
+          // Do not read email/phone from another user's record.
+          final phoneNumber = isSelf && currentPhoneNumber.isNotEmpty
+              ? currentPhoneNumber
+              : null;
+          final email = isSelf && currentUserEmail.isNotEmpty
+              ? currentUserEmail
+              : null;
           final homeCourse = userRecord.homeCourse.isNotEmpty
               ? userRecord.homeCourse
               : 'Not set';

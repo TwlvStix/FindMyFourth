@@ -41,9 +41,12 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   final ScrollController _scrollController = ScrollController();
   late final Stream<Chat?> _chatStream;
   late final Stream<Chat?> _chatUiStream;
-  late final Stream<QuerySnapshot> _messagesStream;
-  late final Stream<List<ChatMessageViewModel>> _messageViewModelsStream;
+  Stream<QuerySnapshot>? _messagesStream;
+  Stream<List<ChatMessageViewModel>>? _messageViewModelsStream;
   StreamSubscription<Chat?>? _chatUiSubscription;
+  // Visibility cutoff from memberJoinedAt — set when the first chat event arrives.
+  DateTime? _visibleAfter;
+  bool _streamsInitialized = false;
   static const int _initialPageSize = 40;
   static const int _pageSize = 30;
   final List<ChatMessage> _olderMessages = [];
@@ -75,19 +78,10 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     debugPrint('📨 UI: Chat page loaded for chatId: ${widget.chatId}');
     debugPrint('📨 UI: Current user ID: $_currentUserId');
     final chatProvider = context.read<ChatProvider>();
-    final profileProvider = context.read<ProfileProvider>();
     _chatStream = chatProvider.chatStream(widget.chatId);
     _chatUiStream = _chatStream.distinct(_chatUiEquals);
-    _messagesStream = chatProvider.messagesSnapshotStream(
-      chatId: widget.chatId,
-      limit: _initialPageSize,
-    );
-    // AUDIT #5 FIX: Single view-model stream replaces nested builders
-    _messageViewModelsStream = chatProvider.gameChatMessageViewModelsStream(
-      chatId: widget.chatId,
-      limit: _initialPageSize,
-      profileProvider: profileProvider,
-    );
+    // Message streams are initialized lazily in _updateChatUiState on the first
+    // chat event, so that we can read memberJoinedAt[uid] for fresh-start filtering.
     _chatUiSubscription = _chatUiStream.listen(
       (chat) {
         if (!mounted) return;
@@ -412,6 +406,29 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       return;
     }
 
+    // Initialize message streams on the first valid chat event so we can apply
+    // the memberJoinedAt visibility cutoff for fresh-start-on-rejoin.
+    if (!_streamsInitialized) {
+      _streamsInitialized = true;
+      final currentUserId = _currentUserId;
+      _visibleAfter = currentUserId != null
+          ? chat.memberJoinedAt[currentUserId]
+          : null;
+      final chatProvider = context.read<ChatProvider>();
+      final profileProvider = context.read<ProfileProvider>();
+      _messagesStream = chatProvider.messagesSnapshotStream(
+        chatId: widget.chatId,
+        limit: _initialPageSize,
+        visibleAfter: _visibleAfter,
+      );
+      _messageViewModelsStream = chatProvider.gameChatMessageViewModelsStream(
+        chatId: widget.chatId,
+        limit: _initialPageSize,
+        profileProvider: profileProvider,
+        visibleAfter: _visibleAfter,
+      );
+    }
+
     final isArchived = chat.archivedAt != null &&
         chat.archivedAt!.isBefore(DateTime.now());
     final bannerText = chat.pinnedMessage.isNotEmpty
@@ -546,12 +563,13 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
           .read<ChatProvider>()
           .markChatRead(chatId: widget.chatId, uid: currentUserId);
 
-      // Mark all unread messages as read in a single batched operation
-      // This replaces the previous sequential loop with a single WriteBatch
+      // Mark all unread messages as read in a single batched operation.
+      // Pass visibleAfter so we only mark messages the user can actually see.
       final stats = await context.read<ChatProvider>().markMessagesAsReadBatch(
             chatId: widget.chatId,
             uid: currentUserId,
-            limit: 100, // Check up to 100 recent messages
+            limit: 100,
+            visibleAfter: _visibleAfter,
           );
 
       if (kDebugMode) {
@@ -739,6 +757,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
             chatId: widget.chatId,
             limit: _pageSize,
             startAfter: _lastLoadedDoc ?? _lastStreamDoc,
+            visibleAfter: _visibleAfter,
           );
       if (page.messages.isEmpty) {
         _hasMoreOlder = false;
@@ -814,7 +833,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         'chatError=${_chatError?.runtimeType} '
         'msgCtrl=${_messageController.hashCode} '
         'focus=${_messageFocusNode.hashCode} '
-        'msgStream=${identityHashCode(_messagesStream)}',
+        'msgStream=${identityHashCode(_messagesStream ?? this)}',
       );
     }
     return GestureDetector(
@@ -1014,7 +1033,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                     ),
                                   )
                                 : StreamBuilder<List<ChatMessageViewModel>>(
-                                    stream: _messageViewModelsStream,
+                                    stream: _messageViewModelsStream!,
                                     builder: (context, snapshot) {
                                       if (kDebugMode) {
                                         debugPrint(

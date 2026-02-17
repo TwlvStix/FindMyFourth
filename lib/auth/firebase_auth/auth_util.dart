@@ -13,7 +13,9 @@ final _authManager = FirebaseAuthManager();
 FirebaseAuthManager get authManager => _authManager;
 
 String get currentUserEmail =>
-    currentUserDocument?.email ?? currentUser?.email ?? '';
+    (_currentUserPrivateData?['email'] as String?) ??
+    currentUser?.email ??
+    '';
 
 String get currentUserUid => currentUser?.uid ?? '';
 
@@ -24,7 +26,9 @@ String get currentUserPhoto =>
     currentUserDocument?.photoUrl ?? currentUser?.photoUrl ?? '';
 
 String get currentPhoneNumber =>
-    currentUserDocument?.phoneNumber ?? currentUser?.phoneNumber ?? '';
+    (_currentUserPrivateData?['phone_number'] as String?) ??
+    currentUser?.phoneNumber ??
+    '';
 
 String get currentJwtToken => _currentJwtToken ?? '';
 
@@ -56,6 +60,27 @@ final authenticatedUserStream = FirebaseAuth.instance
 
   return currentUserDocument;
 }).asBroadcastStream();
+
+Map<String, dynamic>? _currentUserPrivateData;
+final privateUserDataStream = FirebaseAuth.instance
+    .authStateChanges()
+    .switchMap((user) {
+      if (user == null) {
+        return Stream<Map<String, dynamic>?>.value(null);
+      }
+      return FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('private')
+          .doc('info')
+          .snapshots()
+          .map((snap) => snap.exists ? snap.data() : null);
+    })
+    .map((data) {
+      _currentUserPrivateData = data;
+      return _currentUserPrivateData;
+    })
+    .asBroadcastStream();
 
 class AuthUserStreamWidget extends StatelessWidget {
   const AuthUserStreamWidget({Key? key, required this.builder})

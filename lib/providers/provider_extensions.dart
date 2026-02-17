@@ -46,8 +46,7 @@ extension UserProviderHelpers on UserProvider {
   bool get isProfileComplete {
     return displayName.isNotEmpty &&
         firstName.isNotEmpty &&
-        lastName.isNotEmpty &&
-        email.isNotEmpty;
+        lastName.isNotEmpty;
   }
 
   /// Check if golf profile is set up

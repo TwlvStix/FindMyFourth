@@ -580,19 +580,29 @@ Future maybeCreateUser(User user) async {
   }
 
   final userData = createUsersRecordData(
-    email: user.email ??
-        FirebaseAuth.instance.currentUser?.email ??
-        user.providerData.firstOrNull?.email,
     displayName:
         user.displayName ?? FirebaseAuth.instance.currentUser?.displayName,
     photoUrl: user.photoURL,
     uid: user.uid,
-    phoneNumber: user.phoneNumber,
     createdTime: getCurrentTimestamp,
     onboardingCompleted: false,
   );
 
-  await userRecord.set(userData);
+  final email = user.email ??
+      FirebaseAuth.instance.currentUser?.email ??
+      user.providerData.firstOrNull?.email;
+  final phoneNumber = user.phoneNumber;
+  final privData = <String, dynamic>{
+    if (email != null) 'email': email,
+    if (phoneNumber != null) 'phone_number': phoneNumber,
+  };
+
+  final futures = <Future>[
+    userRecord.set(userData),
+    if (privData.isNotEmpty)
+      userRecord.collection('private').doc('info').set(privData),
+  ];
+  await Future.wait(futures);
   currentUserDocument = UsersRecord.getDocumentFromData(userData, userRecord);
 }
 
@@ -601,6 +611,10 @@ Future ensureUserDocReady(User user) async {
 }
 
 Future updateUserDocument({String? email}) async {
-  await currentUserDocument?.reference
-      .update(createUsersRecordData(email: email));
+  if (email != null && currentUserDocument?.reference != null) {
+    await currentUserDocument!.reference
+        .collection('private')
+        .doc('info')
+        .set({'email': email}, SetOptions(merge: true));
+  }
 }

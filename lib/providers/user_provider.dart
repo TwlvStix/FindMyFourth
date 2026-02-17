@@ -146,9 +146,7 @@ class UserProvider extends ChangeNotifier {
   String get displayName => _currentUser?.displayName ?? '';
   String get firstName => _currentUser?.firstName ?? '';
   String get lastName => _currentUser?.lastName ?? '';
-  String get email => _currentUser?.email ?? '';
   String get photoUrl => _currentUser?.photoUrl ?? '';
-  String get phoneNumber => _currentUser?.phoneNumber ?? '';
   String get homeCourse => _currentUser?.homeCourse ?? '';
   int get handicap => _currentUser?.handicap ?? 0;
   int get music => _currentUser?.music ?? 0;

@@ -222,6 +222,7 @@ class _MyAppState extends State<MyApp> {
   bool _initialAuthHandled = false;
 
   final authUserSub = authenticatedUserStream.listen((_) {});
+  final privateDataSub = privateUserDataStream.listen((_) {});
   late StreamSubscription<BaseAuthUser> _userStreamSub;
   late StreamSubscription<dynamic> _jwtTokenSub;
 
@@ -358,6 +359,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     authUserSub.cancel();
+    privateDataSub.cancel();
     _userStreamSub.cancel();
     _jwtTokenSub.cancel();
     _splashFallbackTimer?.cancel();

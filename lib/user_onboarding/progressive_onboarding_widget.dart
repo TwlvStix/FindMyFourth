@@ -15,6 +15,7 @@ import '/profile/main_profile/main_profile_widget.dart';
 import '/user_onboarding/vibe_onboarding_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -227,7 +228,6 @@ class _ProgressiveOnboardingWidgetState
                 displayName: desiredUsername,
                 firstName: _firstNameController.text,
                 lastName: _lastNameController.text,
-                phoneNumber: _phoneController.text,
                 homeCourse: _homeCourseValue,
                 handicap: _handicapValue,
                 drinks: _drinksValue,
@@ -236,6 +236,14 @@ class _ProgressiveOnboardingWidgetState
                 paceOfPlay: _paceValue,
               ),
             );
+            final phoneText = _phoneController.text;
+            if (phoneText.isNotEmpty) {
+              transaction.set(
+                userRef.collection('private').doc('info'),
+                {'phone_number': phoneText},
+                SetOptions(merge: true),
+              );
+            }
           });
         } on StateError catch (_) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -640,6 +648,7 @@ class _ProgressiveOnboardingWidgetState
               focusNode: _phoneFocus,
               obscureText: false,
               keyboardType: TextInputType.phone,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: InputDecoration(
                 labelText: 'Phone Number (Optional)',
                 hintText: 'Enter your phone number',
