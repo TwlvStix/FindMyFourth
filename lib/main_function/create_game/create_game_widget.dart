@@ -722,13 +722,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         Container(
           padding: EdgeInsets.all(AppSpacing.sm),
           decoration: BoxDecoration(
-            color: AppColors.info.withValues(alpha: 0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
-              Icon(Icons.info_outline_rounded, color: AppColors.info, size: 20),
+              Icon(Icons.info_outline_rounded, color: Colors.white, size: 20),
               SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
@@ -736,7 +736,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                   style: TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 13,
-                    color: AppColors.info,
+                    color: Colors.white,
                   ),
                 ),
               ),
