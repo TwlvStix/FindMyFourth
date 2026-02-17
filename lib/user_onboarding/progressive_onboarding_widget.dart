@@ -765,7 +765,7 @@ class _ProgressiveOnboardingWidgetState
                   ),
                 );
               }
-              final courses = snapshot.data!;
+              final courses = snapshot.data!..sort((a, b) => a.name.compareTo(b.name));
               return AppDropDown<String>(
                 controller: _homeCourseController ??=
                     FormFieldController<String>(null),

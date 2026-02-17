@@ -607,7 +607,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                       );
                     }
 
-                    List<CourseRecord> courses = snapshot.data!;
+                    List<CourseRecord> courses = snapshot.data!..sort((a, b) => a.name.compareTo(b.name));
 
                     if (coursesValue == null && mounted) {
                       coursesValue = valueOrDefault(

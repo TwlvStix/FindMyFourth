@@ -1584,6 +1584,51 @@ exports.backfillAlertSubs = functions
     }
   });
 
+const sgMail = require("@sendgrid/mail");
+
+exports.onUserCreated = functions
+  .region("us-west2")
+  .runWith({ secrets: ["SENDGRID_API_KEY"] })
+  .auth.user()
+  .onCreate(async (user) => {
+    const email = user.email;
+    if (!email) {
+      // Skip anonymous or phone-only accounts that have no email address.
+      return;
+    }
+
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+    const msg = {
+      to: email,
+      from: "findmyfourth@gmail.com",
+      subject: "Welcome to Find My Fourth!",
+      text: [
+        "Welcome to Find My Fourth!",
+        "",
+        "Your account has been successfully created. We're excited to have you on the course!",
+        "",
+        "Head back to the app to complete your profile and start finding your next round.",
+        "",
+        "See you on the fairway,",
+        "The Find My Fourth Team",
+      ].join("\n"),
+      html: [
+        "<p>Welcome to <strong>Find My Fourth</strong>!</p>",
+        "<p>Your account has been successfully created. We're excited to have you on the course!</p>",
+        "<p>Head back to the app to complete your profile and start finding your next round.</p>",
+        "<p>See you on the fairway,<br/>The Find My Fourth Team</p>",
+      ].join(""),
+    };
+
+    try {
+      await sgMail.send(msg);
+      console.log(`Welcome email sent to ${email}`);
+    } catch (error) {
+      console.error("Error sending welcome email:", error);
+    }
+  });
+
 exports.deleteChat = functions
   .region("us-west2")
   .https.onCall(async (data, context) => {

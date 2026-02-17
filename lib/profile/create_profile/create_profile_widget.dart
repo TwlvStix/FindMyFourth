@@ -590,7 +590,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                 );
                               }
 
-                              List<CourseRecord> courses = snapshot.data!;
+                              List<CourseRecord> courses = snapshot.data!..sort((a, b) => a.name.compareTo(b.name));
                               return AppDropDown<String>(
                                 controller: coursesValueController ??=
                                     FormFieldController<String>(null),
