@@ -9,6 +9,7 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/form_field_controller.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
@@ -722,13 +723,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         Container(
           padding: EdgeInsets.all(AppSpacing.sm),
           decoration: BoxDecoration(
-            color: AppColors.info.withValues(alpha: 0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
-              Icon(Icons.info_outline_rounded, color: AppColors.info, size: 20),
+              Icon(Icons.info_outline_rounded, color: Colors.white, size: 20),
               SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
@@ -736,7 +737,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                   style: TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 13,
-                    color: AppColors.info,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -1091,17 +1092,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             leading: const PremiumBackButton(),
             title: Text(
               'Create Game',
-              style: AppTheme.of(context).headlineLarge.override(
-                    font: TextStyle(fontFamily: 'Manrope',
-                      fontWeight: FontWeight.w500,
-                      fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
-                    ),
-                    color: AppColors.pure,
-                    fontSize: 24.0,
-                    letterSpacing: 0.0,
-                    fontWeight: FontWeight.w500,
-                    fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
-                  ),
+              style: AppTypography.headlineMedium.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             centerTitle: false,
           ),

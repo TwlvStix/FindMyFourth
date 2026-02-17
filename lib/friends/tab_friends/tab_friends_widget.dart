@@ -78,6 +78,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
   // Optimistic friends list for immediate UI updates
   List<DocumentReference>? _optimisticFriendsList;
 
+  // Optimistic outgoing friend requests tracking for immediate UI updates
+  Set<String> _optimisticOutgoingRequests = {};
+
   Future<void> _showFilterBottomSheet() async {
     final result = await showModalBottomSheet<FriendFilters>(
       context: context,
@@ -378,7 +381,10 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                   .contains(
                                             listViewUsersRecord.reference,
                                           );
+
+                                          // Check optimistic state first, then fall back to backend data
                                           final isOutgoingPending =
+                                              _optimisticOutgoingRequests.contains(listViewUsersRecord.reference.id) ||
                                               listViewUsersRecord.friendRequests
                                                   .contains(currentUserReference);
                                           final isIncomingPending =
@@ -434,6 +440,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                     ? (isOutgoingPending
                                                         ? () async {
                                                             try {
+                                                              // Optimistically update UI before backend call
+                                                              setState(() {
+                                                                _optimisticOutgoingRequests.remove(listViewUsersRecord.reference.id);
+                                                              });
+
                                                               await context
                                                                   .read<UserProvider>()
                                                                   .cancelFriendRequest(
@@ -483,6 +494,12 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                                 ),
                                                               );
                                                             } catch (_) {
+                                                              // Revert optimistic update on error
+                                                              if (mounted) {
+                                                                setState(() {
+                                                                  _optimisticOutgoingRequests.add(listViewUsersRecord.reference.id);
+                                                                });
+                                                              }
                                                               if (!mounted) {
                                                                 return;
                                                               }
@@ -495,6 +512,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                         : () async {})
                                                     : () async {
                                                         try {
+                                                          // Optimistically update UI before backend call
+                                                          setState(() {
+                                                            _optimisticOutgoingRequests.add(listViewUsersRecord.reference.id);
+                                                          });
+
                                                           await context
                                                               .read<UserProvider>()
                                                               .sendFriendRequest(
@@ -548,6 +570,12 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
                                                             ),
                                                           );
                                                         } catch (_) {
+                                                          // Revert optimistic update on error
+                                                          if (mounted) {
+                                                            setState(() {
+                                                              _optimisticOutgoingRequests.remove(listViewUsersRecord.reference.id);
+                                                            });
+                                                          }
                                                           if (!mounted) {
                                                             return;
                                                           }
