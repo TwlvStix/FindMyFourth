@@ -131,7 +131,7 @@ class NotificationGameAlerts {
 
   static NotificationGameAlerts defaults() {
     return NotificationGameAlerts(
-      enabled: false, // Default to OFF as per requirements
+      enabled: true,
     );
   }
 

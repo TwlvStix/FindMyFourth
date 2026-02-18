@@ -56,7 +56,7 @@ function getUserNotificationPrefs(userData) {
   const chatAlerts = prefs.chat_alerts || {};
   const quietHours = prefs.quiet_hours || {};
   const pushEnabled =
-    typeof prefs.push_enabled === "boolean" ? prefs.push_enabled : false;
+    typeof prefs.push_enabled === "boolean" ? prefs.push_enabled : true;
   const gameAlertsEnabled =
     typeof gameAlerts.enabled === "boolean" ? gameAlerts.enabled : true;
   const chatAlertsEnabled =

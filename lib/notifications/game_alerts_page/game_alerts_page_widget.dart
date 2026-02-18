@@ -892,6 +892,26 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                     );
                                   },
                                 ),
+                                Divider(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  height: 1,
+                                  thickness: 1,
+                                ),
+                                _buildToggleRow(
+                                  emoji: '🏷️',
+                                  title: 'Discounted Games',
+                                  subtitle:
+                                      'Only notify for games with a discount',
+                                  value: _subscription!.special.discount,
+                                  onChanged: (value) {
+                                    _updateSubscription(
+                                      _subscription!.copyWith(
+                                        special: _subscription!.special
+                                            .copyWith(discount: value),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ],
                             ),
 

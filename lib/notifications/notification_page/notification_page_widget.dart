@@ -85,9 +85,19 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
         alertSub = null;
       }
 
+      // If no alertSub document exists, create the default (enabled, no filters = all games)
+      // so the backend will include this user in game notifications without requiring an explicit save.
+      if (alertSub == null) {
+        final defaultSub = AlertSubscription.defaults(currentUserUid);
+        AlertSubscriptionService.saveSubscription(defaultSub).catchError((e) {
+          debugPrint('[NotificationSettings] Failed to auto-save default alertSub: $e');
+        });
+        alertSub = defaultSub;
+      }
+
       setState(() {
         _prefs = prefs;
-        _alertSub = alertSub ?? AlertSubscription.defaults(currentUserUid);
+        _alertSub = alertSub;
         _isLoading = false;
         _hasChanges = false;
       });

@@ -234,6 +234,10 @@ class NotificationPermissionService {
         // Token fetch can fail transiently; permissions are still granted.
         AppLog.d('[NotificationService] Failed to get initial token: $e');
       }
+
+      // Ensure push_enabled is true and alertSub exists so backend can notify this user
+      await _markPermissionGranted(user.uid);
+
       return NotificationPermissionStatus.granted;
     } catch (e) {
       AppLog.d('[NotificationService] Error requesting permission: $e');
@@ -324,6 +328,44 @@ class NotificationPermissionService {
       },
       SetOptions(merge: true),
     );
+  }
+
+  Future<void> _markPermissionGranted(String uid) async {
+    try {
+      // Enable push notifications on the user document
+      await _firestore.collection('users').doc(uid).set(
+        {
+          'notify_off': false,
+          'notification_prefs': {
+            'push_enabled': true,
+          },
+        },
+        SetOptions(merge: true),
+      );
+
+      // Create alertSub document if it doesn't exist yet.
+      // enabled=true with no filters means the backend will notify this user for ALL games.
+      final alertSubRef = _firestore.collection('alertSubs').doc(uid);
+      final existing = await alertSubRef.get();
+      if (!existing.exists) {
+        await alertSubRef.set({
+          'userId': uid,
+          'enabled': true,
+          'gameVibes': [],
+          'stakes': [],
+          'formats': [],
+          'handicapUses': [],
+          'courses': [],
+          'special': {'games': false, 'twoVTwo': false},
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        AppLog.d('[NotificationService] Default alertSub created for $uid');
+      }
+    } catch (e) {
+      // Non-fatal — user can still receive push, alertSub will be created when they visit settings
+      AppLog.d('[NotificationService] Failed to write permission granted state: $e');
+    }
   }
 
   Future<String> _getOrCreateDeviceId() async {
