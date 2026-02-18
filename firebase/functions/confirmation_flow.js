@@ -35,6 +35,7 @@
 
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const trustProfile = require("./trust_profile");
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -1226,6 +1227,18 @@ async function _finalizeRoundVerification(db, roundRef, roundData, gameRef) {
           : 0
       }`
   );
+
+  // ── 5. Stage 5: update trust profiles for all present users ───────────────
+  if (presentUids.length > 0) {
+    const trustUpdates = presentUids.map((uid) =>
+      trustProfile._updateTrustProfileHandler(db, uid).catch((err) =>
+        console.warn(
+          `_finalizeRoundVerification: trust profile update failed for ${uid}:`, err
+        )
+      )
+    );
+    await Promise.all(trustUpdates);
+  }
 }
 
 /**
@@ -1665,6 +1678,20 @@ async function _closeConfirmationWindow(db, jobRef, job, nowTs) {
     `_closeConfirmationWindow: closed job ${jobRef.id} for game ${gameRef ? gameRef.id : "unknown"}. ` +
       `Converted ${pendingUids.length} pending no-show(s) to active strikes.`
   );
+
+  // ── Stage 5: update trust profiles for no-show players ───────────────────
+  // present players are handled by _finalizeRoundVerification above;
+  // no-show players need updates because they just received strikes
+  if (pendingUids.length > 0) {
+    const noShowTrustUpdates = pendingUids.map((uid) =>
+      trustProfile._updateTrustProfileHandler(db, uid).catch((err) =>
+        console.warn(
+          `_closeConfirmationWindow: trust profile update failed for no-show ${uid}:`, err
+        )
+      )
+    );
+    await Promise.all(noShowTrustUpdates);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -22,6 +22,7 @@ import '/services/vibe_matcher.dart';
 import '/services/vibe_repository.dart';
 import '/utils/vibe_archetypes.dart';
 import '/vibe/premium_vibe_page/premium_vibe_page_data.dart';
+import '/screens/trust/trust_profile_section.dart';
 
 class ProfileUserFirebaseWidget extends StatefulWidget {
   const ProfileUserFirebaseWidget({
@@ -1211,6 +1212,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                               golfCanadaNumber: golfCanadaNumber,
                               email: email,
                               phone: phoneNumber,
+                            ),
+                            TrustProfileSection(
+                              user: userRecord,
+                              isOwnProfile: false,
                             ),
                             SizedBox(height: AppSpacing.xxxl),
                           ],

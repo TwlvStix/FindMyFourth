@@ -275,6 +275,48 @@
         { "fieldPath": "play_count", "order": "DESCENDING" },
         { "fieldPath": "last_played_at", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "cancellation_records",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "player_ref", "order": "ASCENDING" },
+        { "fieldPath": "cancelled_at", "order": "ASCENDING" },
+        { "fieldPath": "tier", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "cancellation_records",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "player_ref", "order": "ASCENDING" },
+        { "fieldPath": "tier", "order": "ASCENDING" },
+        { "fieldPath": "is_ghost", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "cancellation_records",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "player_ref", "order": "ASCENDING" },
+        { "fieldPath": "is_ghost", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "round_records",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tee_time", "order": "ASCENDING" },
+        { "fieldPath": "verification_status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "games",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userRef", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [

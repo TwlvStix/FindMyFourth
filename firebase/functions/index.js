@@ -13,6 +13,7 @@ const firestore = admin.firestore();
 
 const trustSystem = require("./trust_system");
 const confirmationFlow = require("./confirmation_flow");
+const trustProfileModule = require("./trust_profile");
 
 const kPushNotificationRuntimeOpts = {
   timeoutSeconds: 540,
@@ -1714,3 +1715,7 @@ exports.processConfirmationJobs = confirmationFlow.processConfirmationJobs;
 exports.submitHostCheckin = confirmationFlow.submitHostCheckin;
 exports.submitPeerRatings = confirmationFlow.submitPeerRatings;
 exports.submitFallbackConfirmation = confirmationFlow.submitFallbackConfirmation;
+
+// Trust Profile — Stage 5
+exports.updateTrustProfile = trustProfileModule.updateTrustProfile;
+exports.getMyStanding = trustProfileModule.getMyStanding;

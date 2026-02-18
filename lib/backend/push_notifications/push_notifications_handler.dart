@@ -378,6 +378,7 @@ final parametersBuilderMap =
           'gameRef': getParameter<DocumentReference>(data, 'gameRef'),
         },
       ),
+  'YourStanding': ParameterData.none(),
 };
 
 Map<String, dynamic> getInitialParameterData(Map<String, dynamic> data) {

@@ -191,6 +191,37 @@ class UsersRecord extends FirestoreRecord {
   String get badgeLevel => _badgeLevel ?? 'new';
   bool hasBadgeLevel() => _badgeLevel != null;
 
+  // "verified_round_count" field. Canonical count written by confirmation_flow.js.
+  // Note: total_verified_rounds is a separate (unpopulated) field kept for compat.
+  int? _verifiedRoundCount;
+  int get verifiedRoundCount => _verifiedRoundCount ?? 0;
+  bool hasVerifiedRoundCount() => _verifiedRoundCount != null;
+
+  // "weighted_rounds" field. Computed by trust_profile.js Stage 5.
+  double? _weightedRounds;
+  double get weightedRounds => _weightedRounds ?? 0.0;
+  bool hasWeightedRounds() => _weightedRounds != null;
+
+  // "cancellation_warning" field. True when 2+ bad cancels in rolling 90 days.
+  bool? _cancellationWarning;
+  bool get cancellationWarning => _cancellationWarning ?? false;
+  bool hasCancellationWarning() => _cancellationWarning != null;
+
+  // "cancellation_warning_count" field. Count of late/day_of/ghost in last 90 days.
+  int? _cancellationWarningCount;
+  int get cancellationWarningCount => _cancellationWarningCount ?? 0;
+  bool hasCancellationWarningCount() => _cancellationWarningCount != null;
+
+  // "cancellation_rate" field. 0.0–1.0, computed by Stage 5. Null until data exists.
+  double? _cancellationRate;
+  double? get cancellationRate => _cancellationRate;
+  bool hasCancellationRate() => _cancellationRate != null;
+
+  // "show_up_rate_denominator" field. Total commitments used alongside show_up_rate.
+  int? _showUpRateDenominator;
+  int get showUpRateDenominator => _showUpRateDenominator ?? 0;
+  bool hasShowUpRateDenominator() => _showUpRateDenominator != null;
+
   void _initializeFields() {
     _photoUrl = snapshotData['photo_url'] as String?;
     _createdTime = snapshotData['created_time'] as DateTime?;
@@ -262,6 +293,15 @@ class UsersRecord extends FirestoreRecord {
     _gamesHosted = castToType<int>(snapshotData['games_hosted']);
     _showUpRate = castToType<double>(snapshotData['show_up_rate']);
     _badgeLevel = snapshotData['badge_level'] as String?;
+    _verifiedRoundCount =
+        castToType<int>(snapshotData['verified_round_count']);
+    _weightedRounds = castToType<double>(snapshotData['weighted_rounds']);
+    _cancellationWarning = snapshotData['cancellation_warning'] as bool?;
+    _cancellationWarningCount =
+        castToType<int>(snapshotData['cancellation_warning_count']);
+    _cancellationRate = castToType<double>(snapshotData['cancellation_rate']);
+    _showUpRateDenominator =
+        castToType<int>(snapshotData['show_up_rate_denominator']);
   }
 
   static CollectionReference get collection =>
@@ -333,6 +373,12 @@ Map<String, dynamic> createUsersRecordData({
   int? gamesHosted,
   double? showUpRate,
   String? badgeLevel,
+  int? verifiedRoundCount,
+  double? weightedRounds,
+  bool? cancellationWarning,
+  int? cancellationWarningCount,
+  double? cancellationRate,
+  int? showUpRateDenominator,
 }) {
   final displayNameLower = displayName?.toLowerCase();
   final firestoreData = mapToFirestore(
@@ -374,6 +420,12 @@ Map<String, dynamic> createUsersRecordData({
       'games_hosted': gamesHosted,
       'show_up_rate': showUpRate,
       'badge_level': badgeLevel,
+      'verified_round_count': verifiedRoundCount,
+      'weighted_rounds': weightedRounds,
+      'cancellation_warning': cancellationWarning,
+      'cancellation_warning_count': cancellationWarningCount,
+      'cancellation_rate': cancellationRate,
+      'show_up_rate_denominator': showUpRateDenominator,
     }.withoutNulls,
   );
 
@@ -421,7 +473,13 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         listEquality.equals(e1?.uniqueCoPlayers, e2?.uniqueCoPlayers) &&
         e1?.gamesHosted == e2?.gamesHosted &&
         e1?.showUpRate == e2?.showUpRate &&
-        e1?.badgeLevel == e2?.badgeLevel;
+        e1?.badgeLevel == e2?.badgeLevel &&
+        e1?.verifiedRoundCount == e2?.verifiedRoundCount &&
+        e1?.weightedRounds == e2?.weightedRounds &&
+        e1?.cancellationWarning == e2?.cancellationWarning &&
+        e1?.cancellationWarningCount == e2?.cancellationWarningCount &&
+        e1?.cancellationRate == e2?.cancellationRate &&
+        e1?.showUpRateDenominator == e2?.showUpRateDenominator;
   }
 
   @override
@@ -460,6 +518,12 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.gamesHosted,
         e?.showUpRate,
         e?.badgeLevel,
+        e?.verifiedRoundCount,
+        e?.weightedRounds,
+        e?.cancellationWarning,
+        e?.cancellationWarningCount,
+        e?.cancellationRate,
+        e?.showUpRateDenominator,
       ]);
 
   @override

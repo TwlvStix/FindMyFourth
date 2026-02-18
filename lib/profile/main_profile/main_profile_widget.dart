@@ -20,6 +20,8 @@ import '/user_auth/sign_in/sign_in_widget.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/screens/trust/trust_profile_section.dart';
+import '/screens/trust/your_standing_screen.dart';
 
 class MainProfileWidget extends StatefulWidget {
   const MainProfileWidget({super.key});
@@ -261,6 +263,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
                         // Golf Info Section
                         _buildGolfInfoSection(context),
+
+                        // Trust Profile Section
+                        AuthUserStreamWidget(
+                          builder: (context) {
+                            final userDoc = currentUserDocument;
+                            if (userDoc == null) return const SizedBox.shrink();
+                            return TrustProfileSection(
+                                user: userDoc, isOwnProfile: true);
+                          },
+                        ),
 
                         // Settings Section
                         _buildSettingsSection(context),
@@ -1075,6 +1087,27 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           );
                         },
                       ),
+                Divider(height: 1, color: AppColors.cloud, indent: 56),
+                _buildSettingsRow(
+                  context,
+                  icon: Icons.shield_outlined,
+                  label: 'Your Standing',
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    _pushNamed(
+                      YourStandingScreen.routeName,
+                      extra: <String, dynamic>{
+                        kTransitionInfoKey: TransitionInfo(
+                          hasTransition: true,
+                          transitionType: PageTransitionType.fade,
+                          enterDuration: const Duration(milliseconds: 200),
+                          exitDuration: const Duration(milliseconds: 170),
+                          scaleOnPush: false,
+                        ),
+                      },
+                    );
+                  },
+                ),
                 Divider(height: 1, color: AppColors.cloud, indent: 56),
                 _buildSettingsRow(
                   context,
