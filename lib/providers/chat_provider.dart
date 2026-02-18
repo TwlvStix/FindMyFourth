@@ -216,6 +216,10 @@ class ChatProvider extends ChangeNotifier {
     required String text,
     String imageUrl = '',
     String videoUrl = '',
+    String type = 'text',
+    String thumbnailUrl = '',
+    double? imageWidth,
+    double? imageHeight,
   }) async {
     try {
       await _service.sendMessage(
@@ -224,6 +228,10 @@ class ChatProvider extends ChangeNotifier {
         text: text,
         imageUrl: imageUrl,
         videoUrl: videoUrl,
+        type: type,
+        thumbnailUrl: thumbnailUrl,
+        imageWidth: imageWidth,
+        imageHeight: imageHeight,
       );
       // Invalidate messages cache after sending to force refresh
       _messagesCacheTimestamps.remove(chatId);
@@ -232,6 +240,25 @@ class ChatProvider extends ChangeNotifier {
       rethrow;
     }
   }
+
+  Future<void> sendImageMessage({
+    required String chatId,
+    required String senderId,
+    required String imageUrl,
+    String thumbnailUrl = '',
+    double? imageWidth,
+    double? imageHeight,
+  }) =>
+      sendMessage(
+        chatId: chatId,
+        senderId: senderId,
+        text: '',
+        imageUrl: imageUrl,
+        type: 'image',
+        thumbnailUrl: thumbnailUrl,
+        imageWidth: imageWidth,
+        imageHeight: imageHeight,
+      );
 
   Future<void> markChatRead({
     required String chatId,

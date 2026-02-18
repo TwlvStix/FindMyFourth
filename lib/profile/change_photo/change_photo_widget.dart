@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
+import '/utils/profile_image_picker.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
@@ -145,12 +148,6 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                 height: 100.0,
                                 decoration: BoxDecoration(
                                   color: Color(0xFFDBE2E7),
-                                  image: DecorationImage(
-                                    fit: BoxFit.cover,
-                                    image: Image.asset(
-                                      'assets/images/addImage@2x.png',
-                                    ).image,
-                                  ),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Stack(
@@ -219,70 +216,33 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                             children: [
                               AppButtonEnhanced(
                                 onPressed: () async {
-                                  final selectedMedia =
-                                      await selectMediaWithSourceBottomSheet(
-                                    context: context,
-                                    allowPhoto: true,
-                                    backgroundColor:
-                                        AppTheme.of(context)
-                                            .primaryBtnText,
-                                    textColor: AppTheme.of(context).primary,
-                                  );
-                                  if (selectedMedia != null &&
-                                      selectedMedia.every((m) =>
-                                          validateFileFormat(
-                                              m.storagePath, context))) {
+                                  final croppedPath =
+                                      await showProfileImageSourceSheet(
+                                          context);
+                                  if (croppedPath == null) return;
+
+                                  if (mounted) {
+                                    setState(() =>
+                                        isDataUploadingUploadDataJ3j = true);
+                                  }
+                                  try {
+                                    final bytes = await File(croppedPath)
+                                        .readAsBytes();
+                                    final storagePath =
+                                        'users/$currentUserUid/profile_photos/${DateTime.now().millisecondsSinceEpoch}.jpg';
+                                    final downloadUrl =
+                                        await uploadData(storagePath, bytes);
+                                    if (downloadUrl != null && mounted) {
+                                      setState(() {
+                                        uploadedFileUrlUploadDataJ3j =
+                                            downloadUrl;
+                                      });
+                                    }
+                                  } finally {
                                     if (mounted) {
                                       setState(() =>
-                                          isDataUploadingUploadDataJ3j = true);
-                                    }
-                                    var selectedUploadedFiles =
-                                        <UploadedFile>[];
-
-                                    var downloadUrls = <String>[];
-                                    try {
-                                      selectedUploadedFiles = selectedMedia
-                                          .map((m) => UploadedFile(
-                                                name: m.storagePath
-                                                    .split('/')
-                                                    .last,
-                                                bytes: m.bytes,
-                                                height: m.dimensions?.height,
-                                                width: m.dimensions?.width,
-                                                blurHash: m.blurHash,
-                                                originalFilename:
-                                                    m.originalFilename,
-                                              ))
-                                          .toList();
-
-                                      downloadUrls = (await Future.wait(
-                                        selectedMedia.map(
-                                          (m) async => await uploadData(
-                                              m.storagePath, m.bytes),
-                                        ),
-                                      ))
-                                          .where((u) => u != null)
-                                          .map((u) => u!)
-                                          .toList();
-                                    } finally {
-                                      if (mounted) {
-                                        setState(() =>
-                                            isDataUploadingUploadDataJ3j = false);
-                                      }
-                                    }
-                                    if (selectedUploadedFiles.length ==
-                                            selectedMedia.length &&
-                                        downloadUrls.length ==
-                                            selectedMedia.length) {
-                                      if (mounted) setState(() {
-                                        uploadedLocalFileUploadDataJ3j =
-                                            selectedUploadedFiles.first;
-                                        uploadedFileUrlUploadDataJ3j =
-                                            downloadUrls.first;
-                                      });
-                                    } else {
-                                      if (mounted) setState(() {});
-                                      return;
+                                          isDataUploadingUploadDataJ3j =
+                                              false);
                                     }
                                   }
                                 },

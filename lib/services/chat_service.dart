@@ -328,6 +328,10 @@ class ChatService {
     required String text,
     String imageUrl = '',
     String videoUrl = '',
+    String type = 'text',
+    String thumbnailUrl = '',
+    double? imageWidth,
+    double? imageHeight,
   }) async {
     final chatRef = _firestore.collection('chats').doc(chatId);
     final messageRef = chatRef.collection('messages').doc();
@@ -346,7 +350,7 @@ class ChatService {
               <String>[];
 
       final updates = <String, dynamic>{
-        'lastMessage': text,
+        'lastMessage': type == 'image' ? '📷 Photo' : text,
         'lastMessageAt': FieldValue.serverTimestamp(),
         'lastMessageSenderId': senderId,
         'updatedAt': FieldValue.serverTimestamp(),
@@ -374,6 +378,10 @@ class ChatService {
         'text': text,
         'imageUrl': imageUrl,
         'videoUrl': videoUrl,
+        'type': type,
+        if (thumbnailUrl.isNotEmpty) 'thumbnailUrl': thumbnailUrl,
+        if (imageWidth != null) 'imageWidth': imageWidth,
+        if (imageHeight != null) 'imageHeight': imageHeight,
         'createdAt': FieldValue.serverTimestamp(),
         'reactions': <String, List<String>>{},
         'readBy': [senderId],

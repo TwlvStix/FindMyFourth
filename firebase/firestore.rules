@@ -565,7 +565,11 @@ service cloud.firestore {
         allow read: if isSignedIn() && isChatMemberById(chatId);
         allow create: if isSignedIn() &&
           request.resource.data.senderId == request.auth.uid &&
-          isChatMemberById(chatId);
+          isChatMemberById(chatId) &&
+          request.resource.data.type in ['text', 'image'] &&
+          (request.resource.data.type != 'image' ||
+            (request.resource.data.imageUrl is string &&
+             request.resource.data.imageUrl.matches('https://firebasestorage\\.googleapis\\.com.*')));
         // Sender-only updates; members may only add themselves to readBy.
         allow update: if isSignedIn() && isChatMemberById(chatId) && (
           (resource.data.senderId == request.auth.uid &&

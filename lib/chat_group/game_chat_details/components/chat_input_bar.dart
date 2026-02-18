@@ -21,6 +21,7 @@ class ChatInputBar extends StatelessWidget {
   final ChatMessage? replyToMessage;
   final VoidCallback? onCancelReply;
   final String placeholder;
+  final VoidCallback? onAttachImage;
 
   const ChatInputBar({
     super.key,
@@ -31,6 +32,7 @@ class ChatInputBar extends StatelessWidget {
     this.replyToMessage,
     this.onCancelReply,
     this.placeholder = 'Message...',
+    this.onAttachImage,
   });
 
   @override
@@ -120,6 +122,20 @@ class ChatInputBar extends StatelessWidget {
           // Input row
           Row(
             children: [
+              // Image attachment button
+              GestureDetector(
+                onTap: (enabled && onAttachImage != null) ? onAttachImage : null,
+                child: Padding(
+                  padding: EdgeInsets.only(right: AppSpacing.sm),
+                  child: Icon(
+                    Icons.image_rounded,
+                    size: 26,
+                    color: (enabled && onAttachImage != null)
+                        ? AppTheme.of(context).primary
+                        : AppTheme.of(context).secondaryText.withValues(alpha: 0.4),
+                  ),
+                ),
+              ),
               Expanded(
                 child: TextField(
                   controller: messageController,
