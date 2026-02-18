@@ -11,6 +11,8 @@ const kUserNotificationsCollection = "notifications";
 const kGameAlertCooldownMinutes = 60;
 const firestore = admin.firestore();
 
+const trustSystem = require("./trust_system");
+
 const kPushNotificationRuntimeOpts = {
   timeoutSeconds: 540,
   memory: "2GB",
@@ -22,9 +24,6 @@ function extractUidFromJoinedEntry(entry) {
   }
   if (typeof entry === "string") {
     return entry;
-  }
-  if (entry instanceof admin.firestore.DocumentReference) {
-    return entry.id;
   }
   if (typeof entry === "object" && typeof entry.id === "string") {
     return entry.id;
@@ -1699,3 +1698,10 @@ exports.deleteChat = functions
       );
     }
   });
+
+// Trust System — Stage 1 & 2
+exports.recordCancellation = trustSystem.recordCancellation;
+exports.validateGameAppUserCount = trustSystem.validateGameAppUserCount;
+exports.onGameCreate = trustSystem.onGameCreate;
+exports.checkPlayerRestriction = trustSystem.checkPlayerRestriction;
+exports.markGhostNoShow = trustSystem.markGhostNoShow;

@@ -161,6 +161,36 @@ class UsersRecord extends FirestoreRecord {
   bool get onboardingCompleted => _onboardingCompleted ?? false;
   bool hasOnboardingCompleted() => _onboardingCompleted != null;
 
+  // "profile_completeness" field.
+  int? _profileCompleteness;
+  int get profileCompleteness => _profileCompleteness ?? 0;
+  bool hasProfileCompleteness() => _profileCompleteness != null;
+
+  // "total_verified_rounds" field.
+  int? _totalVerifiedRounds;
+  int get totalVerifiedRounds => _totalVerifiedRounds ?? 0;
+  bool hasTotalVerifiedRounds() => _totalVerifiedRounds != null;
+
+  // "unique_co_players" field. Array of UIDs of app users played with.
+  List<String>? _uniqueCoPlayers;
+  List<String> get uniqueCoPlayers => _uniqueCoPlayers ?? const [];
+  bool hasUniqueCoPlayers() => _uniqueCoPlayers != null;
+
+  // "games_hosted" field.
+  int? _gamesHosted;
+  int get gamesHosted => _gamesHosted ?? 0;
+  bool hasGamesHosted() => _gamesHosted != null;
+
+  // "show_up_rate" field. Null until player has 5+ verified rounds.
+  double? _showUpRate;
+  double? get showUpRate => _showUpRate;
+  bool hasShowUpRate() => _showUpRate != null;
+
+  // "badge_level" field.
+  String? _badgeLevel;
+  String get badgeLevel => _badgeLevel ?? 'new';
+  bool hasBadgeLevel() => _badgeLevel != null;
+
   void _initializeFields() {
     _photoUrl = snapshotData['photo_url'] as String?;
     _createdTime = snapshotData['created_time'] as DateTime?;
@@ -226,6 +256,12 @@ class UsersRecord extends FirestoreRecord {
       _vibeProfile = Map<String, dynamic>.from(vibeProfileRaw);
     }
     _onboardingCompleted = snapshotData['onboarding_completed'] as bool?;
+    _profileCompleteness = castToType<int>(snapshotData['profile_completeness']);
+    _totalVerifiedRounds = castToType<int>(snapshotData['total_verified_rounds']);
+    _uniqueCoPlayers = getDataList(snapshotData['unique_co_players']);
+    _gamesHosted = castToType<int>(snapshotData['games_hosted']);
+    _showUpRate = castToType<double>(snapshotData['show_up_rate']);
+    _badgeLevel = snapshotData['badge_level'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -291,6 +327,12 @@ Map<String, dynamic> createUsersRecordData({
   bool? onboardingCompleted,
   List<String>? friends,
   List<String>? friendRequests,
+  int? profileCompleteness,
+  int? totalVerifiedRounds,
+  List<String>? uniqueCoPlayers,
+  int? gamesHosted,
+  double? showUpRate,
+  String? badgeLevel,
 }) {
   final displayNameLower = displayName?.toLowerCase();
   final firestoreData = mapToFirestore(
@@ -326,6 +368,12 @@ Map<String, dynamic> createUsersRecordData({
       'onboarding_completed': onboardingCompleted,
       'friends': friends,
       'friend_requests': friendRequests,
+      'profile_completeness': profileCompleteness,
+      'total_verified_rounds': totalVerifiedRounds,
+      'unique_co_players': uniqueCoPlayers,
+      'games_hosted': gamesHosted,
+      'show_up_rate': showUpRate,
+      'badge_level': badgeLevel,
     }.withoutNulls,
   );
 
@@ -367,7 +415,13 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e1?.paceOfPlay == e2?.paceOfPlay &&
         e1?.playForMoney == e2?.playForMoney &&
         mapEquality.equals(e1?.vibeProfile, e2?.vibeProfile) &&
-        e1?.onboardingCompleted == e2?.onboardingCompleted;
+        e1?.onboardingCompleted == e2?.onboardingCompleted &&
+        e1?.profileCompleteness == e2?.profileCompleteness &&
+        e1?.totalVerifiedRounds == e2?.totalVerifiedRounds &&
+        listEquality.equals(e1?.uniqueCoPlayers, e2?.uniqueCoPlayers) &&
+        e1?.gamesHosted == e2?.gamesHosted &&
+        e1?.showUpRate == e2?.showUpRate &&
+        e1?.badgeLevel == e2?.badgeLevel;
   }
 
   @override
@@ -399,7 +453,13 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.paceOfPlay,
         e?.playForMoney,
         const DeepCollectionEquality().hash(e?.vibeProfile),
-        e?.onboardingCompleted
+        e?.onboardingCompleted,
+        e?.profileCompleteness,
+        e?.totalVerifiedRounds,
+        e?.uniqueCoPlayers,
+        e?.gamesHosted,
+        e?.showUpRate,
+        e?.badgeLevel,
       ]);
 
   @override
