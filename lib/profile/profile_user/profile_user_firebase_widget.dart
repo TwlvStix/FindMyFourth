@@ -8,6 +8,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/motion/motion_helpers.dart';
 import '/core/navigation/app_router.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
@@ -48,6 +49,11 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
   String? _vibeMatchUserId;
   String _cachedUserName = '';
   String _cachedUserPhotoUrl = '';
+
+  // Mutual friends state
+  List<UsersRecord> _mutualFriends = [];
+  bool _mutualFriendsLoaded = true;
+  String? _lastMutualFriendsProfileId;
 
   Future<void> _openChatWithUser(DocumentReference userRef) async {
     final currentUserRef = currentUserReference;
@@ -101,6 +107,59 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
   void dispose() {
     _ringController.dispose();
     super.dispose();
+  }
+
+  void _fetchMutualFriends(
+    String profileUserId,
+    List<DocumentReference> theirFriends,
+  ) async {
+    if (_lastMutualFriendsProfileId == profileUserId && _mutualFriendsLoaded) {
+      return;
+    }
+    _lastMutualFriendsProfileId = profileUserId;
+
+    final myFriends = context.read<UserProvider>().friends;
+    final myUids = myFriends.map((r) => r.id).toSet();
+    final theirUids = theirFriends.map((r) => r.id).toSet();
+    final mutualUids = myUids.intersection(theirUids);
+
+    if (mutualUids.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _mutualFriends = [];
+          _mutualFriendsLoaded = true;
+        });
+      }
+      return;
+    }
+
+    // Only show skeleton now that we know a Firestore fetch is needed
+    if (mounted) {
+      setState(() {
+        _mutualFriendsLoaded = false;
+      });
+    }
+
+    try {
+      final futures = mutualUids.map((uid) => UsersRecord.getDocumentOnce(
+            FirebaseFirestore.instance.collection('users').doc(uid),
+          ));
+      final results = await Future.wait(futures);
+
+      if (mounted) {
+        setState(() {
+          _mutualFriends = results;
+          _mutualFriendsLoaded = true;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _mutualFriends = [];
+          _mutualFriendsLoaded = true;
+        });
+      }
+    }
   }
 
   void _ensureVibeMatch(DocumentSnapshot snapshot) {
@@ -390,14 +449,17 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     required String handicap,
     required String homeCourse,
     required int friendsCount,
+    required bool isSelf,
   }) {
     final shortCourse = homeCourse.length > 12
         ? '${homeCourse.substring(0, 10)}...'
         : homeCourse;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Row(
-        children: [
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
           Expanded(
             child: _buildStatCard(
               context,
@@ -420,15 +482,18 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           ),
           SizedBox(width: AppSpacing.sm),
           Expanded(
-            child: _buildStatCard(
-              context,
-              icon: FontAwesomeIcons.userFriends,
-              value: friendsCount.toString(),
-              label: 'Friends',
-              gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
-            ),
+            child: isSelf
+                ? _buildStatCard(
+                    context,
+                    icon: FontAwesomeIcons.userFriends,
+                    value: friendsCount.toString(),
+                    label: 'Friends',
+                    gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
+                  )
+                : _buildMutualFriendsCard(context),
           ),
         ],
+        ),
       ),
     );
   }
@@ -457,6 +522,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           ),
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               width: 36,
@@ -501,6 +567,185 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     );
   }
 
+  void _showMutualFriendsSheet(BuildContext context) {
+    final friends = _mutualFriends;
+    showAppBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      enableDrag: true,
+      builder: (sheetContext) => MutualFriendsSheet(
+        mutualFriends: friends,
+        onFriendTap: (friend) {
+          Navigator.of(sheetContext).pop();
+          context.pushNamed(
+            'ProfileUser',
+            extra: <String, dynamic>{
+              'userRef': friend.reference,
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildMutualFriendsCard(BuildContext context) {
+    if (!_mutualFriendsLoaded) {
+      return _buildMutualFriendsLoadingCard();
+    }
+
+    final friends = _mutualFriends;
+
+    if (friends.isEmpty) {
+      return _buildStatCard(
+        context,
+        icon: FontAwesomeIcons.userGroup,
+        value: 'No Mutual',
+        label: 'Friends',
+        gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
+        isText: true,
+      );
+    }
+
+    final displayCount =
+        friends.length > 3 ? '3+ Mutual' : '${friends.length} Mutual';
+    final avatarsToShow = friends.take(3).toList();
+
+    return GestureDetector(
+      onTap: () => _showMutualFriendsSheet(context),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          vertical: AppSpacing.md,
+          horizontal: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.fairway.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.1),
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildOverlappingAvatars(avatarsToShow),
+            SizedBox(height: AppSpacing.xs),
+            Text(
+              displayCount,
+              style: AppTypography.labelSmall.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            SizedBox(height: AppSpacing.xxs),
+            Text(
+              'Friends',
+              style: AppTypography.labelSmall.copyWith(
+                color: Colors.white.withOpacity(0.6),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMutualFriendsLoadingCard() {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        vertical: AppSpacing.md,
+        horizontal: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.fairway.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+        ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          SizedBox(height: AppSpacing.xs),
+          Container(
+            width: 60,
+            height: 12,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          SizedBox(height: AppSpacing.xxs),
+          Container(
+            width: 40,
+            height: 10,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.10),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOverlappingAvatars(List<UsersRecord> friends) {
+    const avatarSize = 22.0;
+    const overlap = 8.0;
+    final count = friends.length.clamp(1, 3);
+    final totalWidth = avatarSize + (count - 1) * (avatarSize - overlap);
+
+    return SizedBox(
+      width: totalWidth,
+      height: avatarSize,
+      child: Stack(
+        children: List.generate(count, (i) {
+          final friend = friends[i];
+          return Positioned(
+            left: i * (avatarSize - overlap),
+            child: Container(
+              width: avatarSize,
+              height: avatarSize,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1.5),
+                color: AppColors.fairway,
+              ),
+              child: ClipOval(
+                child: friend.photoUrl.isNotEmpty
+                    ? Image.network(
+                        friend.photoUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Icon(
+                          Icons.person,
+                          size: 12,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Icon(
+                        Icons.person,
+                        size: 12,
+                        color: Colors.white,
+                      ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
   Widget _buildQuickActionsGrid(
     BuildContext context,
     Map<String, dynamic> data, {
@@ -530,17 +775,16 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
 
           if (isFriend) {
             friendLabel = 'Friends';
-            friendIcon = Icons.check_circle_rounded;
+            friendIcon = FontAwesomeIcons.userCheck;
             friendGradient = [AppColors.fairwayLight, AppColors.fairway];
-            friendDisabled = true;
           } else if (hasPending) {
             friendLabel = 'Pending';
-            friendIcon = Icons.schedule_rounded;
+            friendIcon = FontAwesomeIcons.clock;
             friendGradient = [AppColors.cloud, AppColors.cloud];
             friendDisabled = true;
           } else {
             friendLabel = 'Add Friend';
-            friendIcon = Icons.person_add_rounded;
+            friendIcon = FontAwesomeIcons.userPlus;
             friendGradient = [AppColors.sunsetGold, AppColors.sunsetPeach];
             friendAction = () async {
               HapticFeedback.lightImpact();
@@ -845,6 +1089,11 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                 _ensureVibeMatch(docSnapshot);
               }
             });
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                _fetchMutualFriends(widget.userRef.id, userRecord.friends);
+              }
+            });
           }
           final photoUrl = userRecord.photoUrl.isNotEmpty
               ? userRecord.photoUrl
@@ -920,6 +1169,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                         handicap: handicap,
                         homeCourse: homeCourse,
                         friendsCount: friendsCount,
+                        isSelf: isSelf,
                       ),
                       SizedBox(height: AppSpacing.xl),
                       Container(
@@ -973,6 +1223,205 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class MutualFriendsSheet extends StatelessWidget {
+  const MutualFriendsSheet({
+    super.key,
+    required this.mutualFriends,
+    required this.onFriendTap,
+  });
+
+  final List<UsersRecord> mutualFriends;
+  final void Function(UsersRecord friend) onFriendTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final maxHeight = MediaQuery.of(context).size.height * 0.75;
+
+    return Container(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      decoration: BoxDecoration(
+        color: AppColors.pure,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            margin: EdgeInsets.only(top: AppSpacing.sm),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.cloud,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          SizedBox(height: AppSpacing.md),
+          // Header
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Row(
+              children: [
+                Text(
+                  'Mutual Friends',
+                  style: AppTypography.headlineSmall.copyWith(
+                    color: AppColors.onyx,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(width: AppSpacing.sm),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.fairway.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: Text(
+                    mutualFriends.length > 3
+                        ? '3+'
+                        : '${mutualFriends.length}',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.fairway,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: AppSpacing.md),
+          // Friend list
+          Flexible(
+            child: ListView.separated(
+              padding: EdgeInsets.only(
+                left: AppSpacing.lg,
+                right: AppSpacing.lg,
+                bottom: AppSpacing.xxxl,
+              ),
+              shrinkWrap: true,
+              itemCount: mutualFriends.length,
+              separatorBuilder: (_, __) => Divider(
+                height: 1,
+                color: AppColors.cloud,
+              ),
+              itemBuilder: (context, index) {
+                final friend = mutualFriends[index];
+                final handicapStr = friend.handicap < 0
+                    ? '+${friend.handicap.abs()}'
+                    : friend.handicap.toString();
+                final displayName = friend.displayName.isNotEmpty
+                    ? friend.displayName
+                    : 'Golfer';
+                final fullName = [friend.firstName, friend.lastName]
+                    .where((n) => n.trim().isNotEmpty)
+                    .join(' ')
+                    .trim();
+                final title = fullName.isNotEmpty ? fullName : displayName;
+
+                return GestureDetector(
+                  onTap: () => onFriendTap(friend),
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                    child: Row(
+                      children: [
+                        // Avatar
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.fairway.withOpacity(0.15),
+                          ),
+                          child: ClipOval(
+                            child: friend.photoUrl.isNotEmpty
+                                ? Image.network(
+                                    friend.photoUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Icon(
+                                      Icons.person,
+                                      color: AppColors.fairway,
+                                      size: 24,
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.person,
+                                    color: AppColors.fairway,
+                                    size: 24,
+                                  ),
+                          ),
+                        ),
+                        SizedBox(width: AppSpacing.md),
+                        // Name & username
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                style: AppTypography.bodyMedium.copyWith(
+                                  color: AppColors.onyx,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (displayName.isNotEmpty)
+                                Text(
+                                  '@$displayName',
+                                  style: AppTypography.labelSmall.copyWith(
+                                    color: AppColors.stone,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: AppSpacing.sm),
+                        // Handicap badge
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.sunsetGold.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            handicapStr,
+                            style: AppTypography.monoSmall.copyWith(
+                              color: AppColors.sunsetGold,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: AppSpacing.xs),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          color: AppColors.stone,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

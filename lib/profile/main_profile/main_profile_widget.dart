@@ -765,38 +765,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     ),
                   ],
                 ),
-                SizedBox(height: AppSpacing.sm),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildQuickActionCard(
-                        context,
-                        icon: Icons.people_outline_rounded,
-                        label: 'Friends',
-                        gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          _pushNamed(
-                            TabFriendsWidget.routeName,
-                            extra: <String, dynamic>{
-                              kTransitionInfoKey: TransitionInfo(
-                                hasTransition: true,
-                                transitionType: PageTransitionType.fade,
-                                enterDuration: Duration(milliseconds: 200),
-                                exitDuration: Duration(milliseconds: 170),
-                                scaleOnPush: true,
-                              ),
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                        child:
-                            SizedBox()), // Empty space to maintain grid alignment
-                  ],
-                ),
               ],
             );
           } else {
@@ -844,30 +812,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             enterDuration: Duration(milliseconds: 200),
                             exitDuration: Duration(milliseconds: 170),
                             scaleOnPush: false,
-                          ),
-                        },
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: _buildQuickActionCard(
-                    context,
-                    icon: Icons.people_outline_rounded,
-                    label: 'Friends',
-                    gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      _pushNamed(
-                        TabFriendsWidget.routeName,
-                        extra: <String, dynamic>{
-                          kTransitionInfoKey: TransitionInfo(
-                            hasTransition: true,
-                            transitionType: PageTransitionType.fade,
-                            enterDuration: Duration(milliseconds: 200),
-                            exitDuration: Duration(milliseconds: 170),
-                            scaleOnPush: true,
                           ),
                         },
                       );
