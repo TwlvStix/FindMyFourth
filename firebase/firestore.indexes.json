@@ -209,6 +209,72 @@
         { "fieldPath": "reason", "order": "ASCENDING" },
         { "fieldPath": "created_at", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "round_jobs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "scheduled_host_notify_at", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "round_jobs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "scheduled_peer_notify_at", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "round_jobs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "scheduled_reminder_at", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "round_jobs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "scheduled_close_at", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "round_jobs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "game_ref", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "cancellation_records",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "player_ref", "order": "ASCENDING" },
+        { "fieldPath": "game_ref", "order": "ASCENDING" },
+        { "fieldPath": "is_ghost", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "round_records",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "game_ref", "order": "ASCENDING" },
+        { "fieldPath": "verification_status", "order": "ASCENDING" },
+        { "fieldPath": "verification_signal_count", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "partner_plays",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "play_count", "order": "DESCENDING" },
+        { "fieldPath": "last_played_at", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [

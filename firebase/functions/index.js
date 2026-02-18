@@ -12,6 +12,7 @@ const kGameAlertCooldownMinutes = 60;
 const firestore = admin.firestore();
 
 const trustSystem = require("./trust_system");
+const confirmationFlow = require("./confirmation_flow");
 
 const kPushNotificationRuntimeOpts = {
   timeoutSeconds: 540,
@@ -1705,3 +1706,11 @@ exports.validateGameAppUserCount = trustSystem.validateGameAppUserCount;
 exports.onGameCreate = trustSystem.onGameCreate;
 exports.checkPlayerRestriction = trustSystem.checkPlayerRestriction;
 exports.markGhostNoShow = trustSystem.markGhostNoShow;
+
+// Confirmation Flow — Stage 3
+exports.onGameParticipantJoin = confirmationFlow.onGameParticipantJoin;
+exports.onGameStatusToPlayed = confirmationFlow.onGameStatusToPlayed;
+exports.processConfirmationJobs = confirmationFlow.processConfirmationJobs;
+exports.submitHostCheckin = confirmationFlow.submitHostCheckin;
+exports.submitPeerRatings = confirmationFlow.submitPeerRatings;
+exports.submitFallbackConfirmation = confirmationFlow.submitFallbackConfirmation;
