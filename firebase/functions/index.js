@@ -1719,3 +1719,77 @@ exports.submitFallbackConfirmation = confirmationFlow.submitFallbackConfirmation
 // Trust Profile — Stage 5
 exports.updateTrustProfile = trustProfileModule.updateTrustProfile;
 exports.getMyStanding = trustProfileModule.getMyStanding;
+
+// Trust Notification Scheduler — Session 7
+const trustNotificationScheduler = require('./notifications/trust/scheduler');
+exports.processScheduledTrustNotification = functions
+  .region('us-west2')
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .https.onRequest(trustNotificationScheduler.processScheduledTrustNotificationHandler);
+
+// Trust Background Workers — Session 10
+const trustWorkers = require('./notifications/trust/workers');
+
+exports.trustTokenHygieneJob = functions
+  .region('us-west2')
+  .runWith({ timeoutSeconds: 540, memory: '256MB' })
+  .pubsub.schedule('0 3 * * *')
+  .timeZone('UTC')
+  .onRun(async () => {
+    const result = await trustWorkers.trustTokenHygieneHandler();
+    console.log('[trustTokenHygieneJob]', result);
+  });
+
+exports.trustQuietHoursCleanup = functions
+  .region('us-west2')
+  .runWith({ timeoutSeconds: 120, memory: '256MB' })
+  .pubsub.schedule('every 15 minutes')
+  .onRun(async () => {
+    const result = await trustWorkers.trustQuietHoursCleanupHandler();
+    console.log('[trustQuietHoursCleanup]', result);
+  });
+
+// Welcome email — restored from main (accidentally dropped in checkpoint branch)
+const sgMail = require("@sendgrid/mail");
+
+exports.onUserCreated = functions
+  .region("us-west2")
+  .runWith({ secrets: ["SENDGRID_API_KEY"] })
+  .auth.user()
+  .onCreate(async (user) => {
+    const email = user.email;
+    if (!email) {
+      return;
+    }
+
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+    const msg = {
+      to: email,
+      from: "findmyfourth@gmail.com",
+      subject: "Welcome to Find My Fourth!",
+      text: [
+        "Welcome to Find My Fourth!",
+        "",
+        "Your account has been successfully created. We're excited to have you on the course!",
+        "",
+        "Head back to the app to complete your profile and start finding your next round.",
+        "",
+        "See you on the fairway,",
+        "The Find My Fourth Team",
+      ].join("\n"),
+      html: [
+        "<p>Welcome to <strong>Find My Fourth</strong>!</p>",
+        "<p>Your account has been successfully created. We're excited to have you on the course!</p>",
+        "<p>Head back to the app to complete your profile and start finding your next round.</p>",
+        "<p>See you on the fairway,<br/>The Find My Fourth Team</p>",
+      ].join(""),
+    };
+
+    try {
+      await sgMail.send(msg);
+      console.log(`Welcome email sent to ${email}`);
+    } catch (error) {
+      console.error("Error sending welcome email:", error);
+    }
+  });

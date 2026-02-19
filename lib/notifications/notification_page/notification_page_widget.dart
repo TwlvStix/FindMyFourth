@@ -304,6 +304,24 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
     );
   }
 
+  void _togglePostRound(bool enabled) {
+    _updatePrefs(_prefs!.copyWith(
+      trustCategories: _prefs!.trustCategories.copyWith(postRound: enabled),
+    ));
+  }
+
+  void _toggleTrustAlerts(bool enabled) {
+    _updatePrefs(_prefs!.copyWith(
+      trustCategories: _prefs!.trustCategories.copyWith(trustAlerts: enabled),
+    ));
+  }
+
+  void _toggleBadges(bool enabled) {
+    _updatePrefs(_prefs!.copyWith(
+      trustCategories: _prefs!.trustCategories.copyWith(badges: enabled),
+    ));
+  }
+
   Future<void> _navigateToGameAlerts() async {
     if (!_prefs!.pushEnabled || !_prefs!.gameAlerts.enabled) {
       // Don't navigate if disabled
@@ -1130,6 +1148,44 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                   title: 'Enable chat alerts',
                                   value: _prefs!.chatAlerts.enabled,
                                   onChanged: _toggleChatAlerts,
+                                ),
+                              ],
+                            ),
+
+                            // SUBMASTER: Trust & Reliability
+                            _buildSection(
+                              emoji: '🛡️',
+                              title: 'Trust & Reliability',
+                              subtitle: 'Check-ins, account standing, and badge updates',
+                              disabled: !_prefs!.pushEnabled,
+                              children: [
+                                _buildToggleRow(
+                                  title: 'Post-round check-ins',
+                                  subtitle: 'Check-in reminders after your rounds',
+                                  value: _prefs!.trustCategories.postRound,
+                                  onChanged: _togglePostRound,
+                                ),
+                                Divider(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  height: 1,
+                                  thickness: 1,
+                                ),
+                                _buildToggleRow(
+                                  title: 'Account standing alerts',
+                                  subtitle: 'Strikes, cooldowns, and restrictions',
+                                  value: _prefs!.trustCategories.trustAlerts,
+                                  onChanged: _toggleTrustAlerts,
+                                ),
+                                Divider(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  height: 1,
+                                  thickness: 1,
+                                ),
+                                _buildToggleRow(
+                                  title: 'Badge progress',
+                                  subtitle: 'Badge milestones and progress updates',
+                                  value: _prefs!.trustCategories.badges,
+                                  onChanged: _toggleBadges,
                                 ),
                               ],
                             ),

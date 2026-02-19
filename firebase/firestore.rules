@@ -725,5 +725,18 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if false;
     }
+
+    // ── Push Notification Infrastructure Collections ────────────────────────
+
+    // notificationLog — delivery tracking, Admin SDK only (Cloud Functions).
+    // Not user-facing. TTL policy on `timestamp` field (90-day auto-delete).
+    match /notificationLog/{logId} {
+      allow read, write: if false;
+    }
+
+    // scheduledNotifications — Cloud Tasks job tracking, Admin SDK only.
+    match /scheduledNotifications/{jobId} {
+      allow read, write: if false;
+    }
   }
 }
