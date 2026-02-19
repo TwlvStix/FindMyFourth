@@ -7,12 +7,14 @@ import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/widgets/trust/restriction_banner.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/form_field_controller.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
 import '/providers/provider_extensions.dart';
+import '/providers/trust_provider.dart';
 import '/models/course.dart';
 import 'create_game_constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -1176,6 +1178,21 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                               // Draft continuation banner
                               if (_hasDraft) DraftBanner(onClear: _clearDraft),
 
+                              // Restriction banner
+                              Consumer<TrustProvider>(
+                                builder: (context, trust, _) {
+                                  final restriction = trust.myStanding?.currentRestriction;
+                                  if (restriction == null) return const SizedBox.shrink();
+                                  return Padding(
+                                    padding: EdgeInsets.only(bottom: AppSpacing.md),
+                                    child: RestrictionBanner(
+                                      restriction: restriction,
+                                      onViewStanding: () => context.pushNamed('YourStanding'),
+                                    ),
+                                  );
+                                },
+                              ),
+
                               Container(
                                 width: double.infinity,
                                 child: Form(
@@ -2015,14 +2032,22 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             ),
                                           ],
                                         ], // end if (!_isJustForFun)
+
+
                                         Padding(
                                           padding: EdgeInsets.only(
                                               top: AppSpacing.xxl),
-                                          child: AppButtonEnhanced(
-                                            text: 'Submit Game',
-                                            variant: AppButtonVariant.primary,
-                                            size: AppButtonSize.large,
-                                            onPressed: _submitGame,
+                                          child: Consumer<TrustProvider>(
+                                            builder: (context, trust, _) {
+                                              final isRestricted = trust.myStanding?.currentRestriction != null;
+                                              return AppButtonEnhanced(
+                                                text: 'Submit Game',
+                                                variant: AppButtonVariant.primary,
+                                                size: AppButtonSize.large,
+                                                onPressed: isRestricted ? null : _submitGame,
+                                                enabled: !isRestricted,
+                                              );
+                                            },
                                           ),
                                         ),
                                       ]

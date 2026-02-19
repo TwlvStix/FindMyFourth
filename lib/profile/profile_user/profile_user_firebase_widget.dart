@@ -439,7 +439,6 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         ],
         if (showVibeMatch) ...[
           SizedBox(height: AppSpacing.sm),
-          _buildVibeMatchRow(),
         ],
       ],
     );
@@ -1206,16 +1205,15 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                               data,
                               showVibeMatch: !isSelf,
                             ),
-                            SizedBox(height: AppSpacing.md),
+                            TrustProfileSection(
+                              user: userRecord,
+                              isOwnProfile: isSelf,
+                            ),
                             _buildGolfInfoSection(
                               context,
                               golfCanadaNumber: golfCanadaNumber,
                               email: email,
                               phone: phoneNumber,
-                            ),
-                            TrustProfileSection(
-                              user: userRecord,
-                              isOwnProfile: false,
                             ),
                             SizedBox(height: AppSpacing.xxxl),
                           ],

@@ -6,6 +6,7 @@ import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/utils/app_log.dart';
+import '/core/widgets/app_avatar.dart';
 import '/core/widgets/app_button_enhanced.dart';
 
 /// HostCheckinScreen
@@ -180,7 +181,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
         body: SafeArea(
           child: Center(
             child: Padding(
-              padding: AppSpacing.symmetric(h: AppSpacing.xl),
+              padding: AppSpacing.symmetric(horizontal: AppSpacing.xl),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -239,7 +240,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
             ),
             if (_error != null)
               Padding(
-                padding: AppSpacing.symmetric(h: AppSpacing.xl, v: AppSpacing.sm),
+                padding: AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 child: Text(
                   _error!,
                   style: theme.bodySmall.override(
@@ -251,7 +252,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
               ),
             Expanded(
               child: ListView.builder(
-                padding: AppSpacing.symmetric(h: AppSpacing.lg, v: AppSpacing.sm),
+                padding: AppSpacing.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
                 itemCount: _participants.length,
                 itemBuilder: (context, i) {
                   final p = _participants[i];
@@ -319,7 +320,7 @@ class _ParticipantRow extends StatelessWidget {
 
     return Container(
       margin: AppSpacing.only(bottom: AppSpacing.sm),
-      padding: AppSpacing.symmetric(h: AppSpacing.lg, v: AppSpacing.md),
+      padding: AppSpacing.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
       decoration: BoxDecoration(
         color: theme.secondaryBackground,
         borderRadius: BorderRadius.circular(12),
@@ -367,24 +368,15 @@ class _ParticipantRow extends StatelessWidget {
   }
 
   Widget _buildAvatar(AppTheme theme) {
-    if (participant.photoUrl.isNotEmpty) {
-      return CircleAvatar(
-        radius: 22,
-        backgroundImage: NetworkImage(participant.photoUrl),
-      );
-    }
-    return CircleAvatar(
-      radius: 22,
-      backgroundColor: theme.primary.withOpacity(0.15),
-      child: Text(
-        participant.displayName.isNotEmpty
-            ? participant.displayName[0].toUpperCase()
-            : '?',
-        style: theme.titleSmall.override(
-          font: const TextStyle(fontFamily: 'Manrope'),
-          color: theme.primary,
-        ),
-      ),
+    final initials = participant.displayName.trim().split(' ')
+        .where((p) => p.isNotEmpty)
+        .map((p) => p[0].toUpperCase())
+        .take(2)
+        .join();
+    return AppAvatar(
+      imageUrl: participant.photoUrl.isNotEmpty ? participant.photoUrl : null,
+      initials: initials.isEmpty ? '?' : initials,
+      size: AppAvatarSize.medium,
     );
   }
 }

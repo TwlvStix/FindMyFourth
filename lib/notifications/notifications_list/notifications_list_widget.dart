@@ -6,6 +6,7 @@ import '/core/app_theme.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
@@ -282,6 +283,12 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     return type == 'game_created' || type == 'game_alert';
   }
 
+  bool _isDisputeNotification(String type) {
+    return type == 'attendance_dispute' ||
+        type == 'dispute_resolved_cleared' ||
+        type == 'dispute_resolved_upheld';
+  }
+
   IconData _iconForType(String type) {
     if (type == 'chat_message') {
       return Icons.chat_bubble_outline;
@@ -289,7 +296,23 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     if (_isGameNotification(type)) {
       return Icons.sports_golf;
     }
+    if (type == 'attendance_dispute') {
+      return Icons.info_outline_rounded;
+    }
+    if (type == 'dispute_resolved_cleared') {
+      return Icons.check_circle_rounded;
+    }
+    if (type == 'dispute_resolved_upheld') {
+      return Icons.warning_amber_rounded;
+    }
     return Icons.notifications_none;
+  }
+
+  Color _iconBgColorForType(BuildContext context, String type) {
+    if (type == 'attendance_dispute') return AppColors.info;
+    if (type == 'dispute_resolved_cleared') return AppColors.success;
+    if (type == 'dispute_resolved_upheld') return AppColors.sunsetRose;
+    return AppTheme.of(context).primary;
   }
 
   String _titleFallback(String type) {
@@ -298,6 +321,15 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     }
     if (_isGameNotification(type)) {
       return 'New game posted';
+    }
+    if (type == 'attendance_dispute') {
+      return 'Attendance Dispute';
+    }
+    if (type == 'dispute_resolved_cleared') {
+      return 'Dispute Resolved';
+    }
+    if (type == 'dispute_resolved_upheld') {
+      return 'Strike Added';
     }
     return 'Notification';
   }
@@ -349,6 +381,9 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
           },
         );
       }
+    }
+    if (type == 'dispute_resolved_upheld') {
+      context.pushNamed('YourStanding');
     }
   }
 
@@ -659,7 +694,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                       width: 36.0,
                                       height: 36.0,
                                       decoration: BoxDecoration(
-                                        color: AppTheme.of(context).primary,
+                                        color: _iconBgColorForType(context, type),
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(
@@ -788,6 +823,20 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                               .bodyMedium
                                                               .fontStyle,
                                                     ),
+                                              ),
+                                            ),
+                                          if (type == 'dispute_resolved_upheld')
+                                            Padding(
+                                              padding: EdgeInsetsDirectional.only(
+                                                top: AppSpacing.sm,
+                                              ),
+                                              child: AppButtonEnhanced(
+                                                text: 'View Your Standing',
+                                                variant: AppButtonVariant.ghost,
+                                                size: AppButtonSize.small,
+                                                onPressed: () {
+                                                  context.pushNamed('YourStanding');
+                                                },
                                               ),
                                             ),
                                         ],

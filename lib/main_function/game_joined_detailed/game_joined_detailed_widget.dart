@@ -1,11 +1,14 @@
 import '/backend/backend.dart';
+import '/backend/schema/trust_profile.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/widgets/trust/luxury_player_card.dart';
 import '/core/app_theme.dart';
 import '/core/motion/motion_helpers.dart';
 import '/utils/app_util.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
+import '/providers/trust_provider.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -783,198 +786,81 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                       friendRecord?.reference ?? groupPlayersItem;
                                   final photoUrl = friendRecord?.photoUrl ?? '';
 
+                                  // Fetch trust profile for badge display
+                                  final trustProvider = context.read<TrustProvider>();
+                                  return FutureBuilder<TrustProfile?>(
+                                    future: trustProvider.fetchTrustProfile(groupPlayersItem.id),
+                                    builder: (context, trustSnapshot) {
+                                      final trustProfile = trustSnapshot.data;
                                   return Padding(
-                                    padding:
-                                        EdgeInsets.only(bottom: AppSpacing.sm),
-                                    child: InkWell(
+                                    padding: EdgeInsets.only(
+                                      top: 8,
+                                      bottom: AppSpacing.sm,
+                                    ),
+                                    child: LuxuryPlayerCard(
+                                      name: displayName,
+                                      avatarUrl: photoUrl,
+                                      tier: trustProfile?.currentBadge ??
+                                          BadgeTier.newPlayer,
+                                      isFavorite: isOwner,
+                                      status: 'Ready',
+                                      percentWidget: PlayerMatchChip(
+                                        name: displayName,
+                                        memberMatch: _memberMatchesById[
+                                            groupPlayersItem.id],
+                                        onTap: () => _openPremiumVibePage(
+                                          context,
+                                          userRef,
+                                          displayName,
+                                          photoUrl,
+                                          _memberMatchesById[
+                                              groupPlayersItem.id],
+                                        ),
+                                      ),
+                                      trailingWidget:
+                                          gameJoinedDetailedGamesRecord
+                                                      .userRef ==
+                                                  currentUserRef
+                                              ? AppIconButton(
+                                                  icon: Icon(
+                                                    Icons.remove_circle_outline,
+                                                    color: AppTheme.of(context)
+                                                        .error,
+                                                    size: 24.0,
+                                                  ),
+                                                  borderRadius: 20.0,
+                                                  buttonSize: 40.0,
+                                                  fillColor: Colors.transparent,
+                                                  tooltip: 'Remove player',
+                                                  onPressed: () =>
+                                                      _showRemovePlayerDialog(
+                                                    context: context,
+                                                    playerName: displayName,
+                                                    playerRef: groupPlayersItem,
+                                                    isGuest: false,
+                                                    gameRecord:
+                                                        gameJoinedDetailedGamesRecord,
+                                                  ),
+                                                )
+                                              : const Icon(
+                                                  Icons.check_circle,
+                                                  color: Color(0xFFD4A843),
+                                                  size: 24.0,
+                                                ),
                                       onTap: () {
                                         context.pushNamed(
                                           'ProfileUser',
                                           extra: <String, dynamic>{
                                             'userRef': userRef,
                                             kTransitionInfoKey:
-                                                TransitionStandards.detailTransition,
+                                                TransitionStandards
+                                                    .detailTransition,
                                           },
                                         );
                                       },
-                                      child: Container(
-                                        padding: EdgeInsets.all(AppSpacing.sm),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.fairway
-                                              .withValues(alpha: 0.3),
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          border: Border.all(
-                                            color: AppColors.fairwayLight
-                                                .withValues(alpha: 0.3),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            // Avatar
-                                            Container(
-                                              width: 48.0,
-                                              height: 48.0,
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  colors: [AppColors.fairwayLight, AppColors.fairway],
-                                                ),
-                                                borderRadius: BorderRadius.circular(12),
-                                                border: Border.all(
-                                                  color: Colors.white.withValues(alpha: 0.2),
-                                                  width: 2,
-                                                ),
-                                              ),
-                                              child: ClipRRect(
-                                                borderRadius: BorderRadius.circular(10),
-                                                child: photoUrl.isNotEmpty
-                                                    ? Image.network(
-                                                        photoUrl,
-                                                        fit: BoxFit.cover,
-                                                        errorBuilder: (context, error, stackTrace) =>
-                                                            Icon(
-                                                          Icons.person_rounded,
-                                                          color: Colors.white,
-                                                          size: 24,
-                                                        ),
-                                                      )
-                                                    : Icon(
-                                                        Icons.person_rounded,
-                                                        color: Colors.white,
-                                                        size: 24,
-                                                      ),
-                                              ),
-                                            ),
-                                            SizedBox(width: AppSpacing.sm),
-                                            // Name and ready status
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      Flexible(
-                                                        child: Text(
-                                                          displayName,
-                                                          style: AppTheme.of(context)
-                                                              .bodyLarge
-                                                              .override(
-                                                                font: TextStyle(fontFamily: 'Manrope',
-                                                                  fontWeight:
-                                                                      FontWeight.w500,
-                                                                  fontStyle:
-                                                                      AppTheme.of(
-                                                                              context)
-                                                                          .bodyLarge
-                                                                          .fontStyle,
-                                                                ),
-                                                                color: Colors.white,
-                                                                letterSpacing: 0.0,
-                                                                fontWeight:
-                                                                    FontWeight.w500,
-                                                                fontStyle:
-                                                                    AppTheme.of(
-                                                                            context)
-                                                                        .bodyLarge
-                                                                        .fontStyle,
-                                                              ),
-                                                          maxLines: 1,
-                                                          overflow:
-                                                              TextOverflow.ellipsis,
-                                                        ),
-                                                      ),
-                                                      if (isOwner) ...[
-                                                        SizedBox(width: 6),
-                                                        Icon(
-                                                          Icons.star_rounded,
-                                                          color: AppColors.sunsetGold,
-                                                          size: 16,
-                                                        ),
-                                                      ],
-                                                    ],
-                                                  ),
-                                                  SizedBox(height: AppSpacing.xxs),
-                                                  Text(
-                                                    'Ready',
-                                                    style: AppTheme.of(context)
-                                                        .bodySmall
-                                                        .override(
-                                                          font: TextStyle(fontFamily: 'Manrope',
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodySmall
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: AppColors
-                                                              .sunsetGold,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodySmall
-                                                                  .fontStyle,
-                                                        ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.only(
-                                                right: AppSpacing.sm,
-                                              ),
-                                              child: PlayerMatchChip(
-                                                name: displayName,
-                                                memberMatch:
-                                                    _memberMatchesById[groupPlayersItem.id],
-                                                onTap: () => _openPremiumVibePage(
-                                                  context,
-                                                  userRef,
-                                                  displayName,
-                                                  photoUrl,
-                                                  _memberMatchesById[groupPlayersItem.id],
-                                                ),
-                                              ),
-                                            ),
-                                            // Show remove button for owner, checkmark for others
-                                            if (gameJoinedDetailedGamesRecord.userRef ==
-                                                currentUserRef)
-                                              AppIconButton(
-                                                icon: Icon(
-                                                  Icons.remove_circle_outline,
-                                                  color: AppTheme.of(context).error,
-                                                  size: 24.0,
-                                                ),
-                                                borderRadius: 20.0,
-                                                buttonSize: 40.0,
-                                                fillColor: Colors.transparent,
-                                                tooltip: 'Remove player',
-                                                onPressed: () => _showRemovePlayerDialog(
-                                                  context: context,
-                                                  playerName: displayName,
-                                                  playerRef: groupPlayersItem,
-                                                  isGuest: false,
-                                                  gameRecord: gameJoinedDetailedGamesRecord,
-                                                ),
-                                              )
-                                            else
-                                              Icon(
-                                                Icons.check_circle,
-                                                color: AppColors.sunsetGold,
-                                                size: 24.0,
-                                              ),
-                                          ],
-                                        ),
-                                      ),
                                     ),
+                                  );
+                                    },
                                   );
                                 }),
                             // Guest players

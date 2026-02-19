@@ -36,8 +36,6 @@ class TrustProfileSection extends StatelessWidget {
         children: [
           _buildSectionHeader(),
           SizedBox(height: AppSpacing.md),
-          _buildBadgeRow(),
-          SizedBox(height: AppSpacing.sm),
           _buildStatsGrid(),
           if (user.showUpRate != null) ...[
             SizedBox(height: AppSpacing.sm),
@@ -55,12 +53,37 @@ class TrustProfileSection extends StatelessWidget {
   // ── Section header ──────────────────────────────────────────────────────
 
   Widget _buildSectionHeader() {
-    return Text(
-      'Trust Profile',
-      style: AppTypography.titleMedium.copyWith(
-        color: AppColors.onyx,
-        fontWeight: FontWeight.w600,
-      ),
+    return Row(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.fairway, AppColors.fairwayDark],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(9),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.fairway.withOpacity(0.3),
+                blurRadius: 8,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Icon(Icons.shield_rounded, color: Colors.white, size: 16),
+        ),
+        SizedBox(width: AppSpacing.sm),
+        Text(
+          'Trust Profile',
+          style: AppTypography.titleMedium.copyWith(
+            color: AppColors.onyx,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 
@@ -69,49 +92,80 @@ class TrustProfileSection extends StatelessWidget {
   Widget _buildBadgeRow() {
     final info = _badgeInfo(user.badgeLevel);
     return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [info.gradientStart, info.gradientEnd],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.14),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: info.gradientStart.withOpacity(0.25),
-            blurRadius: 12,
+            color: info.gradientStart.withOpacity(0.45),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
+      child: Stack(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.25),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(info.icon, color: Colors.white, size: 22),
-          ),
-          SizedBox(width: AppSpacing.md),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                info.label,
-                style: AppTypography.titleSmall.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
+          // Shine overlay
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withOpacity(0.12),
+                    Colors.transparent,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomCenter,
                 ),
               ),
-              SizedBox(height: AppSpacing.xxs),
-              Text(
-                info.description,
-                style: AppTypography.labelSmall.copyWith(
-                  color: Colors.white.withOpacity(0.85),
+            ),
+          ),
+          Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.35),
+                    width: 1.5,
+                  ),
+                ),
+                child: Icon(info.icon, color: Colors.white, size: 26),
+              ),
+              SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      info.label,
+                      style: AppTypography.titleSmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      info.description,
+                      style: AppTypography.labelSmall.copyWith(
+                        color: Colors.white.withOpacity(0.85),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -128,43 +182,62 @@ class TrustProfileSection extends StatelessWidget {
         ? '${user.createdTime!.year}'
         : '—';
 
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: _buildStatTile(
-            icon: Icons.check_circle_outline_rounded,
-            iconColor: AppColors.success,
-            value: '${user.verifiedRoundCount}',
-            label: 'Rounds',
+        // Row 1: Badge card (2/3) + Joined tile (1/3)
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                flex: 2,
+                child: _buildBadgeRow(),
+              ),
+              SizedBox(width: AppSpacing.xs),
+              Expanded(
+                flex: 1,
+                child: _buildStatTile(
+                  icon: Icons.calendar_today_outlined,
+                  iconGradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
+                  value: joinYear,
+                  label: 'Joined',
+                  isText: true,
+                ),
+              ),
+            ],
           ),
         ),
-        SizedBox(width: AppSpacing.xs),
-        Expanded(
-          child: _buildStatTile(
-            icon: Icons.group_outlined,
-            iconColor: AppColors.fairway,
-            value: '${user.uniqueCoPlayers.length}',
-            label: 'Co-Players',
-          ),
-        ),
-        SizedBox(width: AppSpacing.xs),
-        Expanded(
-          child: _buildStatTile(
-            icon: Icons.sports_golf_outlined,
-            iconColor: AppColors.sunsetGold,
-            value: '${user.gamesHosted}',
-            label: 'Hosted',
-          ),
-        ),
-        SizedBox(width: AppSpacing.xs),
-        Expanded(
-          child: _buildStatTile(
-            icon: Icons.calendar_today_outlined,
-            iconColor: AppColors.sunsetPeach,
-            value: joinYear,
-            label: 'Joined',
-            isText: true,
-          ),
+        SizedBox(height: AppSpacing.xs),
+        // Row 2: Rounds, Co-Players, Hosted
+        Row(
+          children: [
+            Expanded(
+              child: _buildStatTile(
+                icon: Icons.check_circle_outline_rounded,
+                iconGradient: [AppColors.success, AppColors.fairwayLight],
+                value: '${user.verifiedRoundCount}',
+                label: 'Rounds',
+              ),
+            ),
+            SizedBox(width: AppSpacing.xs),
+            Expanded(
+              child: _buildStatTile(
+                icon: Icons.group_outlined,
+                iconGradient: [AppColors.fairwayLight, AppColors.fairway],
+                value: '${user.uniqueCoPlayers.length}',
+                label: 'Co-Players',
+              ),
+            ),
+            SizedBox(width: AppSpacing.xs),
+            Expanded(
+              child: _buildStatTile(
+                icon: Icons.sports_golf_outlined,
+                iconGradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                value: '${user.gamesHosted}',
+                label: 'Hosted',
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -172,26 +245,53 @@ class TrustProfileSection extends StatelessWidget {
 
   Widget _buildStatTile({
     required IconData icon,
-    required Color iconColor,
+    required List<Color> iconGradient,
     required String value,
     required String label,
     bool isText = false,
   }) {
     return Container(
       padding: EdgeInsets.symmetric(
-        vertical: AppSpacing.sm,
+        vertical: AppSpacing.md,
         horizontal: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
         color: AppColors.sand,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.cloud),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: iconColor, size: 18),
-          SizedBox(height: AppSpacing.xxs),
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: iconGradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: iconGradient[0].withOpacity(0.25),
+                  blurRadius: 8,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: Colors.white, size: 18),
+          ),
+          SizedBox(height: AppSpacing.xs),
           Text(
             value,
             style: isText
@@ -233,52 +333,90 @@ class TrustProfileSection extends StatelessWidget {
         : rate >= 0.75
             ? AppColors.warning
             : AppColors.error;
+    final gradientColors = rate >= 0.9
+        ? [AppColors.success, AppColors.fairwayLight]
+        : rate >= 0.75
+            ? [AppColors.warning, AppColors.sunsetPeach]
+            : [AppColors.error, AppColors.sunsetRose];
 
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.sand,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.cloud),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(Icons.check_circle_rounded, color: color, size: 20),
-          ),
-          SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Show-Up Rate',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.stone,
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: gradientColors,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
+                  borderRadius: BorderRadius.circular(11),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withOpacity(0.25),
+                      blurRadius: 8,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
                 ),
-                SizedBox(height: AppSpacing.xxs),
-                Text(
-                  '$pct% · ${denominator} game${denominator == 1 ? "" : "s"}',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.onyx,
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: Icon(Icons.check_circle_rounded,
+                    color: Colors.white, size: 20),
+              ),
+              SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Show-Up Rate',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.stone,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      '$denominator game${denominator == 1 ? "" : "s"} played',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.slate,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              Text(
+                '$pct%',
+                style: AppTypography.monoLarge.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
-          Text(
-            '$pct%',
-            style: AppTypography.monoLarge.copyWith(
-              color: color,
-              fontWeight: FontWeight.w700,
+          SizedBox(height: AppSpacing.sm),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: rate,
+              backgroundColor: AppColors.cloud,
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+              minHeight: 6,
             ),
           ),
         ],
@@ -298,30 +436,65 @@ class TrustProfileSection extends StatelessWidget {
         padding: EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: AppColors.warning.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppColors.warning.withOpacity(0.4)),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.warning.withOpacity(0.08),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.warning_amber_rounded,
-              color: AppColors.warning,
-              size: 22,
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.warning, AppColors.sunsetPeach],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(11),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.warning.withOpacity(0.25),
+                    blurRadius: 8,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Icon(Icons.warning_amber_rounded,
+                  color: Colors.white, size: 20),
             ),
             SizedBox(width: AppSpacing.md),
             Expanded(
-              child: Text(
-                'Cancellation history — tap for details',
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.slate,
-                  fontWeight: FontWeight.w500,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Cancellation History',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppColors.slate,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    'Tap for details',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.stone,
+                    ),
+                  ),
+                ],
               ),
             ),
             Icon(
-              Icons.info_outline_rounded,
+              Icons.chevron_right_rounded,
               color: AppColors.stone,
-              size: 18,
+              size: 20,
             ),
           ],
         ),
@@ -389,9 +562,9 @@ class TrustProfileSection extends StatelessWidget {
         return (
           label: 'New Member',
           description: 'Just getting started',
-          icon: Icons.person_outline_rounded,
-          gradientStart: AppColors.stone,
-          gradientEnd: AppColors.slate,
+          icon: Icons.golf_course_rounded,
+          gradientStart: AppColors.sunsetPeach,
+          gradientEnd: AppColors.sunsetRose,
         );
     }
   }

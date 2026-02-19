@@ -30,6 +30,7 @@ class YourStandingScreen extends StatefulWidget {
 class _YourStandingScreenState extends State<YourStandingScreen> {
   bool _loading = true;
   String? _error;
+  bool _isEmpty = false;
   Map<String, dynamic>? _standing;
 
   @override
@@ -49,8 +50,15 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
       if (mounted) {
         setState(() {
           _loading = false;
-          _standing = result.isNotEmpty ? result : null;
-          _error = result.isEmpty ? 'Could not load your standing.' : null;
+          if (result.isNotEmpty) {
+            _standing = result;
+            _isEmpty = false;
+            _error = null;
+          } else {
+            _standing = null;
+            _isEmpty = true;
+            _error = null;
+          }
         });
       }
     } catch (e) {
@@ -78,7 +86,9 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
                     ? _buildLoader()
                     : _error != null
                         ? _buildError()
-                        : _buildContent(),
+                        : _isEmpty
+                            ? _buildEmpty()
+                            : _buildContent(),
               ),
             ],
           ),
@@ -156,6 +166,49 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
               setState(() { _loading = true; _error = null; });
               _loadStanding();
             }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Padding(
+        padding: AppSpacing.screen,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(
+                Icons.sports_golf_rounded,
+                color: Colors.white,
+                size: 36,
+              ),
+            ),
+            SizedBox(height: AppSpacing.lg),
+            Text(
+              'No activity yet',
+              style: AppTypography.titleLarge.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: AppSpacing.sm),
+            Text(
+              'Once you play your first verified round, your standing details will appear here — including your show-up rate, badge progress, and strike history.',
+              style: AppTypography.bodyMedium.copyWith(
+                color: Colors.white.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),

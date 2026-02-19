@@ -96,7 +96,7 @@ class _FallbackConfirmationScreenState
         body: SafeArea(
           child: Center(
             child: Padding(
-              padding: AppSpacing.symmetric(h: AppSpacing.xl),
+              padding: AppSpacing.symmetric(horizontal: AppSpacing.xl),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -142,7 +142,7 @@ class _FallbackConfirmationScreenState
       ),
       body: SafeArea(
         child: Padding(
-          padding: AppSpacing.symmetric(h: AppSpacing.xl),
+          padding: AppSpacing.symmetric(horizontal: AppSpacing.xl),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,

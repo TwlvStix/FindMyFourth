@@ -4,8 +4,12 @@ import 'package:flutter/material.dart';
 
 import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/app_theme.dart';
+import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/utils/app_log.dart';
+import '/core/widgets/app_avatar.dart';
 import '/core/widgets/app_button_enhanced.dart';
 
 /// PeerRatingScreen
@@ -203,7 +207,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
         body: SafeArea(
           child: Center(
             child: Padding(
-              padding: AppSpacing.symmetric(h: AppSpacing.xl),
+              padding: AppSpacing.symmetric(horizontal: AppSpacing.xl),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -251,7 +255,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
         body: SafeArea(
           child: Center(
             child: Padding(
-              padding: AppSpacing.symmetric(h: AppSpacing.xl),
+              padding: AppSpacing.symmetric(horizontal: AppSpacing.xl),
               child: Text(
                 'No players to rate for this round.',
                 style: theme.bodyMedium,
@@ -290,9 +294,46 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
                 textAlign: TextAlign.center,
               ),
             ),
+            // Privacy notice
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.sm,
+              ),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.sand,
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.lock_outline_rounded,
+                      size: 16,
+                      color: AppColors.stone,
+                    ),
+                    SizedBox(width: AppSpacing.xs),
+                    Expanded(
+                      child: Text(
+                        'Your responses are completely private. '
+                        "They're never shown to other players.",
+                        style: AppTypography.labelSmall.copyWith(
+                          color: AppColors.stone,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             if (_error != null)
               Padding(
-                padding: AppSpacing.symmetric(h: AppSpacing.xl, v: AppSpacing.sm),
+                padding: AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 child: Text(
                   _error!,
                   style: theme.bodySmall.override(
@@ -304,7 +345,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
               ),
             Expanded(
               child: ListView.builder(
-                padding: AppSpacing.symmetric(h: AppSpacing.lg, v: AppSpacing.sm),
+                padding: AppSpacing.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
                 itemCount: _ratees.length,
                 itemBuilder: (context, i) {
                   final ratee = _ratees[i];
@@ -367,7 +408,7 @@ class _RateeRow extends StatelessWidget {
 
     return Container(
       margin: AppSpacing.only(bottom: AppSpacing.sm),
-      padding: AppSpacing.symmetric(h: AppSpacing.lg, v: AppSpacing.md),
+      padding: AppSpacing.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
       decoration: BoxDecoration(
         color: theme.secondaryBackground,
         borderRadius: BorderRadius.circular(12),
@@ -398,22 +439,15 @@ class _RateeRow extends StatelessWidget {
   }
 
   Widget _buildAvatar(AppTheme theme) {
-    if (ratee.photoUrl.isNotEmpty) {
-      return CircleAvatar(
-        radius: 22,
-        backgroundImage: NetworkImage(ratee.photoUrl),
-      );
-    }
-    return CircleAvatar(
-      radius: 22,
-      backgroundColor: theme.primary.withOpacity(0.15),
-      child: Text(
-        ratee.displayName.isNotEmpty ? ratee.displayName[0].toUpperCase() : '?',
-        style: theme.titleSmall.override(
-          font: const TextStyle(fontFamily: 'Manrope'),
-          color: theme.primary,
-        ),
-      ),
+    final initials = ratee.displayName.trim().split(' ')
+        .where((p) => p.isNotEmpty)
+        .map((p) => p[0].toUpperCase())
+        .take(2)
+        .join();
+    return AppAvatar(
+      imageUrl: ratee.photoUrl.isNotEmpty ? ratee.photoUrl : null,
+      initials: initials.isEmpty ? '?' : initials,
+      size: AppAvatarSize.medium,
     );
   }
 }

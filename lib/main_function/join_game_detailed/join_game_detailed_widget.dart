@@ -3,6 +3,7 @@ import '/core/exceptions/app_exceptions.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
+import '/core/widgets/trust/restriction_banner.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/utils/firebase_error_utils.dart';
@@ -10,6 +11,7 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/providers/trust_provider.dart';
 import '/models/game.dart';
 import '/models/vibe_profile.dart';
 import '/vibe/vibe_match_types.dart';
@@ -1300,8 +1302,30 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                     ),
 
                       SizedBox(height: AppSpacing.md),
+
+                      // Restriction banner — shown above join button when player is restricted
                       if (joinGameDetailedGamesRecord.userRef != currentUserRef)
-                        Align(
+                        Consumer<TrustProvider>(
+                          builder: (context, trust, _) {
+                            final restriction = trust.myStanding?.currentRestriction;
+                            if (restriction == null) return const SizedBox.shrink();
+                            return Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                AppSpacing.md, 0, AppSpacing.md, AppSpacing.md,
+                              ),
+                              child: RestrictionBanner(
+                                restriction: restriction,
+                                onViewStanding: () => context.pushNamed('YourStanding'),
+                              ),
+                            );
+                          },
+                        ),
+
+                      if (joinGameDetailedGamesRecord.userRef != currentUserRef)
+                        Consumer<TrustProvider>(
+                          builder: (context, trust, _) {
+                            final isRestricted = trust.myStanding?.currentRestriction != null;
+                            return Align(
                           alignment: AlignmentDirectional(0.0, 0.0),
                           child: Padding(
                             padding: EdgeInsets.only(
@@ -1312,7 +1336,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 text: 'Join Game',
                                 variant: AppButtonVariant.primary,
                                 size: AppButtonSize.large,
-                                onPressed: () async {
+                                enabled: !isRestricted,
+                                onPressed: isRestricted ? null : () async {
                                   // Check permission before attempting join
                                   final friendGameValue =
                                       joinGameDetailedGamesRecord.friendGame.trim();
@@ -1491,7 +1516,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 ),
                               ),
                             ),
-                          ),
+                          );
+                          },
+                        ),
                       ],
                     ),
                   );

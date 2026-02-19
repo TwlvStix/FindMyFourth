@@ -259,11 +259,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         // Quick Actions Grid
                         _buildQuickActionsGrid(context),
 
-                        SizedBox(height: AppSpacing.md),
-
-                        // Golf Info Section
-                        _buildGolfInfoSection(context),
-
                         // Trust Profile Section
                         AuthUserStreamWidget(
                           builder: (context) {
@@ -273,6 +268,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 user: userDoc, isOwnProfile: true);
                           },
                         ),
+
+                        // Golf Info Section
+                        _buildGolfInfoSection(context),
 
                         // Settings Section
                         _buildSettingsSection(context),

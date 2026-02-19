@@ -1,6 +1,8 @@
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/widgets/trust/restriction_banner.dart';
+import '/providers/trust_provider.dart';
 import '/core/design_patterns/premium_ui_patterns.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_stream_builder.dart';
@@ -755,6 +757,32 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                         child: CustomScrollView(
                           physics: const AlwaysScrollableScrollPhysics(),
                           slivers: [
+                            // RestrictionBanner — shown when player has an active restriction
+                            Consumer<TrustProvider>(
+                              builder: (context, trust, _) {
+                                final restriction =
+                                    trust.myStanding?.currentRestriction;
+                                if (restriction == null) {
+                                  return const SliverToBoxAdapter(
+                                      child: SizedBox.shrink());
+                                }
+                                return SliverToBoxAdapter(
+                                  child: Padding(
+                                    padding: EdgeInsets.fromLTRB(
+                                      AppSpacing.md,
+                                      AppSpacing.md,
+                                      AppSpacing.md,
+                                      0,
+                                    ),
+                                    child: RestrictionBanner(
+                                      restriction: restriction,
+                                      onViewStanding: () =>
+                                          context.pushNamed('YourStanding'),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                             SliverPadding(
                               padding: EdgeInsets.only(
                                 top: AppSpacing.md,
