@@ -1,6 +1,7 @@
+import 'dart:async';
+
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/core/button_tabbar.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/fairway_background.dart';
@@ -9,6 +10,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
@@ -20,6 +22,9 @@ import '/friends/components/golfer_search_section.dart';
 import '/friends/components/grouped_friends_list.dart';
 import '/friends/components/friend_filter_bottom_sheet.dart';
 import '/friends/components/friend_card_skeleton.dart';
+import '/friends/components/golfer_search_bar.dart';
+import '/friends/components/golfer_segmented_control.dart';
+import '/friends/components/section_label_row.dart';
 
 class TabFriendsWidget extends StatefulWidget {
   const TabFriendsWidget({super.key});
@@ -31,8 +36,32 @@ class TabFriendsWidget extends StatefulWidget {
   State<TabFriendsWidget> createState() => _TabFriendsWidgetState();
 }
 
-class _TabFriendsWidgetState extends State<TabFriendsWidget>
-    with TickerProviderStateMixin {
+class _TabFriendsWidgetState extends State<TabFriendsWidget> {
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SEGMENT CONTROL STATE
+  // ═══════════════════════════════════════════════════════════════════════════
+  GolferSegment _currentSegment = GolferSegment.discover;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SEARCH STATE (persistent across all segments)
+  // ═══════════════════════════════════════════════════════════════════════════
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  String _searchTerm = '';
+  Timer? _debounceTimer;
+
+  void _onSearchChanged(String value) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() => _searchTerm = value.trim().toLowerCase());
+      }
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LEGACY STATE (preserved for compatibility)
+  // ═══════════════════════════════════════════════════════════════════════════
   List<String> reqUserList = [];
   void addToReqUserList(String item) => reqUserList.add(item);
   void removeFromReqUserList(String item) => reqUserList.remove(item);
@@ -128,14 +157,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
     }
   }
 
-  TabController? tabBarController;
-  int get tabBarCurrentIndex => tabBarController != null
-      ? tabBarController!.index
-      : 0;
-  int get tabBarPreviousIndex => tabBarController != null
-      ? tabBarController!.previousIndex
-      : 0;
-
   Future<void> _openDirectChat(UsersRecord user) async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
@@ -220,25 +241,42 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
   @override
   void initState() {
     super.initState();
-    tabBarController = TabController(
-      vsync: this,
-      length: 3,
-      initialIndex: 0,
-      animationDuration: Duration.zero, // Instant tab switching per premium motion system
-    )..addListener(() {
-        if (mounted) {
-          setState(() {});
-        }
-      });
-
-    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
+    // Search controller listener
+    _searchController.addListener(() {
+      _onSearchChanged(_searchController.text);
+    });
   }
 
   @override
   void dispose() {
-    tabBarController?.dispose();
-
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // HELPER METHODS FOR SECTION LABELS
+  // ═══════════════════════════════════════════════════════════════════════════
+  String _getSectionLabel() {
+    switch (_currentSegment) {
+      case GolferSegment.discover:
+        if (_searchTerm.isNotEmpty) {
+          return "Results for '$_searchTerm'";
+        }
+        return 'Recommended for you';
+      case GolferSegment.requests:
+        return 'Pending requests';
+      case GolferSegment.friends:
+        return 'Your circle';
+    }
+  }
+
+  bool _matchesSearch(UsersRecord user) {
+    if (_searchTerm.isEmpty) return true;
+    return user.displayName.toLowerCase().contains(_searchTerm) ||
+        user.firstName.toLowerCase().contains(_searchTerm) ||
+        user.lastName.toLowerCase().contains(_searchTerm);
   }
 
   @override
@@ -250,778 +288,515 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        extendBodyBehindAppBar: true,
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          automaticallyImplyLeading: false,
-          elevation: 0.0,
-          title: Text(
-            'Golfers',
-            style: AppTypography.headlineMedium.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          actions: [],
-          centerTitle: false,
-        ),
         body: FairwayBackgroundDark(
           child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 56,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                Expanded(
-                  child: Column(
+            top: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ═══════════════════════════════════════════════════════════════
+                // HEADER ROW: Title + Settings Icon
+                // ═══════════════════════════════════════════════════════════════
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.md,
+                    AppSpacing.lg,
+                    0,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      SizedBox(height: AppSpacing.md),
-                      // Enhanced tab bar with shadow
-                      Container(
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.fairway.withOpacity(0.08),
-                              blurRadius: 12,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
+                      Text(
+                        'Golfers',
+                        style: AppTypography.headlineMedium.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
                         ),
-                        child: Align(
-                          alignment: Alignment(-1.0, 0),
-                          child: AppButtonTabBar(
-                            useToggleButtonStyle: false,
-                            labelStyle: AppTypography.labelLarge.copyWith(
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.3,
+                      ),
+                      GestureDetector(
+                        onTap: _showFilterBottomSheet,
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: AppColors.fairway.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppColors.fairwayLight.withValues(alpha: 0.3),
+                              width: 1,
                             ),
-                            unselectedLabelStyle: AppTypography.labelLarge.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                            labelColor: AppTheme.of(context).primaryBtnText,
-                            unselectedLabelColor:
-                                AppTheme.of(context).secondaryText,
-                            backgroundColor: AppTheme.of(context).primary,
-                            unselectedBackgroundColor:
-                                AppTheme.of(context).alternate,
-                            borderColor: AppTheme.of(context).primary,
-                            unselectedBorderColor:
-                                AppTheme.of(context).alternate,
-                            borderWidth: 2.0,
-                            borderRadius: 10.0,
-                            elevation: 0.0,
-                            labelPadding: EdgeInsets.symmetric(
-                                horizontal: AppSpacing.md),
-                            buttonMargin:
-                                EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                            padding: EdgeInsets.all(AppSpacing.xxs),
-                            tabs: [
-                              Tab(
-                                text: 'Search',
-                              ),
-                              Tab(
-                                text: 'Requests',
-                              ),
-                              Tab(
-                                text: 'Friends',
-                              ),
-                            ],
-                            controller: tabBarController,
-                            onTap: (i) async {
-                              [
-                                () async {},
-                                () async {
-                                  friendList = [];
-                                  if (mounted) setState(() {});
-                                },
-                                () async {
-                                  friendList = [];
-                                  if (mounted) setState(() {});
-                                }
-                              ][i]();
-                            },
+                          ),
+                          child: Icon(
+                            Icons.settings_outlined,
+                            color: Colors.white.withValues(alpha: 0.7),
+                            size: 22,
                           ),
                         ),
                       ),
-                      Expanded(
-                        child: TabBarView(
-                          controller: tabBarController,
-                          children: [
-                          KeepAliveWidgetWrapper(
-                            builder: (context) => Container(
-                              width: double.infinity,
-                              height: double.infinity,
-                              child: RefreshIndicator(
-                                onRefresh: _refreshSearchTab,
-                                color: AppColors.fairway,
-                                backgroundColor: Colors.white,
-                                child: SingleChildScrollView(
-                                  physics: AlwaysScrollableScrollPhysics(),
-                                  child: GolferSearchSection(
-                                    currentUserId: currentUserUid,
-                                    friendFilters: friendFilters,
-                                    onFilterPressed: _showFilterBottomSheet,
-                                    showDefaultsWhenBelowThreshold: true,
-                                    searchDebounce:
-                                        Duration(milliseconds: 300),
-                                    showFocusHelperText: true,
-                                    itemBuilder: (context, listViewUsersRecord) {
-                                      return AuthUserStreamWidget(
-                                        builder: (context) {
-                                          final isFriend =
-                                              (currentUserDocument?.friends.toList() ?? [])
-                                                  .contains(
-                                            listViewUsersRecord.reference,
-                                          );
-                                          final isOutgoingPending =
-                                              listViewUsersRecord.friendRequests
-                                                  .contains(currentUserReference);
-                                          final isIncomingPending =
-                                              (currentUserDocument
-                                                          ?.friendRequests
-                                                          .toList() ??
-                                                      [])
-                                                  .contains(
-                                            listViewUsersRecord.reference,
-                                          );
-                                          final hasPending =
-                                              isOutgoingPending || isIncomingPending;
-
-                                          String actionLabel;
-                                          IconData actionIcon;
-                                          bool showActionButton;
-
-                                          if (isFriend) {
-                                            actionLabel = 'Friends';
-                                            actionIcon = Icons.people_rounded;
-                                            showActionButton = true;
-                                          } else if (hasPending) {
-                                            actionLabel =
-                                                isOutgoingPending ? 'Cancel' : 'Pending';
-                                            actionIcon = isOutgoingPending
-                                                ? Icons.close_rounded
-                                                : Icons.pending_rounded;
-                                            showActionButton = true;
-                                          } else {
-                                            actionLabel = 'Add';
-                                            actionIcon = Icons.person_add_rounded;
-                                            showActionButton = true;
-                                          }
-
-                                          return PremiumFriendCard(
-                                            user: listViewUsersRecord,
-                                            currentUser: currentUserDocument,
-                                            onViewProfile: () {
-                                              context.pushNamed(
-                                                'ProfileUser',
-                                                extra: <String, dynamic>{
-                                                  'userRef':
-                                                      listViewUsersRecord.reference,
-                                                },
-                                              );
-                                            },
-                                            onMessage: () async {
-                                              await _openDirectChat(listViewUsersRecord);
-                                            },
-                                            onAction: isFriend
-                                                ? null
-                                                : hasPending
-                                                    ? (isOutgoingPending
-                                                        ? () async {
-                                                            try {
-                                                              await context
-                                                                  .read<UserProvider>()
-                                                                  .cancelFriendRequest(
-                                                                listViewUsersRecord
-                                                                    .reference,
-                                                              );
-                                                              if (mounted) {
-                                                                setState(() {});
-                                                              }
-                                                              if (!mounted) {
-                                                                return;
-                                                              }
-                                                              ScaffoldMessenger.of(context)
-                                                                  .clearSnackBars();
-                                                              ScaffoldMessenger.of(context)
-                                                                  .showSnackBar(
-                                                                SnackBar(
-                                                                  content: Text(
-                                                                    'Request cancelled.',
-                                                                    style: AppTheme.of(context)
-                                                                        .titleMedium
-                                                                        .override(
-                                                                          font: TextStyle(fontFamily: 'Manrope',
-                                                                            fontWeight: AppTheme.of(context)
-                                                                                .titleMedium
-                                                                                .fontWeight,
-                                                                            fontStyle: AppTheme.of(context)
-                                                                                .titleMedium
-                                                                                .fontStyle,
-                                                                          ),
-                                                                          color: AppTheme.of(context)
-                                                                              .primaryBtnText,
-                                                                          letterSpacing: 0.0,
-                                                                          fontWeight: AppTheme.of(context)
-                                                                              .titleMedium
-                                                                              .fontWeight,
-                                                                          fontStyle: AppTheme.of(context)
-                                                                              .titleMedium
-                                                                              .fontStyle,
-                                                                        ),
-                                                                  ),
-                                                                  duration:
-                                                                      Duration(milliseconds: 1500),
-                                                                  backgroundColor:
-                                                                      AppTheme.of(context)
-                                                                          .primary,
-                                                                ),
-                                                              );
-                                                            } catch (_) {
-                                                              if (!mounted) {
-                                                                return;
-                                                              }
-                                                              showSnackbar(
-                                                                context,
-                                                                'Unable to cancel request. Please try again.',
-                                                              );
-                                                            }
-                                                          }
-                                                        : () async {})
-                                                    : () async {
-                                                        try {
-                                                          await context
-                                                              .read<UserProvider>()
-                                                              .sendFriendRequest(
-                                                            listViewUsersRecord.reference,
-                                                          );
-                                                          addToReqUserList(
-                                                              valueOrDefault<String>(
-                                                            listViewUsersRecord.uid,
-                                                            '007',
-                                                          ));
-                                                          if (mounted) {
-                                                            setState(() {});
-                                                          }
-                                                          if (!mounted) {
-                                                            return;
-                                                          }
-                                                          ScaffoldMessenger.of(context)
-                                                              .clearSnackBars();
-                                                          ScaffoldMessenger.of(context)
-                                                              .showSnackBar(
-                                                            SnackBar(
-                                                              content: Text(
-                                                                'Friend request sent!',
-                                                                style: AppTheme.of(context)
-                                                                    .titleMedium
-                                                                    .override(
-                                                                      font: TextStyle(fontFamily: 'Manrope',
-                                                                        fontWeight: AppTheme.of(context)
-                                                                            .titleMedium
-                                                                            .fontWeight,
-                                                                        fontStyle: AppTheme.of(context)
-                                                                            .titleMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                      color: AppTheme.of(context)
-                                                                          .primaryBtnText,
-                                                                      letterSpacing: 0.0,
-                                                                      fontWeight: AppTheme.of(context)
-                                                                          .titleMedium
-                                                                          .fontWeight,
-                                                                      fontStyle: AppTheme.of(context)
-                                                                          .titleMedium
-                                                                          .fontStyle,
-                                                                    ),
-                                                              ),
-                                                              duration:
-                                                                  Duration(milliseconds: 1500),
-                                                              backgroundColor:
-                                                                  AppTheme.of(context)
-                                                                      .primary,
-                                                            ),
-                                                          );
-                                                        } catch (_) {
-                                                          if (!mounted) {
-                                                            return;
-                                                          }
-                                                          showSnackbar(
-                                                            context,
-                                                            'Unable to send request. Please try again.',
-                                                          );
-                                                        }
-                                                      },
-                                            actionLabel: actionLabel,
-                                            actionIcon: actionIcon,
-                                            actionColor: isOutgoingPending
-                                                ? AppColors.stone
-                                                : AppColors.fairway,
-                                            showActionButton: showActionButton,
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          KeepAliveWidgetWrapper(
-                            builder: (context) => Container(
-                              width: double.infinity,
-                              height: double.infinity,
-                              constraints: BoxConstraints(
-                                minWidth: double.infinity,
-                                minHeight: double.infinity,
-                              ),
-                              child: RefreshIndicator(
-                                onRefresh: _refreshRequestsTab,
-                                color: AppColors.fairway,
-                                backgroundColor: Colors.white,
-                                child: SingleChildScrollView(
-                                  physics: AlwaysScrollableScrollPhysics(),
-                                  child: Column(
-                                  mainAxisSize: MainAxisSize.max,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (isiOS) const SizedBox.shrink(),
-                                    AuthUserStreamWidget(
-                                      builder: (context) => Builder(
-                                        builder: (context) {
-                                          final friendRequestList =
-                                              (currentUserDocument
-                                                          ?.friendRequests
-                                                          .toList() ??
-                                                      [])
-                                                  .toList();
-                                          print(
-                                            'Requests tab friend_requests raw: ${currentUserDocument?.snapshotData['friend_requests']}',
-                                          );
-
-                                          // ═══════════════════════════════════════════════════════
-                                          // PERFORMANCE FIX #7: Batch-warm profiles for friend requests
-                                          // ═══════════════════════════════════════════════════════
-                                          final requestUids = friendRequestList
-                                              .map((ref) => ref.id)
-                                              .toSet();
-                                          if (requestUids.isNotEmpty) {
-                                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                                              if (!context.mounted) return;
-                                              context.read<ProfileProvider>().warmProfiles(requestUids);
-                                            });
-                                          }
-
-                                          // AnimatedSwitcher ensures clean transition between empty state and list
-                                          return AnimatedSwitcher(
-                                            duration: Duration(milliseconds: 200),
-                                            child: friendRequestList.isEmpty
-                                                ? FriendsEmptyState(
-                                                    key: ValueKey('empty_requests_state'),
-                                                    type: FriendsEmptyStateType
-                                                        .noFriendRequests,
-                                                    onActionPressed: () {
-                                                      tabBarController?.animateTo(0);
-                                                    },
-                                                  )
-                                                : ListView.separated(
-                                            key: ValueKey('requests_list_${friendRequestList.length}'),
-                                            padding: EdgeInsets.fromLTRB(
-                                              0,
-                                              AppSpacing.md,
-                                              0,
-                                              AppSpacing.xxl,
-                                            ),
-                                            primary: false,
-                                            shrinkWrap: true,
-                                            scrollDirection: Axis.vertical,
-                                            itemCount: friendRequestList.length,
-                                            addAutomaticKeepAlives: false,
-                                            addRepaintBoundaries: false,
-                                            separatorBuilder: (_, __) =>
-                                                SizedBox(height: 0),
-                                            itemBuilder: (context,
-                                                friendRequestListIndex) {
-                                              final friendRequestListItem =
-                                                  friendRequestList[
-                                                      friendRequestListIndex];
-
-                                              // PERFORMANCE FIX #7: Read from cached profile (no StreamBuilder, no N+1)
-                                              // Profile was batch-warmed above via ProfileProvider.warmProfiles()
-                                              return Consumer<ProfileProvider>(
-                                                key: ValueKey(friendRequestListItem.id),
-                                                builder: (context, profileProvider, _) {
-                                                  final userList5UsersRecord =
-                                                      profileProvider.getCachedProfile(friendRequestListItem.id);
-
-                                                  if (userList5UsersRecord == null) {
-                                                    return FriendCardSkeleton();
-                                                  }
-
-                                                  return PremiumFriendCard(
-                                                    key: ValueKey('request_${userList5UsersRecord.reference.id}'),
-                                                    user: userList5UsersRecord,
-                                                    currentUser: currentUserDocument,
-                                                    messageLabel: '+Add',
-                                                    messageIcon:
-                                                        Icons.person_add_rounded,
-                                                    onViewProfile: () {
-                                                      context.pushNamed(
-                                                        'ProfileUser',
-                                                        extra: <String,
-                                                            dynamic>{
-                                                          'userRef':
-                                                              userList5UsersRecord
-                                                                  .reference,
-                                                        },
-                                                      );
-                                                    },
-                                                    onMessage: () async {
-                                                      // Accept button
-                                                      // Capture context values before async operation
-                                                      final scaffoldMessenger =
-                                                          ScaffoldMessenger.of(
-                                                              context);
-                                                      final theme = AppTheme.of(context);
-                                                      final titleMediumStyle = theme.titleMedium;
-                                                      final primaryBtnTextColor = theme.primaryBtnText;
-                                                      final primaryColor = theme.primary;
-                                                      try {
-                                                        await context
-                                                            .read<UserProvider>()
-                                                            .acceptFriendRequest(
-                                                              userList5UsersRecord
-                                                                  .reference,
-                                                            );
-                                                        if (mounted) {
-                                                          setState(() {});
-                                                        }
-                                                        // Show success message using captured values
-                                                        scaffoldMessenger
-                                                            .showSnackBar(
-                                                          SnackBar(
-                                                            content: Text(
-                                                              'Friend request accepted!',
-                                                              style: titleMediumStyle
-                                                                  .override(
-                                                                    font: TextStyle(fontFamily: 'Manrope',
-                                                                      fontWeight: titleMediumStyle
-                                                                          .fontWeight,
-                                                                      fontStyle: titleMediumStyle
-                                                                          .fontStyle,
-                                                                    ),
-                                                                    color: primaryBtnTextColor,
-                                                                    letterSpacing:
-                                                                        0.0,
-                                                                    fontWeight: titleMediumStyle
-                                                                        .fontWeight,
-                                                                    fontStyle: titleMediumStyle
-                                                                        .fontStyle,
-                                                                  ),
-                                                            ),
-                                                            duration: Duration(
-                                                                milliseconds:
-                                                                    1500),
-                                                            backgroundColor:
-                                                                primaryColor,
-                                                          ),
-                                                        );
-                                                      } catch (e) {
-                                                        if (!mounted) {
-                                                          return;
-                                                        }
-                                                        showSnackbar(
-                                                          context,
-                                                          'Unable to accept request. Please try again.',
-                                                        );
-                                                      }
-                                                    },
-                                                    onAction: () async {
-                                                      // Deny button
-                                                      try {
-                                                        await context
-                                                            .read<UserProvider>()
-                                                            .rejectFriendRequest(
-                                                              userList5UsersRecord
-                                                                  .reference,
-                                                            );
-                                                        if (mounted) {
-                                                          setState(() {});
-                                                        }
-                                                        if (mounted) {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                            SnackBar(
-                                                              content: Text(
-                                                                'Request denied.',
-                                                                style: AppTheme.of(
-                                                                        context)
-                                                                    .titleMedium
-                                                                    .override(
-                                                                      font: TextStyle(fontFamily: 'Manrope',
-                                                                        fontWeight: AppTheme.of(context)
-                                                                            .titleMedium
-                                                                            .fontWeight,
-                                                                        fontStyle: AppTheme.of(context)
-                                                                            .titleMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                      color: AppTheme.of(
-                                                                              context)
-                                                                          .primaryBtnText,
-                                                                      letterSpacing:
-                                                                          0.0,
-                                                                      fontWeight: AppTheme.of(
-                                                                              context)
-                                                                          .titleMedium
-                                                                          .fontWeight,
-                                                                      fontStyle: AppTheme.of(
-                                                                              context)
-                                                                          .titleMedium
-                                                                          .fontStyle,
-                                                                    ),
-                                                              ),
-                                                              duration: Duration(
-                                                                  milliseconds:
-                                                                      1500),
-                                                              backgroundColor:
-                                                                  AppTheme.of(
-                                                                          context)
-                                                                      .primary,
-                                                            ),
-                                                          );
-                                                        }
-                                                      } catch (e) {
-                                                        print(
-                                                          'Deny request failed: $e',
-                                                        );
-                                                        if (mounted) {
-                                                          showSnackbar(
-                                                            context,
-                                                            'Unable to deny request. Please try again.',
-                                                          );
-                                                        }
-                                                      }
-                                                    },
-                                                    actionLabel: 'Deny',
-                                                    actionIcon:
-                                                        Icons.close_rounded,
-                                                    actionColor: AppColors.stone,
-                                                    showActionButton: true,
-                                                  );
-                                                },
-                                              );
-                                            },
-                                          ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              ),
-                            ),
-                          ),
-                          KeepAliveWidgetWrapper(
-                            builder: (context) => Container(
-                              width: double.infinity,
-                              height: double.infinity,
-                              constraints: BoxConstraints(
-                                minWidth: double.infinity,
-                                minHeight: double.infinity,
-                              ),
-                              child: RefreshIndicator(
-                                onRefresh: _refreshFriendsTab,
-                                color: AppColors.fairway,
-                                backgroundColor: Colors.white,
-                                child: SingleChildScrollView(
-                                  physics: AlwaysScrollableScrollPhysics(),
-                                  child: AuthUserStreamWidget(
-                                    builder: (context) => Builder(
-                                      builder: (context) {
-                                        final serverFriendsList =
-                                            (currentUserDocument?.friends.toList() ?? []).toList();
-
-                                        // Check if optimistic state matches server state
-                                        if (_optimisticFriendsList != null) {
-                                          final optimisticIds =
-                                              _optimisticFriendsList!.map((ref) => ref.id).toSet();
-                                          final serverIds =
-                                              serverFriendsList.map((ref) => ref.id).toSet();
-
-                                          // If server state matches optimistic state, clear optimistic state
-                                          if (optimisticIds.length == serverIds.length &&
-                                              optimisticIds.difference(serverIds).isEmpty) {
-                                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                                              if (mounted) {
-                                                setState(() {
-                                                  _optimisticFriendsList = null;
-                                                });
-                                              }
-                                            });
-                                          }
-                                        }
-
-                                        // Use optimistic state if available, otherwise use server state
-                                        final friendsList =
-                                            _optimisticFriendsList ?? serverFriendsList;
-
-                                        // Show empty state if no friends
-                                        if (friendsList.isEmpty) {
-                                          return FriendsEmptyState(
-                                            type: FriendsEmptyStateType.noFriends,
-                                            onActionPressed: () {
-                                              tabBarController?.animateTo(0);
-                                            },
-                                          );
-                                        }
-
-                                        return GroupedFriendsList(
-                                          friendRefs: friendsList,
-                                          favoriteFriends: favoriteFriends,
-                                          currentUserHomeCourse:
-                                              currentUserDocument?.homeCourse,
-                                          currentUser: currentUserDocument,
-                                          onToggleFavorite: toggleFavorite,
-                                          onViewProfile: (user) {
-                                            context.pushNamed(
-                                              'ProfileUser',
-                                              extra: <String, dynamic>{
-                                                'userRef': user.reference,
-                                              },
-                                            );
-                                          },
-                                          onMessage: _openDirectChat,
-                                          onRemove: (user) async {
-                                            await _removeFriend(user);
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-            ),
-          ),
-        ),
-      ),
-    ));
-  }
-}
 
-/*
+                SizedBox(height: AppSpacing.md),
 
-OLD CODE BELOW - KEEPING FOR REFERENCE
-
-                                          return ListView.separated(
-                                            padding: EdgeInsets.fromLTRB(
-                                              0,
-                                              12.0,
-                                              0,
-                                              44.0,
-                                            ),
-                                            primary: false,
-                                            shrinkWrap: true,
-                                            scrollDirection: Axis.vertical,
-                                            itemCount: friendsList.length,
-                                            separatorBuilder: (_, __) =>
-                                                SizedBox(height: AppSpacing.xxs),
-                                            itemBuilder:
-                                                (context, friendsListIndex) {
-                                              final friendsListItem =
-                                                  friendsList[friendsListIndex];
-                                              return StreamBuilder<UsersRecord>(
-                                                stream:
-                                                    UsersRecord.getDocument(
-                                                        friendsListItem),
-                                                builder: (context, snapshot) {
-                                                  if (!snapshot.hasData) {
-                                                    return Center(
-                                                      child: SizedBox(
-                                                        width: 50.0,
-                                                        height: 50.0,
-                                                        child:
-                                                            SpinKitWanderingCubes(
-                                                          color: Color(
-                                                              0xFF25504F),
-                                                          size: 50.0,
-                                                        ),
-                                                      ),
-                                                    );
-                                                  }
-
-                                                  final userList5UsersRecord =
-                                                      snapshot.data!;
-
-                                                  return PremiumFriendCard(
-                                                    user: userList5UsersRecord,
-                                                    currentUser: currentUserDocument,
-                                                    onViewProfile: () {
-                                                      context.pushNamed(
-                                                        'ProfileUser',
-                                                        extra: <String,
-                                                            dynamic>{
-                                                          'userRef':
-                                                              userList5UsersRecord
-                                                                  .reference,
-                                                        },
-                                                      );
-                                                    },
-                                                    onMessage: () async {
-                                                      await _openDirectChat(
-                                                          userList5UsersRecord);
-                                                    },
-                                                    onAction: () async {
-                                                      await _removeFriend(
-                                                        userList5UsersRecord,
-                                                      );
-                                                    },
-                                                    actionLabel: 'Remove',
-                                                    actionIcon:
-                                                        Icons.person_remove_rounded,
-                                                    actionColor: AppColors.stone,
-                                                    showActionButton: true,
-                                                  );
-                                                },
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                // ═══════════════════════════════════════════════════════════════
+                // PERSISTENT SEARCH BAR
+                // ═══════════════════════════════════════════════════════════════
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: GolferSearchBar(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
+                    onFilterPressed: _showFilterBottomSheet,
+                    hasActiveFilters: friendFilters.hasActiveFilters,
+                  ),
                 ),
-              ),
-            ],
+
+                SizedBox(height: AppSpacing.md),
+
+                // ═══════════════════════════════════════════════════════════════
+                // SEGMENTED CONTROL
+                // ═══════════════════════════════════════════════════════════════
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: AuthUserStreamWidget(
+                    builder: (context) {
+                      final requestCount =
+                          currentUserDocument?.friendRequests.length ?? 0;
+                      return GolferSegmentedControl(
+                        selectedSegment: _currentSegment,
+                        onSegmentChanged: (segment) {
+                          HapticFeedback.lightImpact();
+                          FocusScope.of(context).unfocus();
+                          setState(() => _currentSegment = segment);
+                        },
+                        requestsBadgeCount: requestCount,
+                      );
+                    },
+                  ),
+                ),
+
+                SizedBox(height: AppSpacing.md),
+
+                // ═══════════════════════════════════════════════════════════════
+                // SECTION LABEL ROW
+                // ═══════════════════════════════════════════════════════════════
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: AuthUserStreamWidget(
+                    builder: (context) {
+                      return SectionLabelRow(
+                        label: _getSectionLabel(),
+                        count: _getCountForCurrentSegment(),
+                        countLabel: _currentSegment == GolferSegment.requests
+                            ? 'requests'
+                            : 'golfers',
+                      );
+                    },
+                  ),
+                ),
+
+                SizedBox(height: AppSpacing.sm),
+
+                // ═══════════════════════════════════════════════════════════════
+                // SCROLLABLE CONTENT AREA
+                // ═══════════════════════════════════════════════════════════════
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeIn,
+                    child: _buildCurrentView(),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
   }
+
+  int _getCountForCurrentSegment() {
+    switch (_currentSegment) {
+      case GolferSegment.discover:
+        return 0; // Will be updated by the view
+      case GolferSegment.requests:
+        return currentUserDocument?.friendRequests.length ?? 0;
+      case GolferSegment.friends:
+        final friendsList = _optimisticFriendsList ??
+            (currentUserDocument?.friends.toList() ?? []);
+        return friendsList.length;
+    }
+  }
+
+  Widget _buildCurrentView() {
+    switch (_currentSegment) {
+      case GolferSegment.discover:
+        return _buildDiscoverView();
+      case GolferSegment.requests:
+        return _buildRequestsView();
+      case GolferSegment.friends:
+        return _buildFriendsView();
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DISCOVER VIEW
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildDiscoverView() {
+    return KeyedSubtree(
+      key: const ValueKey('discover_view'),
+      child: RefreshIndicator(
+        onRefresh: _refreshSearchTab,
+        color: AppColors.fairway,
+        backgroundColor: Colors.white,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: GolferSearchSection(
+            currentUserId: currentUserUid,
+            friendFilters: friendFilters,
+            showDefaultsWhenBelowThreshold: true,
+            searchDebounce: const Duration(milliseconds: 300),
+            externalSearchTerm: _searchTerm,
+            hideInternalSearchBar: true,
+            itemBuilder: (context, listViewUsersRecord) {
+              return AuthUserStreamWidget(
+                builder: (context) {
+                  final isFriend =
+                      (currentUserDocument?.friends.toList() ?? [])
+                          .contains(listViewUsersRecord.reference);
+                  final isOutgoingPending = listViewUsersRecord.friendRequests
+                      .contains(currentUserReference);
+                  final isIncomingPending =
+                      (currentUserDocument?.friendRequests.toList() ?? [])
+                          .contains(listViewUsersRecord.reference);
+                  final hasPending = isOutgoingPending || isIncomingPending;
+
+                  String actionLabel;
+                  IconData actionIcon;
+                  bool showActionButton;
+
+                  if (isFriend) {
+                    actionLabel = 'Friends';
+                    actionIcon = Icons.people_rounded;
+                    showActionButton = true;
+                  } else if (hasPending) {
+                    actionLabel = isOutgoingPending ? 'Cancel' : 'Pending';
+                    actionIcon = isOutgoingPending
+                        ? Icons.close_rounded
+                        : Icons.pending_rounded;
+                    showActionButton = true;
+                  } else {
+                    actionLabel = 'Add';
+                    actionIcon = Icons.person_add_rounded;
+                    showActionButton = true;
+                  }
+
+                  return PremiumFriendCard(
+                    user: listViewUsersRecord,
+                    currentUser: currentUserDocument,
+                    onViewProfile: () {
+                      context.pushNamed(
+                        'ProfileUser',
+                        extra: <String, dynamic>{
+                          'userRef': listViewUsersRecord.reference,
+                        },
+                      );
+                    },
+                    onMessage: () async {
+                      await _openDirectChat(listViewUsersRecord);
+                    },
+                    onAction: isFriend
+                        ? null
+                        : hasPending
+                            ? (isOutgoingPending
+                                ? () async {
+                                    await _cancelFriendRequest(listViewUsersRecord);
+                                  }
+                                : () async {})
+                            : () async {
+                                await _sendFriendRequest(listViewUsersRecord);
+                              },
+                    actionLabel: actionLabel,
+                    actionIcon: actionIcon,
+                    actionColor:
+                        isOutgoingPending ? AppColors.stone : AppColors.fairway,
+                    showActionButton: showActionButton,
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _cancelFriendRequest(UsersRecord user) async {
+    try {
+      await context.read<UserProvider>().cancelFriendRequest(user.reference);
+      if (mounted) setState(() {});
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Request cancelled.',
+            style: AppTypography.titleMedium.copyWith(
+              color: AppTheme.of(context).primaryBtnText,
+            ),
+          ),
+          duration: const Duration(milliseconds: 1500),
+          backgroundColor: AppTheme.of(context).primary,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      showSnackbar(context, 'Unable to cancel request. Please try again.');
+    }
+  }
+
+  Future<void> _sendFriendRequest(UsersRecord user) async {
+    try {
+      await context.read<UserProvider>().sendFriendRequest(user.reference);
+      addToReqUserList(valueOrDefault<String>(user.uid, '007'));
+      if (mounted) setState(() {});
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Friend request sent!',
+            style: AppTypography.titleMedium.copyWith(
+              color: AppTheme.of(context).primaryBtnText,
+            ),
+          ),
+          duration: const Duration(milliseconds: 1500),
+          backgroundColor: AppTheme.of(context).primary,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      showSnackbar(context, 'Unable to send request. Please try again.');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // REQUESTS VIEW
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildRequestsView() {
+    return KeyedSubtree(
+      key: const ValueKey('requests_view'),
+      child: RefreshIndicator(
+        onRefresh: _refreshRequestsTab,
+        color: AppColors.fairway,
+        backgroundColor: Colors.white,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: AuthUserStreamWidget(
+            builder: (context) {
+              final friendRequestList =
+                  (currentUserDocument?.friendRequests.toList() ?? []).toList();
+
+              // PERFORMANCE FIX: Batch-warm profiles
+              final requestUids =
+                  friendRequestList.map((ref) => ref.id).toSet();
+              if (requestUids.isNotEmpty) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!context.mounted) return;
+                  context.read<ProfileProvider>().warmProfiles(requestUids);
+                });
+              }
+
+              // Filter by search term
+              if (friendRequestList.isEmpty) {
+                return FriendsEmptyState(
+                  key: const ValueKey('empty_requests_state'),
+                  type: FriendsEmptyStateType.noFriendRequests,
+                  onActionPressed: () {
+                    setState(() => _currentSegment = GolferSegment.discover);
+                  },
+                );
+              }
+
+              return ListView.separated(
+                key: ValueKey('requests_list_${friendRequestList.length}'),
+                padding: EdgeInsets.fromLTRB(0, 0, 0, AppSpacing.xxl),
+                primary: false,
+                shrinkWrap: true,
+                itemCount: friendRequestList.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 0),
+                itemBuilder: (context, index) {
+                  final requestRef = friendRequestList[index];
+
+                  return Consumer<ProfileProvider>(
+                    key: ValueKey(requestRef.id),
+                    builder: (context, profileProvider, _) {
+                      final user = profileProvider.getCachedProfile(requestRef.id);
+
+                      if (user == null) {
+                        return const FriendCardSkeleton();
+                      }
+
+                      // Filter by search term
+                      if (!_matchesSearch(user)) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return PremiumFriendCard(
+                        key: ValueKey('request_${user.reference.id}'),
+                        user: user,
+                        currentUser: currentUserDocument,
+                        messageLabel: '+Add',
+                        messageIcon: Icons.person_add_rounded,
+                        onViewProfile: () {
+                          context.pushNamed(
+                            'ProfileUser',
+                            extra: <String, dynamic>{
+                              'userRef': user.reference,
+                            },
+                          );
+                        },
+                        onMessage: () async {
+                          await _acceptFriendRequest(user);
+                        },
+                        onAction: () async {
+                          await _denyFriendRequest(user);
+                        },
+                        actionLabel: 'Deny',
+                        actionIcon: Icons.close_rounded,
+                        actionColor: AppColors.stone,
+                        showActionButton: true,
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _acceptFriendRequest(UsersRecord user) async {
+    try {
+      await context.read<UserProvider>().acceptFriendRequest(user.reference);
+      if (mounted) setState(() {});
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Friend request accepted!',
+            style: AppTypography.titleMedium.copyWith(
+              color: AppTheme.of(context).primaryBtnText,
+            ),
+          ),
+          duration: const Duration(milliseconds: 1500),
+          backgroundColor: AppTheme.of(context).primary,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      showSnackbar(context, 'Unable to accept request. Please try again.');
+    }
+  }
+
+  Future<void> _denyFriendRequest(UsersRecord user) async {
+    try {
+      await context.read<UserProvider>().rejectFriendRequest(user.reference);
+      if (mounted) setState(() {});
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Request denied.',
+            style: AppTypography.titleMedium.copyWith(
+              color: AppTheme.of(context).primaryBtnText,
+            ),
+          ),
+          duration: const Duration(milliseconds: 1500),
+          backgroundColor: AppTheme.of(context).primary,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      showSnackbar(context, 'Unable to deny request. Please try again.');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FRIENDS VIEW
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildFriendsView() {
+    return KeyedSubtree(
+      key: const ValueKey('friends_view'),
+      child: RefreshIndicator(
+        onRefresh: _refreshFriendsTab,
+        color: AppColors.fairway,
+        backgroundColor: Colors.white,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: AuthUserStreamWidget(
+            builder: (context) {
+              final serverFriendsList =
+                  (currentUserDocument?.friends.toList() ?? []).toList();
+
+              // Sync optimistic state with server
+              if (_optimisticFriendsList != null) {
+                final optimisticIds =
+                    _optimisticFriendsList!.map((ref) => ref.id).toSet();
+                final serverIds =
+                    serverFriendsList.map((ref) => ref.id).toSet();
+
+                if (optimisticIds.length == serverIds.length &&
+                    optimisticIds.difference(serverIds).isEmpty) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) {
+                      setState(() => _optimisticFriendsList = null);
+                    }
+                  });
+                }
+              }
+
+              final friendsList = _optimisticFriendsList ?? serverFriendsList;
+
+              if (friendsList.isEmpty) {
+                return FriendsEmptyState(
+                  type: FriendsEmptyStateType.noFriends,
+                  onActionPressed: () {
+                    setState(() => _currentSegment = GolferSegment.discover);
+                  },
+                );
+              }
+
+              return GroupedFriendsList(
+                friendRefs: friendsList,
+                favoriteFriends: favoriteFriends,
+                currentUserHomeCourse: currentUserDocument?.homeCourse,
+                currentUser: currentUserDocument,
+                searchFilter: _searchTerm.isNotEmpty ? _searchTerm : null,
+                onToggleFavorite: toggleFavorite,
+                onViewProfile: (user) {
+                  context.pushNamed(
+                    'ProfileUser',
+                    extra: <String, dynamic>{
+                      'userRef': user.reference,
+                    },
+                  );
+                },
+                onMessage: _openDirectChat,
+                onRemove: (user) async {
+                  await _removeFriend(user);
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
 }
-*/

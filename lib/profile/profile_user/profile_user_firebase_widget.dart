@@ -262,73 +262,6 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     );
   }
 
-  Widget _buildVibeMatchRow() {
-    final result = _vibeMatchResult;
-    final displayScore =
-        result == null ? '--' : '${result.myFitPercent.round()}%';
-    final label = 'Your Fit $displayScore';
-    final canOpenSheet = result != null;
-
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: AppSpacing.md,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: AppSpacing.xs,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-              ),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  label,
-                  style: AppTypography.labelMedium.copyWith(
-                    color: Colors.white,
-                    letterSpacing: AppTypography.letterSpacingNormal,
-                  ),
-                ),
-                if (_isVibeMatchLoading) ...[
-                  const SizedBox(width: AppSpacing.xs),
-                  SizedBox(
-                    width: 12,
-                    height: 12,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(
-                        Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          InkWell(
-            onTap: canOpenSheet ? _openVibePage : null,
-            child: Text(
-              'Why?',
-              style: AppTypography.bodySmall.copyWith(
-                color: canOpenSheet ? Colors.white : AppColors.stone,
-                fontWeight: AppTypography.semiBold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildHeroSection(
     BuildContext context, {
     required String photoUrl,
@@ -450,6 +383,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     required String homeCourse,
     required int friendsCount,
     required bool isSelf,
+    required Map<String, dynamic> data,
   }) {
     final shortCourse = homeCourse.length > 12
         ? '${homeCourse.substring(0, 10)}...'
@@ -490,7 +424,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                     label: 'Friends',
                     gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
                   )
-                : _buildMutualFriendsCard(context),
+                : _buildFriendStatusButton(context, data),
           ),
         ],
         ),
@@ -589,64 +523,224 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     );
   }
 
-  Widget _buildMutualFriendsCard(BuildContext context) {
-    if (!_mutualFriendsLoaded) {
-      return _buildMutualFriendsLoadingCard();
-    }
+  /// Friend status button for hero stats section (public profiles only)
+  /// Wrapped in AuthUserStreamWidget to access current user's friend data
+  Widget _buildFriendStatusButton(
+    BuildContext context,
+    Map<String, dynamic> data,
+  ) {
+    return AuthUserStreamWidget(
+      builder: (context) {
+        final currentUserRef = currentUserReference;
+        final currentFriends = currentUserDocument?.friends.toList() ?? [];
+        final currentRequests =
+            currentUserDocument?.friendRequests.toList() ?? [];
+        final theirRequests = data['friend_requests'];
+        final theirRequestsList =
+            theirRequests is List ? theirRequests : const [];
+        final isFriend = currentFriends.contains(widget.userRef);
+        final hasPending = currentRequests.contains(widget.userRef) ||
+            (currentUserRef != null &&
+                theirRequestsList.contains(currentUserRef));
 
+        IconData icon;
+        String label;
+        List<Color> gradientColors;
+        List<BoxShadow>? boxShadow;
+        VoidCallback? onTap;
+
+        if (isFriend) {
+          // Friends: premium checkmark with green gradient
+          icon = Icons.check_rounded;
+          label = 'FRIENDS';
+          gradientColors = [AppColors.fairwayDark, AppColors.fairway];
+          boxShadow = [
+            BoxShadow(
+              color: AppColors.fairway.withOpacity(0.4),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ];
+        } else if (hasPending) {
+          // Pending: premium hourglass with warm golden gradient
+          icon = Icons.hourglass_top_rounded;
+          label = 'PENDING';
+          gradientColors = [AppColors.sunsetGold, AppColors.sunsetPeach];
+          boxShadow = [
+            BoxShadow(
+              color: AppColors.sunsetGold.withOpacity(0.3),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ];
+        } else {
+          // Add Friend: premium person-add with warm accent gradient
+          icon = Icons.person_add_alt_1_rounded;
+          label = 'ADD';
+          gradientColors = [AppColors.sunsetGold, AppColors.sunsetPeach];
+          boxShadow = [
+            BoxShadow(
+              color: AppColors.sunsetGold.withOpacity(0.4),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ];
+          onTap = () async {
+            HapticFeedback.lightImpact();
+            try {
+              await context
+                  .read<UserProvider>()
+                  .sendFriendRequest(widget.userRef);
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Friend request sent!',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                  duration: Duration(milliseconds: 1500),
+                  backgroundColor: AppColors.fairwayDark,
+                ),
+              );
+            } catch (error) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Unable to send request.',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                  backgroundColor: AppColors.error,
+                ),
+              );
+            }
+          };
+        }
+
+        return GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              vertical: AppSpacing.md,
+              horizontal: AppSpacing.xs,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.fairway.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: gradientColors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: boxShadow,
+                  ),
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.xs),
+                Text(
+                  label,
+                  style: AppTypography.labelSmall.copyWith(
+                    color: Colors.white.withOpacity(0.8),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 10,
+                    letterSpacing: 0.5,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Mutual friends action card for quick actions row (bottom sheet area)
+  Widget _buildMutualFriendsActionCard(BuildContext context) {
     final friends = _mutualFriends;
+    final hasAvatars = _mutualFriendsLoaded && friends.isNotEmpty;
+    final label = !_mutualFriendsLoaded
+        ? 'Mutual Friends'
+        : friends.isEmpty
+            ? 'Mutual Friends'
+            : friends.length > 3
+                ? '${friends.length} Mutual'
+                : '${friends.length} Mutual';
 
-    if (friends.isEmpty) {
-      return _buildStatCard(
-        context,
-        icon: FontAwesomeIcons.userGroup,
-        value: 'No Mutual',
-        label: 'Friends',
-        gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
-        isText: true,
-      );
-    }
-
-    final displayCount =
-        friends.length > 3 ? '3+ Mutual' : '${friends.length} Mutual';
-    final avatarsToShow = friends.take(3).toList();
-
+    // Always use premium green gradient - never grey
     return GestureDetector(
-      onTap: () => _showMutualFriendsSheet(context),
+      onTap: hasAvatars ? () => _showMutualFriendsSheet(context) : null,
       child: Container(
-        padding: EdgeInsets.symmetric(
-          vertical: AppSpacing.md,
-          horizontal: AppSpacing.xs,
-        ),
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.fairway.withOpacity(0.3),
+          color: AppColors.sand,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: AppColors.cloud,
           ),
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildOverlappingAvatars(avatarsToShow),
+            if (hasAvatars)
+              _buildOverlappingAvatarsLight(friends.take(3).toList())
+            else
+              // Premium green gradient icon when no avatars
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.fairwayLight, AppColors.fairway],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.fairway.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.people_alt_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
             SizedBox(height: AppSpacing.xs),
             Text(
-              displayCount,
-              style: AppTypography.labelSmall.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
+              label,
+              style: AppTypography.labelMedium.copyWith(
+                color: AppColors.slate,
+                fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: AppSpacing.xxs),
-            Text(
-              'Friends',
-              style: AppTypography.labelSmall.copyWith(
-                color: Colors.white.withOpacity(0.6),
-              ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -654,55 +748,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     );
   }
 
-  Widget _buildMutualFriendsLoadingCard() {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        vertical: AppSpacing.md,
-        horizontal: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.fairway.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          SizedBox(height: AppSpacing.xs),
-          Container(
-            width: 60,
-            height: 12,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-          SizedBox(height: AppSpacing.xxs),
-          Container(
-            width: 40,
-            height: 10,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.10),
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOverlappingAvatars(List<UsersRecord> friends) {
-    const avatarSize = 22.0;
-    const overlap = 8.0;
+  /// Light-themed overlapping avatars for bottom sheet quick actions area
+  Widget _buildOverlappingAvatarsLight(List<UsersRecord> friends) {
+    const avatarSize = 28.0;
+    const overlap = 10.0;
     final count = friends.length.clamp(1, 3);
     final totalWidth = avatarSize + (count - 1) * (avatarSize - overlap);
 
@@ -719,8 +768,15 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               height: avatarSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 1.5),
-                color: AppColors.fairway,
+                border: Border.all(color: AppColors.sand, width: 2),
+                color: AppColors.fairway.withOpacity(0.15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
               child: ClipOval(
                 child: friend.photoUrl.isNotEmpty
@@ -729,14 +785,14 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Icon(
                           Icons.person,
-                          size: 12,
-                          color: Colors.white,
+                          size: 14,
+                          color: AppColors.fairway,
                         ),
                       )
                     : Icon(
                         Icons.person,
-                        size: 12,
-                        color: Colors.white,
+                        size: 14,
+                        color: AppColors.fairway,
                       ),
               ),
             ),
@@ -751,133 +807,53 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     Map<String, dynamic> data, {
     required bool showVibeMatch,
   }) {
+    // Quick actions: Message | Golf Vibes | Mutual Friends
+    // (Friend status has moved to hero stats section)
+    final result = showVibeMatch ? _vibeMatchResult : null;
+    final vibeScore = result == null ? null : result.myFitPercent.round();
+    final vibeLabel =
+        vibeScore == null ? 'Golf Vibes' : 'Your Fit $vibeScore%';
+    final canOpenVibe = vibeScore != null;
+
+    final cards = <Widget>[
+      if (currentUserReference?.path != widget.userRef.path)
+        Expanded(
+          child: _buildQuickActionCard(
+            context,
+            icon: Icons.chat_bubble_outline_rounded,
+            label: 'Message',
+            gradient: [AppColors.fairwayLight, AppColors.fairway],
+            onTap: () => _openChatWithUser(widget.userRef),
+          ),
+        ),
+      if (showVibeMatch)
+        Expanded(
+          child: _buildQuickActionCard(
+            context,
+            icon: Icons.auto_awesome_rounded,
+            label: vibeLabel,
+            gradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
+            onTap: canOpenVibe ? _openVibePage : null,
+            isDisabled: !canOpenVibe,
+          ),
+        ),
+      if (currentUserReference?.path != widget.userRef.path)
+        Expanded(
+          child: _buildMutualFriendsActionCard(context),
+        ),
+    ];
+
+    final spacedCards = <Widget>[];
+    for (var i = 0; i < cards.length; i++) {
+      if (i > 0) {
+        spacedCards.add(SizedBox(width: AppSpacing.sm));
+      }
+      spacedCards.add(cards[i]);
+    }
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: AuthUserStreamWidget(
-        builder: (context) {
-          final currentUserRef = currentUserReference;
-          final currentFriends = currentUserDocument?.friends.toList() ?? [];
-          final currentRequests =
-              currentUserDocument?.friendRequests.toList() ?? [];
-          final theirRequests = data['friend_requests'];
-          final theirRequestsList =
-              theirRequests is List ? theirRequests : const [];
-          final isFriend = currentFriends.contains(widget.userRef);
-          final hasPending = currentRequests.contains(widget.userRef) ||
-              (currentUserRef != null &&
-                  theirRequestsList.contains(currentUserRef));
-
-          String friendLabel;
-          IconData friendIcon;
-          List<Color> friendGradient;
-          VoidCallback? friendAction;
-          bool friendDisabled = false;
-
-          if (isFriend) {
-            friendLabel = 'Friends';
-            friendIcon = FontAwesomeIcons.userCheck;
-            friendGradient = [AppColors.fairwayLight, AppColors.fairway];
-          } else if (hasPending) {
-            friendLabel = 'Pending';
-            friendIcon = FontAwesomeIcons.clock;
-            friendGradient = [AppColors.cloud, AppColors.cloud];
-            friendDisabled = true;
-          } else {
-            friendLabel = 'Add Friend';
-            friendIcon = FontAwesomeIcons.userPlus;
-            friendGradient = [AppColors.sunsetGold, AppColors.sunsetPeach];
-            friendAction = () async {
-              HapticFeedback.lightImpact();
-              try {
-                await context
-                    .read<UserProvider>()
-                    .sendFriendRequest(widget.userRef);
-                if (!mounted) {
-                  return;
-                }
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Friend request sent!',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                    duration: Duration(milliseconds: 1500),
-                    backgroundColor: AppColors.fairwayDark,
-                  ),
-                );
-              } catch (error) {
-                if (!mounted) {
-                  return;
-                }
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Unable to send request.',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                    backgroundColor: AppColors.error,
-                  ),
-                );
-              }
-            };
-          }
-
-          final result = showVibeMatch ? _vibeMatchResult : null;
-          final vibeScore = result == null ? null : result.myFitPercent.round();
-          final vibeLabel =
-              vibeScore == null ? 'Your Fit' : 'Your Fit $vibeScore%';
-          final canOpenVibe = vibeScore != null;
-
-          final cards = <Widget>[
-            if (currentUserReference?.path != widget.userRef.path)
-              Expanded(
-                child: _buildQuickActionCard(
-                  context,
-                  icon: Icons.chat_bubble_outline_rounded,
-                  label: 'Message',
-                  gradient: [AppColors.fairwayLight, AppColors.fairway],
-                  onTap: () => _openChatWithUser(widget.userRef),
-                ),
-              ),
-            if (showVibeMatch)
-              Expanded(
-                child: _buildQuickActionCard(
-                  context,
-                  icon: Icons.auto_awesome_rounded,
-                  label: vibeLabel,
-                  gradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                  onTap: canOpenVibe ? _openVibePage : null,
-                  isDisabled: !canOpenVibe,
-                ),
-              ),
-            if (currentUserReference?.path != widget.userRef.path)
-              Expanded(
-                child: _buildQuickActionCard(
-                  context,
-                  icon: friendIcon,
-                  label: friendLabel,
-                  gradient: friendGradient,
-                  onTap: friendAction,
-                  isDisabled: friendDisabled,
-                ),
-              ),
-          ];
-
-          final spacedCards = <Widget>[];
-          for (var i = 0; i < cards.length; i++) {
-            if (i > 0) {
-              spacedCards.add(SizedBox(width: AppSpacing.sm));
-            }
-            spacedCards.add(cards[i]);
-          }
-
-          return Row(children: spacedCards);
-        },
-      ),
+      child: Row(children: spacedCards),
     );
   }
 
@@ -1170,6 +1146,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                         homeCourse: homeCourse,
                         friendsCount: friendsCount,
                         isSelf: isSelf,
+                        data: data,
                       ),
                       SizedBox(height: AppSpacing.xl),
                       Container(

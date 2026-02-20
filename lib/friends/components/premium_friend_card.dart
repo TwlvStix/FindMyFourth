@@ -5,13 +5,19 @@ import '/core/motion/reduced_motion.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
-import '/core/design_tokens/typography.dart';
 import '/services/vibe_matcher.dart';
 import '/models/vibe_profile.dart';
 
-/// Redesigned premium friend card with high contrast, clear hierarchy, and compact horizontal actions
-/// Optimized for readability and efficient space usage
+/// Redesigned premium friend card matching LuxuryPlayerCard design language:
+/// - Dark fairway surface (AppColors.fairway @ 30% alpha)
+/// - Rounded-square avatars (52×52, radius 14)
+/// - Manrope typography with cream/gold color tokens
+/// - 20px border radius, consistent padding (20h × 18v)
 class PremiumFriendCard extends StatefulWidget {
+  // LuxuryPlayerCard design tokens
+  static const Color textPrimary = Color(0xFFF0ECE4);
+  static const Color textMuted = Color(0x80F0ECE4);
+  static const Color goldAccent = Color(0xFFD4A843);
   final UsersRecord user;
   final VoidCallback? onViewProfile;
   final VoidCallback? onMessage;
@@ -122,35 +128,24 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
         child: Container(
           margin: EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
+            vertical: AppSpacing.xs,
           ),
           decoration: BoxDecoration(
-            // Dark green tinted background - matches "My Games" cards
             color: AppColors.fairway.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: _isPressed
-                  ? Colors.white.withValues(alpha: 0.2)
-                  : Colors.white.withValues(alpha: 0.1),
-              width: 1.0,
+                  ? AppColors.fairwayLight.withValues(alpha: 0.4)
+                  : AppColors.fairwayLight.withValues(alpha: 0.3),
+              width: 1,
             ),
-            boxShadow: widget.isOnline
-                ? [
-                    // Subtle glow for online users
-                    BoxShadow(
-                      color: AppColors.sunsetGold.withValues(alpha: 0.15),
-                      blurRadius: 20,
-                      offset: Offset(0, 4),
-                    ),
-                  ]
-                : null,
           ),
           child: Column(
             children: [
 
               // Main content with responsive layout
               Padding(
-                padding: EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     return Row(
@@ -182,108 +177,41 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   }
 
   Widget _buildAvatar() {
-    return Stack(
-      children: [
-        // Outer glow for online users
-        if (widget.isOnline)
-          Container(
-            width: 68,
-            height: 68,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.fairway.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-          ),
-
-        // Avatar ring
-        Container(
-          width: 68,
-          height: 68,
-          padding: EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: widget.isOnline
-                ? LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.fairway,
-                      AppColors.fairwayLight,
-                    ],
-                  )
-                : null,
-            color: widget.isOnline ? null : AppColors.cloud.withValues(alpha: 0.5),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-            ),
-            child: ClipOval(
-              child: widget.user.photoUrl.isNotEmpty
-                  ? Image.network(
-                      widget.user.photoUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          _buildAvatarFallback(),
-                    )
-                  : _buildAvatarFallback(),
-            ),
-          ),
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        color: AppColors.fairwayLight.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 1.5,
         ),
-
-        // Online indicator
-        if (widget.isOnline)
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.fairway.withValues(alpha: 0.3),
-                    blurRadius: 4,
-                    spreadRadius: 1,
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.fairway,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12.5),
+        child: widget.user.photoUrl.isNotEmpty
+            ? Image.network(
+                widget.user.photoUrl,
+                width: 52,
+                height: 52,
+                cacheWidth: 156,
+                cacheHeight: 156,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildAvatarFallback(),
+              )
+            : _buildAvatarFallback(),
+      ),
     );
   }
 
   Widget _buildAvatarFallback() {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.fairwayLight, AppColors.fairway],
-        ),
-      ),
-      child: Icon(
+      color: Colors.white.withValues(alpha: 0.04),
+      child: const Icon(
         Icons.person_rounded,
-        size: 24,
-        color: Colors.white,
+        color: PremiumFriendCard.textMuted,
+        size: 26,
       ),
     );
   }
@@ -297,23 +225,23 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // NAME - Hero element (LARGEST, highest contrast, NO truncation)
+        // NAME - Hero element with cream color
         Text(
           displayName,
-          style: AppTypography.headlineSmall.copyWith(
-            fontWeight: FontWeight.w800,
-            fontSize: 20,
-            color: Colors.white,
-            height: 1.1,
-            letterSpacing: -0.3,
+          style: const TextStyle(
+            fontFamily: 'Manrope',
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: PremiumFriendCard.textPrimary,
+            letterSpacing: 0.2,
           ),
           maxLines: 1,
-          overflow: TextOverflow.visible, // NO ellipsis - name always visible
+          overflow: TextOverflow.ellipsis,
         ),
 
-        SizedBox(height: 6),
+        const SizedBox(height: 3),
 
-        // Secondary badges row: vibe % + handicap (minimal, compact)
+        // Secondary badges row: vibe % + handicap
         Wrap(
           spacing: 6,
           runSpacing: 4,
@@ -333,24 +261,14 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     final score = _vibeMatch!.finalScorePercent.round();
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.fairway,
-            AppColors.fairwayLight,
-          ],
+        color: PremiumFriendCard.goldAccent.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: PremiumFriendCard.goldAccent.withValues(alpha: 0.3),
+          width: 1,
         ),
-        borderRadius: BorderRadius.circular(999),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.fairway.withValues(alpha: 0.3),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -358,17 +276,17 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
           Icon(
             Icons.favorite,
             size: 10,
-            color: Colors.white,
+            color: PremiumFriendCard.goldAccent,
           ),
-          SizedBox(width: 4),
+          const SizedBox(width: 4),
           Text(
             '$score%',
-            style: AppTypography.labelSmall.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
+            style: const TextStyle(
+              fontFamily: 'Manrope',
               fontSize: 11,
-              height: 1,
-              letterSpacing: 0.3,
+              fontWeight: FontWeight.w600,
+              color: PremiumFriendCard.goldAccent,
+              letterSpacing: 0.2,
             ),
           ),
         ],
@@ -378,188 +296,59 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
 
   Widget _buildHandicapBadge(int handicap) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.sunsetGold,
-            AppColors.sunsetPeach,
-          ],
-        ),
+        color: AppColors.sunsetGold,
         borderRadius: BorderRadius.circular(6),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.sunsetGold.withValues(alpha: 0.35),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            handicap < 0 ? '+${handicap.abs()}' : '$handicap',
-            style: AppTypography.labelSmall.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-              fontSize: 11,
-              height: 1,
-            ),
-          ),
-        ],
+      child: Text(
+        handicap < 0 ? '+${handicap.abs()}' : '$handicap',
+        style: const TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF1A2B1A),
+          letterSpacing: 0.2,
+        ),
       ),
     );
   }
 
   Widget _buildResponsiveActions(double availableWidth) {
-    // Determine if we have space for full buttons or need icon-only
-    // Account for: avatar (68) + spacing (16) + min name space (120) + spacing (12)
-    final usedSpace = 68 + 16 + 120 + 12;
-    final remainingSpace = availableWidth - usedSpace;
-    final useIconOnly = remainingSpace < 140; // Need ~140px for two full buttons
-
+    // Always use icon-only buttons for compact design
     final actions = <Widget>[];
 
     // Message button (primary)
     if (widget.onMessage != null) {
       actions.add(
-        useIconOnly
-            ? _buildIconOnlyButton(
-                icon: widget.messageIcon,
-                onPressed: widget.onMessage!,
-                isPrimary: true,
-                color: AppColors.fairway,
-                tooltip: widget.messageLabel,
-              )
-            : _buildActionButton(
-                label: widget.messageLabel,
-                icon: widget.messageIcon,
-                onPressed: widget.onMessage!,
-                isPrimary: true,
-                color: AppColors.fairway,
-              ),
+        _buildIconOnlyButton(
+          icon: widget.messageIcon,
+          onPressed: widget.onMessage!,
+          isPrimary: true,
+          tooltip: widget.messageLabel,
+        ),
       );
     }
 
     // Action button (secondary)
     if (widget.showActionButton) {
       actions.add(
-        useIconOnly
-            ? _buildIconOnlyButton(
-                icon: widget.actionIcon,
-                onPressed: widget.onAction,
-                isPrimary: false,
-                color: widget.actionColor,
-                isLoading: widget.isLoading,
-                tooltip: widget.actionLabel,
-              )
-            : _buildActionButton(
-                label: widget.actionLabel,
-                icon: widget.actionIcon,
-                onPressed: widget.onAction,
-                isPrimary: false,
-                color: widget.actionColor,
-                isLoading: widget.isLoading,
-              ),
+        _buildIconOnlyButton(
+          icon: widget.actionIcon,
+          onPressed: widget.onAction,
+          isPrimary: false,
+          isLoading: widget.isLoading,
+          tooltip: widget.actionLabel,
+        ),
       );
     }
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: actions
-          .expand((widget) => [widget, SizedBox(width: AppSpacing.xs)])
+          .expand((widget) => [widget, const SizedBox(width: 8)])
           .toList()
         ..removeLast(), // Remove last spacer
-    );
-  }
-
-  Widget _buildActionButton({
-    required String label,
-    required IconData icon,
-    required VoidCallback? onPressed,
-    required bool isPrimary,
-    required Color color,
-    bool isLoading = false,
-  }) {
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        gradient: isPrimary
-            ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [color, color.withValues(alpha: 0.85)],
-              )
-            : null,
-        color: isPrimary ? null : Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(10),
-        border: isPrimary
-            ? null
-            : Border.all(
-                color: Colors.white.withValues(alpha: 0.5),
-                width: 1.5,
-              ),
-        boxShadow: isPrimary
-            ? [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ]
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
-                ),
-              ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(10),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isLoading)
-                  SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.white,
-                      ),
-                    ),
-                  )
-                else
-                  Icon(
-                    icon,
-                    size: 16,
-                    color: Colors.white,
-                  ),
-                SizedBox(width: 6),
-                Text(
-                  label,
-                  style: AppTypography.labelSmall.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -567,7 +356,6 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     required IconData icon,
     required VoidCallback? onPressed,
     required bool isPrimary,
-    required Color color,
     bool isLoading = false,
     String? tooltip,
   }) {
@@ -575,36 +363,16 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        gradient: isPrimary
-            ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [color, color.withValues(alpha: 0.85)],
-              )
-            : null,
-        color: isPrimary ? null : Colors.white.withValues(alpha: 0.15),
+        color: isPrimary
+            ? AppColors.fairwayDark
+            : Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: isPrimary
-            ? null
-            : Border.all(
-                color: Colors.white.withValues(alpha: 0.5),
-                width: 1.5,
-              ),
-        boxShadow: isPrimary
-            ? [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ]
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
-                ),
-              ],
+        border: Border.all(
+          color: isPrimary
+              ? AppColors.fairwayLight.withValues(alpha: 0.3)
+              : Colors.white.withValues(alpha: 0.15),
+          width: 1,
+        ),
       ),
       child: Material(
         color: Colors.transparent,
@@ -619,14 +387,14 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.white,
+                        PremiumFriendCard.textPrimary,
                       ),
                     ),
                   )
                 : Icon(
                     icon,
                     size: 20,
-                    color: Colors.white,
+                    color: PremiumFriendCard.textPrimary,
                   ),
           ),
         ),

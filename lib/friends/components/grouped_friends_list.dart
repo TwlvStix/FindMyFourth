@@ -16,6 +16,7 @@ class GroupedFriendsList extends StatefulWidget {
   final Set<String> favoriteFriends;
   final String? currentUserHomeCourse;
   final UsersRecord? currentUser; // For vibe matching
+  final String? searchFilter; // Optional search filter
   final Function(String) onToggleFavorite;
   final Function(UsersRecord) onViewProfile;
   final Function(UsersRecord) onMessage;
@@ -27,6 +28,7 @@ class GroupedFriendsList extends StatefulWidget {
     required this.favoriteFriends,
     this.currentUserHomeCourse,
     this.currentUser,
+    this.searchFilter,
     required this.onToggleFavorite,
     required this.onViewProfile,
     required this.onMessage,
@@ -86,7 +88,7 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
     return Consumer<ProfileProvider>(
       builder: (context, profileProvider, _) {
         // Read all friends from cache
-        final allFriends = widget.friendRefs
+        var allFriends = widget.friendRefs
             .map((ref) => profileProvider.getCachedProfile(ref.id))
             .whereType<UsersRecord>()
             .toList();
@@ -99,6 +101,16 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
               size: 50.0,
             ),
           );
+        }
+
+        // Apply search filter if provided
+        if (widget.searchFilter != null && widget.searchFilter!.isNotEmpty) {
+          final searchTerm = widget.searchFilter!.toLowerCase();
+          allFriends = allFriends.where((user) {
+            return user.displayName.toLowerCase().contains(searchTerm) ||
+                user.firstName.toLowerCase().contains(searchTerm) ||
+                user.lastName.toLowerCase().contains(searchTerm);
+          }).toList();
         }
 
         // Group friends

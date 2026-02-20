@@ -36,7 +36,8 @@ class TrustProfileSection extends StatelessWidget {
         children: [
           _buildSectionHeader(),
           SizedBox(height: AppSpacing.md),
-          _buildStatsGrid(),
+          // Unified trust card (badge + progress bar + stats)
+          _buildUnifiedTrustCard(),
           if (user.showUpRate != null) ...[
             SizedBox(height: AppSpacing.sm),
             _buildShowUpRateRow(),
@@ -89,8 +90,14 @@ class TrustProfileSection extends StatelessWidget {
 
   // ── Badge row ───────────────────────────────────────────────────────────
 
-  Widget _buildBadgeRow() {
+  /// Badge row for use inside the unified card (no external container decoration)
+  /// Includes joined year on the right side
+  Widget _buildBadgeRowUnified() {
     final info = _badgeInfo(user.badgeLevel);
+    final joinYear = user.createdTime != null
+        ? '${user.createdTime!.year}'
+        : '—';
+
     return Container(
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -99,18 +106,10 @@ class TrustProfileSection extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.14),
-          width: 1,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: info.gradientStart.withOpacity(0.45),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Stack(
         children: [
@@ -118,7 +117,10 @@ class TrustProfileSection extends StatelessWidget {
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
                 gradient: LinearGradient(
                   colors: [
                     Colors.white.withOpacity(0.12),
@@ -168,6 +170,40 @@ class TrustProfileSection extends StatelessWidget {
                   ],
                 ),
               ),
+              // Joined year badge on the right
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.2),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      joinYear,
+                      style: AppTypography.titleSmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      'JOINED',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 9,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ],
@@ -175,134 +211,127 @@ class TrustProfileSection extends StatelessWidget {
     );
   }
 
-  // ── Stats grid ──────────────────────────────────────────────────────────
+  // ── Unified Trust Card (badge + progress + stats) ──────────────────────
 
-  Widget _buildStatsGrid() {
-    final joinYear = user.createdTime != null
-        ? '${user.createdTime!.year}'
-        : '—';
+  Widget _buildUnifiedTrustCard() {
+    final isNewMember = user.badgeLevel == 'new' || user.badgeLevel.isEmpty;
 
-    return Column(
-      children: [
-        // Row 1: Badge card (2/3) + Joined tile (1/3)
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                flex: 2,
-                child: _buildBadgeRow(),
-              ),
-              SizedBox(width: AppSpacing.xs),
-              Expanded(
-                flex: 1,
-                child: _buildStatTile(
-                  icon: Icons.calendar_today_outlined,
-                  iconGradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
-                  value: joinYear,
-                  label: 'Joined',
-                  isText: true,
-                ),
-              ),
-            ],
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.pure,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.cloud),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: Offset(0, 2),
           ),
-        ),
-        SizedBox(height: AppSpacing.xs),
-        // Row 2: Rounds, Co-Players, Hosted
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatTile(
-                icon: Icons.check_circle_outline_rounded,
-                iconGradient: [AppColors.success, AppColors.fairwayLight],
-                value: '${user.verifiedRoundCount}',
-                label: 'Rounds',
-              ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Badge bar (full width, gradient background, rounded top corners, includes joined year)
+          _buildBadgeRowUnified(),
+          // Progress bar (only for new members)
+          if (isNewMember) _buildJourneyProgressBar(),
+          // Stats grid (Rounds, Co-Players, Hosted)
+          Padding(
+            padding: EdgeInsets.all(AppSpacing.sm),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildStatTileCompact(
+                    icon: Icons.check_circle_outline_rounded,
+                    iconGradient: [AppColors.success, AppColors.fairwayLight],
+                    value: '${user.verifiedRoundCount}',
+                    label: 'ROUNDS',
+                  ),
+                ),
+                SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: _buildStatTileCompact(
+                    icon: Icons.group_outlined,
+                    iconGradient: [AppColors.fairwayLight, AppColors.fairway],
+                    value: '${user.uniqueCoPlayers.length}',
+                    label: 'CO-PLAYERS',
+                  ),
+                ),
+                SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: _buildStatTileCompact(
+                    icon: Icons.sports_golf_outlined,
+                    iconGradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                    value: '${user.gamesHosted}',
+                    label: 'HOSTED',
+                  ),
+                ),
+              ],
             ),
-            SizedBox(width: AppSpacing.xs),
-            Expanded(
-              child: _buildStatTile(
-                icon: Icons.group_outlined,
-                iconGradient: [AppColors.fairwayLight, AppColors.fairway],
-                value: '${user.uniqueCoPlayers.length}',
-                label: 'Co-Players',
-              ),
-            ),
-            SizedBox(width: AppSpacing.xs),
-            Expanded(
-              child: _buildStatTile(
-                icon: Icons.sports_golf_outlined,
-                iconGradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                value: '${user.gamesHosted}',
-                label: 'Hosted',
-              ),
-            ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildStatTile({
+  /// Compact stat tile for use inside unified card
+  Widget _buildStatTileCompact({
     required IconData icon,
     required List<Color> iconGradient,
     required String value,
     required String label,
     bool isText = false,
   }) {
+    // Show em dash for zero values (premium empty state)
+    final isZero = value == '0';
+    final displayValue = isZero ? '—' : value;
+
     return Container(
       padding: EdgeInsets.symmetric(
-        vertical: AppSpacing.md,
-        horizontal: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.sand,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.cloud),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
+        vertical: AppSpacing.sm,
+        horizontal: AppSpacing.xxs,
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.max,
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: iconGradient,
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
                   color: iconGradient[0].withOpacity(0.25),
-                  blurRadius: 8,
-                  offset: Offset(0, 3),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
                 ),
               ],
             ),
-            child: Icon(icon, color: Colors.white, size: 18),
+            child: Icon(icon, color: Colors.white, size: 16),
           ),
           SizedBox(height: AppSpacing.xs),
           Text(
-            value,
+            displayValue,
             style: isText
                 ? AppTypography.labelSmall.copyWith(
                     color: AppColors.onyx,
                     fontWeight: FontWeight.w600,
                   )
-                : AppTypography.monoLarge.copyWith(
-                    color: AppColors.onyx,
-                    fontWeight: FontWeight.w700,
-                  ),
+                : isZero
+                    ? AppTypography.monoMedium.copyWith(
+                        color: AppColors.stone,
+                        fontWeight: FontWeight.w300,
+                      )
+                    : AppTypography.monoMedium.copyWith(
+                        color: AppColors.onyx,
+                        fontWeight: FontWeight.w700,
+                      ),
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -312,6 +341,7 @@ class TrustProfileSection extends StatelessWidget {
             label,
             style: AppTypography.labelSmall.copyWith(
               color: AppColors.stone,
+              fontSize: 10,
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
@@ -515,6 +545,136 @@ class TrustProfileSection extends StatelessWidget {
     );
   }
 
+  // ── Journey progress bar (new members only) ─────────────────────────────
+
+  Widget _buildJourneyProgressBar() {
+    // Calculate progress based on verified rounds (0 = 8%, 5 = 50%, 10+ = 100%)
+    final rounds = user.verifiedRoundCount;
+    final progress = rounds <= 0
+        ? 0.08
+        : rounds >= 10
+            ? 1.0
+            : 0.08 + (rounds / 10) * 0.92;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      child: Column(
+        children: [
+          // Track bar with nodes
+          SizedBox(
+            height: 16,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Background track
+                Positioned(
+                  left: 6,
+                  right: 6,
+                  child: Container(
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.cloud,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                // Progress fill
+                Positioned(
+                  left: 6,
+                  right: 6,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          width: constraints.maxWidth * progress,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [AppColors.fairway, AppColors.fairwayLight],
+                            ),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                // Nodes
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // First Tee node (always active)
+                    _buildProgressNode(isActive: true),
+                    // 5 Rounds node
+                    _buildProgressNode(isActive: rounds >= 5),
+                    // Trusted node
+                    _buildProgressNode(isActive: rounds >= 10),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: AppSpacing.sm),
+          // Milestone labels
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'First Tee',
+                style: AppTypography.labelSmall.copyWith(
+                  color: AppColors.fairway,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                '5 Rounds',
+                style: AppTypography.labelSmall.copyWith(
+                  color: rounds >= 5 ? AppColors.fairway : AppColors.stone,
+                  fontWeight: rounds >= 5 ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+              Text(
+                'Trusted',
+                style: AppTypography.labelSmall.copyWith(
+                  color: rounds >= 10 ? AppColors.fairway : AppColors.stone,
+                  fontWeight: rounds >= 10 ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressNode({required bool isActive}) {
+    return Container(
+      width: isActive ? 12 : 10,
+      height: isActive ? 12 : 10,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isActive ? AppColors.fairway : AppColors.cloud,
+        border: Border.all(
+          color: isActive ? Colors.white : AppColors.cloud,
+          width: isActive ? 2 : 1,
+        ),
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: AppColors.fairway.withOpacity(0.4),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ]
+            : null,
+      ),
+    );
+  }
+
   // ── Badge metadata ──────────────────────────────────────────────────────
 
   ({
@@ -560,8 +720,8 @@ class TrustProfileSection extends StatelessWidget {
       case 'new':
       default:
         return (
-          label: 'New Member',
-          description: 'Just getting started',
+          label: 'First Tee',
+          description: 'Your story begins here',
           icon: Icons.golf_course_rounded,
           gradientStart: AppColors.sunsetPeach,
           gradientEnd: AppColors.sunsetRose,
