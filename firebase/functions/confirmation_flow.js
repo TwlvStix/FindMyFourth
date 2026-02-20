@@ -36,6 +36,10 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const trustProfile = require("./trust_profile");
+const { routeNotification } = require('./notifications/trust/router');
+const { onGameConfirmed, onHostCheckinCompleted } = require('./notifications/trust/hooks');
+const { randomUUID } = require('crypto');
+const { CloudTasksClient } = require('@google-cloud/tasks');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -45,6 +49,10 @@ const HOST_NOTIFY_OFFSET_MS = 5 * 60 * 60 * 1000;        // 5 hours
 const PEER_NOTIFY_OFFSET_MS = 30 * 60 * 1000;            // 30 min after host confirms
 const REMINDER_OFFSET_MS = 24 * 60 * 60 * 1000;          // 24 hours
 const CLOSE_OFFSET_MS = 48 * 60 * 60 * 1000;             // 48 hours
+
+const PROJECT = process.env.GCLOUD_PROJECT || 'find-my-fourth';
+const LOCATION = 'us-west2';
+const QUEUE_NAME = 'trust-notification-scheduler';
 
 /** Vibe categories used for server-side pair scoring at join time. */
 const VIBE_CATEGORIES = ["drinking", "music", "pace", "money", "chat", "competitive"];
@@ -208,6 +216,160 @@ const onGameParticipantJoin = functions
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// GAME STATUS TRANSITION — onGameStatusToFilled
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Raw handler for onGameStatusToFilled.
+ * Schedules a Cloud Task at tee time to transition the game to 'played'.
+ *
+ * NOTE: This trigger fires on EVERY games/{gameId} update. It guards with
+ * status checks so it only runs when a game transitions TO 'filled'.
+ */
+async function _onGameStatusToFilledHandler(change, context, db) {
+  const before = change.before.data();
+  const after = change.after.data();
+
+  // Only fire on transition TO 'filled'
+  if (after.status !== 'filled' || before.status === 'filled') return;
+
+  // Don't schedule if cancelled
+  if (after.isCancelled === true) return;
+
+  const gameId = context.params.gameId;
+  const teeTimeTs = after.date;
+
+  if (!teeTimeTs || typeof teeTimeTs.toMillis !== 'function') {
+    console.warn(`onGameStatusToFilled: game ${gameId} has no valid tee time, skipping`);
+    return;
+  }
+
+  const teeTimeMs = teeTimeTs.toMillis();
+
+  // If tee time is already in the past, flip immediately
+  if (teeTimeMs <= Date.now()) {
+    await change.after.ref.update({ status: 'played' });
+    console.log(`onGameStatusToFilled: game ${gameId} tee time already passed, flipped to played immediately`);
+    return;
+  }
+
+  // Schedule Cloud Task at tee time
+  try {
+    const taskName = await _scheduleCloudTask(
+      'processScheduledGameStatusChange',
+      { gameId },
+      new Date(teeTimeMs)
+    );
+    console.log(`onGameStatusToFilled: scheduled status change for game ${gameId} at tee time (task: ${taskName})`);
+  } catch (err) {
+    console.error(`onGameStatusToFilled: failed to schedule task for game ${gameId}:`, err);
+    // Fallback: the game will stay 'filled' until manually handled or a future mechanism catches it
+  }
+}
+
+const onGameStatusToFilled = functions
+  .region('us-west2')
+  .firestore.document('games/{gameId}')
+  .onUpdate(async (change, context) => {
+    return _onGameStatusToFilledHandler(change, context, admin.firestore());
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HTTP HANDLER — processScheduledGameStatusChange
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * HTTP handler: processScheduledGameStatusChange
+ * Called by Cloud Tasks at tee time to transition a game from 'filled' to 'played'.
+ */
+async function _processScheduledGameStatusChangeHandler(req, res, db = null) {
+  if (!db) db = admin.firestore();
+  const { gameId } = req.body;
+
+  if (!gameId) {
+    return res.status(400).send('Missing gameId');
+  }
+
+  try {
+    const gameRef = db.collection('games').doc(gameId);
+    const gameSnap = await gameRef.get();
+
+    if (!gameSnap.exists) {
+      console.warn(`processScheduledGameStatusChange: game ${gameId} not found`);
+      return res.status(200).send('NOT_FOUND');
+    }
+
+    const gameData = gameSnap.data();
+
+    // Only flip if still 'filled' and not cancelled
+    if (gameData.status !== 'filled') {
+      console.log(`processScheduledGameStatusChange: game ${gameId} is ${gameData.status}, not filled — skipping`);
+      return res.status(200).send('SKIPPED');
+    }
+
+    if (gameData.isCancelled === true) {
+      console.log(`processScheduledGameStatusChange: game ${gameId} is cancelled — skipping`);
+      return res.status(200).send('CANCELLED');
+    }
+
+    await gameRef.update({ status: 'played' });
+    console.log(`processScheduledGameStatusChange: flipped game ${gameId} to played`);
+
+    // This triggers onGameStatusToPlayed, which creates round_jobs/round_records
+    // and calls onGameConfirmed for notification scheduling
+
+    return res.status(200).send('OK');
+  } catch (err) {
+    console.error(`processScheduledGameStatusChange: error for game ${gameId}:`, err);
+    return res.status(500).send('ERROR');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HTTP HANDLER — processScheduledWindowClose
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * HTTP handler: processScheduledWindowClose
+ * Called by Cloud Tasks at T+48h to close the confirmation window.
+ */
+async function _processScheduledWindowCloseHandler(req, res, db = null) {
+  if (!db) db = admin.firestore();
+  const { jobId, gameId } = req.body;
+
+  if (!jobId) {
+    return res.status(400).send('Missing jobId');
+  }
+
+  try {
+    const jobRef = db.collection('round_jobs').doc(jobId);
+    const jobSnap = await jobRef.get();
+
+    if (!jobSnap.exists) {
+      console.warn(`processScheduledWindowClose: job ${jobId} not found`);
+      return res.status(200).send('NOT_FOUND');
+    }
+
+    const job = jobSnap.data();
+
+    // Already closed — idempotent
+    if (job.closed_at) {
+      console.log(`processScheduledWindowClose: job ${jobId} already closed`);
+      return res.status(200).send('ALREADY_CLOSED');
+    }
+
+    const nowTs = admin.firestore.Timestamp.now();
+    await _closeConfirmationWindow(db, jobRef, job, nowTs);
+
+    console.log(`processScheduledWindowClose: closed window for job ${jobId} (game ${gameId})`);
+    return res.status(200).send('OK');
+  } catch (err) {
+    console.error(`processScheduledWindowClose: error for job ${jobId}:`, err);
+    return res.status(500).send('ERROR');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // STAGE 3 MAIN TRIGGER — onGameStatusToPlayed
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -333,6 +495,39 @@ async function _onGameStatusToPlayedHandler(change, context, db) {
 
     await batch.commit();
 
+    // ── 3. Schedule Trust System notification tasks ──────────────────────
+    const playerUserIds = appUserRefs.map(ref => ref.id);
+    const gameDate = _formatGameDate(teeTimeTs);
+
+    try {
+      await onGameConfirmed(
+        gameId,
+        new Date(teeTimeMs),   // teeTime as Date
+        hostRef.id,            // hostUserId
+        playerUserIds,         // all player user IDs including host
+        courseName,            // course name string
+        gameDate,              // formatted date string
+        db
+      );
+      console.log(`onGameStatusToPlayed: scheduled Trust System notifications for game ${gameId}`);
+    } catch (err) {
+      // Non-fatal: game flow continues even if notification scheduling fails
+      console.error(`onGameStatusToPlayed: failed to schedule notifications for game ${gameId}:`, err);
+    }
+
+    // ── 4. Schedule T+48h window close ───────────────────────────────────
+    try {
+      const closeAt = new Date(teeTimeMs + CLOSE_OFFSET_MS);
+      await _scheduleCloudTask(
+        'processScheduledWindowClose',
+        { jobId: jobRef.id, gameId },
+        closeAt
+      );
+      console.log(`onGameStatusToPlayed: scheduled window close for game ${gameId} at T+48h`);
+    } catch (err) {
+      console.error(`onGameStatusToPlayed: failed to schedule window close for game ${gameId}:`, err);
+    }
+
     console.log(
       `onGameStatusToPlayed: created round_jobs/${jobRef.id} and ` +
         `round_records/${roundRef.id} for game ${gameId}`
@@ -355,128 +550,6 @@ const onGameStatusToPlayed = functions
   .firestore.document("games/{gameId}")
   .onUpdate(async (change, context) => {
     return _onGameStatusToPlayedHandler(change, context, admin.firestore());
-  });
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SCHEDULED SWEEP — processConfirmationJobs
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Scheduled function: processConfirmationJobs
- *
- * Runs every 15 minutes. Performs two sweeps:
- *
- * Sweep A — flip 'filled' games to 'played' when tee time has passed.
- *   (This triggers onGameStatusToPlayed which creates the round_jobs doc.)
- *
- * Sweep B — process pending round_jobs milestones:
- *   - Hour 5:  send host check-in notification
- *   - Hour 5+30min: send peer rating notifications (after host confirms)
- *   - Hour 24: send 24h reminder to host + fallback to all app users (if no host response)
- *   - Hour 48: close the confirmation window
- */
-const processConfirmationJobs = functions
-  .region("us-west2")
-  .runWith({ timeoutSeconds: 540, memory: "512MB" })
-  .pubsub.schedule("every 15 minutes")
-  .onRun(async (_context) => {
-    const db = admin.firestore();
-    const nowMs = Date.now();
-    const nowTs = admin.firestore.Timestamp.fromMillis(nowMs);
-
-    // ── Sweep A: flip filled games to 'played' ────────────────────────────
-    try {
-      const filledGamesSnap = await db
-        .collection("games")
-        .where("status", "==", "filled")
-        .where("isCancelled", "!=", true)
-        .get();
-
-      const playedUpdates = [];
-      for (const doc of filledGamesSnap.docs) {
-        const data = doc.data();
-        const teeTimeTs = data.date;
-        if (
-          teeTimeTs &&
-          typeof teeTimeTs.toMillis === "function" &&
-          teeTimeTs.toMillis() <= nowMs
-        ) {
-          playedUpdates.push(doc.ref.update({ status: "played" }));
-        }
-      }
-      if (playedUpdates.length > 0) {
-        await Promise.all(playedUpdates);
-        console.log(
-          `processConfirmationJobs: flipped ${playedUpdates.length} game(s) to 'played'`
-        );
-      }
-    } catch (err) {
-      console.error("processConfirmationJobs: sweep A (played) failed:", err);
-    }
-
-    // ── Sweep B: process round_jobs milestones ─────────────────────────────
-    let jobs;
-    try {
-      const jobsSnap = await db
-        .collection("round_jobs")
-        .where("status", "!=", "closed")
-        .get();
-      jobs = jobsSnap.docs;
-    } catch (err) {
-      console.error("processConfirmationJobs: could not fetch round_jobs:", err);
-      return;
-    }
-
-    for (const jobDoc of jobs) {
-      const job = jobDoc.data();
-      const jobRef = jobDoc.ref;
-
-      try {
-        // ── Close at hour 48 ──────────────────────────────────────────────
-        const closeAt = job.scheduled_close_at;
-        if (closeAt && closeAt.toMillis() <= nowMs && !job.closed_at) {
-          await _closeConfirmationWindow(db, jobRef, job, nowTs);
-          continue; // no more processing for this job
-        }
-
-        // ── Hour-24 reminder (if host has not confirmed) ──────────────────
-        const reminderAt = job.scheduled_reminder_at;
-        if (
-          reminderAt &&
-          reminderAt.toMillis() <= nowMs &&
-          !job.reminder_sent_at &&
-          !job.host_confirmed_at
-        ) {
-          await _send24hReminder(db, jobRef, job, nowTs);
-        }
-
-        // ── Peer rating notifications (30 min after host confirms) ─────────
-        const peerAt = job.scheduled_peer_notify_at;
-        if (
-          peerAt &&
-          peerAt.toMillis() <= nowMs &&
-          !job.peer_notified_at &&
-          job.host_confirmed_at
-        ) {
-          await _sendPeerRatingNotifications(db, jobRef, job, nowTs);
-        }
-
-        // ── Host check-in notification (hour 5) ───────────────────────────
-        const hostNotifyAt = job.scheduled_host_notify_at;
-        if (
-          hostNotifyAt &&
-          hostNotifyAt.toMillis() <= nowMs &&
-          !job.host_notified_at
-        ) {
-          await _sendHostCheckinNotification(db, jobRef, job, nowTs);
-        }
-      } catch (err) {
-        console.error(
-          `processConfirmationJobs: error processing job ${jobDoc.id}:`,
-          err
-        );
-      }
-    }
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -658,11 +731,36 @@ async function _submitHostCheckinHandler(data, context, db) {
   batch.update(jobDoc.ref, jobUpdate);
   await batch.commit();
 
-  // ── Send dispute notifications to flagged players ─────────────────────
+  // ── Trust System: cancel pending notification tasks + schedule ratings ──
+  const appUserRefs = Array.isArray(job.app_user_refs) ? job.app_user_refs : [];
   const courseName = job.course_name || "your course";
+  try {
+    await onHostCheckinCompleted(
+      gameId,
+      context.auth.uid,                          // hostUserId
+      appUserRefs.map(ref => ref.id),            // all playerUserIds
+      courseName,                                // course name
+      db
+    );
+    console.log(`submitHostCheckin: scheduled Trust System rating notifications for game ${gameId}`);
+  } catch (err) {
+    console.error(`submitHostCheckin: failed to schedule rating notifications:`, err);
+  }
+
+  // ── Send dispute notifications to flagged players ─────────────────────
+  const gameDate = _formatGameDate(job.tee_time);
   for (const uid of noShowAppUserIds) {
     try {
-      await _sendNoShowNotification(db, uid, gameRef, courseName, nowTs);
+      await routeNotification({
+        eventId: randomUUID(),
+        eventType: 'no_show_flagged',
+        recipientUserId: uid,
+        sourceId: uid,
+        data: {
+          course_name: courseName,
+          date: gameDate,
+        },
+      }, db);
       // Record notified_at
       if (roundRef) {
         await roundRef.update({
@@ -875,11 +973,14 @@ async function _submitPeerRatingsHandler(data, context, db) {
   const pendingNoShowUids = Object.keys(pendingNoShows);
 
   if (pendingNoShowUids.length > 0 && roundRef) {
+    const courseName = typeof gameData.course_play === 'string' ? gameData.course_play : 'your course';
+    const gameDate = _formatGameDate(gameData.date);
+
     for (const noShowUid of pendingNoShowUids) {
       if (noShowUid === context.auth.uid) continue; // can't self-resolve
       // Check if rater submitted a rating (any value) for this no-show player
       if (Object.prototype.hasOwnProperty.call(ratings, noShowUid)) {
-        await _resolvePendingNoShow(db, roundRef, noShowUid, context.auth.uid);
+        await _resolvePendingNoShow(db, roundRef, noShowUid, context.auth.uid, courseName, gameDate);
       }
     }
   }
@@ -1081,7 +1182,7 @@ async function _recordVerificationSignal(db, roundRef, roundData, signalUid) {
  * Called when another app user's play-again rating confirms the disputed player was present.
  * Does NOT issue or remove any strike docs — the pending state is simply discarded.
  */
-async function _resolvePendingNoShow(db, roundRef, noShowUid, resolvedBy) {
+async function _resolvePendingNoShow(db, roundRef, noShowUid, resolvedBy, courseName, gameDate) {
   await roundRef.update({
     [`pending_no_shows.${noShowUid}`]: admin.firestore.FieldValue.delete(),
   });
@@ -1089,31 +1190,22 @@ async function _resolvePendingNoShow(db, roundRef, noShowUid, resolvedBy) {
     `_resolvePendingNoShow: pending no-show for ${noShowUid} auto-resolved ` +
       `(peer ${resolvedBy} submitted a rating for them)`
   );
-}
 
-/**
- * Sends the no-show dispute notification to a flagged player.
- *
- * Message text (verbatim from spec):
- *   "The host marked you as not attending. Other players have 48 hours to
- *    confirm. If another player confirms you were there, this will be
- *    resolved automatically."
- */
-async function _sendNoShowNotification(db, noShowUid, gameRef, courseName, nowTs) {
-  const noShowUserRef = db.collection("users").doc(noShowUid);
-  await db.collection("user_push_notifications").doc().set({
-    notification_title: "Your attendance was flagged",
-    notification_text:
-      "The host marked you as not attending. Other players have 48 hours to confirm. " +
-      "If another player confirms you were there, this will be resolved automatically.",
-    user_refs: noShowUserRef.path,
-    initial_page_name: "FallbackConfirmation",
-    parameter_data: JSON.stringify({ gameRef: gameRef.path }),
-    timestamp: nowTs,
-  });
-  console.log(
-    `_sendNoShowNotification: sent dispute notification to user ${noShowUid} for game ${gameRef.id}`
-  );
+  // ── Notify player their dispute was resolved ────────────────────────
+  try {
+    await routeNotification({
+      eventId: randomUUID(),
+      eventType: 'dispute_resolved',
+      recipientUserId: noShowUid,
+      sourceId: noShowUid,
+      data: {
+        course_name: courseName || '',
+        date: gameDate || '',
+      },
+    }, db);
+  } catch (err) {
+    console.warn(`_resolvePendingNoShow: failed to send dispute_resolved to ${noShowUid}:`, err);
+  }
 }
 
 /**
@@ -1426,6 +1518,21 @@ async function _handleNoShowStrike(db, gameId, targetUserId, gameData, gameRef, 
     db.collection("strikes").add(strikeBase),
   ]);
 
+  // ── Notify player of strike ─────────────────────────────────────────
+  try {
+    await routeNotification({
+      eventId: randomUUID(),
+      eventType: 'strike_issued',
+      recipientUserId: targetUserId,
+      sourceId: targetUserId,
+      data: {
+        reason: 'ghost_no_show',
+      },
+    }, db);
+  } catch (err) {
+    console.warn(`_handleNoShowStrike: failed to send strike notification to ${targetUserId}:`, err);
+  }
+
   // Count active strikes
   const expiryThreshold = admin.firestore.Timestamp.fromMillis(nowMs);
   const activeStrikesSnap = await db
@@ -1465,129 +1572,6 @@ async function _updateParticipantStatus(db, gameRef, userId, status) {
   } catch (err) {
     console.warn(`_updateParticipantStatus: could not update status for user ${userId}:`, err);
   }
-}
-
-/**
- * Sends the host check-in notification.
- * Writes to user_push_notifications to trigger sendUserPushNotificationsTrigger.
- */
-async function _sendHostCheckinNotification(db, jobRef, job, nowTs) {
-  const courseName = job.course_name || "your course";
-  const hostRef = job.host_ref;
-  const gameRef = job.game_ref;
-
-  await db.collection("user_push_notifications").doc().set({
-    notification_title: "How'd the round go?",
-    notification_text: `Confirm who played at ${courseName} today`,
-    user_refs: hostRef.path,
-    initial_page_name: "HostCheckin",
-    parameter_data: JSON.stringify({ gameRef: gameRef.path }),
-    timestamp: nowTs,
-  });
-
-  await jobRef.update({
-    status: "host_notified",
-    host_notified_at: nowTs,
-  });
-
-  console.log(`_sendHostCheckinNotification: sent to host ${hostRef.id} for game ${gameRef.id}`);
-}
-
-/**
- * Sends peer rating notifications to all present app users.
- * Reads attendance_records from round_records to determine who is present.
- */
-async function _sendPeerRatingNotifications(db, jobRef, job, nowTs) {
-  const courseName = job.course_name || "your course";
-  const gameRef = job.game_ref;
-  const roundRef = job.round_ref;
-  const appUserRefs = Array.isArray(job.app_user_refs) ? job.app_user_refs : [];
-
-  // Determine which app users are present
-  let presentUserRefs = appUserRefs;
-  if (roundRef) {
-    try {
-      const roundSnap = await roundRef.get();
-      if (roundSnap.exists) {
-        const attendanceRecords = roundSnap.data().attendance_records || {};
-        presentUserRefs = appUserRefs.filter((ref) => {
-          const status = attendanceRecords[ref.id];
-          return status === "present" || status === undefined; // default to present if not set
-        });
-      }
-    } catch (err) {
-      console.warn("_sendPeerRatingNotifications: could not read attendance_records:", err);
-    }
-  }
-
-  const batch = db.batch();
-  for (const userRef of presentUserRefs) {
-    const notifRef = db.collection("user_push_notifications").doc();
-    batch.set(notifRef, {
-      notification_title: "Rate your playing partners",
-      notification_text: `Would you play again with your group from ${courseName}?`,
-      user_refs: userRef.path,
-      initial_page_name: "PeerRating",
-      parameter_data: JSON.stringify({ gameRef: gameRef.path }),
-      timestamp: nowTs,
-    });
-  }
-  await batch.commit();
-
-  await jobRef.update({
-    status: "peer_notified",
-    peer_notified_at: nowTs,
-  });
-
-  console.log(
-    `_sendPeerRatingNotifications: sent to ${presentUserRefs.length} user(s) for game ${gameRef.id}`
-  );
-}
-
-/**
- * Sends the 24h reminder to the host AND fallback notification to all app users.
- * Only fires if host has not confirmed.
- */
-async function _send24hReminder(db, jobRef, job, nowTs) {
-  const courseName = job.course_name || "your course";
-  const gameRef = job.game_ref;
-  const hostRef = job.host_ref;
-  const appUserRefs = Array.isArray(job.app_user_refs) ? job.app_user_refs : [];
-
-  const batch = db.batch();
-
-  // Reminder to host
-  batch.set(db.collection("user_push_notifications").doc(), {
-    notification_title: "Reminder: Confirm your round",
-    notification_text: `Did everyone show up at ${courseName}? Tap to confirm.`,
-    user_refs: hostRef.path,
-    initial_page_name: "HostCheckin",
-    parameter_data: JSON.stringify({ gameRef: gameRef.path }),
-    timestamp: nowTs,
-  });
-
-  // Fallback to all app users
-  for (const userRef of appUserRefs) {
-    batch.set(db.collection("user_push_notifications").doc(), {
-      notification_title: "Did you play today?",
-      notification_text: `Did you play at ${courseName} today?`,
-      user_refs: userRef.path,
-      initial_page_name: "FallbackConfirmation",
-      parameter_data: JSON.stringify({ gameRef: gameRef.path }),
-      timestamp: nowTs,
-    });
-  }
-
-  await batch.commit();
-
-  await jobRef.update({
-    status: "reminder_sent",
-    reminder_sent_at: nowTs,
-  });
-
-  console.log(
-    `_send24hReminder: sent reminder to host ${hostRef.id} + fallback to ${appUserRefs.length} user(s) for game ${gameRef.id}`
-  );
 }
 
 /**
@@ -1818,6 +1802,60 @@ function _getUserDisplayName(userData) {
   return `${first} ${last}`.trim();
 }
 
+/**
+ * Formats a Firestore Timestamp into a short date string for notification templates.
+ * e.g., Timestamp for 2026-02-18 → "Feb 18"
+ */
+function _formatGameDate(teeTimeTs) {
+  if (!teeTimeTs || typeof teeTimeTs.toDate !== 'function') return '';
+  const d = teeTimeTs.toDate();
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLOUD TASKS SCHEDULING
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Schedules a Cloud Task to call an HTTP function at a specific time.
+ * Used for game status transitions and window close — NOT for notifications
+ * (those go through the Trust System scheduler).
+ */
+let _tasksClient = null;
+function _getTasksClient() {
+  if (!_tasksClient) _tasksClient = new CloudTasksClient();
+  return _tasksClient;
+}
+
+// Exported for test teardown
+function _resetTasksClient() { _tasksClient = null; }
+
+async function _scheduleCloudTask(functionName, payload, scheduleTime) {
+  const client = _getTasksClient();
+  const queuePath = client.queuePath(PROJECT, LOCATION, QUEUE_NAME);
+  const url = `https://${LOCATION}-${PROJECT}.cloudfunctions.net/${functionName}`;
+
+  const scheduleTimeMs = new Date(scheduleTime).getTime();
+
+  const task = {
+    httpRequest: {
+      httpMethod: 'POST',
+      url,
+      headers: { 'Content-Type': 'application/json' },
+      body: Buffer.from(JSON.stringify(payload)).toString('base64'),
+      oidcToken: {
+        serviceAccountEmail: `${PROJECT}@appspot.gserviceaccount.com`,
+      },
+    },
+    scheduleTime: {
+      seconds: Math.floor(scheduleTimeMs / 1000),
+    },
+  };
+
+  const [createdTask] = await client.createTask({ parent: queuePath, task });
+  return createdTask.name;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // EXPORTS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1825,8 +1863,8 @@ function _getUserDisplayName(userData) {
 module.exports = {
   // Firebase Functions exports (wrapped triggers/callables)
   onGameParticipantJoin,
+  onGameStatusToFilled,
   onGameStatusToPlayed,
-  processConfirmationJobs,
   submitHostCheckin,
   submitPeerRatings,
   submitFallbackConfirmation,
@@ -1834,6 +1872,9 @@ module.exports = {
   // Raw handler functions — exported for unit testing (bypass Firebase wrappers)
   // Tests call these directly with (data, context, mockDb)
   _onGameParticipantJoinHandler,
+  _onGameStatusToFilledHandler,
+  _processScheduledGameStatusChangeHandler,
+  _processScheduledWindowCloseHandler,
   _onGameStatusToPlayedHandler,
   _submitHostCheckinHandler,
   _submitPeerRatingsHandler,
@@ -1846,12 +1887,13 @@ module.exports = {
   _extractVibeProfile,
   _computeVibeScore,
   _getUserDisplayName,
+  _formatGameDate,
+  _resetTasksClient,
   _closeConfirmationWindow,
 
   // Stage 4 helpers exported for testing
   _recordVerificationSignal,
   _resolvePendingNoShow,
-  _sendNoShowNotification,
   _finalizeRoundVerification,
   _evaluateFinalVerificationStatus,
 };

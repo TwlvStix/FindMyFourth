@@ -11,14 +11,49 @@
  *   - vibe scores copy-only rule
  *
  * Run with: npx jest test/confirmation_flow.test.js
- *
- * Strategy: Uses Jest module isolation so firebase-functions and firebase-admin
- * are replaced with mocks BEFORE confirmation_flow.js is loaded. This avoids
- * the require-cache collision that occurs when multiple test files run in the
- * same Jest worker.
  */
 
 "use strict";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MOCKS — MUST BE DEFINED BEFORE MODULE IMPORTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Cloud Tasks mock (shared state) - declared first, assigned in jest.mock
+let mockCreateTask;
+let mockDeleteTask;
+let mockQueuePath;
+
+jest.mock('@google-cloud/tasks', () => {
+  mockCreateTask = jest.fn().mockResolvedValue([{ name: 'projects/x/tasks/t1' }]);
+  mockDeleteTask = jest.fn().mockResolvedValue([{}]);
+  mockQueuePath  = jest.fn((project, location, queue) =>
+    `projects/${project}/locations/${location}/queues/${queue}`,
+  );
+
+  function MockCloudTasksClient() {}
+  MockCloudTasksClient.prototype.createTask = (...args) => mockCreateTask(...args);
+  MockCloudTasksClient.prototype.deleteTask = (...args) => mockDeleteTask(...args);
+  MockCloudTasksClient.prototype.queuePath  = (...args) => mockQueuePath(...args);
+
+  return { CloudTasksClient: MockCloudTasksClient };
+});
+
+// Trust System mocks — closured variable pattern (same as integration.test.js with mockFcmSend)
+// Variables must be declared BEFORE jest.mock() and names must start with 'mock'
+let mockRouteNotification;
+let mockOnGameConfirmed;
+let mockOnHostCheckinCompleted;
+let mockRandomUUID;
+
+jest.mock('../notifications/trust/router', () => ({
+  routeNotification: (...args) => mockRouteNotification(...args),
+}));
+
+jest.mock('../notifications/trust/hooks', () => ({
+  onGameConfirmed: (...args) => mockOnGameConfirmed(...args),
+  onHostCheckinCompleted: (...args) => mockOnHostCheckinCompleted(...args),
+}));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MOCK INFRASTRUCTURE
@@ -316,24 +351,79 @@ const mockFunctions = {
 const Module = require("module");
 const _originalLoad = Module._load;
 
+// firebase-admin and firebase-functions are still mocked via Module._load
+// because the test infrastructure requires precise control over Firestore behavior
+
 let confirmationFlow;
 beforeAll(() => {
-  // Remove confirmation_flow from cache so it loads fresh with our mocks.
+  // Remove confirmation_flow and trust modules from cache so they load fresh with our mocks.
   try { delete require.cache[require.resolve("../confirmation_flow")]; } catch (_) {}
-
-  // Install intercept
+  // Install intercept for firebase-admin, firebase-functions, and crypto
+  // (Trust System modules are handled by jest.mock() above)
   Module._load = function (request, parent, isMain) {
     if (request === "firebase-functions") return mockFunctions;
     if (request === "firebase-admin") {
-      return { firestore: mockAdminFirestoreFn, initializeApp: () => {} };
+      // Mock admin with initializeApp that does nothing but marks as initialized
+      let initialized = false;
+      const firestoreFn = () => mockDb;
+      firestoreFn.Timestamp = MockTimestamp;
+      firestoreFn.FieldValue = FieldValue;
+      return {
+        firestore: firestoreFn,
+        initializeApp: () => { initialized = true; },
+      };
+    }
+    if (request === "crypto") {
+      return { randomUUID: (...args) => mockRandomUUID(...args) };
     }
     return _originalLoad.apply(this, arguments);
   };
 
   confirmationFlow = require("../confirmation_flow");
 
-  // Restore original loader
+  // DON'T restore the loader here - keep it active for all tests
+  // It will be restored in afterAll
+});
+
+afterAll(() => {
+  // Restore original loader after all tests complete
   Module._load = _originalLoad;
+});
+
+beforeEach(() => {
+  // Reset Cloud Tasks client singleton FIRST, before clearing mocks
+  if (confirmationFlow && confirmationFlow._resetTasksClient) {
+    confirmationFlow._resetTasksClient();
+  }
+
+  // Clear all mock call history
+  jest.clearAllMocks();
+
+  // Re-create mock implementations after clearAllMocks
+  const MOCK_TASK_NAME = 'projects/find-my-fourth/locations/us-west2/queues/trust-notification-scheduler/tasks/task_001';
+
+  mockCreateTask.mockResolvedValue([{ name: MOCK_TASK_NAME }]);
+  mockDeleteTask.mockResolvedValue([{}]);
+  mockQueuePath.mockImplementation((project, location, queue) =>
+    `projects/${project}/locations/${location}/queues/${queue}`,
+  );
+
+  // Create fresh Trust System mock implementations (closured variable pattern)
+  mockRouteNotification = jest.fn().mockResolvedValue({ result: 'sent' });
+  mockOnGameConfirmed = jest.fn().mockResolvedValue({
+    hostCheckinJobId: 'mock_job_1',
+    hostCheckinReminderJobId: 'mock_job_2',
+    hostFallbackJobId: 'mock_job_3',
+    playerFallbackJobIds: {},
+  });
+  mockOnHostCheckinCompleted = jest.fn().mockResolvedValue({
+    cancelledCount: 0,
+    playerRateJobIds: {},
+  });
+  mockRandomUUID = jest.fn(() => 'mock-uuid-' + Math.random().toString(36).slice(2));
+
+  // Reset mock Firestore
+  mockDb.reset();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -546,6 +636,240 @@ describe("onGameParticipantJoin", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// onGameStatusToFilled
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("onGameStatusToFilled", () => {
+  test("does nothing if status did not transition to filled", async () => {
+    const change = {
+      before: { data: () => ({ status: "filled" }) },
+      after: {
+        data: () => ({ status: "filled" }),
+        ref: { update: jest.fn() },
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameStatusToFilledHandler(change, context, mockDb);
+
+    expect(mockCreateTask).not.toHaveBeenCalled();
+    expect(change.after.ref.update).not.toHaveBeenCalled();
+  });
+
+  test("schedules Cloud Task at tee time when transitioning to filled", async () => {
+    const teeTimeMs = Date.now() + 2 * HOUR_MS; // 2 hours in future
+    const change = {
+      before: { data: () => ({ status: "open" }) },
+      after: {
+        data: () => ({
+          status: "filled",
+          date: MockTimestamp.fromMillis(teeTimeMs),
+          isCancelled: false,
+        }),
+        ref: { update: jest.fn() },
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameStatusToFilledHandler(change, context, mockDb);
+
+    expect(mockCreateTask).toHaveBeenCalledTimes(1);
+    const callArg = mockCreateTask.mock.calls[0][0];
+
+    // Verify schedule time matches tee time
+    const expectedSecs = Math.floor(teeTimeMs / 1000);
+    expect(callArg.task.scheduleTime.seconds).toBe(expectedSecs);
+
+    // Verify payload contains gameId
+    const decoded = JSON.parse(Buffer.from(callArg.task.httpRequest.body, 'base64').toString());
+    expect(decoded.gameId).toBe("g1");
+
+    // Verify URL targets processScheduledGameStatusChange
+    expect(callArg.task.httpRequest.url).toContain('processScheduledGameStatusChange');
+  });
+
+  test("flips to played immediately if tee time is in the past", async () => {
+    const teeTimeMs = Date.now() - 2 * HOUR_MS; // 2 hours ago
+    const updateSpy = jest.fn().mockResolvedValue(undefined);
+    const change = {
+      before: { data: () => ({ status: "open" }) },
+      after: {
+        data: () => ({
+          status: "filled",
+          date: MockTimestamp.fromMillis(teeTimeMs),
+          isCancelled: false,
+        }),
+        ref: { update: updateSpy },
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameStatusToFilledHandler(change, context, mockDb);
+
+    expect(updateSpy).toHaveBeenCalledWith({ status: 'played' });
+    expect(mockCreateTask).not.toHaveBeenCalled();
+  });
+
+  test("does nothing if game is cancelled", async () => {
+    const teeTimeMs = Date.now() + 2 * HOUR_MS;
+    const change = {
+      before: { data: () => ({ status: "open" }) },
+      after: {
+        data: () => ({
+          status: "filled",
+          date: MockTimestamp.fromMillis(teeTimeMs),
+          isCancelled: true,
+        }),
+        ref: { update: jest.fn() },
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameStatusToFilledHandler(change, context, mockDb);
+
+    expect(mockCreateTask).not.toHaveBeenCalled();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// processScheduledGameStatusChange
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("processScheduledGameStatusChange", () => {
+  test("flips filled game to played and returns 200", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "filled",
+      isCancelled: false,
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+
+    await confirmationFlow._processScheduledGameStatusChangeHandler(req, res, mockDb);
+
+    const game = mockDb.getDoc("games", "g1");
+    expect(game.status).toBe("played");
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("OK");
+  });
+
+  test("returns 200 SKIPPED if game is not filled", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "played",
+      isCancelled: false,
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+
+    await confirmationFlow._processScheduledGameStatusChangeHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("SKIPPED");
+  });
+
+  test("returns 200 CANCELLED if game is cancelled", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "filled",
+      isCancelled: true,
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+
+    await confirmationFlow._processScheduledGameStatusChangeHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("CANCELLED");
+  });
+
+  test("returns 400 if gameId is missing", async () => {
+    const req = { body: {} };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+
+    await confirmationFlow._processScheduledGameStatusChangeHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith("Missing gameId");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// processScheduledWindowClose
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("processScheduledWindowClose", () => {
+  test("calls _closeConfirmationWindow and returns 200", async () => {
+    const teeTimeMs = Date.now() - 50 * HOUR_MS;
+    mockDb.seedDoc("round_jobs", "job1", {
+      game_ref: gameRef("g1"),
+      tee_time: MockTimestamp.fromMillis(teeTimeMs),
+      host_ref: playerRef("host"),
+      app_user_refs: [playerRef("host")],
+      course_name: "Augusta",
+      closed_at: null,
+    });
+
+    const req = { body: { jobId: "job1", gameId: "g1" } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+
+    await confirmationFlow._processScheduledWindowCloseHandler(req, res, mockDb);
+
+    const job = mockDb.getDoc("round_jobs", "job1");
+    expect(job.status).toBe("closed");
+    expect(job.closed_at).toBeDefined();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("OK");
+  });
+
+  test("returns 200 ALREADY_CLOSED if job already closed", async () => {
+    const nowTs = MockTimestamp.now();
+    mockDb.seedDoc("round_jobs", "job1", {
+      closed_at: nowTs,
+    });
+
+    const req = { body: { jobId: "job1", gameId: "g1" } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+
+    await confirmationFlow._processScheduledWindowCloseHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("ALREADY_CLOSED");
+  });
+
+  test("returns 400 if jobId is missing", async () => {
+    const req = { body: { gameId: "g1" } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+
+    await confirmationFlow._processScheduledWindowCloseHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith("Missing jobId");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // onGameStatusToPlayed
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -649,6 +973,114 @@ describe("onGameStatusToPlayed", () => {
     await confirmationFlow._onGameStatusToPlayedHandler(change, context, mockDb);
 
     expect(Object.keys(mockDb.getDocs("round_jobs"))).toHaveLength(0);
+  });
+
+  test("calls onGameConfirmed with correct parameters", async () => {
+    const teeTimeMs = Date.now() - 2 * HOUR_MS;
+    const gameData = {
+      date: MockTimestamp.fromMillis(teeTimeMs),
+      status: "played",
+      userRef: playerRef("host_user"),
+      course_play: "Pebble Beach",
+      joined_players: [playerRef("host_user"), playerRef("player_a"), playerRef("player_b")],
+      guest_players: [],
+      game_type: "Stroke Play",
+    };
+    const change = {
+      before: { data: () => ({ status: "filled" }) },
+      after: {
+        data: () => gameData,
+        ref: new MockDocRef(mockDb, "games", "g1"),
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameStatusToPlayedHandler(change, context, mockDb);
+
+    expect(mockOnGameConfirmed).toHaveBeenCalledTimes(1);
+    const callArgs = mockOnGameConfirmed.mock.calls[0];
+    expect(callArgs[0]).toBe("g1"); // gameId
+    expect(callArgs[1]).toEqual(new Date(teeTimeMs)); // teeTime as Date
+    expect(callArgs[2]).toBe("host_user"); // hostUserId
+    expect(callArgs[3]).toEqual(["host_user", "player_a", "player_b"]); // playerUserIds
+    expect(callArgs[4]).toBe("Pebble Beach"); // courseName
+    expect(callArgs[5]).toMatch(/\w+ \d+/); // gameDate formatted (e.g., "Feb 18")
+    expect(callArgs[6]).toBe(mockDb); // db
+  });
+
+  test("schedules Cloud Task for T+48h window close with correct payload", async () => {
+    const teeTimeMs = Date.now() - 2 * HOUR_MS;
+    const gameData = {
+      date: MockTimestamp.fromMillis(teeTimeMs),
+      status: "played",
+      userRef: playerRef("host_user"),
+      course_play: "Augusta",
+      joined_players: [playerRef("host_user"), playerRef("player_a")],
+      guest_players: [],
+      game_type: "Stroke Play",
+    };
+    const change = {
+      before: { data: () => ({ status: "filled" }) },
+      after: {
+        data: () => gameData,
+        ref: new MockDocRef(mockDb, "games", "g1"),
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameStatusToPlayedHandler(change, context, mockDb);
+
+    expect(mockCreateTask).toHaveBeenCalled();
+
+    // Find the window close task (it's the Cloud Task call)
+    const windowCloseCall = mockCreateTask.mock.calls.find(call => {
+      const body = JSON.parse(Buffer.from(call[0].task.httpRequest.body, 'base64').toString());
+      return body.jobId !== undefined;
+    });
+
+    expect(windowCloseCall).toBeDefined();
+
+    const callArg = windowCloseCall[0];
+    const decoded = JSON.parse(Buffer.from(callArg.task.httpRequest.body, 'base64').toString());
+
+    // Verify payload
+    expect(decoded.gameId).toBe("g1");
+    expect(decoded.jobId).toBeDefined();
+
+    // Verify schedule time is T+48h
+    const expectedCloseTimeMs = teeTimeMs + (48 * 60 * 60 * 1000);
+    const expectedCloseSecs = Math.floor(expectedCloseTimeMs / 1000);
+    expect(callArg.task.scheduleTime.seconds).toBeCloseTo(expectedCloseSecs, -1);
+
+    // Verify URL targets processScheduledWindowClose
+    expect(callArg.task.httpRequest.url).toContain('processScheduledWindowClose');
+  });
+
+  test("schedules window close task to correct queue path", async () => {
+    const teeTimeMs = Date.now() - 2 * HOUR_MS;
+    const gameData = {
+      date: MockTimestamp.fromMillis(teeTimeMs),
+      status: "played",
+      userRef: playerRef("host_user"),
+      course_play: "Augusta",
+      joined_players: [playerRef("host_user")],
+      guest_players: [],
+      game_type: "Stroke Play",
+    };
+    const change = {
+      before: { data: () => ({ status: "filled" }) },
+      after: {
+        data: () => gameData,
+        ref: new MockDocRef(mockDb, "games", "g1"),
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameStatusToPlayedHandler(change, context, mockDb);
+
+    expect(mockCreateTask).toHaveBeenCalled();
+    const callArg = mockCreateTask.mock.calls[0][0];
+    expect(callArg.parent).toBe('projects/find-my-fourth/locations/us-west2/queues/trust-notification-scheduler');
   });
 });
 
@@ -757,7 +1189,7 @@ describe("submitHostCheckin", () => {
     expect(round.pending_no_shows["player_a"]).toBeDefined();
   });
 
-  test("Stage 4: no-show notification written to user_push_notifications", async () => {
+  test("Stage 4: calls routeNotification for no-show flagged players", async () => {
     seedGame(mockDb, "g1");
     seedRoundJob(mockDb, "job1", "g1");
     seedRoundRecord(mockDb, "round_g1");
@@ -771,14 +1203,14 @@ describe("submitHostCheckin", () => {
       mockDb
     );
 
-    const notifs = Object.values(mockDb.getDocs("user_push_notifications") || {});
-    const noShowNotif = notifs.find((n) =>
-      n.user_refs === "users/player_a" &&
-      n.notification_title === "Your attendance was flagged"
+    // Verify routeNotification was called for the no-show player
+    expect(mockRouteNotification).toHaveBeenCalled();
+    const noShowCall = mockRouteNotification.mock.calls.find(call =>
+      call[0].eventType === 'no_show_flagged' &&
+      call[0].recipientUserId === 'player_a'
     );
-    expect(noShowNotif).toBeDefined();
-    expect(noShowNotif.notification_text).toMatch(/48 hours/);
-    expect(noShowNotif.initial_page_name).toBe("FallbackConfirmation");
+    expect(noShowCall).toBeDefined();
+    expect(noShowCall[0].data.course_name).toBe('Sawgrass');
   });
 
   test("Stage 4: host check-in records a verification signal", async () => {
@@ -1239,23 +1671,6 @@ describe("Stage 4 — _resolvePendingNoShow", () => {
   });
 });
 
-describe("Stage 4 — _sendNoShowNotification", () => {
-  test("writes notification to user_push_notifications with correct text", async () => {
-    const gRef = { id: "g1", path: "games/g1" };
-    await confirmationFlow._sendNoShowNotification(
-      mockDb, "player_a", gRef, "Augusta", MockTimestamp.now()
-    );
-
-    const notifs = Object.values(mockDb.getDocs("user_push_notifications") || {});
-    expect(notifs).toHaveLength(1);
-    const n = notifs[0];
-    expect(n.user_refs).toBe("users/player_a");
-    expect(n.notification_title).toBe("Your attendance was flagged");
-    expect(n.notification_text).toMatch(/48 hours/);
-    expect(n.notification_text).toMatch(/resolved automatically/);
-    expect(n.initial_page_name).toBe("FallbackConfirmation");
-  });
-});
 
 describe("Stage 4 — _finalizeRoundVerification", () => {
   test("sets verification_status to verified", async () => {

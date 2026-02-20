@@ -1710,11 +1710,22 @@ exports.markGhostNoShow = trustSystem.markGhostNoShow;
 
 // Confirmation Flow — Stage 3
 exports.onGameParticipantJoin = confirmationFlow.onGameParticipantJoin;
+exports.onGameStatusToFilled = confirmationFlow.onGameStatusToFilled;
 exports.onGameStatusToPlayed = confirmationFlow.onGameStatusToPlayed;
-exports.processConfirmationJobs = confirmationFlow.processConfirmationJobs;
 exports.submitHostCheckin = confirmationFlow.submitHostCheckin;
 exports.submitPeerRatings = confirmationFlow.submitPeerRatings;
 exports.submitFallbackConfirmation = confirmationFlow.submitFallbackConfirmation;
+
+// Cloud Task receivers for confirmation flow
+exports.processScheduledGameStatusChange = functions
+  .region('us-west2')
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .https.onRequest(confirmationFlow._processScheduledGameStatusChangeHandler);
+
+exports.processScheduledWindowClose = functions
+  .region('us-west2')
+  .runWith({ timeoutSeconds: 540, memory: '512MB' })
+  .https.onRequest(confirmationFlow._processScheduledWindowCloseHandler);
 
 // Trust Profile — Stage 5
 exports.updateTrustProfile = trustProfileModule.updateTrustProfile;
