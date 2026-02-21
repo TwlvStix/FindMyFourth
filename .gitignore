@@ -47,3 +47,5 @@ keys/*.json
 *.key
 *.pem
 .env
+node_modules/
+firebase/functions/service-account.json

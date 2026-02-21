@@ -786,9 +786,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             SliverPadding(
                               padding: EdgeInsets.only(
                                 top: AppSpacing.md,
-                                // Account for bottom nav bar (56) + FAB (56) + spacing (16) + safe area
-                                bottom: MediaQuery.of(context).padding.bottom +
-                                    128.0,
+                                // Only add large bottom padding if no locked games section follows
+                                bottom: lockedGames.isEmpty
+                                    ? MediaQuery.of(context).padding.bottom + 128.0
+                                    : AppSpacing.md,
                               ),
                               sliver: joinableGames.isEmpty
                                   ? SliverToBoxAdapter(

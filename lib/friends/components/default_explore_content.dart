@@ -60,12 +60,12 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildRecommendedHeader(),
+              _buildSectionHeader('RECOMMENDED FOR YOU', 0, AppColors.sunsetGold),
               _buildSectionEmpty(
                 'Complete your VIBE profile to see personalized matches.',
               ),
               SizedBox(height: AppSpacing.lg),
-              _buildRecentlyJoinedSection(const <String>{}),
+              _buildRecentlyJoinedSection(const <String>{}, 0),
             ],
           );
         }
@@ -81,10 +81,10 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildRecommendedHeader(),
+                  _buildSectionHeader('RECOMMENDED FOR YOU', 0, AppColors.sunsetGold),
                   _buildSectionLoading(),
                   SizedBox(height: AppSpacing.lg),
-                  _buildRecentlyJoinedSection(const <String>{}),
+                  _buildRecentlyJoinedSection(const <String>{}, 0),
                 ],
               );
             }
@@ -114,7 +114,11 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildRecommendedHeader(),
+        _buildSectionHeader(
+          'RECOMMENDED FOR YOU',
+          recommendations.length,
+          AppColors.sunsetGold,
+        ),
         if (recommendations.isEmpty)
           _buildSectionEmpty(
             'No VIBE matches available yet.',
@@ -142,47 +146,41 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
     );
   }
 
-  Widget _buildRecommendedHeader() {
+  Widget _buildSectionHeader(String label, int count, Color color) {
     return Padding(
       padding: EdgeInsets.only(
         left: AppSpacing.lg,
+        right: AppSpacing.lg,
         bottom: AppSpacing.xs,
       ),
-      child: Text(
-        'RECOMMENDED FOR YOU',
-        style: AppTypography.labelMedium.copyWith(
-          color: AppColors.sunsetGold,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.8,
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1.5,
+              color: color.withValues(alpha: 0.8),
+            ),
+          ),
+          Text(
+            '$count ${count == 1 ? 'golfer' : 'golfers'}',
+            style: TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withValues(alpha: 0.5),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildRecentlyJoinedSection(Set<String> excludeIds) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.only(
-            left: AppSpacing.lg,
-            bottom: AppSpacing.xs,
-          ),
-          child: Text(
-            'RECENTLY JOINED',
-            style: AppTypography.labelMedium.copyWith(
-              color: AppColors.fairway,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-            ),
-          ),
-        ),
-        _buildRecentlyJoinedList(excludeIds),
-      ],
-    );
-  }
-
-  Widget _buildRecentlyJoinedList(Set<String> excludeIds) {
+  Widget _buildRecentlyJoinedSection(Set<String> excludeIds, [int? overrideCount]) {
     final userProvider = context.read<UserProvider>();
     final cachedRecent = userProvider.getCachedRecentlyJoinedUsers(
       limit: widget.recentlyJoinedLimit + excludeIds.length,
@@ -194,40 +192,45 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
       ),
       initialData: cachedRecent,
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return _buildSectionLoading();
-        }
+        final recentlyJoined = snapshot.hasData
+            ? snapshot.data!
+                .where((user) =>
+                    user.reference.id != widget.currentUserId &&
+                    !excludeIds.contains(user.reference.id))
+                .take(widget.recentlyJoinedLimit)
+                .toList()
+            : <UsersRecord>[];
 
-        final recentlyJoined = snapshot.data!
-            .where((user) =>
-                user.reference.id != widget.currentUserId &&
-                !excludeIds.contains(user.reference.id))
-            .take(widget.recentlyJoinedLimit)
-            .toList();
+        final count = overrideCount ?? recentlyJoined.length;
 
-        if (recentlyJoined.isEmpty) {
-          return _buildSectionEmpty(
-            'No new golfers to show.',
-          );
-        }
-
-        return ListView.separated(
-          padding: EdgeInsets.fromLTRB(
-            0,
-            AppSpacing.xs,
-            0,
-            AppSpacing.xxl,
-          ),
-          primary: false,
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          scrollDirection: Axis.vertical,
-          itemCount: recentlyJoined.length,
-          separatorBuilder: (_, __) => SizedBox(height: 0),
-          itemBuilder: (context, index) {
-            final user = recentlyJoined[index];
-            return widget.itemBuilder(context, user);
-          },
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionHeader('RECENTLY JOINED', count, AppColors.sunsetGold),
+            if (!snapshot.hasData)
+              _buildSectionLoading()
+            else if (recentlyJoined.isEmpty)
+              _buildSectionEmpty('No new golfers to show.')
+            else
+              ListView.separated(
+                padding: EdgeInsets.fromLTRB(
+                  0,
+                  AppSpacing.xs,
+                  0,
+                  AppSpacing.xxl,
+                ),
+                primary: false,
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                scrollDirection: Axis.vertical,
+                itemCount: recentlyJoined.length,
+                separatorBuilder: (_, __) => SizedBox(height: 0),
+                itemBuilder: (context, index) {
+                  final user = recentlyJoined[index];
+                  return widget.itemBuilder(context, user);
+                },
+              ),
+          ],
         );
       },
     );
@@ -311,7 +314,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
       child: Text(
         message,
         style: AppTypography.bodySmall.copyWith(
-          color: AppColors.stone.withOpacity(0.7),
+          color: AppColors.stone.withValues(alpha: 0.7),
         ),
       ),
     );

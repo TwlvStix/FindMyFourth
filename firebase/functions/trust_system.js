@@ -719,56 +719,11 @@ const markGhostNoShow = functions
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Callable: validateGameAppUserCount
- *
- * Client-side validation callable used before game creation to confirm
- * the proposed participant list has at least 2 app users (non-guests).
- *
- * Expected payload: { participantUids: string[] }
- * Returns: { valid: true, appUserCount: number }
- * Throws invalid-argument if count < 2.
- */
-const validateGameAppUserCount = functions
-  .region("us-west2")
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
-        "unauthenticated",
-        "Authentication required."
-      );
-    }
-
-    const participantUids = data && data.participantUids;
-    if (!Array.isArray(participantUids)) {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "participantUids must be an array of user ID strings."
-      );
-    }
-
-    const appUserCount = participantUids.filter(
-      (uid) => typeof uid === "string" && uid.length > 0
-    ).length;
-
-    if (appUserCount < 2) {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        `A game requires at least 2 app users. Got ${appUserCount}.`
-      );
-    }
-
-    return { valid: true, appUserCount };
-  });
-
-/**
  * Firestore trigger: onGameCreate
  *
- * Server-side safety net. Validates that a newly created game has at least
- * 2 app users in joined_players. If not, marks the game cancelled with a
- * reason field rather than deleting it (preserves auditability).
- *
- * Clients should call validateGameAppUserCount before creating a game.
- * This trigger catches any direct Firestore writes that bypass the callable.
+ * Logs game creation for auditing. The 2 app user minimum is now enforced
+ * at round verification time (in confirmation_flow.js) rather than at
+ * game creation, since games are created with only the host initially.
  *
  * NOTE: Does not interfere with other onCreate triggers on games/{gameId}
  * (e.g. syncGameChatMembers) — Firestore runs them independently.
@@ -782,35 +737,23 @@ const onGameCreate = functions
       ? gameData.joined_players
       : [];
 
-    // Count app users: entries that are DocumentReferences (duck-typed) or path strings.
-    // admin.firestore.DocumentReference is not reliably accessible in the Functions
-    // emulator runtime — use duck typing instead.
+    // Count app users for logging purposes
     const appUserCount = joinedPlayers.filter((entry) => {
       if (!entry) return false;
       if (typeof entry === "object" && typeof entry.id === "string" && entry.id.length > 0) return true;
-      // Firestore path strings like "users/abc123"
       if (typeof entry === "string" && entry.includes("/")) return true;
       return false;
     }).length;
 
-    if (appUserCount < 2) {
-      console.warn(
-        `onGameCreate: game ${context.params.gameId} has only ` +
-          `${appUserCount} app user(s) in joined_players. Minimum is 2. Cancelling.`
-      );
-      await snapshot.ref.update({
-        status: "cancelled",
-        isCancelled: true,
-        cancellation_reason: "insufficient_app_users",
-      });
-    }
+    console.log(
+      `onGameCreate: game ${context.params.gameId} created with ${appUserCount} app user(s)`
+    );
   });
 
 module.exports = {
   // Stage 1
   calculateCancellationTier,
   recordCancellation,
-  validateGameAppUserCount,
   onGameCreate,
   // Stage 2 — callables
   checkPlayerRestriction,

@@ -1231,13 +1231,7 @@ async function _finalizeRoundVerification(db, roundRef, roundData, gameRef) {
 
   const nowTs = admin.firestore.Timestamp.now();
 
-  // ── 1. Mark round as verified ─────────────────────────────────────────────
-  await roundRef.update({
-    verification_status: "verified",
-    verified_at: nowTs,
-  });
-
-  // ── 2. Determine which app users are present ──────────────────────────────
+  // ── 1. Determine which app users are present ──────────────────────────────
   const attendanceRecords = roundData.attendance_records || {};
   const participantSnapshots = Array.isArray(roundData.participant_snapshots)
     ? roundData.participant_snapshots
@@ -1249,14 +1243,27 @@ async function _finalizeRoundVerification(db, roundRef, roundData, gameRef) {
     .map((s) => (s && typeof s.uid === "string" ? s.uid : null))
     .filter((uid) => uid !== null && attendanceRecords[uid] !== "no_show");
 
-  if (presentUids.length === 0) {
+  // ── 2. Require at least 2 app users for verification ──────────────────────
+  if (presentUids.length < 2) {
+    await roundRef.update({
+      verification_status: "failed",
+      verification_failed_at: nowTs,
+      verification_failure_reason: "insufficient_app_users",
+    });
     console.log(
-      `_finalizeRoundVerification: no present users found for round ${roundRef.id}, skipping counts`
+      `_finalizeRoundVerification: round ${roundRef.id} failed verification - ` +
+        `only ${presentUids.length} present app user(s), minimum is 2`
     );
     return;
   }
 
-  // ── 3. Increment verified_round_count for each present user ───────────────
+  // ── 3. Mark round as verified ─────────────────────────────────────────────
+  await roundRef.update({
+    verification_status: "verified",
+    verified_at: nowTs,
+  });
+
+  // ── 4. Increment verified_round_count for each present user ───────────────
   const userCountBatch = db.batch();
   for (const uid of presentUids) {
     const userRef = db.collection("users").doc(uid);
@@ -1266,71 +1273,63 @@ async function _finalizeRoundVerification(db, roundRef, roundData, gameRef) {
   }
   await userCountBatch.commit();
 
-  // ── 4. Write partner_plays entries for all present-user pairs ─────────────
-  if (presentUids.length >= 2) {
-    const partnerBatch = db.batch();
-    for (let i = 0; i < presentUids.length; i++) {
-      for (let j = i + 1; j < presentUids.length; j++) {
-        const uidA = presentUids[i];
-        const uidB = presentUids[j];
+  // ── 5. Write partner_plays entries for all present-user pairs ─────────────
+  const partnerBatch = db.batch();
+  for (let i = 0; i < presentUids.length; i++) {
+    for (let j = i + 1; j < presentUids.length; j++) {
+      const uidA = presentUids[i];
+      const uidB = presentUids[j];
 
-        // users/{uidA}/partner_plays/{uidB}
-        const refAB = db
-          .collection("users")
-          .doc(uidA)
-          .collection("partner_plays")
-          .doc(uidB);
-        partnerBatch.set(
-          refAB,
-          {
-            play_count: admin.firestore.FieldValue.increment(1),
-            last_played_at: nowTs,
-            game_refs: admin.firestore.FieldValue.arrayUnion(gameRef),
-          },
-          { merge: true }
-        );
+      // users/{uidA}/partner_plays/{uidB}
+      const refAB = db
+        .collection("users")
+        .doc(uidA)
+        .collection("partner_plays")
+        .doc(uidB);
+      partnerBatch.set(
+        refAB,
+        {
+          play_count: admin.firestore.FieldValue.increment(1),
+          last_played_at: nowTs,
+          game_refs: admin.firestore.FieldValue.arrayUnion(gameRef),
+        },
+        { merge: true }
+      );
 
-        // Mirror: users/{uidB}/partner_plays/{uidA}
-        const refBA = db
-          .collection("users")
-          .doc(uidB)
-          .collection("partner_plays")
-          .doc(uidA);
-        partnerBatch.set(
-          refBA,
-          {
-            play_count: admin.firestore.FieldValue.increment(1),
-            last_played_at: nowTs,
-            game_refs: admin.firestore.FieldValue.arrayUnion(gameRef),
-          },
-          { merge: true }
-        );
-      }
+      // Mirror: users/{uidB}/partner_plays/{uidA}
+      const refBA = db
+        .collection("users")
+        .doc(uidB)
+        .collection("partner_plays")
+        .doc(uidA);
+      partnerBatch.set(
+        refBA,
+        {
+          play_count: admin.firestore.FieldValue.increment(1),
+          last_played_at: nowTs,
+          game_refs: admin.firestore.FieldValue.arrayUnion(gameRef),
+        },
+        { merge: true }
+      );
     }
-    await partnerBatch.commit();
   }
+  await partnerBatch.commit();
 
   console.log(
     `_finalizeRoundVerification: round ${roundRef.id} verified. ` +
       `Present users: ${presentUids.length}. ` +
-      `Partner pairs updated: ${
-        presentUids.length >= 2
-          ? (presentUids.length * (presentUids.length - 1)) / 2
-          : 0
-      }`
+      `Partner pairs updated: ${(presentUids.length * (presentUids.length - 1)) / 2}`
   );
 
-  // ── 5. Stage 5: update trust profiles for all present users ───────────────
-  if (presentUids.length > 0) {
-    const trustUpdates = presentUids.map((uid) =>
-      trustProfile._updateTrustProfileHandler(db, uid).catch((err) =>
-        console.warn(
-          `_finalizeRoundVerification: trust profile update failed for ${uid}:`, err
-        )
+  // ── 6. Stage 5: update trust profiles for all present users ───────────────
+  const trustUpdates = presentUids.map((uid) =>
+    trustProfile._updateTrustProfileHandler(db, uid).catch((err) =>
+      console.warn(
+        `_finalizeRoundVerification: trust profile update failed for ${uid}:`, err
       )
-    );
-    await Promise.all(trustUpdates);
-  }
+    )
+  );
+  await Promise.all(trustUpdates);
 }
 
 /**

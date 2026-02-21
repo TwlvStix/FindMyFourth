@@ -775,6 +775,37 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                             joinGameDetailedGamesRecord.userRef!,
                           ),
                           builder: (context, hostSnapshot) {
+                            // Handle error state - show fallback UI instead of infinite loading
+                            if (hostSnapshot.hasError) {
+                              debugPrint('JoinGameDetailed: Host data error: ${hostSnapshot.error}');
+                              return Container(
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  color: AppColors.fairway.withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.person_outline_rounded,
+                                        color: Colors.white.withValues(alpha: 0.5),
+                                        size: 40,
+                                      ),
+                                      SizedBox(height: AppSpacing.sm),
+                                      Text(
+                                        'Host information unavailable',
+                                        style: AppTypography.bodySmall.copyWith(
+                                          color: Colors.white.withValues(alpha: 0.7),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+                            // Show loading only while waiting for data
                             if (!hostSnapshot.hasData) {
                               return Container(
                                 height: 200,

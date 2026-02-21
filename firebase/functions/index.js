@@ -1703,7 +1703,6 @@ exports.deleteChat = functions
 
 // Trust System — Stage 1 & 2
 exports.recordCancellation = trustSystem.recordCancellation;
-exports.validateGameAppUserCount = trustSystem.validateGameAppUserCount;
 exports.onGameCreate = trustSystem.onGameCreate;
 exports.checkPlayerRestriction = trustSystem.checkPlayerRestriction;
 exports.markGhostNoShow = trustSystem.markGhostNoShow;

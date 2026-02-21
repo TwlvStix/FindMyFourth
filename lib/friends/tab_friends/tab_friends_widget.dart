@@ -381,24 +381,25 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                 SizedBox(height: AppSpacing.md),
 
                 // ═══════════════════════════════════════════════════════════════
-                // SECTION LABEL ROW
+                // SECTION LABEL ROW (hidden for Discover - DefaultExploreContent has its own)
                 // ═══════════════════════════════════════════════════════════════
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                  child: AuthUserStreamWidget(
-                    builder: (context) {
-                      return SectionLabelRow(
-                        label: _getSectionLabel(),
-                        count: _getCountForCurrentSegment(),
-                        countLabel: _currentSegment == GolferSegment.requests
-                            ? 'requests'
-                            : 'golfers',
-                      );
-                    },
+                if (_currentSegment != GolferSegment.discover) ...[
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                    child: AuthUserStreamWidget(
+                      builder: (context) {
+                        return SectionLabelRow(
+                          label: _getSectionLabel(),
+                          count: _getCountForCurrentSegment(),
+                          countLabel: _currentSegment == GolferSegment.requests
+                              ? 'requests'
+                              : 'golfers',
+                        );
+                      },
+                    ),
                   ),
-                ),
-
-                SizedBox(height: AppSpacing.sm),
+                  SizedBox(height: AppSpacing.sm),
+                ],
 
                 // ═══════════════════════════════════════════════════════════════
                 // SCROLLABLE CONTENT AREA
@@ -408,6 +409,15 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                     duration: const Duration(milliseconds: 200),
                     switchInCurve: Curves.easeOut,
                     switchOutCurve: Curves.easeIn,
+                    layoutBuilder: (currentChild, previousChildren) {
+                      return Stack(
+                        alignment: Alignment.topCenter,
+                        children: <Widget>[
+                          ...previousChildren,
+                          if (currentChild != null) currentChild,
+                        ],
+                      );
+                    },
                     child: _buildCurrentView(),
                   ),
                 ),

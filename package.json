@@ -1,0 +1,29 @@
+{
+  "name": "find_my_fourth",
+  "version": "1.0.0",
+  "description": "Flutter app.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TwlvStix/FindMyFourth.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/TwlvStix/FindMyFourth/issues"
+  },
+  "homepage": "https://github.com/TwlvStix/FindMyFourth#readme",
+  "dependencies": {
+    "firebase-admin": "^13.6.1"
+  }
+}

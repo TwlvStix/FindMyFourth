@@ -1766,6 +1766,46 @@ describe("Stage 4 — _finalizeRoundVerification", () => {
     const user = mockDb.getDoc("users", "host_user");
     expect(user.verified_round_count).toBe(10); // unchanged
   });
+
+  test("fails verification when fewer than 2 app users present", async () => {
+    const rRef = new MockDocRef(mockDb, "round_records", "r1");
+    const gRef = new MockDocRef(mockDb, "games", "g1");
+    mockDb.seedDoc("round_records", "r1", {
+      verification_status: "pending",
+      attendance_records: { host_user: "present" },
+      participant_snapshots: [{ uid: "host_user" }],
+    });
+    mockDb.seedDoc("users", "host_user", { verified_round_count: 5 });
+
+    const roundData = mockDb.getDoc("round_records", "r1");
+    await confirmationFlow._finalizeRoundVerification(mockDb, rRef, roundData, gRef);
+
+    const round = mockDb.getDoc("round_records", "r1");
+    expect(round.verification_status).toBe("failed");
+    expect(round.verification_failure_reason).toBe("insufficient_app_users");
+    expect(round.verification_failed_at).toBeDefined();
+
+    // User count should NOT be incremented
+    const user = mockDb.getDoc("users", "host_user");
+    expect(user.verified_round_count).toBe(5); // unchanged
+  });
+
+  test("fails verification when no app users present", async () => {
+    const rRef = new MockDocRef(mockDb, "round_records", "r1");
+    const gRef = new MockDocRef(mockDb, "games", "g1");
+    mockDb.seedDoc("round_records", "r1", {
+      verification_status: "pending",
+      attendance_records: {},
+      participant_snapshots: [],
+    });
+
+    const roundData = mockDb.getDoc("round_records", "r1");
+    await confirmationFlow._finalizeRoundVerification(mockDb, rRef, roundData, gRef);
+
+    const round = mockDb.getDoc("round_records", "r1");
+    expect(round.verification_status).toBe("failed");
+    expect(round.verification_failure_reason).toBe("insufficient_app_users");
+  });
 });
 
 describe("Stage 4 — submitPeerRatings signal + dispute resolution", () => {
