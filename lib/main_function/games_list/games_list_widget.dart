@@ -1,6 +1,10 @@
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
+import '/core/widgets/trust/restriction_banner.dart';
+import '/providers/trust_provider.dart';
 import '/core/design_patterns/premium_ui_patterns.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_stream_builder.dart';
@@ -551,8 +555,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       buttonSize: 44.0,
                       fillColor: Colors.transparent,
                       tooltip: 'Notifications',
-                      icon: Icon(
-                        Icons.notifications_none_rounded,
+                      icon: AppIcon(
+                        assetPath: AppIcons.notifications,
                         color: Colors.white,
                         size: 24.0,
                       ),
@@ -583,8 +587,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               buttonSize: 44.0,
                               fillColor: Colors.transparent,
                               tooltip: 'Notifications',
-                              icon: Icon(
-                                Icons.notifications_none_rounded,
+                              icon: AppIcon(
+                                assetPath: AppIcons.notifications,
                                 color: Colors.white,
                                 size: 24.0,
                               ),
@@ -755,12 +759,39 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                         child: CustomScrollView(
                           physics: const AlwaysScrollableScrollPhysics(),
                           slivers: [
+                            // RestrictionBanner — shown when player has an active restriction
+                            Consumer<TrustProvider>(
+                              builder: (context, trust, _) {
+                                final restriction =
+                                    trust.myStanding?.currentRestriction;
+                                if (restriction == null) {
+                                  return const SliverToBoxAdapter(
+                                      child: SizedBox.shrink());
+                                }
+                                return SliverToBoxAdapter(
+                                  child: Padding(
+                                    padding: EdgeInsets.fromLTRB(
+                                      AppSpacing.md,
+                                      AppSpacing.md,
+                                      AppSpacing.md,
+                                      0,
+                                    ),
+                                    child: RestrictionBanner(
+                                      restriction: restriction,
+                                      onViewStanding: () =>
+                                          context.pushNamed('YourStanding'),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                             SliverPadding(
                               padding: EdgeInsets.only(
                                 top: AppSpacing.md,
-                                // Account for bottom nav bar (56) + FAB (56) + spacing (16) + safe area
-                                bottom: MediaQuery.of(context).padding.bottom +
-                                    128.0,
+                                // Only add large bottom padding if no locked games section follows
+                                bottom: lockedGames.isEmpty
+                                    ? MediaQuery.of(context).padding.bottom + 128.0
+                                    : AppSpacing.md,
                               ),
                               sliver: joinableGames.isEmpty
                                   ? SliverToBoxAdapter(
@@ -781,11 +812,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                     .withOpacity(0.3),
                                                 shape: BoxShape.circle,
                                               ),
-                                              child: Icon(
-                                                Icons.golf_course_rounded,
-                                                size: 56,
-                                                color: Colors.white
-                                                    .withOpacity(0.5),
+                                              child: Center(
+                                                child: AppIcon(
+                                                  assetPath: AppIcons.games,
+                                                  size: 64,
+                                                  color: Colors.white
+                                                      .withOpacity(0.5),
+                                                ),
                                               ),
                                             ),
                                             SizedBox(height: AppSpacing.lg),
@@ -970,8 +1003,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 borderRadius:
                                                     BorderRadius.circular(10),
                                               ),
-                                              child: Icon(
-                                                Icons.lock_rounded,
+                                              child: AppIcon(
+                                                assetPath: AppIcons.lock,
                                                 color: Colors.white
                                                     .withOpacity(0.8),
                                                 size: 18,
@@ -1075,6 +1108,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   Widget _buildPremiumGameCard(
       BuildContext context, Game game, DocumentReference? currentUserReference,
       {bool isLocked = false}) {
+    final isOwner = currentUserReference != null &&
+        game.userRef == currentUserReference;
     final isUserGame = currentUserReference != null &&
         (game.userRef == currentUserReference ||
             game.joinedPlayers.contains(currentUserReference));
@@ -1156,8 +1191,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
-                                    Icons.lock_rounded,
+                                  AppIcon(
+                                    assetPath: AppIcons.lock,
                                     size: 12,
                                     color: Colors.white.withOpacity(0.85),
                                   ),
@@ -1174,8 +1209,53 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             ),
                           ),
                         if (isLocked) SizedBox(width: AppSpacing.xs),
+                        // Just for Fun pill (replaces game type badge for fun games)
+                        if (game.isFunGame)
+                          Opacity(
+                            opacity: isUserGame ? 0.65 : 1.0,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppSpacing.sm,
+                                vertical: AppSpacing.xxs,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.fairwayLight,
+                                    AppColors.fairway,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(20.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.fairway.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  AppIcon(
+                                    assetPath: AppIcons.games,
+                                    color: Colors.white,
+                                    size: 12,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Just for Fun',
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
                         // Game Type Badge with gradient
-                        if (game.gameType.isNotEmpty)
+                        else if (game.gameType.isNotEmpty)
                           Opacity(
                             opacity: isUserGame ? 0.65 : 1.0,  // Dim badge for joined games
                             child: Container(
@@ -1280,6 +1360,33 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               ),
                             ),
                           )
+                        else if (isOwner)
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xxs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Color(0xFF4A7C59).withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                AppIcon(
+                                    assetPath: AppIcons.owner,
+                                    color: Colors.white, size: 14),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Owner',
+                                  style: AppTypography.labelSmall.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
                         else if (isUserGame)
                           Container(
                             padding: EdgeInsets.symmetric(
@@ -1287,14 +1394,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
-                              // Muted sage/gray-green instead of vibrant gold
                               color: Color(0xFF6B7C6E).withOpacity(0.85),
                               borderRadius: BorderRadius.circular(12.0),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.check_circle_rounded,
+                                AppIcon(
+                                    assetPath: AppIcons.joined,
                                     color: Colors.white, size: 14),
                                 SizedBox(width: 4),
                                 Text(
@@ -1329,10 +1436,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               ),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Icon(
-                              Icons.golf_course_rounded,
-                              color: Colors.white,
-                              size: 18,
+                            child: Center(
+                              child: AppIcon(
+                                assetPath: AppIcons.course,
+                                color: Colors.white,
+                                size: 18,
+                              ),
                             ),
                           ),
                           SizedBox(width: AppSpacing.sm),
@@ -1391,12 +1500,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               color: AppColors.sunsetPeach.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Icon(
-                              game.isFlexible
-                                  ? Icons.event_note_rounded
-                                  : Icons.calendar_today_rounded,
-                              color: AppColors.sunsetPeach,
-                              size: 16,
+                            child: Center(
+                              child: AppIcon(
+                                assetPath: AppIcons.calendarCheck,
+                                color: AppColors.sunsetPeach,
+                                size: 16,
+                              ),
                             ),
                           ),
                           SizedBox(width: AppSpacing.sm),
@@ -1454,8 +1563,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.people_rounded,
+                                AppIcon(
+                                  assetPath: AppIcons.golfers,
                                   color: isFull
                                       ? AppColors.sunsetRose
                                       : Colors.white,
@@ -1514,8 +1623,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.local_offer_rounded,
+                                AppIcon(
+                                  assetPath: AppIcons.memberDiscount,
                                   color: AppColors.fairwayLight,
                                   size: 12,
                                 ),
@@ -1564,8 +1673,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
-                                      Icons.person_add_rounded,
+                                    AppIcon(
+                                      assetPath: AppIcons.addPlayer,
                                       color: Colors.white,
                                       size: 16,
                                     ),
@@ -1618,15 +1727,24 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
-                                    isUserGame
-                                        ? Icons.visibility_rounded
-                                        : (isFull
-                                            ? Icons.hourglass_empty_rounded
-                                            : Icons.add_rounded),
-                                    color: Colors.white,
-                                    size: 16,
-                                  ),
+                                  if (isUserGame)
+                                    Icon(
+                                      Icons.visibility_rounded,
+                                      color: Colors.white,
+                                      size: 16,
+                                    )
+                                  else if (isFull)
+                                    AppIcon(
+                                      assetPath: AppIcons.pending,
+                                      color: Colors.white,
+                                      size: 16,
+                                    )
+                                  else
+                                    Icon(
+                                      Icons.add_rounded,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
                                   SizedBox(width: 6),
                                   Text(
                                     isUserGame

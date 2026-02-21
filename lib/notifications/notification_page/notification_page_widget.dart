@@ -4,6 +4,8 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
@@ -48,10 +50,10 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   bool _hasChanges = false;
 
   // Quiet hours
-  static const List<_DigestOption> _digestOptions = [
-    _DigestOption(value: 'instant', label: 'Instant', icon: Icons.flash_on),
-    _DigestOption(value: 'hourly', label: 'Hourly', icon: Icons.schedule),
-    _DigestOption(value: 'daily', label: 'Daily', icon: Icons.calendar_today),
+  static final List<_DigestOption> _digestOptions = [
+    _DigestOption(value: 'instant', label: 'Instant', svgPath: AppIcons.notifications),
+    _DigestOption(value: 'hourly', label: 'Hourly', svgPath: AppIcons.teeTime),
+    _DigestOption(value: 'daily', label: 'Daily', svgPath: AppIcons.calendarCheck),
     _DigestOption(value: 'off', label: 'Off', icon: Icons.do_not_disturb),
   ];
 
@@ -85,9 +87,19 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
         alertSub = null;
       }
 
+      // If no alertSub document exists, create the default (enabled, no filters = all games)
+      // so the backend will include this user in game notifications without requiring an explicit save.
+      if (alertSub == null) {
+        final defaultSub = AlertSubscription.defaults(currentUserUid);
+        AlertSubscriptionService.saveSubscription(defaultSub).catchError((e) {
+          debugPrint('[NotificationSettings] Failed to auto-save default alertSub: $e');
+        });
+        alertSub = defaultSub;
+      }
+
       setState(() {
         _prefs = prefs;
-        _alertSub = alertSub ?? AlertSubscription.defaults(currentUserUid);
+        _alertSub = alertSub;
         _isLoading = false;
         _hasChanges = false;
       });
@@ -292,6 +304,24 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
         chatAlerts: _prefs!.chatAlerts.copyWith(enabled: enabled),
       ),
     );
+  }
+
+  void _togglePostRound(bool enabled) {
+    _updatePrefs(_prefs!.copyWith(
+      trustCategories: _prefs!.trustCategories.copyWith(postRound: enabled),
+    ));
+  }
+
+  void _toggleTrustAlerts(bool enabled) {
+    _updatePrefs(_prefs!.copyWith(
+      trustCategories: _prefs!.trustCategories.copyWith(trustAlerts: enabled),
+    ));
+  }
+
+  void _toggleBadges(bool enabled) {
+    _updatePrefs(_prefs!.copyWith(
+      trustCategories: _prefs!.trustCategories.copyWith(badges: enabled),
+    ));
   }
 
   Future<void> _navigateToGameAlerts() async {
@@ -508,7 +538,8 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   }
 
   Widget _buildSection({
-    required String emoji,
+    String? emoji,
+    String? svgPath,
     required String title,
     String? subtitle,
     required List<Widget> children,
@@ -545,10 +576,17 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          emoji,
-                          style: TextStyle(fontSize: 20),
-                        ),
+                        if (svgPath != null)
+                          AppIcon(
+                            assetPath: svgPath,
+                            size: 20,
+                            color: Colors.white,
+                          )
+                        else if (emoji != null)
+                          Text(
+                            emoji,
+                            style: TextStyle(fontSize: 20),
+                          ),
                         SizedBox(width: AppSpacing.xs),
                         Text(
                           title,
@@ -769,13 +807,22 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    option.icon,
-                    size: 18,
-                    color: isSelected
-                        ? AppColors.fairwayDark
-                        : Colors.white.withValues(alpha: 0.7),
-                  ),
+                  if (option.svgPath != null)
+                    AppIcon(
+                      assetPath: option.svgPath!,
+                      size: 18,
+                      color: isSelected
+                          ? AppColors.fairwayDark
+                          : Colors.white.withValues(alpha: 0.7),
+                    )
+                  else
+                    Icon(
+                      option.icon,
+                      size: 18,
+                      color: isSelected
+                          ? AppColors.fairwayDark
+                          : Colors.white.withValues(alpha: 0.7),
+                    ),
                   SizedBox(width: AppSpacing.xs),
                   Text(
                     option.label,
@@ -955,7 +1002,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
                             // MASTER: Push Notifications
                             _buildSection(
-                              emoji: '🔔',
+                              svgPath: AppIcons.notifications,
                               title: 'Push Notifications',
                               subtitle:
                                   'Master control for all notifications',
@@ -1038,7 +1085,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
                             // SUBMASTER: Game Alerts
                             _buildSection(
-                              emoji: '🎮',
+                              svgPath: AppIcons.games,
                               title: 'Game Alerts',
                               subtitle: 'Get notified when games match your preferences',
                               disabled: !_prefs!.pushEnabled,
@@ -1111,7 +1158,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
                             // SUBMASTER: Chat Alerts
                             _buildSection(
-                              emoji: '💬',
+                              svgPath: AppIcons.chat,
                               title: 'Chat Alerts',
                               subtitle: 'Get notified for chat messages',
                               disabled: !_prefs!.pushEnabled,
@@ -1120,6 +1167,44 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                   title: 'Enable chat alerts',
                                   value: _prefs!.chatAlerts.enabled,
                                   onChanged: _toggleChatAlerts,
+                                ),
+                              ],
+                            ),
+
+                            // SUBMASTER: Trust & Reliability
+                            _buildSection(
+                              svgPath: AppIcons.standing,
+                              title: 'Trust & Reliability',
+                              subtitle: 'Check-ins, account standing, and badge updates',
+                              disabled: !_prefs!.pushEnabled,
+                              children: [
+                                _buildToggleRow(
+                                  title: 'Post-round check-ins',
+                                  subtitle: 'Check-in reminders after your rounds',
+                                  value: _prefs!.trustCategories.postRound,
+                                  onChanged: _togglePostRound,
+                                ),
+                                Divider(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  height: 1,
+                                  thickness: 1,
+                                ),
+                                _buildToggleRow(
+                                  title: 'Account standing alerts',
+                                  subtitle: 'Strikes, cooldowns, and restrictions',
+                                  value: _prefs!.trustCategories.trustAlerts,
+                                  onChanged: _toggleTrustAlerts,
+                                ),
+                                Divider(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  height: 1,
+                                  thickness: 1,
+                                ),
+                                _buildToggleRow(
+                                  title: 'Badge progress',
+                                  subtitle: 'Badge milestones and progress updates',
+                                  value: _prefs!.trustCategories.badges,
+                                  onChanged: _toggleBadges,
                                 ),
                               ],
                             ),
@@ -1245,10 +1330,12 @@ class _DigestOption {
   const _DigestOption({
     required this.value,
     required this.label,
-    required this.icon,
-  });
+    this.icon,
+    this.svgPath,
+  }) : assert(icon != null || svgPath != null);
 
   final String value;
   final String label;
-  final IconData icon;
+  final IconData? icon;
+  final String? svgPath;
 }

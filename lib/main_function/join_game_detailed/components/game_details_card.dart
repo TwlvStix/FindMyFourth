@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/models/game.dart';
 
 /// Game details card displaying course name and game title with golf icon
@@ -33,10 +35,12 @@ class GameDetailsCard extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(
-            Icons.golf_course_rounded,
-            color: Colors.white,
-            size: 24,
+          child: const Center(
+            child: AppIcon(
+              assetPath: AppIcons.course,
+              color: Colors.white,
+              size: 22,
+            ),
           ),
         ),
         SizedBox(width: AppSpacing.sm),

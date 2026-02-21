@@ -1,6 +1,10 @@
 import 'dart:async';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,6 +26,19 @@ import 'components/chat_message_bubble.dart';
 import 'components/chat_header_title.dart';
 import 'components/chat_input_bar.dart';
 
+class _PendingUpload {
+  final String id;
+  final Uint8List previewBytes;
+  final double progress; // 0.0–1.0
+  const _PendingUpload({
+    required this.id,
+    required this.previewBytes,
+    this.progress = 0.0,
+  });
+  _PendingUpload copyWith({double? progress}) =>
+      _PendingUpload(id: id, previewBytes: previewBytes, progress: progress ?? this.progress);
+}
+
 class GameChatDetailsWidget extends StatefulWidget {
   const GameChatDetailsWidget({
     super.key,
@@ -41,9 +58,12 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   final ScrollController _scrollController = ScrollController();
   late final Stream<Chat?> _chatStream;
   late final Stream<Chat?> _chatUiStream;
-  late final Stream<QuerySnapshot> _messagesStream;
-  late final Stream<List<ChatMessageViewModel>> _messageViewModelsStream;
+  Stream<QuerySnapshot>? _messagesStream;
+  Stream<List<ChatMessageViewModel>>? _messageViewModelsStream;
   StreamSubscription<Chat?>? _chatUiSubscription;
+  // Visibility cutoff from memberJoinedAt — set when the first chat event arrives.
+  DateTime? _visibleAfter;
+  bool _streamsInitialized = false;
   static const int _initialPageSize = 40;
   static const int _pageSize = 30;
   final List<ChatMessage> _olderMessages = [];
@@ -66,6 +86,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   String? _gameIdForOwnerLookup;
   Future<GamesRecord?>? _gameOwnerFuture;
   bool _didMarkSeen = false;
+  final List<_PendingUpload> _pendingUploads = [];
 
   String? get _currentUserId => FirebaseAuth.instance.currentUser?.uid;
 
@@ -75,19 +96,10 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     debugPrint('📨 UI: Chat page loaded for chatId: ${widget.chatId}');
     debugPrint('📨 UI: Current user ID: $_currentUserId');
     final chatProvider = context.read<ChatProvider>();
-    final profileProvider = context.read<ProfileProvider>();
     _chatStream = chatProvider.chatStream(widget.chatId);
     _chatUiStream = _chatStream.distinct(_chatUiEquals);
-    _messagesStream = chatProvider.messagesSnapshotStream(
-      chatId: widget.chatId,
-      limit: _initialPageSize,
-    );
-    // AUDIT #5 FIX: Single view-model stream replaces nested builders
-    _messageViewModelsStream = chatProvider.gameChatMessageViewModelsStream(
-      chatId: widget.chatId,
-      limit: _initialPageSize,
-      profileProvider: profileProvider,
-    );
+    // Message streams are initialized lazily in _updateChatUiState on the first
+    // chat event, so that we can read memberJoinedAt[uid] for fresh-start filtering.
     _chatUiSubscription = _chatUiStream.listen(
       (chat) {
         if (!mounted) return;
@@ -412,6 +424,29 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       return;
     }
 
+    // Initialize message streams on the first valid chat event so we can apply
+    // the memberJoinedAt visibility cutoff for fresh-start-on-rejoin.
+    if (!_streamsInitialized) {
+      _streamsInitialized = true;
+      final currentUserId = _currentUserId;
+      _visibleAfter = currentUserId != null
+          ? chat.memberJoinedAt[currentUserId]
+          : null;
+      final chatProvider = context.read<ChatProvider>();
+      final profileProvider = context.read<ProfileProvider>();
+      _messagesStream = chatProvider.messagesSnapshotStream(
+        chatId: widget.chatId,
+        limit: _initialPageSize,
+        visibleAfter: _visibleAfter,
+      );
+      _messageViewModelsStream = chatProvider.gameChatMessageViewModelsStream(
+        chatId: widget.chatId,
+        limit: _initialPageSize,
+        profileProvider: profileProvider,
+        visibleAfter: _visibleAfter,
+      );
+    }
+
     final isArchived = chat.archivedAt != null &&
         chat.archivedAt!.isBefore(DateTime.now());
     final bannerText = chat.pinnedMessage.isNotEmpty
@@ -546,12 +581,13 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
           .read<ChatProvider>()
           .markChatRead(chatId: widget.chatId, uid: currentUserId);
 
-      // Mark all unread messages as read in a single batched operation
-      // This replaces the previous sequential loop with a single WriteBatch
+      // Mark all unread messages as read in a single batched operation.
+      // Pass visibleAfter so we only mark messages the user can actually see.
       final stats = await context.read<ChatProvider>().markMessagesAsReadBatch(
             chatId: widget.chatId,
             uid: currentUserId,
-            limit: 100, // Check up to 100 recent messages
+            limit: 100,
+            visibleAfter: _visibleAfter,
           );
 
       if (kDebugMode) {
@@ -682,6 +718,174 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     }
   }
 
+  void _showImageSourceSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppTheme.of(context).primaryBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.photo_library_rounded,
+                    color: AppTheme.of(context).primary),
+                title: const Text('Photo Library'),
+                onTap: () {
+                  Navigator.of(sheetCtx).pop();
+                  _pickAndSendImage(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.camera_alt_rounded,
+                    color: AppTheme.of(context).primary),
+                title: const Text('Take Photo'),
+                onTap: () {
+                  Navigator.of(sheetCtx).pop();
+                  _pickAndSendImage(ImageSource.camera);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickAndSendImage(ImageSource source) async {
+    final currentUserId = _currentUserId;
+    if (currentUserId == null) return;
+
+    final picker = ImagePicker();
+    final xFile = await picker.pickImage(
+      source: source,
+      maxWidth: 1200,
+      maxHeight: 1200,
+      imageQuality: 70,
+    );
+    if (xFile == null || !mounted) return;
+
+    final bytes = await xFile.readAsBytes();
+
+    // Decode dimensions for aspect-ratio skeleton
+    double? imgWidth, imgHeight;
+    try {
+      final codec = await ui.instantiateImageCodec(bytes);
+      final frame = await codec.getNextFrame();
+      imgWidth = frame.image.width.toDouble();
+      imgHeight = frame.image.height.toDouble();
+      frame.image.dispose();
+    } catch (_) {}
+
+    final uploadId = DateTime.now().millisecondsSinceEpoch.toString();
+    if (!mounted) return;
+    setState(() {
+      _pendingUploads.add(_PendingUpload(id: uploadId, previewBytes: bytes));
+    });
+
+    try {
+      final path =
+          'chat_images/${widget.chatId}/${uploadId}_$currentUserId.jpg';
+      final ref = FirebaseStorage.instance.ref().child(path);
+      final metadata = SettableMetadata(contentType: 'image/jpeg');
+      final uploadTask = ref.putData(bytes, metadata);
+
+      uploadTask.snapshotEvents.listen(
+        (snapshot) {
+          if (!mounted) return;
+          final total = snapshot.totalBytes;
+          final progress =
+              total > 0 ? snapshot.bytesTransferred / total : 0.0;
+          setState(() {
+            final idx = _pendingUploads.indexWhere((u) => u.id == uploadId);
+            if (idx != -1) {
+              _pendingUploads[idx] =
+                  _pendingUploads[idx].copyWith(progress: progress);
+            }
+          });
+        },
+        onError: (_) {}, // errors are handled via await uploadTask below
+        cancelOnError: true,
+      );
+
+      await uploadTask;
+      final downloadUrl = await ref.getDownloadURL();
+
+      if (!mounted) return;
+      await context.read<ChatProvider>().sendImageMessage(
+            chatId: widget.chatId,
+            senderId: currentUserId,
+            imageUrl: downloadUrl,
+            thumbnailUrl: downloadUrl,
+            imageWidth: imgWidth,
+            imageHeight: imgHeight,
+          );
+
+      if (!mounted) return;
+      setState(() => _pendingUploads.removeWhere((u) => u.id == uploadId));
+    } catch (error, stackTrace) {
+      debugPrint('📷 Image upload error: $error\n$stackTrace');
+      if (!mounted) return;
+      setState(() => _pendingUploads.removeWhere((u) => u.id == uploadId));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            kDebugMode
+                ? 'Upload error: $error'
+                : 'Failed to send image. Please try again.',
+          ),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () => _pickAndSendImage(source),
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildPendingUploadBubble(_PendingUpload upload) {
+    return Padding(
+      padding: EdgeInsets.only(
+        right: AppSpacing.md,
+        left: 60,
+        bottom: AppSpacing.xs,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Image.memory(
+                  upload.previewBytes,
+                  width: 200,
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+                Container(
+                  width: 200,
+                  height: 200,
+                  color: Colors.black.withValues(alpha: 0.45),
+                ),
+                CircularProgressIndicator(
+                  value: upload.progress > 0 ? upload.progress : null,
+                  color: Colors.white,
+                  strokeWidth: 3,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _sendMessage() async {
     final currentUserId = _currentUserId;
     if (currentUserId == null) {
@@ -739,6 +943,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
             chatId: widget.chatId,
             limit: _pageSize,
             startAfter: _lastLoadedDoc ?? _lastStreamDoc,
+            visibleAfter: _visibleAfter,
           );
       if (page.messages.isEmpty) {
         _hasMoreOlder = false;
@@ -814,7 +1019,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         'chatError=${_chatError?.runtimeType} '
         'msgCtrl=${_messageController.hashCode} '
         'focus=${_messageFocusNode.hashCode} '
-        'msgStream=${identityHashCode(_messagesStream)}',
+        'msgStream=${identityHashCode(_messagesStream ?? this)}',
       );
     }
     return GestureDetector(
@@ -1014,7 +1219,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                     ),
                                   )
                                 : StreamBuilder<List<ChatMessageViewModel>>(
-                                    stream: _messageViewModelsStream,
+                                    stream: _messageViewModelsStream!,
                                     builder: (context, snapshot) {
                                       if (kDebugMode) {
                                         debugPrint(
@@ -1234,6 +1439,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                                 isSentByCurrentUser: isMe,
                                                 messageText: message.text,
                                                 imageUrl: message.imageUrl,
+                                                imageWidth: message.imageWidth,
+                                                imageHeight: message.imageHeight,
                                                 timestamp: message.createdAt,
                                                 isFirstInGroup: isFirstInGroup,
                                                 isLastInGroup: isLastInGroup,
@@ -1272,6 +1479,9 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                     },
                                   ),
                   ),
+                  // Pending image upload bubbles
+                  if (_pendingUploads.isNotEmpty)
+                    ..._pendingUploads.map(_buildPendingUploadBubble),
                   ChatInputBar(
                     messageController: _messageController,
                     messageFocusNode: _messageFocusNode,
@@ -1283,6 +1493,9 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                         _replyToMessage = null;
                       });
                     },
+                    onAttachImage: (_canSend && _chatUi != null)
+                        ? _showImageSourceSheet
+                        : null,
                   ),
                 ],
               ),

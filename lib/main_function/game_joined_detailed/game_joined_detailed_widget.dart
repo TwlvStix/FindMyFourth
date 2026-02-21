@@ -1,14 +1,19 @@
 import '/backend/backend.dart';
+import '/backend/schema/trust_profile.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/widgets/trust/luxury_player_card.dart';
 import '/core/app_theme.dart';
 import '/core/motion/motion_helpers.dart';
 import '/utils/app_util.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
+import '/providers/trust_provider.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
@@ -553,7 +558,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 22),
+                                AppIcon(assetPath: AppIcons.chat, color: Colors.white, size: 22),
                                 SizedBox(width: AppSpacing.sm),
                                 Text(
                                   'Message Group',
@@ -616,59 +621,69 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                           SizedBox(height: AppSpacing.sm),
 
                           // Premium Info Grid
-                          GridView.count(
-                            crossAxisCount: 2,
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            padding: EdgeInsets.zero,
-                            crossAxisSpacing: AppSpacing.sm,
-                            mainAxisSpacing: AppSpacing.sm,
-                            childAspectRatio: 3.0,
-                            children: [
-                              _buildPremiumInfoCard(
-                                context,
-                                icon: Icons.attach_money_rounded,
-                                iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                                label: 'Betting',
-                                value: gameJoinedDetailedGamesRecord.styleGame,
-                              ),
-                              _buildPremiumInfoCard(
-                                context,
-                                icon: Icons.rule_rounded,
-                                iconColors: [AppColors.fairwayLight, AppColors.fairway],
-                                label: 'Rule Style',
-                                value: gameJoinedDetailedGamesRecord.rulesSetting,
-                              ),
-                              _buildPremiumInfoCard(
-                                context,
-                                icon: Icons.sports_golf_rounded,
-                                iconColors: [AppColors.fairwayLight, AppColors.fairway],
-                                label: 'Game Type',
-                                value: gameJoinedDetailedGamesRecord.gameType,
-                              ),
-                              _buildPremiumInfoCard(
-                                context,
-                                icon: Icons.scoreboard_rounded,
-                                iconColors: [AppColors.sunsetPeach, AppColors.sunsetRose],
-                                label: 'Scoring',
-                                value: gameJoinedDetailedGamesRecord.scoring,
-                              ),
-                              _buildPremiumInfoCard(
-                                context,
-                                icon: Icons.discount_rounded,
-                                iconColors: [AppColors.fairwayLight, AppColors.fairway],
-                                label: 'Member Discount',
-                                value: gameJoinedDetailedGamesRecord.memberDiscount,
-                              ),
-                              _buildPremiumInfoCard(
-                                context,
-                                icon: Icons.group_rounded,
-                                iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
-                                label: 'Friends Only',
-                                value: gameJoinedDetailedGamesRecord.friendGame,
-                              ),
-                            ],
-                          ),
+                          Builder(builder: (context) {
+                            final isFun = gameJoinedDetailedGamesRecord.isFunGame;
+                            String funOr(String val) =>
+                                isFun && val.isEmpty ? 'Just for Fun' : val;
+                            return GridView.count(
+                              crossAxisCount: 2,
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              padding: EdgeInsets.zero,
+                              crossAxisSpacing: AppSpacing.sm,
+                              mainAxisSpacing: AppSpacing.sm,
+                              childAspectRatio: 3.0,
+                              children: [
+                                _buildPremiumInfoCard(
+                                  context,
+                                  icon: Icons.attach_money_rounded,
+                                  iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                  label: 'Betting',
+                                  value: funOr(gameJoinedDetailedGamesRecord.styleGame),
+                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.styleGame.isEmpty,
+                                ),
+                                _buildPremiumInfoCard(
+                                  context,
+                                  icon: Icons.rule_rounded,
+                                  iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                  label: 'Rule Style',
+                                  value: funOr(gameJoinedDetailedGamesRecord.rulesSetting),
+                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.rulesSetting.isEmpty,
+                                ),
+                                _buildPremiumInfoCard(
+                                  context,
+                                  icon: Icons.sports_golf_rounded,
+                                  iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                  label: 'Game Type',
+                                  value: funOr(gameJoinedDetailedGamesRecord.gameType),
+                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.gameType.isEmpty,
+                                ),
+                                _buildPremiumInfoCard(
+                                  context,
+                                  icon: Icons.scoreboard_rounded,
+                                  iconColors: [AppColors.sunsetPeach, AppColors.sunsetRose],
+                                  label: 'Scoring',
+                                  value: funOr(gameJoinedDetailedGamesRecord.scoring),
+                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.scoring.isEmpty,
+                                ),
+                                _buildPremiumInfoCard(
+                                  context,
+                                  icon: Icons.discount_rounded,
+                                  iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                  label: 'Member Discount',
+                                  value: funOr(gameJoinedDetailedGamesRecord.memberDiscount),
+                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.memberDiscount.isEmpty,
+                                ),
+                                _buildPremiumInfoCard(
+                                  context,
+                                  icon: Icons.group_rounded,
+                                  iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                  label: 'Friends Only',
+                                  value: gameJoinedDetailedGamesRecord.friendGame,
+                                ),
+                              ],
+                            );
+                          }),
                           SizedBox(height: AppSpacing.lg),
 
                           // Players Section Header with gradient accent
@@ -773,200 +788,81 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                       friendRecord?.reference ?? groupPlayersItem;
                                   final photoUrl = friendRecord?.photoUrl ?? '';
 
+                                  // Fetch trust profile for badge display
+                                  final trustProvider = context.read<TrustProvider>();
+                                  return FutureBuilder<TrustProfile?>(
+                                    future: trustProvider.fetchTrustProfile(groupPlayersItem.id),
+                                    builder: (context, trustSnapshot) {
+                                      final trustProfile = trustSnapshot.data;
                                   return Padding(
-                                    padding:
-                                        EdgeInsets.only(bottom: AppSpacing.sm),
-                                    child: InkWell(
+                                    padding: EdgeInsets.only(
+                                      top: 8,
+                                      bottom: AppSpacing.sm,
+                                    ),
+                                    child: LuxuryPlayerCard(
+                                      name: displayName,
+                                      avatarUrl: photoUrl,
+                                      tier: trustProfile?.currentBadge ??
+                                          BadgeTier.newPlayer,
+                                      isFavorite: isOwner,
+                                      status: 'Ready',
+                                      percentWidget: PlayerMatchChip(
+                                        name: displayName,
+                                        memberMatch: _memberMatchesById[
+                                            groupPlayersItem.id],
+                                        onTap: () => _openPremiumVibePage(
+                                          context,
+                                          userRef,
+                                          displayName,
+                                          photoUrl,
+                                          _memberMatchesById[
+                                              groupPlayersItem.id],
+                                        ),
+                                      ),
+                                      trailingWidget:
+                                          gameJoinedDetailedGamesRecord
+                                                      .userRef ==
+                                                  currentUserRef
+                                              ? AppIconButton(
+                                                  icon: Icon(
+                                                    Icons.remove_circle_outline,
+                                                    color: AppTheme.of(context)
+                                                        .error,
+                                                    size: 24.0,
+                                                  ),
+                                                  borderRadius: 20.0,
+                                                  buttonSize: 40.0,
+                                                  fillColor: Colors.transparent,
+                                                  tooltip: 'Remove player',
+                                                  onPressed: () =>
+                                                      _showRemovePlayerDialog(
+                                                    context: context,
+                                                    playerName: displayName,
+                                                    playerRef: groupPlayersItem,
+                                                    isGuest: false,
+                                                    gameRecord:
+                                                        gameJoinedDetailedGamesRecord,
+                                                  ),
+                                                )
+                                              : const AppIcon(
+                                                  assetPath: AppIcons.joined,
+                                                  color: Color(0xFFD4A843),
+                                                  size: 24.0,
+                                                ),
                                       onTap: () {
                                         context.pushNamed(
                                           'ProfileUser',
                                           extra: <String, dynamic>{
                                             'userRef': userRef,
                                             kTransitionInfoKey:
-                                                TransitionStandards.detailTransition,
+                                                TransitionStandards
+                                                    .detailTransition,
                                           },
                                         );
                                       },
-                                      child: Container(
-                                        padding: EdgeInsets.all(AppSpacing.sm),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.fairway
-                                              .withValues(alpha: 0.3),
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          border: Border.all(
-                                            color: AppColors.fairwayLight
-                                                .withValues(alpha: 0.3),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            // Avatar
-                                            Container(
-                                              width: 48.0,
-                                              height: 48.0,
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  colors: [AppColors.fairwayLight, AppColors.fairway],
-                                                ),
-                                                borderRadius: BorderRadius.circular(12),
-                                                border: Border.all(
-                                                  color: Colors.white.withValues(alpha: 0.2),
-                                                  width: 2,
-                                                ),
-                                              ),
-                                              child: ClipRRect(
-                                                borderRadius: BorderRadius.circular(10),
-                                                child: photoUrl.isNotEmpty
-                                                    ? Image.network(
-                                                        photoUrl,
-                                                        fit: BoxFit.cover,
-                                                        cacheWidth: 96,
-                                                        cacheHeight: 96,
-                                                        errorBuilder: (context, error, stackTrace) =>
-                                                            Icon(
-                                                          Icons.person_rounded,
-                                                          color: Colors.white,
-                                                          size: 24,
-                                                        ),
-                                                      )
-                                                    : Icon(
-                                                        Icons.person_rounded,
-                                                        color: Colors.white,
-                                                        size: 24,
-                                                      ),
-                                              ),
-                                            ),
-                                            SizedBox(width: AppSpacing.sm),
-                                            // Name and ready status
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      Flexible(
-                                                        child: Text(
-                                                          displayName,
-                                                          style: AppTheme.of(context)
-                                                              .bodyLarge
-                                                              .override(
-                                                                font: TextStyle(fontFamily: 'Manrope',
-                                                                  fontWeight:
-                                                                      FontWeight.w500,
-                                                                  fontStyle:
-                                                                      AppTheme.of(
-                                                                              context)
-                                                                          .bodyLarge
-                                                                          .fontStyle,
-                                                                ),
-                                                                color: Colors.white,
-                                                                letterSpacing: 0.0,
-                                                                fontWeight:
-                                                                    FontWeight.w500,
-                                                                fontStyle:
-                                                                    AppTheme.of(
-                                                                            context)
-                                                                        .bodyLarge
-                                                                        .fontStyle,
-                                                              ),
-                                                          maxLines: 1,
-                                                          overflow:
-                                                              TextOverflow.ellipsis,
-                                                        ),
-                                                      ),
-                                                      if (isOwner) ...[
-                                                        SizedBox(width: 6),
-                                                        Icon(
-                                                          Icons.star_rounded,
-                                                          color: AppColors.sunsetGold,
-                                                          size: 16,
-                                                        ),
-                                                      ],
-                                                    ],
-                                                  ),
-                                                  SizedBox(height: AppSpacing.xxs),
-                                                  Text(
-                                                    'Ready',
-                                                    style: AppTheme.of(context)
-                                                        .bodySmall
-                                                        .override(
-                                                          font: TextStyle(fontFamily: 'Manrope',
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal,
-                                                            fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .bodySmall
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: AppColors
-                                                              .sunsetGold,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodySmall
-                                                                  .fontStyle,
-                                                        ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.only(
-                                                right: AppSpacing.sm,
-                                              ),
-                                              child: PlayerMatchChip(
-                                                name: displayName,
-                                                memberMatch:
-                                                    _memberMatchesById[groupPlayersItem.id],
-                                                onTap: () => _openPremiumVibePage(
-                                                  context,
-                                                  userRef,
-                                                  displayName,
-                                                  photoUrl,
-                                                  _memberMatchesById[groupPlayersItem.id],
-                                                ),
-                                              ),
-                                            ),
-                                            // Show remove button for owner, checkmark for others
-                                            if (gameJoinedDetailedGamesRecord.userRef ==
-                                                currentUserRef)
-                                              AppIconButton(
-                                                icon: Icon(
-                                                  Icons.remove_circle_outline,
-                                                  color: AppTheme.of(context).error,
-                                                  size: 24.0,
-                                                ),
-                                                borderRadius: 20.0,
-                                                buttonSize: 40.0,
-                                                fillColor: Colors.transparent,
-                                                tooltip: 'Remove player',
-                                                onPressed: () => _showRemovePlayerDialog(
-                                                  context: context,
-                                                  playerName: displayName,
-                                                  playerRef: groupPlayersItem,
-                                                  isGuest: false,
-                                                  gameRecord: gameJoinedDetailedGamesRecord,
-                                                ),
-                                              )
-                                            else
-                                              Icon(
-                                                Icons.check_circle,
-                                                color: AppColors.sunsetGold,
-                                                size: 24.0,
-                                              ),
-                                          ],
-                                        ),
-                                      ),
                                     ),
+                                  );
+                                    },
                                   );
                                 }),
                             // Guest players
@@ -1144,6 +1040,32 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                         context: context,
                         text: 'Leave game',
                         onPressed: () async {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (dialogContext) => AlertDialog(
+                              title: Text('Leave Game'),
+                              content: Text(
+                                'Are you sure you want to leave this game?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(dialogContext).pop(false),
+                                  child: Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(dialogContext).pop(true),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor:
+                                        AppTheme.of(context).error,
+                                  ),
+                                  child: Text('Leave Game'),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed != true) return;
                           if (currentUserRef == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -1906,14 +1828,19 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
     required List<Color> iconColors,
     required String label,
     required String value,
+    bool isFunBadge = false,
   }) {
     return Container(
       padding: EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.fairway.withValues(alpha: 0.3),
+        color: isFunBadge
+            ? AppColors.fairway.withValues(alpha: 0.4)
+            : AppColors.fairway.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: isFunBadge
+              ? AppColors.sunsetGold.withValues(alpha: 0.4)
+              : Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Row(
@@ -1954,7 +1881,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                 Text(
                   value.isNotEmpty ? value : '--',
                   style: AppTypography.bodySmall.copyWith(
-                    color: Colors.white,
+                    color: isFunBadge ? AppColors.sunsetGold : Colors.white,
                     fontWeight: FontWeight.w600,
                     height: 1.0,
                   ),

@@ -126,6 +126,7 @@ class ChatProvider extends ChangeNotifier {
     required String chatId,
     int limit = 50,
     DocumentSnapshot? startAfter,
+    DateTime? visibleAfter,
   }) {
     // Use StreamRequestManager for caching message streams (5-minute TTL)
     if (!_messageStreamManagers.containsKey(chatId)) {
@@ -138,6 +139,7 @@ class ChatProvider extends ChangeNotifier {
         chatId: chatId,
         limit: limit,
         startAfter: startAfter,
+        visibleAfter: visibleAfter,
       ).map((messages) {
         // Cache messages when they come through the stream
         _messagesCache[chatId] = messages;
@@ -151,10 +153,12 @@ class ChatProvider extends ChangeNotifier {
   Stream<QuerySnapshot> messagesSnapshotStream({
     required String chatId,
     int limit = 50,
+    DateTime? visibleAfter,
   }) {
     return _service.getMessagesSnapshotStream(
       chatId: chatId,
       limit: limit,
+      visibleAfter: visibleAfter,
     );
   }
 
@@ -162,11 +166,13 @@ class ChatProvider extends ChangeNotifier {
     required String chatId,
     int limit = 50,
     DocumentSnapshot? startAfter,
+    DateTime? visibleAfter,
   }) {
     return _service.getMessagesPage(
       chatId: chatId,
       limit: limit,
       startAfter: startAfter,
+      visibleAfter: visibleAfter,
     );
   }
 
@@ -210,6 +216,10 @@ class ChatProvider extends ChangeNotifier {
     required String text,
     String imageUrl = '',
     String videoUrl = '',
+    String type = 'text',
+    String thumbnailUrl = '',
+    double? imageWidth,
+    double? imageHeight,
   }) async {
     try {
       await _service.sendMessage(
@@ -218,6 +228,10 @@ class ChatProvider extends ChangeNotifier {
         text: text,
         imageUrl: imageUrl,
         videoUrl: videoUrl,
+        type: type,
+        thumbnailUrl: thumbnailUrl,
+        imageWidth: imageWidth,
+        imageHeight: imageHeight,
       );
       // Invalidate messages cache after sending to force refresh
       _messagesCacheTimestamps.remove(chatId);
@@ -226,6 +240,25 @@ class ChatProvider extends ChangeNotifier {
       rethrow;
     }
   }
+
+  Future<void> sendImageMessage({
+    required String chatId,
+    required String senderId,
+    required String imageUrl,
+    String thumbnailUrl = '',
+    double? imageWidth,
+    double? imageHeight,
+  }) =>
+      sendMessage(
+        chatId: chatId,
+        senderId: senderId,
+        text: '',
+        imageUrl: imageUrl,
+        type: 'image',
+        thumbnailUrl: thumbnailUrl,
+        imageWidth: imageWidth,
+        imageHeight: imageHeight,
+      );
 
   Future<void> markChatRead({
     required String chatId,
@@ -272,8 +305,12 @@ class ChatProvider extends ChangeNotifier {
   }) async {
     try {
       await _service.addMember(chatId: chatId, uid: uid);
-      // Invalidate chat cache to refresh member list
+      // Invalidate chat and messages caches: the new memberJoinedAt timestamp
+      // changes the visibility window, so any cached messages are stale.
       _chatCacheTimestamps.remove(chatId);
+      _messagesCache.remove(chatId);
+      _messagesCacheTimestamps.remove(chatId);
+      _messageStreamManagers[chatId]?.clear();
       _scheduleNotify();
     } catch (e) {
       rethrow;
@@ -423,11 +460,13 @@ class ChatProvider extends ChangeNotifier {
     required String chatId,
     required String uid,
     int limit = 100,
+    DateTime? visibleAfter,
   }) {
     return _service.markMessagesAsReadBatch(
       chatId: chatId,
       uid: uid,
       limit: limit,
+      visibleAfter: visibleAfter,
     );
   }
 
@@ -453,12 +492,13 @@ class ChatProvider extends ChangeNotifier {
     required String chatId,
     required int limit,
     required ProfileProvider profileProvider,
+    DateTime? visibleAfter,
   }) {
     if (kDebugMode) {
       debugPrint('🔵 ChatProvider: Creating VM stream for chatId=$chatId (should happen once per screen)');
     }
 
-    return messagesSnapshotStream(chatId: chatId, limit: limit)
+    return messagesSnapshotStream(chatId: chatId, limit: limit, visibleAfter: visibleAfter)
         .asyncMap((snapshot) async {
       final docs = snapshot.docs;
 

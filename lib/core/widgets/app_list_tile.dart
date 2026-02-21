@@ -3,7 +3,9 @@ import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/border_radius.dart';
 import '../design_tokens/spacing.dart';
+import '../design_tokens/app_icons.dart';
 import 'app_avatar.dart';
+import 'app_icon.dart';
 
 enum AppListTileVariant {
   /// Standard list tile with divider
@@ -29,6 +31,8 @@ class AppListTile extends StatelessWidget {
   final String? avatarInitials;
   final IconData? leadingIcon;
   final IconData? trailingIcon;
+  final String? leadingSvgPath;
+  final String? trailingSvgPath;
   final AppListTileVariant variant;
   final VoidCallback? onTap;
   final bool showDivider;
@@ -44,6 +48,8 @@ class AppListTile extends StatelessWidget {
     this.avatarInitials,
     this.leadingIcon,
     this.trailingIcon,
+    this.leadingSvgPath,
+    this.trailingSvgPath,
     this.variant = AppListTileVariant.standard,
     this.onTap,
     this.showDivider = true,
@@ -168,6 +174,22 @@ class AppListTile extends StatelessWidget {
                 ? AppAvatarSize.small
                 : AppAvatarSize.medium,
           )
+        else if (leadingSvgPath != null)
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.sand,
+              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+            ),
+            child: Center(
+              child: AppIcon(
+                assetPath: leadingSvgPath!,
+                color: AppColors.slate,
+                size: 20,
+              ),
+            ),
+          )
         else if (leadingIcon != null)
           Container(
             width: 40,
@@ -185,6 +207,7 @@ class AppListTile extends StatelessWidget {
         if (leadingWidget != null ||
             avatarUrl != null ||
             avatarInitials != null ||
+            leadingSvgPath != null ||
             leadingIcon != null)
           SizedBox(width: AppSpacing.sm),
         Expanded(
@@ -213,7 +236,7 @@ class AppListTile extends StatelessWidget {
             ],
           ),
         ),
-        if (trailing != null || trailingWidget != null || trailingIcon != null)
+        if (trailing != null || trailingWidget != null || trailingSvgPath != null || trailingIcon != null)
           SizedBox(width: AppSpacing.sm),
         if (trailingWidget != null)
           trailingWidget!
@@ -223,6 +246,12 @@ class AppListTile extends StatelessWidget {
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.stone,
             ),
+          )
+        else if (trailingSvgPath != null)
+          AppIcon(
+            assetPath: trailingSvgPath!,
+            color: AppColors.slate,
+            size: 20,
           )
         else if (trailingIcon != null)
           Icon(

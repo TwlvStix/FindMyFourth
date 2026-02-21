@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/spacing.dart';
+import '../design_tokens/app_icons.dart';
+import 'app_icon.dart';
 
 /// Standardized section header with title, optional subtitle, and optional action button
 ///
@@ -9,7 +11,7 @@ import '../design_tokens/spacing.dart';
 ///
 /// Features:
 /// - Title with optional subtitle
-/// - Optional leading icon
+/// - Optional leading icon (IconData or SVG path)
 /// - Optional action button (e.g., "See All")
 /// - Design token integration
 /// - Consistent spacing and typography
@@ -21,7 +23,7 @@ import '../design_tokens/spacing.dart';
 ///   subtitle: 'Last 30 days',
 ///   actionText: 'See All',
 ///   onActionTap: () => navigateToAllGames(),
-///   leadingIcon: Icons.golf_course,
+///   leadingSvgPath: AppIcons.games,
 /// )
 /// ```
 class AppSectionHeader extends StatelessWidget {
@@ -32,6 +34,7 @@ class AppSectionHeader extends StatelessWidget {
     this.actionText,
     this.onActionTap,
     this.leadingIcon,
+    this.leadingSvgPath,
   });
 
   /// Section title (required)
@@ -46,8 +49,11 @@ class AppSectionHeader extends StatelessWidget {
   /// Callback when action is tapped
   final VoidCallback? onActionTap;
 
-  /// Optional leading icon
+  /// Optional leading icon (IconData)
   final IconData? leadingIcon;
+
+  /// Optional leading SVG icon (takes precedence over leadingIcon)
+  final String? leadingSvgPath;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +64,14 @@ class AppSectionHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          if (leadingIcon != null) ...[
+          if (leadingSvgPath != null) ...[
+            AppIcon(
+              assetPath: leadingSvgPath!,
+              color: AppColors.fairway,
+              size: 20,
+            ),
+            SizedBox(width: AppSpacing.xs),
+          ] else if (leadingIcon != null) ...[
             Icon(
               leadingIcon,
               color: AppColors.fairway,

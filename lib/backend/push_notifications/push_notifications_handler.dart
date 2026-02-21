@@ -64,6 +64,33 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
         );
       }
     }
+    if (type == 'host_checkin') {
+      final gameRef = data['gameRef'];
+      if (gameRef is String && gameRef.isNotEmpty) {
+        return _PushRoute(
+          pageName: 'HostCheckin',
+          parameterData: {'gameRef': gameRef},
+        );
+      }
+    }
+    if (type == 'peer_rating') {
+      final gameRef = data['gameRef'];
+      if (gameRef is String && gameRef.isNotEmpty) {
+        return _PushRoute(
+          pageName: 'PeerRating',
+          parameterData: {'gameRef': gameRef},
+        );
+      }
+    }
+    if (type == 'fallback_confirmation') {
+      final gameRef = data['gameRef'];
+      if (gameRef is String && gameRef.isNotEmpty) {
+        return _PushRoute(
+          pageName: 'FallbackConfirmation',
+          parameterData: {'gameRef': gameRef},
+        );
+      }
+    }
     return null;
   }
 
@@ -336,6 +363,22 @@ final parametersBuilderMap =
           'chatId': getParameter<String>(data, 'chatId'),
         },
       ),
+  'HostCheckin': (data) async => ParameterData(
+        allParams: {
+          'gameRef': getParameter<DocumentReference>(data, 'gameRef'),
+        },
+      ),
+  'PeerRating': (data) async => ParameterData(
+        allParams: {
+          'gameRef': getParameter<DocumentReference>(data, 'gameRef'),
+        },
+      ),
+  'FallbackConfirmation': (data) async => ParameterData(
+        allParams: {
+          'gameRef': getParameter<DocumentReference>(data, 'gameRef'),
+        },
+      ),
+  'YourStanding': ParameterData.none(),
 };
 
 Map<String, dynamic> getInitialParameterData(Map<String, dynamic> data) {

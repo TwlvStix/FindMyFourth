@@ -45,7 +45,7 @@ class PlayerMatchChip extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTypography.labelSmall.copyWith(
-              color: AppColors.fairwayDark,
+              color: Colors.white.withValues(alpha: 0.85),
               letterSpacing: AppTypography.letterSpacingNormal,
             ),
           ),

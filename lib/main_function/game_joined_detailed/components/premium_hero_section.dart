@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/models/game.dart';
 
 /// Premium hero section displaying game title, course, date/time with gradient background
@@ -57,7 +59,7 @@ class PremiumHeroSection extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 14),
+                const AppIcon(assetPath: AppIcons.joined, color: Colors.white, size: 14),
                 const SizedBox(width: 4),
                 Text(
                   'Joined',
@@ -89,10 +91,12 @@ class PremiumHeroSection extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.golf_course_rounded,
-                  color: Colors.white,
-                  size: 26,
+                child: const Center(
+                  child: AppIcon(
+                    assetPath: AppIcons.course,
+                    color: Colors.white,
+                    size: 24,
+                  ),
                 ),
               ),
               SizedBox(width: AppSpacing.md),

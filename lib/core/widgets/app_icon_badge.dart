@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/border_radius.dart';
 import '../design_tokens/icon_size.dart';
@@ -58,14 +59,18 @@ enum AppIconBadgeSize {
 class AppIconBadge extends StatelessWidget {
   const AppIconBadge({
     super.key,
-    required this.icon,
+    this.icon,
+    this.svgPath,
     this.variant = AppIconBadgeVariant.primary,
     this.size = AppIconBadgeSize.medium,
     this.onTap,
-  });
+  }) : assert(icon != null || svgPath != null, 'Either icon or svgPath must be provided');
 
-  /// Icon to display in the badge
-  final IconData icon;
+  /// Icon to display in the badge (IconData)
+  final IconData? icon;
+
+  /// SVG asset path to display in the badge (use AppIcons constants)
+  final String? svgPath;
 
   /// Visual style variant
   final AppIconBadgeVariant variant;
@@ -91,11 +96,18 @@ class AppIconBadge extends StatelessWidget {
             ? Border.all(color: colors.borderColor!, width: 1)
             : null,
       ),
-      child: Icon(
-        icon,
-        color: colors.iconColor,
-        size: _getIconSize(),
-      ),
+      child: svgPath != null
+          ? SvgPicture.asset(
+              svgPath!,
+              width: _getIconSize(),
+              height: _getIconSize(),
+              colorFilter: ColorFilter.mode(colors.iconColor, BlendMode.srcIn),
+            )
+          : Icon(
+              icon,
+              color: colors.iconColor,
+              size: _getIconSize(),
+            ),
     );
 
     // Add tap interaction if onTap is provided

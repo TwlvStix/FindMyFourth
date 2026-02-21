@@ -59,13 +59,27 @@ class VibeArchetypeMatch {
   }
 }
 
+/// Represents a single elimination gate requirement.
+/// A category must be in the LOW (0-2) or HIGH (3-5) range to pass.
+class _Gate {
+  const _Gate(this.category, this.mustBeHigh);
+  final VibeCategory category;
+  final bool mustBeHigh; // true = must be 3-5, false = must be 0-2
+}
+
 /// The 12 vibe style archetypes + The Warden modifier
+///
+/// Classification uses Approach 3: Elimination Gates + Weighted Distance
+/// Step 1: Eliminate archetypes whose defining categories don't match
+/// Step 2: Weighted Euclidean distance on survivors (defining cats = 3x weight)
+/// Step 3: Fallback to Everyman if nothing passes gates
+///
 /// Note: Values in ideal profiles use 0-5 range (code values)
 class VibeArchetypes {
   static const grinder = VibeArchetype(
     name: 'The Grinder',
     description:
-        'Fast pace, high stakes, zero distractions. You don\'t talk on my backswing because I don\'t talk on yours.',
+        'Fast pace, fierce competition, zero distractions. You don\'t talk on my backswing because I don\'t talk on yours.',
     ideal: {
       VibeCategory.pace: 5,
       VibeCategory.competitive: 5,
@@ -93,7 +107,7 @@ class VibeArchetypes {
   static const purist = VibeArchetype(
     name: 'The Purist',
     description:
-        'I\'m first on the range and last to leave. No speakers, no bets, no distractions. Just me and the course. That\'s enough.',
+        'I play fast and I take the game seriously. No speakers, no bets, no distractions. Just me and the course. That\'s enough.',
     ideal: {
       VibeCategory.pace: 5,
       VibeCategory.competitive: 3,
@@ -107,7 +121,7 @@ class VibeArchetypes {
   static const ghost = VibeArchetype(
     name: 'The Ghost',
     description:
-        'Don\'t mistake my silence for not caring. I take my time, I read every putt, and I might be quietly taking your money. You\'ll figure it out on 18.',
+        'Don\'t mistake my silence for not caring. I take my time, I read every putt, and I\'m competing whether you know it or not. You\'ll figure it out on 18.',
     ideal: {
       VibeCategory.pace: 2,
       VibeCategory.competitive: 3,
@@ -135,7 +149,7 @@ class VibeArchetypes {
   static const vibeKing = VibeArchetype(
     name: 'The Vibe King',
     description:
-        'I don\'t know what I shot but I can tell you every song that played, every joke that landed, and what round I\'m buying at the turn.',
+        'I don\'t know what I shot but I know everyone had a good time. The music was right, the drinks were flowing, and the conversation never stopped.',
     ideal: {
       VibeCategory.pace: 1,
       VibeCategory.competitive: 0,
@@ -163,7 +177,7 @@ class VibeArchetypes {
   static const everyman = VibeArchetype(
     name: 'The Everyman',
     description:
-        'I\'m down for whatever the group wants. A couple bets, a couple beers, good conversation. I\'m the guy every foursome wants on the text chain.',
+        'I\'m down for whatever the group wants. A little of everything, nothing too much. I\'m the guy every foursome wants on the text chain.',
     ideal: {
       VibeCategory.pace: 2,
       VibeCategory.competitive: 2,
@@ -177,7 +191,7 @@ class VibeArchetypes {
   static const hustler = VibeArchetype(
     name: 'The Hustler',
     description:
-        'I play fast and there\'s always money on it. I\'ve already done the math on the bet before we reach the first tee.',
+        'I play fast and there\'s always money on it. I\'ve already done the math on the bet before we reach the first tee. You\'ll figure out the damage on 18.',
     ideal: {
       VibeCategory.pace: 5,
       VibeCategory.competitive: 3,
@@ -191,7 +205,7 @@ class VibeArchetypes {
   static const dj = VibeArchetype(
     name: 'The DJ',
     description:
-        'I\'m not here to compete or bet. Just a cold drink, good company, and the perfect playlist. My speaker goes in the cart before the clubs do.',
+        'I\'m not here to compete or bet. Good company and the perfect playlist — that\'s my round. My speaker goes in the cart before the clubs do.',
     ideal: {
       VibeCategory.pace: 2,
       VibeCategory.competitive: 0,
@@ -219,7 +233,7 @@ class VibeArchetypes {
   static const mayor = VibeArchetype(
     name: 'The Mayor',
     description:
-        'I know the starter by name, the cart girl already has my order ready, and I can find you a fourth in ten minutes. The round\'s about the people, not the scorecard.',
+        'I know the starter by name and I can find you a fourth in ten minutes. The round\'s about the people, not the scorecard.',
     ideal: {
       VibeCategory.pace: 2,
       VibeCategory.competitive: 0,
@@ -260,77 +274,86 @@ class VibeArchetypes {
     mayor,
   ];
 
-  /// Returns true if value is in the LOW range (0-2).
-  static bool _isLow(int value) => value >= 0 && value <= 2;
+  // ---------------------------------------------------------------------------
+  // Elimination Gates
+  // ---------------------------------------------------------------------------
+  // Each archetype has defining categories that MUST be in range.
+  // HIGH = code value 3-5, LOW = code value 0-2.
+  // If any gate fails, the archetype is disqualified.
+  // ---------------------------------------------------------------------------
 
-  /// Returns true if value is in the HIGH range (3-5).
-  static bool _isHigh(int value) => value >= 3 && value <= 5;
-
-  /// Elimination gates per archetype.
-  /// A profile must pass all gates to be eligible for classification as that archetype.
-  static final Map<String, bool Function(Map<VibeCategory, int>)>
-      _eliminationGates = {
-    'The Grinder': (v) =>
-        _isHigh(v[VibeCategory.competitive]!) &&
-        _isHigh(v[VibeCategory.money]!) &&
-        _isLow(v[VibeCategory.chat]!) &&
-        _isLow(v[VibeCategory.drinking]!),
-    'The Shark': (v) =>
-        _isHigh(v[VibeCategory.competitive]!) &&
-        _isHigh(v[VibeCategory.money]!) &&
-        _isHigh(v[VibeCategory.chat]!) &&
-        _isHigh(v[VibeCategory.pace]!),
-    'The Purist': (v) =>
-        _isHigh(v[VibeCategory.pace]!) &&
-        _isLow(v[VibeCategory.music]!) &&
-        _isLow(v[VibeCategory.money]!) &&
-        _isLow(v[VibeCategory.drinking]!),
-    'The Ghost': (v) =>
-        _isLow(v[VibeCategory.chat]!) &&
-        _isLow(v[VibeCategory.drinking]!) &&
-        _isLow(v[VibeCategory.music]!),
-    'The Tourist': (v) =>
-        _isLow(v[VibeCategory.pace]!) &&
-        _isLow(v[VibeCategory.competitive]!) &&
-        _isLow(v[VibeCategory.money]!),
-    'The Vibe King': (v) =>
-        _isHigh(v[VibeCategory.chat]!) &&
-        _isHigh(v[VibeCategory.drinking]!) &&
-        _isHigh(v[VibeCategory.music]!),
-    'The Juggernaut': (v) =>
-        _isHigh(v[VibeCategory.competitive]!) &&
-        _isHigh(v[VibeCategory.money]!) &&
-        _isHigh(v[VibeCategory.drinking]!) &&
-        _isHigh(v[VibeCategory.music]!),
-    'The Everyman': (v) {
-      for (final value in v.values) {
-        if (value > 4 || value < 1) return false;
-      }
-      return true;
-    },
-    'The Hustler': (v) =>
-        _isHigh(v[VibeCategory.pace]!) &&
-        _isHigh(v[VibeCategory.money]!) &&
-        _isLow(v[VibeCategory.music]!),
-    'The DJ': (v) =>
-        _isHigh(v[VibeCategory.music]!) &&
-        _isLow(v[VibeCategory.competitive]!) &&
-        _isLow(v[VibeCategory.money]!),
-    'The High Roller': (v) =>
-        _isHigh(v[VibeCategory.competitive]!) &&
-        _isHigh(v[VibeCategory.money]!) &&
-        _isHigh(v[VibeCategory.chat]!) &&
-        _isHigh(v[VibeCategory.drinking]!),
-    'The Mayor': (v) =>
-        _isHigh(v[VibeCategory.chat]!) &&
-        _isLow(v[VibeCategory.competitive]!) &&
-        _isLow(v[VibeCategory.money]!),
+  static const Map<String, List<_Gate>> _eliminationGates = {
+    'The Grinder': [
+      _Gate(VibeCategory.competitive, true), // must be HIGH
+      _Gate(VibeCategory.money, true), // must be HIGH
+      _Gate(VibeCategory.chat, false), // must be LOW
+      _Gate(VibeCategory.drinking, false), // must be LOW
+    ],
+    'The Shark': [
+      _Gate(VibeCategory.competitive, true), // must be HIGH
+      _Gate(VibeCategory.money, true), // must be HIGH
+      _Gate(VibeCategory.chat, true), // must be HIGH
+      _Gate(VibeCategory.pace, true), // must be HIGH
+    ],
+    'The Purist': [
+      _Gate(VibeCategory.pace, true), // must be HIGH
+      _Gate(VibeCategory.music, false), // must be LOW
+      _Gate(VibeCategory.money, false), // must be LOW
+      _Gate(VibeCategory.drinking, false), // must be LOW
+    ],
+    'The Ghost': [
+      _Gate(VibeCategory.chat, false), // must be LOW
+      _Gate(VibeCategory.drinking, false), // must be LOW
+      _Gate(VibeCategory.music, false), // must be LOW
+    ],
+    'The Tourist': [
+      _Gate(VibeCategory.pace, false), // must be LOW
+      _Gate(VibeCategory.competitive, false), // must be LOW
+      _Gate(VibeCategory.money, false), // must be LOW
+    ],
+    'The Vibe King': [
+      _Gate(VibeCategory.chat, true), // must be HIGH
+      _Gate(VibeCategory.drinking, true), // must be HIGH
+      _Gate(VibeCategory.music, true), // must be HIGH
+    ],
+    'The Juggernaut': [
+      _Gate(VibeCategory.competitive, true), // must be HIGH
+      _Gate(VibeCategory.money, true), // must be HIGH
+      _Gate(VibeCategory.drinking, true), // must be HIGH
+      _Gate(VibeCategory.music, true), // must be HIGH
+    ],
+    'The Everyman': [], // Special handling: no value above 4 or below 1
+    'The Hustler': [
+      _Gate(VibeCategory.pace, true), // must be HIGH
+      _Gate(VibeCategory.money, true), // must be HIGH
+      _Gate(VibeCategory.music, false), // must be LOW
+    ],
+    'The DJ': [
+      _Gate(VibeCategory.music, true), // must be HIGH
+      _Gate(VibeCategory.competitive, false), // must be LOW
+      _Gate(VibeCategory.money, false), // must be LOW
+    ],
+    'The High Roller': [
+      _Gate(VibeCategory.competitive, true), // must be HIGH
+      _Gate(VibeCategory.money, true), // must be HIGH
+      _Gate(VibeCategory.chat, true), // must be HIGH
+      _Gate(VibeCategory.drinking, true), // must be HIGH
+    ],
+    'The Mayor': [
+      _Gate(VibeCategory.chat, true), // must be HIGH
+      _Gate(VibeCategory.competitive, false), // must be LOW
+      _Gate(VibeCategory.money, false), // must be LOW
+    ],
   };
 
-  /// Defining categories per archetype — these receive 3x weight in distance calculation.
-  /// Non-defining categories receive 1x weight.
-  /// The Everyman has no defining categories (all 1x).
-  static final Map<String, Set<VibeCategory>> _definingCategories = {
+  // ---------------------------------------------------------------------------
+  // Defining Categories (for 3x weighting in distance calculation)
+  // ---------------------------------------------------------------------------
+  // These are the categories that DEFINE each archetype's identity.
+  // They get 3x weight in the Euclidean distance. Non-defining get 1x.
+  // ---------------------------------------------------------------------------
+
+  static const Map<String, Set<VibeCategory>> _definingCategories = {
     'The Grinder': {
       VibeCategory.pace,
       VibeCategory.competitive,
@@ -370,7 +393,7 @@ class VibeArchetypes {
       VibeCategory.drinking,
       VibeCategory.music,
     },
-    'The Everyman': {},
+    'The Everyman': <VibeCategory>{}, // All weighted equally
     'The Hustler': {
       VibeCategory.pace,
       VibeCategory.money,
@@ -396,12 +419,12 @@ class VibeArchetypes {
 
   /// Classifies a vibe profile and returns the best-matching archetype.
   ///
-  /// Step 1: Filter archetypes using elimination gates (defining categories must be in range).
-  /// Step 2: Calculate weighted Euclidean distance for eligible archetypes (3x weight on defining categories).
-  /// Step 3: Fallback to The Everyman if all archetypes are eliminated.
-  /// Step 4: If the player has 2+ dealbreakers, apply the Warden modifier.
+  /// Step 1: Find the closest base archetype using Approach 3
+  ///         (Elimination Gates + Weighted Euclidean Distance).
+  /// Step 2: If the player has 2+ dealbreakers, apply the Warden modifier.
+  /// Step 3: Store the base archetype so the UI can show "The Warden (Shark)".
   static VibeArchetypeMatch classifyProfile(VibeProfile profile) {
-    // Step 1: classify on values
+    // Step 1: classify on values using gates + weighted distance
     final baseMatch = _classifyByValues(profile);
 
     // Step 2: count dealbreakers
@@ -422,29 +445,57 @@ class VibeArchetypes {
     return baseMatch;
   }
 
-  /// Pure value-based classification using elimination gates + weighted Euclidean distance.
-  ///
-  /// Step 1: Filter archetypes through elimination gates — archetypes whose defining
-  ///         categories are not in the required HIGH/LOW range are disqualified.
-  /// Step 2: Among eligible archetypes, calculate weighted distance (3x on defining categories).
-  /// Step 3: If all archetypes are eliminated, fall back to The Everyman.
+  /// Checks if a profile passes all elimination gates for an archetype.
+  /// LOW = 0-2, HIGH = 3-5.
+  static bool _passesGates(
+    VibeArchetype archetype,
+    Map<VibeCategory, int> userValues,
+  ) {
+    // Special handling for The Everyman: no value above 4 or below 1
+    if (archetype.name == 'The Everyman') {
+      for (final category in VibeCategory.values) {
+        final value = userValues[category] ?? 0;
+        if (value > 4 || value < 1) return false;
+      }
+      return true;
+    }
+
+    final gates = _eliminationGates[archetype.name];
+    if (gates == null || gates.isEmpty) return true;
+
+    for (final gate in gates) {
+      final value = userValues[gate.category] ?? 0;
+      if (gate.mustBeHigh) {
+        // Must be HIGH: 3-5
+        if (value < 3) return false;
+      } else {
+        // Must be LOW: 0-2
+        if (value > 2) return false;
+      }
+    }
+    return true;
+  }
+
+  /// Approach 3 classification:
+  /// 1. Filter archetypes through elimination gates
+  /// 2. Weighted Euclidean distance on survivors (defining categories = 3x)
+  /// 3. Fallback to Everyman if all archetypes are eliminated
   static VibeArchetypeMatch _classifyByValues(VibeProfile profile) {
-    // Build user profile map once
+    // Build user profile map
     final userValues = <VibeCategory, int>{};
     for (final category in VibeCategory.values) {
       userValues[category] = profile.preferenceFor(category).value;
     }
 
-    // Step 1: Filter archetypes through elimination gates
+    // Step 1: Filter through elimination gates
     final eligible = <VibeArchetype>[];
     for (final archetype in all) {
-      final gate = _eliminationGates[archetype.name];
-      if (gate != null && gate(userValues)) {
+      if (_passesGates(archetype, userValues)) {
         eligible.add(archetype);
       }
     }
 
-    // Step 3: Fallback — if nothing passes the gates, use The Everyman
+    // Step 3: Fallback — if nothing passes, use Everyman
     if (eligible.isEmpty) {
       eligible.add(everyman);
     }
@@ -474,8 +525,15 @@ class VibeArchetypes {
     }
 
     // Convert distance to a 0-100 compatibility score.
-    // Max possible distance with 3x weights: sqrt(6 * 3 * 5^2) = sqrt(450) ≈ 21.2
-    final maxPossibleDistance = math.sqrt(6 * 3.0 * 25.0);
+    // Calculate max distance based on the winning archetype's actual weights.
+    // Defining categories use 3x weight, non-defining use 1x.
+    // Max diff per category is 5 (0 vs 5), so max squared diff is 25.
+    final bestDefiningCats = _definingCategories[bestMatch!.name] ?? {};
+    final definingCount = bestDefiningCats.length;
+    final nonDefiningCount = VibeCategory.values.length - definingCount;
+    final maxPossibleDistance = math.sqrt(
+      (definingCount * 3.0 * 25.0) + (nonDefiningCount * 1.0 * 25.0),
+    );
     final compatibilityScore =
         100 * (1 - (bestDistance / maxPossibleDistance)).clamp(0.0, 1.0);
 

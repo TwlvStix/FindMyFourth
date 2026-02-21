@@ -155,7 +155,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           currentUserReference!,
           createUsersRecordData(
             photoUrl: currentUserPhoto,
-            phoneNumber: phoneNumTextController!.text,
             handicap: handicapValue,
             golfCanadaNumber: () {
               final golfCanadaRaw = golfCanadaTextController?.text.trim() ?? '';
@@ -165,6 +164,11 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             lastName: lastNameTextController!.text,
             homeCourse: coursesValue,
           ),
+        );
+        transaction.set(
+          currentUserReference!.collection('private').doc('info'),
+          {'phone_number': phoneNumTextController!.text},
+          SetOptions(merge: true),
         );
       });
       currentUserDocument =
@@ -547,6 +551,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                   focusNode: phoneNumFocusNode!,
                   label: 'Phone',
                   icon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 ),
                 SizedBox(height: AppSpacing.md),
 
@@ -762,6 +768,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                   focusNode: golfCanadaFocusNode!,
                   label: 'Golf Canada #',
                   icon: Icons.verified_rounded,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 ),
               ],
             ),
@@ -933,6 +941,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     required String label,
     required IconData icon,
     bool readOnly = false,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return AppTextField(
       label: label,
@@ -941,6 +951,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       prefixIcon: icon,
       readOnly: readOnly,
       enabled: !readOnly,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
     );
   }
 }

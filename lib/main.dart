@@ -19,12 +19,15 @@ import '/core/app_theme.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/utils/app_util.dart';
 import '/providers/user_provider.dart';
 import '/providers/chat_provider.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
 import '/providers/notification_provider.dart';
+import '/providers/trust_provider.dart';
 import '/services/notification_permission_service.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:find_my_fourth/friends/tab_friends/tab_friends_widget.dart';
@@ -67,6 +70,8 @@ Future<void> main() async {
               create: (_) => ProfileProvider()),
           ChangeNotifierProvider<NotificationProvider>(
               create: (_) => NotificationProvider()),
+          ChangeNotifierProvider<TrustProvider>(
+              create: (_) => TrustProvider()),
         ],
         child: MyApp(),
       ),
@@ -215,6 +220,7 @@ class _MyAppState extends State<MyApp> {
   bool _initialAuthHandled = false;
 
   final authUserSub = authenticatedUserStream.listen((_) {});
+  final privateDataSub = privateUserDataStream.listen((_) {});
   late StreamSubscription<BaseAuthUser> _userStreamSub;
   late StreamSubscription<dynamic> _jwtTokenSub;
 
@@ -351,6 +357,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     authUserSub.cancel();
+    privateDataSub.cancel();
     _userStreamSub.cancel();
     _jwtTokenSub.cancel();
     _splashFallbackTimer?.cancel();
@@ -606,24 +613,59 @@ class _NavBarPageState extends State<NavBarPage> {
         haptic: false,
         tabs: [
           GButton(
-            icon: Icons.golf_course,
-            iconSize: AppIconSize.lg,
+            leading: AppNavIcon(
+              assetPath: AppIcons.games,
+              size: AppIconSize.lg,
+              isActive: currentIndex == 0,
+              activeColor: AppTheme.of(context).primary,
+              inactiveColor: AppTheme.of(context).tertiary,
+            ),
+            icon: Icons.golf_course, // Fallback (hidden)
+            iconSize: 0, // Hide default icon
           ),
           GButton(
-            icon: Icons.calendar_today_outlined,
-            iconSize: AppIconSize.lg,
+            leading: AppNavIcon(
+              assetPath: AppIcons.myGames,
+              size: AppIconSize.lg,
+              isActive: currentIndex == 1,
+              activeColor: AppTheme.of(context).primary,
+              inactiveColor: AppTheme.of(context).tertiary,
+            ),
+            icon: Icons.calendar_today_outlined, // Fallback (hidden)
+            iconSize: 0, // Hide default icon
           ),
           GButton(
-            icon: Icons.people_outline,
-            iconSize: AppIconSize.lg,
+            leading: AppNavIcon(
+              assetPath: AppIcons.golfers,
+              size: AppIconSize.lg,
+              isActive: currentIndex == 2,
+              activeColor: AppTheme.of(context).primary,
+              inactiveColor: AppTheme.of(context).tertiary,
+            ),
+            icon: Icons.people_outline, // Fallback (hidden)
+            iconSize: 0, // Hide default icon
           ),
           GButton(
-            icon: Icons.chat_bubble_outline,
-            iconSize: AppIconSize.lg,
+            leading: AppNavIcon(
+              assetPath: AppIcons.chat,
+              size: AppIconSize.lg,
+              isActive: currentIndex == 3,
+              activeColor: AppTheme.of(context).primary,
+              inactiveColor: AppTheme.of(context).tertiary,
+            ),
+            icon: Icons.chat_bubble_outline, // Fallback (hidden)
+            iconSize: 0, // Hide default icon
           ),
           GButton(
-            icon: Icons.person_outline,
-            iconSize: AppIconSize.lg,
+            leading: AppNavIcon(
+              assetPath: AppIcons.profile,
+              size: AppIconSize.lg,
+              isActive: currentIndex == 4,
+              activeColor: AppTheme.of(context).primary,
+              inactiveColor: AppTheme.of(context).tertiary,
+            ),
+            icon: Icons.person_outline, // Fallback (hidden)
+            iconSize: 0, // Hide default icon
           )
         ],
       ),

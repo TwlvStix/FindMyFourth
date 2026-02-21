@@ -1,0 +1,58 @@
+{
+  "timestamp": "2026-02-20T03:55:09.874Z",
+  "config": {
+    "TOTAL_GAMES": 50,
+    "USERS_PER_GAME_AVG": 3,
+    "DEVICES_PER_USER_AVG": 1.5,
+    "HOST_CHECKIN_RATE": 0.8,
+    "PLAYER_PRESENT_RATE": 0.85,
+    "RATING_COMPLETION_RATE": 0.75,
+    "P99_THRESHOLD_MS": 5000,
+    "ERROR_RATE_THRESHOLD": 0.01,
+    "TEST_PREFIX": "LOADTEST_",
+    "COSTS": {
+      "READ": 0.06,
+      "WRITE": 0.18,
+      "DELETE": 0.02
+    }
+  },
+  "duration": 45242,
+  "durationMinutes": "0.75",
+  "operationCounts": {
+    "total": 172,
+    "errors": 0
+  },
+  "latencyByOperation": {
+    "onGameStatusToPlayed": {
+      "P50": 516,
+      "P95": 735,
+      "P99": 759
+    },
+    "submitHostCheckin": {
+      "P50": 596,
+      "P95": 807,
+      "P99": 871
+    },
+    "submitPeerRatings": {
+      "P50": 294,
+      "P95": 492,
+      "P99": 533
+    }
+  },
+  "documentCounts": {
+    "round_jobs": 50,
+    "round_records": 50,
+    "pair_ratings": 371,
+    "scheduledNotifications": 342
+  },
+  "firestoreCosts": {
+    "reads": 813,
+    "writes": 468,
+    "deletes": 0,
+    "readCost": 0.00004878,
+    "writeCost": 0.00008423999999999999,
+    "deleteCost": 0,
+    "totalCost": 0.00013302
+  },
+  "passed": true
+}

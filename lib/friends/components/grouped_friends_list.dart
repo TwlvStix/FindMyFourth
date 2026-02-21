@@ -16,6 +16,7 @@ class GroupedFriendsList extends StatefulWidget {
   final Set<String> favoriteFriends;
   final String? currentUserHomeCourse;
   final UsersRecord? currentUser; // For vibe matching
+  final String? searchFilter; // Optional search filter
   final Function(String) onToggleFavorite;
   final Function(UsersRecord) onViewProfile;
   final Function(UsersRecord) onMessage;
@@ -27,6 +28,7 @@ class GroupedFriendsList extends StatefulWidget {
     required this.favoriteFriends,
     this.currentUserHomeCourse,
     this.currentUser,
+    this.searchFilter,
     required this.onToggleFavorite,
     required this.onViewProfile,
     required this.onMessage,
@@ -83,26 +85,13 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
   Widget build(BuildContext context) {
     // PERFORMANCE FIX #7: Read friends from cache instead of creating N streams
     // Profiles were batch-warmed in initState via ProfileProvider.warmProfiles()
-    // PERFORMANCE FIX #8: Use Selector to only rebuild when friend profiles change
-    return Selector<ProfileProvider, List<UsersRecord>>(
-      selector: (context, profileProvider) {
+    return Consumer<ProfileProvider>(
+      builder: (context, profileProvider, _) {
         // Read all friends from cache
-        return widget.friendRefs
+        var allFriends = widget.friendRefs
             .map((ref) => profileProvider.getCachedProfile(ref.id))
             .whereType<UsersRecord>()
             .toList();
-      },
-      shouldRebuild: (previous, next) {
-        // Only rebuild if the list of friends or their data changed
-        if (previous.length != next.length) return true;
-        for (int i = 0; i < previous.length; i++) {
-          if (previous[i].uid != next[i].uid) return true;
-          if (previous[i].displayName != next[i].displayName) return true;
-          if (previous[i].photoUrl != next[i].photoUrl) return true;
-        }
-        return false;
-      },
-      builder: (context, allFriends, _) {
 
         // Show loading if profiles aren't cached yet
         if (allFriends.isEmpty && widget.friendRefs.isNotEmpty) {
@@ -112,6 +101,16 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
               size: 50.0,
             ),
           );
+        }
+
+        // Apply search filter if provided
+        if (widget.searchFilter != null && widget.searchFilter!.isNotEmpty) {
+          final searchTerm = widget.searchFilter!.toLowerCase();
+          allFriends = allFriends.where((user) {
+            return user.displayName.toLowerCase().contains(searchTerm) ||
+                user.firstName.toLowerCase().contains(searchTerm) ||
+                user.lastName.toLowerCase().contains(searchTerm);
+          }).toList();
         }
 
         // Group friends

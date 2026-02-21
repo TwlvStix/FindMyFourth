@@ -1,12 +1,14 @@
 import 'dart:async';
 
-import '/core/widgets/app_icon_button.dart';
 import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/models/game.dart';
 import '/models/user_profile.dart';
@@ -32,6 +34,9 @@ class PlayerListWidget extends StatefulWidget {
 
 class _PlayerListWidgetState extends State<PlayerListWidget> {
   static const String guestOptionValue = 'guest';
+
+  // Design token for gold accent
+  static const Color _goldAccent = Color(0xFFD4A843);
 
   List<DocumentReference> playersJoined = [];
   void addToPlayersJoined(DocumentReference item) => playersJoined.add(item);
@@ -536,76 +541,132 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   }) {
     final bool isDisabled = onTap == null;
 
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12.0),
-      child: Container(
-        margin: EdgeInsets.only(bottom: AppSpacing.xs),
-        padding: EdgeInsets.all(AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: isDisabled
-            ? AppTheme.of(context).secondaryBackground.withValues(alpha: 0.5)
-            : AppTheme.of(context).secondaryBackground,
-          borderRadius: BorderRadius.circular(12.0),
-          border: Border.all(
-            color: AppTheme.of(context).alternate,
+      child: AnimatedOpacity(
+        opacity: isDisabled ? 0.5 : 1.0,
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          margin: EdgeInsets.only(bottom: AppSpacing.xs),
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          decoration: BoxDecoration(
+            color: AppColors.fairway,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.fairwayLight.withValues(alpha: 0.4),
+              width: 1,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            // Avatar or Guest icon
-            Container(
-              width: 40.0,
-              height: 40.0,
-              decoration: BoxDecoration(
-                color: isGuest ? Color(0xFF1A4D2E).withValues(alpha: 0.1) : Colors.transparent,
-                borderRadius: BorderRadius.circular(20.0),
-              ),
-              child: isGuest
-                ? Icon(Icons.person_outline, color: Color(0xFF1A4D2E), size: 24.0)
-                : ClipRRect(
-                    borderRadius: BorderRadius.circular(20.0),
-                    child: Image.network(
-                      photoUrl != null && photoUrl.isNotEmpty
-                        ? photoUrl
-                        : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                      width: 40.0,
-                      height: 40.0,
-                      cacheWidth: 120, // ✅ PERFORMANCE: 3x for high-DPI
-                      cacheHeight: 120,
-                      fit: BoxFit.cover,
+          child: Row(
+            children: [
+              // ── Avatar ─────────────────────────────────────────────────
+              if (isGuest)
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: _goldAccent.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _goldAccent.withValues(alpha: 0.4),
+                      width: 1.5,
                     ),
                   ),
-            ),
-            SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: AppTypography.text15.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: isDisabled ? Color(0xFF718096) : Color(0xFF1A4D2E),
+                  child: const Icon(
+                    Icons.person_outline_rounded,
+                    color: _goldAccent,
+                    size: 24,
+                  ),
+                )
+              else
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.fairwayLight,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 1.5,
                     ),
                   ),
-                  if (subtitle != null)
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: photoUrl != null && photoUrl.isNotEmpty
+                        ? Image.network(
+                            photoUrl,
+                            width: 48,
+                            height: 48,
+                            cacheWidth: 144,
+                            cacheHeight: 144,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.person_rounded,
+                              color: Colors.white70,
+                              size: 24,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.person_rounded,
+                            color: Colors.white70,
+                            size: 24,
+                          ),
+                  ),
+                ),
+              const SizedBox(width: 12),
+
+              // ── Name + subtitle ────────────────────────────────────────
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     Text(
-                      subtitle,
-                      style: AppTypography.text13.copyWith(
-                        color: Color(0xFF718096),
+                      name,
+                      style: const TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        letterSpacing: 0.2,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                ],
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: _goldAccent,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-            ),
-            if (!isDisabled)
-              Icon(
-                Icons.add_circle_outline,
-                color: AppTheme.of(context).primary,
-                size: 24.0,
-              ),
-          ],
+
+              // ── Add action ─────────────────────────────────────────────
+              if (!isDisabled)
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: _goldAccent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.add_rounded,
+                    color: Color(0xFF1A2B1A),
+                    size: 20,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -619,59 +680,70 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   }) {
     final bool isEmpty = playerData == null;
 
+    // ── Empty slot — "Add" placeholder ──────────────────────────────────
     if (isEmpty) {
-      // Empty slot - show "Add" button
-      return InkWell(
+      return GestureDetector(
         onTap: () => _showAddPlayerModal(slotIndex, joinedPlayerIds),
-        borderRadius: BorderRadius.circular(12.0),
         child: Container(
-          padding: EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
           decoration: BoxDecoration(
-            color: AppTheme.of(context).secondaryBackground,
-            borderRadius: BorderRadius.circular(12.0),
+            color: AppColors.fairway.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppTheme.of(context).alternate,
+              color: AppColors.fairway.withValues(alpha: 0.3),
               width: 1.5,
+              strokeAlign: BorderSide.strokeAlignInside,
             ),
           ),
           child: Row(
             children: [
               Container(
-                width: 40.0,
-                height: 40.0,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                  color: Color(0xFF1A4D2E).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20.0),
+                  color: AppColors.fairway.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.fairway.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
                 ),
-                child: Icon(
-                  Icons.person_add_outlined,
-                  color: Color(0xFF1A4D2E),
-                  size: 20.0,
+                child: AppIcon(
+                  assetPath: AppIcons.addPlayer,
+                  color: AppColors.fairway.withValues(alpha: 0.6),
+                  size: 24,
                 ),
               ),
-              SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   slotLabel,
-                  style: AppTypography.text15.copyWith(
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF718096),
+                    color: AppColors.fairway.withValues(alpha: 0.6),
+                    letterSpacing: 0.2,
                   ),
                 ),
               ),
               Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: 6.0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppTheme.of(context).primary,
-                  borderRadius: BorderRadius.circular(8.0),
+                  color: AppColors.fairway,
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text(
+                child: const Text(
                   'Add',
-                  style: AppTypography.labelMedium.copyWith(
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                     color: Colors.white,
+                    letterSpacing: 0.3,
                   ),
                 ),
               ),
@@ -681,89 +753,128 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       );
     }
 
-    // Filled slot - show player info
+    // ── Filled slot — player info ───────────────────────────────────────
     final bool isGuest = playerData['isGuest'] == true;
     final String name = playerData['name'] ?? 'Player';
     final String? photoUrl = playerData['photoUrl'];
 
     return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
-        color: isGuest
-          ? Color(0xFFFFF8E1)
-          : Color(0xFFE8F5E9),
-        borderRadius: BorderRadius.circular(12.0),
+        color: AppColors.fairway,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isGuest
-            ? Color(0xFFFFA726).withValues(alpha: 0.3)
-            : Color(0xFF1A4D2E).withValues(alpha: 0.2),
-          width: 1.5,
+          color: AppColors.fairwayLight.withValues(alpha: 0.4),
+          width: 1,
         ),
       ),
       child: Row(
         children: [
-          // Avatar or guest icon
+          // ── Avatar ─────────────────────────────────────────────────────
           if (isGuest)
             Container(
-              width: 40.0,
-              height: 40.0,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: Color(0xFFFFA726).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(20.0),
+                color: _goldAccent.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _goldAccent.withValues(alpha: 0.4),
+                  width: 1.5,
+                ),
               ),
-              child: Icon(
-                Icons.person_outline,
-                color: Color(0xFFF57C00),
-                size: 24.0,
+              child: const Icon(
+                Icons.person_outline_rounded,
+                color: _goldAccent,
+                size: 24,
               ),
             )
           else
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20.0),
-              child: Image.network(
-                photoUrl != null && photoUrl.isNotEmpty
-                  ? photoUrl
-                  : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                width: 40.0,
-                height: 40.0,
-                cacheWidth: 120, // ✅ PERFORMANCE: 3x for high-DPI
-                cacheHeight: 120,
-                fit: BoxFit.cover,
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.fairwayLight,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  width: 1.5,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: photoUrl != null && photoUrl.isNotEmpty
+                    ? Image.network(
+                        photoUrl,
+                        width: 48,
+                        height: 48,
+                        cacheWidth: 144,
+                        cacheHeight: 144,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.person_rounded,
+                          color: Colors.white70,
+                          size: 24,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.person_rounded,
+                        color: Colors.white70,
+                        size: 24,
+                      ),
               ),
             ),
-          SizedBox(width: AppSpacing.sm),
+          const SizedBox(width: 12),
+
+          // ── Name + role ────────────────────────────────────────────────
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   name,
-                  style: AppTypography.text15.copyWith(
+                  style: const TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A4D2E),
+                    color: Colors.white,
+                    letterSpacing: 0.2,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 2.0),
+                const SizedBox(height: 2),
                 Text(
                   isGuest ? 'Guest' : 'Member',
-                  style: AppTypography.text13.copyWith(
-                    color: Color(0xFF718096),
+                  style: const TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: _goldAccent,
+                    letterSpacing: 0.1,
                   ),
                 ),
               ],
             ),
           ),
-          AppIconButton(
-            icon: Icon(
-              Icons.close,
-              color: AppTheme.of(context).error,
-              size: 20.0,
+
+          // ── Remove action ──────────────────────────────────────────────
+          GestureDetector(
+            onTap: () => _removePlayerFromSlot(slotIndex),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                Icons.close_rounded,
+                color: Colors.white.withValues(alpha: 0.8),
+                size: 20,
+              ),
             ),
-            borderRadius: 18.0,
-            buttonSize: 36.0,
-            fillColor: Colors.white,
-            tooltip: 'Remove player',
-            onPressed: () => _removePlayerFromSlot(slotIndex),
           ),
         ],
       ),
@@ -1219,24 +1330,24 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                     ),
                                     SizedBox(height: AppSpacing.sm),
                                     _buildInfoRow(
-                                      Icons.golf_course,
-                                      game.coursePlay,
+                                      svgPath: AppIcons.course,
+                                      text: game.coursePlay,
                                     ),
                                     SizedBox(height: AppSpacing.xs),
                                     _buildInfoRow(
-                                      Icons.calendar_today,
-                                      '${dateTimeFormat("EEEE, MMM d", game.date)} • ${dateTimeFormat("jm", game.date)}',
+                                      svgPath: AppIcons.calendarCheck,
+                                      text: '${dateTimeFormat("EEEE, MMM d", game.date)} • ${dateTimeFormat("jm", game.date)}',
                                     ),
                                     SizedBox(height: AppSpacing.xs),
                                     _buildInfoRow(
-                                      Icons.people,
-                                      '$currentPlayerCount confirmed, $remainingSlots ${remainingSlots == 1 ? 'spot' : 'spots'} open',
+                                      svgPath: AppIcons.golfers,
+                                      text: '$currentPlayerCount confirmed, $remainingSlots ${remainingSlots == 1 ? 'spot' : 'spots'} open',
                                     ),
                                     if (game.gameType.isNotEmpty) ...[
                                       SizedBox(height: AppSpacing.xs),
                                       _buildInfoRow(
-                                        Icons.sports_golf,
-                                        game.gameType,
+                                        icon: Icons.sports_golf,
+                                        text: game.gameType,
                                       ),
                                     ],
                                   ],
@@ -1257,14 +1368,21 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String text) {
+  Widget _buildInfoRow({IconData? icon, String? svgPath, required String text}) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16.0,
-          color: Color(0xFF718096),
-        ),
+        if (svgPath != null)
+          AppIcon(
+            assetPath: svgPath,
+            size: 16.0,
+            color: Color(0xFF718096),
+          )
+        else if (icon != null)
+          Icon(
+            icon,
+            size: 16.0,
+            color: Color(0xFF718096),
+          ),
         SizedBox(width: 8.0),
         Expanded(
           child: Text(

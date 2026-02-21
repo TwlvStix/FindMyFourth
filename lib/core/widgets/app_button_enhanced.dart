@@ -4,6 +4,8 @@ import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
+import '../design_tokens/app_icons.dart';
+import 'app_icon.dart';
 
 /// Button variant types for different visual styles
 enum AppButtonVariant {
@@ -68,6 +70,8 @@ class AppButtonEnhanced extends StatefulWidget {
     this.size = AppButtonSize.medium,
     this.leadingIcon,
     this.trailingIcon,
+    this.leadingSvgPath,
+    this.trailingSvgPath,
     this.isLoading = false,
     this.enabled = true,
     this.fullWidth = false,
@@ -87,11 +91,17 @@ class AppButtonEnhanced extends StatefulWidget {
   /// Size preset
   final AppButtonSize size;
 
-  /// Optional icon before text
+  /// Optional icon before text (IconData)
   final IconData? leadingIcon;
 
-  /// Optional icon after text
+  /// Optional icon after text (IconData)
   final IconData? trailingIcon;
+
+  /// Optional SVG icon before text (takes precedence over leadingIcon)
+  final String? leadingSvgPath;
+
+  /// Optional SVG icon after text (takes precedence over trailingIcon)
+  final String? trailingSvgPath;
 
   /// Show loading indicator and disable interaction
   final bool isLoading;
@@ -459,7 +469,14 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
       mainAxisSize: widget.fullWidth ? MainAxisSize.max : MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (widget.leadingIcon != null) ...[
+        if (widget.leadingSvgPath != null) ...[
+          AppIcon(
+            assetPath: widget.leadingSvgPath!,
+            size: _iconSize,
+            color: _getTextColor(),
+          ),
+          SizedBox(width: widget.size == AppButtonSize.small ? 6.0 : 8.0),
+        ] else if (widget.leadingIcon != null) ...[
           Icon(
             widget.leadingIcon,
             size: _iconSize,
@@ -477,7 +494,14 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
             maxLines: 1,
           ),
         ),
-        if (widget.trailingIcon != null) ...[
+        if (widget.trailingSvgPath != null) ...[
+          SizedBox(width: widget.size == AppButtonSize.small ? 6.0 : 8.0),
+          AppIcon(
+            assetPath: widget.trailingSvgPath!,
+            size: _iconSize,
+            color: _getTextColor(),
+          ),
+        ] else if (widget.trailingIcon != null) ...[
           SizedBox(width: widget.size == AppButtonSize.small ? 6.0 : 8.0),
           Icon(
             widget.trailingIcon,

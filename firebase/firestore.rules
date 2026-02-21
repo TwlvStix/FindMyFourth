@@ -188,13 +188,16 @@ service cloud.firestore {
 
     function canSelfJoinGameChat(oldData, newData) {
       let changedKeys = newData.diff(oldData).changedKeys();
+      // Allow memberJoinedAt to be updated so clients can record the rejoin
+      // timestamp used by the fresh-start-on-rejoin feature.
       return isGameChat(oldData) &&
         isGameParticipant(oldData.gameId) &&
         isSelfOnlyAddedToChat(oldData, newData) &&
         changedKeys.hasOnly([
           'memberIds',
           'updatedAt',
-          'unreadCountByUser'
+          'unreadCountByUser',
+          'memberJoinedAt'
         ]) &&
         canUpdateUnreadCount(oldData, newData);
     }
@@ -260,7 +263,6 @@ service cloud.firestore {
       let allowedFields = [
         'first_name',
         'last_name',
-        'phone_number',
         'photo_url',
         'handicap',
         'home_course',
@@ -288,7 +290,13 @@ service cloud.firestore {
         'vibe_profile.importance',
         'vibe_profile.importance_version',
         'vibe_profile.importance_updated_at',
-        'golf_canada_number'
+        'golf_canada_number',
+        'profile_completeness',
+        'total_verified_rounds',
+        'unique_co_players',
+        'games_hosted',
+        'show_up_rate',
+        'badge_level'
       ];
       let changed = request.resource.data.diff(resource.data).changedKeys();
       return changed.hasOnly(allowedFields);
@@ -400,7 +408,10 @@ service cloud.firestore {
     function isValidStatus(data) {
       return !data.keys().hasAny(['status']) ||
         (data.status is string &&
-          data.status in ['active', 'completed', 'cancelled', 'expired']);
+          data.status in [
+            'active', 'completed', 'cancelled', 'expired',
+            'open', 'filled', 'played', 'verified'
+          ]);
     }
 
     function isCancelStatusConsistent(data) {
@@ -439,7 +450,12 @@ service cloud.firestore {
           'status',
           'joined_players',
           'guest_players',
-          'userRef'
+          'userRef',
+          'min_app_users',
+          'app_user_count',
+          'guest_count',
+          'verified_at',
+          'verification_status'
         ]) &&
         maxPlayers(request.resource.data) >= totalPlayers(request.resource.data) &&
         isValidStatus(request.resource.data) &&
@@ -475,6 +491,25 @@ service cloud.firestore {
         );
     }
 
+    // ── Behavioral Dataset Helper Functions ──────────────────────────────────
+
+    // Is the requesting user this specific player?
+    function isPlayer(playerId) {
+      return isSignedIn() && request.auth.uid == playerId;
+    }
+
+    // Is the requesting user the host of this round?
+    function isRoundHost(roundId) {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/rounds/$(roundId)).data.host_player_id == request.auth.uid;
+    }
+
+    // Is the requesting user a participant in this round?
+    function isRoundParticipant(roundId) {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/rounds/$(roundId)/participants/$(request.auth.uid));
+    }
+
     match /users/{document} {
       allow update: if roleUnchanged() &&
         ((request.auth.uid == document &&
@@ -488,6 +523,14 @@ service cloud.firestore {
       allow create: if request.auth.uid == document;
       allow read: if request.auth != null;
       allow delete: if false;
+
+      // Private user data (email, phone_number) — owner-only access.
+      // Sensitive contact fields must be stored here rather than on the main
+      // user document so that other authenticated users cannot read them via
+      // direct Firestore queries (the main document allows any-auth reads).
+      match /private/{doc} {
+        allow read, write: if isSignedIn() && request.auth.uid == document;
+      }
 
       match /devices/{deviceId} {
         allow create, update, read, delete: if request.auth.uid == document;
@@ -555,7 +598,11 @@ service cloud.firestore {
         allow read: if isSignedIn() && isChatMemberById(chatId);
         allow create: if isSignedIn() &&
           request.resource.data.senderId == request.auth.uid &&
-          isChatMemberById(chatId);
+          isChatMemberById(chatId) &&
+          request.resource.data.type in ['text', 'image'] &&
+          (request.resource.data.type != 'image' ||
+            (request.resource.data.imageUrl is string &&
+             request.resource.data.imageUrl.matches('https://firebasestorage\\.googleapis\\.com.*')));
         // Sender-only updates; members may only add themselves to readBy.
         allow update: if isSignedIn() && isChatMemberById(chatId) && (
           (resource.data.senderId == request.auth.uid &&
@@ -624,6 +671,140 @@ service cloud.firestore {
     // Alert Subscriptions - users can read/write their own subscriptions
     match /alertSubs/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ── Trust System Collections ────────────────────────────────────────────
+
+    // game_participants — host creates participants, all game members can read,
+    // each user can update their own status (cancel/rejoin).
+    match /game_participants/{participantId} {
+      allow create: if isSignedIn() &&
+        request.resource.data.game_ref is path &&
+        (!request.resource.data.keys().hasAny(['user_ref']) ||
+          request.resource.data.user_ref == userRef(request.auth.uid));
+      // Any participant in the linked game can read all participant records for that game.
+      // Allows roster display without requiring joins across game's joined_players.
+      allow read: if isSignedIn() && (
+        resource.data.user_ref == userRef(request.auth.uid) ||
+        (resource.data.game_ref is path &&
+          isGameParticipant(resource.data.game_ref.id))
+      );
+      allow update: if isSignedIn() &&
+        resource.data.user_ref == userRef(request.auth.uid) &&
+        request.resource.data.diff(resource.data).changedKeys()
+          .hasOnly(['status', 'cancelled_at']);
+      allow delete: if false;
+    }
+
+    // cancellation_records — written exclusively by Cloud Functions (Admin SDK).
+    // Players can read their own records (for "Your Standing" private view).
+    match /cancellation_records/{recordId} {
+      allow read: if isSignedIn() &&
+        resource.data.player_ref == userRef(request.auth.uid);
+      allow create: if false; // Cloud Function only
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // round_records — written exclusively by Cloud Functions (Admin SDK).
+    // Confirmed participants in the round can read the record.
+    match /round_records/{roundId} {
+      allow read: if isSignedIn() && (
+        resource.data.confirmed_player_refs is list &&
+        resource.data.confirmed_player_refs.hasAny([userRef(request.auth.uid)])
+      );
+      allow create: if false; // Cloud Function only
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // pair_ratings — rater creates, rater and rated can read.
+    // would_play_again is never surfaced publicly; backend ML training signal only.
+    match /pair_ratings/{ratingId} {
+      allow create: if isSignedIn() &&
+        request.resource.data.rater_ref == userRef(request.auth.uid) &&
+        request.resource.data.rater_ref != request.resource.data.rated_ref &&
+        request.resource.data.would_play_again is bool;
+      allow read: if isSignedIn() && (
+        resource.data.rater_ref == userRef(request.auth.uid) ||
+        resource.data.rated_ref == userRef(request.auth.uid)
+      );
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // strikes — written exclusively by Cloud Functions (Admin SDK).
+    // Players can read only their own strike records (for "Your Standing" private view).
+    // Strike data is private: count, reason, game reference, and expiry visible only to
+    // the affected player. No other player or role can read another player's strikes.
+    match /strikes/{strikeId} {
+      allow read: if isSignedIn() &&
+        resource.data.player_ref == userRef(request.auth.uid);
+      allow create: if false; // Cloud Function only
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ── Push Notification Infrastructure Collections ────────────────────────
+
+    // notificationLog — delivery tracking, Admin SDK only (Cloud Functions).
+    // Not user-facing. TTL policy on `timestamp` field (90-day auto-delete).
+    match /notificationLog/{logId} {
+      allow read, write: if false;
+    }
+
+    // scheduledNotifications — Cloud Tasks job tracking, Admin SDK only.
+    match /scheduledNotifications/{jobId} {
+      allow read, write: if false;
+    }
+
+    // ── Behavioral Dataset Collections ───────────────────────────────────────
+
+    // rounds — Cloud Functions only for writes, authenticated users can read
+    match /rounds/{roundId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+
+      // participants — round participants can read each other
+      match /participants/{playerId} {
+        allow read: if isSignedIn() && isRoundParticipant(roundId);
+        allow write: if false;
+      }
+
+      // pairwiseMatches — participants can read match scores
+      match /pairwiseMatches/{pairId} {
+        allow read: if isSignedIn() && isRoundParticipant(roundId);
+        allow write: if false;
+      }
+
+      // feedback — players can read/create/update their own
+      match /feedback/{playerId} {
+        allow read: if isPlayer(playerId);
+        allow create: if isPlayer(playerId) && isRoundParticipant(roundId);
+        allow update: if isPlayer(playerId) &&
+          !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['actually_played_again_any', 'actually_played_again_same_players',
+                     'days_until_next_round', 'next_round_id', 'behavioral_label_computed_at']);
+      }
+    }
+
+    // player_rounds — players can read their own trajectory
+    match /player_rounds/{docId} {
+      allow read: if isSignedIn() &&
+        resource.data.player_id == request.auth.uid;
+      allow write: if false;
+    }
+
+    // round_events — backend only
+    match /round_events/{eventId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // algorithm_versions — readable by authenticated users
+    match /algorithm_versions/{versionId} {
+      allow read: if isSignedIn();
+      allow write: if false;
     }
   }
 }

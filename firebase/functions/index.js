@@ -11,6 +11,28 @@ const kUserNotificationsCollection = "notifications";
 const kGameAlertCooldownMinutes = 60;
 const firestore = admin.firestore();
 
+const trustSystem = require("./trust_system");
+const confirmationFlow = require("./confirmation_flow");
+const trustProfileModule = require("./trust_profile");
+
+// Behavioral Dataset modules
+const { createRound, addParticipant, finalizeGroup } = require("./src/booking");
+const { generatePairwiseMatches } = require("./src/matching");
+const {
+  confirmParticipant,
+  declineParticipant,
+  cancelParticipant,
+  checkInParticipant,
+  completeRound,
+  detectNoShows,
+} = require("./src/lifecycle");
+const { submitFeedback, runBehavioralBackfill } = require("./src/feedback");
+const {
+  syncPlayerRound,
+  syncAllPlayerRounds,
+  exportEventsToBigQuery,
+} = require("./src/sync");
+
 const kPushNotificationRuntimeOpts = {
   timeoutSeconds: 540,
   memory: "2GB",
@@ -22,9 +44,6 @@ function extractUidFromJoinedEntry(entry) {
   }
   if (typeof entry === "string") {
     return entry;
-  }
-  if (entry instanceof admin.firestore.DocumentReference) {
-    return entry.id;
   }
   if (typeof entry === "object" && typeof entry.id === "string") {
     return entry.id;
@@ -56,7 +75,7 @@ function getUserNotificationPrefs(userData) {
   const chatAlerts = prefs.chat_alerts || {};
   const quietHours = prefs.quiet_hours || {};
   const pushEnabled =
-    typeof prefs.push_enabled === "boolean" ? prefs.push_enabled : false;
+    typeof prefs.push_enabled === "boolean" ? prefs.push_enabled : true;
   const gameAlertsEnabled =
     typeof gameAlerts.enabled === "boolean" ? gameAlerts.enabled : true;
   const chatAlertsEnabled =
@@ -1742,5 +1761,407 @@ exports.deleteChat = functions
         "internal",
         `Failed to delete chat: ${error.message}`,
       );
+    }
+  });
+
+// Trust System — Stage 1 & 2
+exports.recordCancellation = trustSystem.recordCancellation;
+exports.onGameCreate = trustSystem.onGameCreate;
+exports.checkPlayerRestriction = trustSystem.checkPlayerRestriction;
+exports.markGhostNoShow = trustSystem.markGhostNoShow;
+
+// Confirmation Flow — Stage 3
+exports.onGameParticipantJoin = confirmationFlow.onGameParticipantJoin;
+exports.onGameStatusToFilled = confirmationFlow.onGameStatusToFilled;
+exports.onGameStatusToPlayed = confirmationFlow.onGameStatusToPlayed;
+exports.submitHostCheckin = confirmationFlow.submitHostCheckin;
+exports.submitPeerRatings = confirmationFlow.submitPeerRatings;
+exports.submitFallbackConfirmation = confirmationFlow.submitFallbackConfirmation;
+
+// Cloud Task receivers for confirmation flow
+exports.processScheduledGameStatusChange = functions
+  .region('us-west2')
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .https.onRequest(confirmationFlow._processScheduledGameStatusChangeHandler);
+
+exports.processScheduledWindowClose = functions
+  .region('us-west2')
+  .runWith({ timeoutSeconds: 540, memory: '512MB' })
+  .https.onRequest(confirmationFlow._processScheduledWindowCloseHandler);
+
+// Trust Profile — Stage 5
+exports.updateTrustProfile = trustProfileModule.updateTrustProfile;
+exports.getMyStanding = trustProfileModule.getMyStanding;
+
+// Trust Notification Scheduler — Session 7
+const trustNotificationScheduler = require('./notifications/trust/scheduler');
+exports.processScheduledTrustNotification = functions
+  .region('us-west2')
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .https.onRequest(trustNotificationScheduler.processScheduledTrustNotificationHandler);
+
+// Trust Background Workers — Session 10
+const trustWorkers = require('./notifications/trust/workers');
+
+exports.trustTokenHygieneJob = functions
+  .region('us-west2')
+  .runWith({ timeoutSeconds: 540, memory: '256MB' })
+  .pubsub.schedule('0 3 * * *')
+  .timeZone('UTC')
+  .onRun(async () => {
+    const result = await trustWorkers.trustTokenHygieneHandler();
+    console.log('[trustTokenHygieneJob]', result);
+  });
+
+exports.trustQuietHoursCleanup = functions
+  .region('us-west2')
+  .runWith({ timeoutSeconds: 120, memory: '256MB' })
+  .pubsub.schedule('every 15 minutes')
+  .onRun(async () => {
+    const result = await trustWorkers.trustQuietHoursCleanupHandler();
+    console.log('[trustQuietHoursCleanup]', result);
+  });
+
+// Welcome email — restored from main (accidentally dropped in checkpoint branch)
+const sgMail = require("@sendgrid/mail");
+
+exports.onUserCreated = functions
+  .region("us-west2")
+  .runWith({ secrets: ["SENDGRID_API_KEY"] })
+  .auth.user()
+  .onCreate(async (user) => {
+    const email = user.email;
+    if (!email) {
+      return;
+    }
+
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+    const msg = {
+      to: email,
+      from: "findmyfourth@gmail.com",
+      subject: "Welcome to Find My Fourth!",
+      text: [
+        "Welcome to Find My Fourth!",
+        "",
+        "Your account has been successfully created. We're excited to have you on the course!",
+        "",
+        "Head back to the app to complete your profile and start finding your next round.",
+        "",
+        "See you on the fairway,",
+        "The Find My Fourth Team",
+      ].join("\n"),
+      html: [
+        "<p>Welcome to <strong>Find My Fourth</strong>!</p>",
+        "<p>Your account has been successfully created. We're excited to have you on the course!</p>",
+        "<p>Head back to the app to complete your profile and start finding your next round.</p>",
+        "<p>See you on the fairway,<br/>The Find My Fourth Team</p>",
+      ].join(""),
+    };
+
+    try {
+      await sgMail.send(msg);
+      console.log(`Welcome email sent to ${email}`);
+    } catch (error) {
+      console.error("Error sending welcome email:", error);
+    }
+  });
+
+// ═══════════════════════════════════════════════════════════════
+// BEHAVIORAL DATASET FUNCTIONS (added 2026-02-21)
+// ═══════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────
+// CALLABLE FUNCTIONS (invoked by your app)
+// ─────────────────────────────────────────────
+
+/**
+ * Creates a new round and adds the host as the first participant.
+ *
+ * Call from app: firebase.functions().httpsCallable('createNewRound')({...})
+ */
+exports.createNewRound = functions.https.onCall(async (data, context) => {
+  // Verify authentication
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
+  }
+
+  try {
+    const roundId = await createRound({
+      game_type: data.game_type,
+      game_settings: data.game_settings || {},
+      tee_time: data.tee_time,
+      course_id: data.course_id,
+      weather_snapshot: data.weather_snapshot || null,
+      host_player_id: context.auth.uid,
+      match_source: data.match_source,
+      group_size: data.group_size,
+    });
+
+    return { success: true, round_id: roundId };
+  } catch (error) {
+    throw new functions.https.HttpsError("internal", error.message);
+  }
+});
+
+/**
+ * Adds a player to an existing round.
+ */
+exports.joinRound = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
+  }
+
+  try {
+    await addParticipant({
+      round_id: data.round_id,
+      player_id: context.auth.uid,
+      role: "joined",
+    });
+
+    return { success: true };
+  } catch (error) {
+    throw new functions.https.HttpsError("internal", error.message);
+  }
+});
+
+/**
+ * Finalizes the group and generates all pairwise match predictions.
+ * Call this when the group is full or the host locks it in.
+ */
+exports.finalizeAndScore = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
+  }
+
+  try {
+    const playerIds = await finalizeGroup(data.round_id);
+    const pairCount = await generatePairwiseMatches(data.round_id);
+
+    return {
+      success: true,
+      players: playerIds.length,
+      pairs_scored: pairCount,
+    };
+  } catch (error) {
+    throw new functions.https.HttpsError("internal", error.message);
+  }
+});
+
+/**
+ * Confirms participation (invited → confirmed).
+ */
+exports.confirmJoin = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
+  }
+
+  try {
+    const result = await confirmParticipant(data.round_id, context.auth.uid);
+    return { success: true, ...result };
+  } catch (error) {
+    throw new functions.https.HttpsError("internal", error.message);
+  }
+});
+
+/**
+ * Declines an invitation (invited → declined).
+ */
+exports.declineInvitation = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
+  }
+
+  try {
+    const result = await declineParticipant(data.round_id, context.auth.uid);
+    return { success: true, ...result };
+  } catch (error) {
+    throw new functions.https.HttpsError("internal", error.message);
+  }
+});
+
+/**
+ * Cancels participation (confirmed → cancelled).
+ * Automatically detects if cancellation happened after seeing the group.
+ */
+exports.cancelJoin = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
+  }
+
+  try {
+    const result = await cancelParticipant(
+      data.round_id,
+      context.auth.uid,
+      data.cancellation_reason || "other"
+    );
+    return { success: true, ...result };
+  } catch (error) {
+    throw new functions.https.HttpsError("internal", error.message);
+  }
+});
+
+/**
+ * Checks in a player at the course (confirmed → checked_in).
+ */
+exports.checkIn = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
+  }
+
+  try {
+    const result = await checkInParticipant(data.round_id, context.auth.uid);
+    return { success: true, ...result };
+  } catch (error) {
+    throw new functions.https.HttpsError("internal", error.message);
+  }
+});
+
+/**
+ * Marks the round as complete. Transitions all checked-in players to "completed"
+ * and marks confirmed-but-absent players as no-shows.
+ *
+ * Typically called by the host or triggered by a game-end event.
+ */
+exports.endRound = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
+  }
+
+  try {
+    const result = await completeRound(data.round_id);
+
+    // Sync all player_rounds for this round
+    await syncAllPlayerRounds(data.round_id);
+
+    return { success: true, ...result };
+  } catch (error) {
+    throw new functions.https.HttpsError("internal", error.message);
+  }
+});
+
+/**
+ * Submits post-round feedback.
+ */
+exports.submitRoundFeedback = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
+  }
+
+  try {
+    await submitFeedback({
+      round_id: data.round_id,
+      player_id: context.auth.uid,
+      play_again: data.play_again ?? null,
+      rating: data.rating ?? null,
+      text_feedback: data.text_feedback ?? null,
+      feedback_source: data.feedback_source || "in_app_prompt",
+      prompt_attempt_count: data.prompt_attempt_count || 1,
+    });
+
+    // Re-sync this player's player_round with feedback data
+    await syncPlayerRound(data.round_id, context.auth.uid);
+
+    return { success: true };
+  } catch (error) {
+    throw new functions.https.HttpsError("internal", error.message);
+  }
+});
+
+// ─────────────────────────────────────────────
+// FIRESTORE TRIGGERS (automatic sync)
+// ─────────────────────────────────────────────
+
+/**
+ * When a participant document is created or updated,
+ * sync it to the player_rounds denormalized collection.
+ */
+exports.onParticipantWrite = functions.firestore
+  .document("rounds/{roundId}/participants/{playerId}")
+  .onWrite(async (change, context) => {
+    const { roundId, playerId } = context.params;
+
+    // Don't sync if the document was deleted
+    if (!change.after.exists) return;
+
+    try {
+      await syncPlayerRound(roundId, playerId);
+    } catch (error) {
+      console.error(`Failed to sync player_round for ${playerId} in ${roundId}:`, error);
+    }
+  });
+
+/**
+ * When feedback is written (including behavioral backfill),
+ * re-sync the player_round to pick up the new labels.
+ */
+exports.onFeedbackWrite = functions.firestore
+  .document("rounds/{roundId}/feedback/{playerId}")
+  .onWrite(async (change, context) => {
+    const { roundId, playerId } = context.params;
+
+    if (!change.after.exists) return;
+
+    try {
+      await syncPlayerRound(roundId, playerId);
+    } catch (error) {
+      console.error(`Failed to sync player_round after feedback for ${playerId} in ${roundId}:`, error);
+    }
+  });
+
+// ─────────────────────────────────────────────
+// SCHEDULED FUNCTIONS (cron jobs)
+// ─────────────────────────────────────────────
+
+/**
+ * Runs the behavioral backfill job daily at 3:00 AM.
+ *
+ * Checks all feedback docs that haven't been backfilled yet,
+ * computes whether the player actually played again, and writes
+ * the behavioral labels.
+ */
+exports.scheduledBehavioralBackfill = functions.pubsub
+  .schedule("0 3 * * *") // 3:00 AM daily
+  .timeZone("America/Vancouver") // Adjust to your timezone
+  .onRun(async () => {
+    try {
+      const results = await runBehavioralBackfill();
+      console.log("Behavioral backfill results:", results);
+    } catch (error) {
+      console.error("Behavioral backfill failed:", error);
+    }
+  });
+
+/**
+ * Detects no-shows every hour.
+ * Marks confirmed players as no-shows if the round started 60+ minutes ago.
+ */
+exports.scheduledNoShowDetection = functions.pubsub
+  .schedule("0 * * * *") // Every hour
+  .timeZone("America/Vancouver")
+  .onRun(async () => {
+    try {
+      const noShows = await detectNoShows(60);
+      if (noShows.length > 0) {
+        console.log(`Detected ${noShows.length} no-shows:`, noShows);
+      }
+    } catch (error) {
+      console.error("No-show detection failed:", error);
+    }
+  });
+
+/**
+ * Exports flat event log to BigQuery every 6 hours.
+ * Phase 3: Replace the placeholder in sync.js with actual BQ inserts.
+ */
+exports.scheduledBigQueryExport = functions.pubsub
+  .schedule("0 */6 * * *") // Every 6 hours
+  .timeZone("America/Vancouver")
+  .onRun(async () => {
+    try {
+      const results = await exportEventsToBigQuery(500);
+      console.log("BigQuery export results:", results);
+    } catch (error) {
+      console.error("BigQuery export failed:", error);
     }
   });

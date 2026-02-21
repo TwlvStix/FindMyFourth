@@ -6,6 +6,7 @@ import '/core/design_tokens/spacing.dart';
 import 'dart:ui';
 import '/main_function/success_page/success_page_widget.dart';
 import '/models/game.dart';
+import '/screens/trust/cancellation_warning_modal.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -159,6 +160,14 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                           ),
                           child: AppButtonEnhanced(
                             onPressed: () async {
+                              // Show tier-aware cancellation warning before proceeding
+                              final confirmed =
+                                  await CancellationWarningModal.show(
+                                context,
+                                game: widget.gameRef,
+                              );
+                              if (confirmed != true) return;
+
                               final currentUser =
                                   FirebaseAuth.instance.currentUser;
                               if (currentUser == null) {
@@ -203,8 +212,8 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                                 },
                               );
                             },
-                            text: 'Leave Game',
-                            variant: AppButtonVariant.primary,
+                            text: 'Cancel My Spot',
+                            variant: AppButtonVariant.secondary,
                             size: AppButtonSize.large,
                             fullWidth: true,
                           ),

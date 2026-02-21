@@ -1,5 +1,6 @@
 import '/core/widgets/app_drop_down.dart';
-import '/core/widgets/app_icon_button.dart';
+import '/core/widgets/app_icon.dart';
+import '/core/design_tokens/app_icons.dart';
 import '/core/widgets/app_text_field.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/motion/motion_helpers.dart';
@@ -7,13 +8,14 @@ import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/widgets/trust/restriction_banner.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
-import '/core/design_tokens/typography.dart';
 import '/core/form_field_controller.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
 import '/providers/provider_extensions.dart';
+import '/providers/trust_provider.dart';
 import '/models/course.dart';
 import 'create_game_constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -79,6 +81,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   // Team Setup
   bool _is2v2 = false;
   String? _teamStyle;
+
+  // Just for Fun mode
+  bool _isJustForFun = false;
 
   // Games multi-select (max 3)
   final Set<String> _selectedGames = {};
@@ -242,6 +247,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         if (draft['flexibleTimeOfDay'] != null) {
           _flexibleTimeOfDay = draft['flexibleTimeOfDay'];
         }
+        if (draft['isJustForFun'] != null) {
+          _isJustForFun = draft['isJustForFun'] as bool;
+        }
 
         _hasDraft = true;
       }
@@ -272,6 +280,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         'flexibleWeek': _flexibleWeek,
         'flexibleDays': _selectedDays.toList(),
         'flexibleTimeOfDay': _flexibleTimeOfDay,
+        'isJustForFun': _isJustForFun,
       };
 
       final prefs = await SharedPreferences.getInstance();
@@ -326,35 +335,37 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       );
       return;
     }
-    if (rulesSetValue == null) {
-      debugPrint('❌ CREATE GAME: rulesSetValue is null');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please select a game vibe'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-    if (styleGameValue == null) {
-      debugPrint('❌ CREATE GAME: styleGameValue is null');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please select stakes'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-    if (gameTypeValue == null) {
-      debugPrint('❌ CREATE GAME: gameTypeValue is null');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please select a primary format'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
+    if (!_isJustForFun) {
+      if (rulesSetValue == null) {
+        debugPrint('❌ CREATE GAME: rulesSetValue is null');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please select a game vibe'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      if (styleGameValue == null) {
+        debugPrint('❌ CREATE GAME: styleGameValue is null');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please select stakes'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      if (gameTypeValue == null) {
+        debugPrint('❌ CREATE GAME: gameTypeValue is null');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please select a primary format'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
     }
     debugPrint('✅ CREATE GAME: All values present');
 
@@ -372,10 +383,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       }
     } else {
       // Flexible mode validation
-      if (_flexibleWeek == null && _selectedDays.isEmpty && _flexibleTimeOfDay == null) {
+      if (_flexibleWeek == null &&
+          _selectedDays.isEmpty &&
+          _flexibleTimeOfDay == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Please select at least a week, days, or time of day for flexible games.'),
+            content: Text(
+                'Please select at least a week, days, or time of day for flexible games.'),
             duration: Duration(milliseconds: 4000),
             backgroundColor: Colors.red,
           ),
@@ -384,28 +398,31 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       }
     }
 
-    // Validate Team Style is required if 2v2 is enabled
-    if (_is2v2 && (_teamStyle == null || _teamStyle!.isEmpty)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please select a team style for 2v2 games.'),
-          duration: Duration(milliseconds: 4000),
-          backgroundColor: AppTheme.of(context).primary,
-        ),
-      );
-      return;
-    }
+    if (!_isJustForFun) {
+      // Validate Team Style is required if 2v2 is enabled
+      if (_is2v2 && (_teamStyle == null || _teamStyle!.isEmpty)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please select a team style for 2v2 games.'),
+            duration: Duration(milliseconds: 4000),
+            backgroundColor: AppTheme.of(context).primary,
+          ),
+        );
+        return;
+      }
 
-    // Validate "Other" game requires description if selected
-    if (_selectedGames.contains('Other') && (_otherGameText == null || _otherGameText!.trim().isEmpty)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please describe the other game.'),
-          duration: Duration(milliseconds: 4000),
-          backgroundColor: AppTheme.of(context).primary,
-        ),
-      );
-      return;
+      // Validate "Other" game requires description if selected
+      if (_selectedGames.contains('Other') &&
+          (_otherGameText == null || _otherGameText!.trim().isEmpty)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please describe the other game.'),
+            duration: Duration(milliseconds: 4000),
+            backgroundColor: AppTheme.of(context).primary,
+          ),
+        );
+        return;
+      }
     }
 
     debugPrint('✅ CREATE GAME: Date validation passed');
@@ -435,14 +452,14 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       }
       debugPrint('✅ CREATE GAME: User authenticated: ${currentUser.uid}');
 
-      final currentUserRef = FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser.uid);
+      final currentUserRef =
+          FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
       // Default to 1 player needed for backend compatibility
       final numPlayers = 1;
       final maxPlayers = 4;
       debugPrint('CreateGame: creating game $gameName');
-      debugPrint('CreateGame: numPlayers=$numPlayers (default), maxPlayers=$maxPlayers');
+      debugPrint(
+          'CreateGame: numPlayers=$numPlayers (default), maxPlayers=$maxPlayers');
 
       final gamesRecordReference =
           FirebaseFirestore.instance.collection('games').doc();
@@ -452,15 +469,15 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       debugPrint('🎮 CREATE GAME: Creator UID: ${currentUser.uid}');
 
       try {
-        final chatsRecordReference = await context
-            .read<ChatProvider>()
-            .createGameChat(
-              createdByUid: currentUser.uid,
-              gameId: gamesRecordReference.id,
-              gameName: gameName,
-            );
+        final chatsRecordReference =
+            await context.read<ChatProvider>().createGameChat(
+                  createdByUid: currentUser.uid,
+                  gameId: gamesRecordReference.id,
+                  gameName: gameName,
+                );
         chatRef = chatsRecordReference;
-        debugPrint('✅ CREATE GAME: Game chat created: ${chatsRecordReference.id}');
+        debugPrint(
+            '✅ CREATE GAME: Game chat created: ${chatsRecordReference.id}');
       } catch (chatError, chatStackTrace) {
         debugPrint('❌ CREATE GAME: Chat creation failed!');
         debugPrint('❌ CREATE GAME: Error type: ${chatError.runtimeType}');
@@ -494,6 +511,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           'joined_players': [currentUserRef],
           'guest_players': [],
           'uid': currentUser.uid,
+          'is_fun_game': _isJustForFun,
           'schedule_type': _scheduleType,
           if (_scheduleType == 'flexible') ...{
             'flexible_week': _flexibleWeek,
@@ -523,7 +541,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           debugPrint('CreateGame: refreshed game caches');
 
           final numExistingFriends = 4 - numPlayers - 1;
-          debugPrint('CreateGame: numPlayers=$numPlayers, existingFriends=$numExistingFriends');
+          debugPrint(
+              'CreateGame: numPlayers=$numPlayers, existingFriends=$numExistingFriends');
 
           if (numExistingFriends <= 0) {
             debugPrint('CreateGame: No existing friends, skipping Player List');
@@ -534,7 +553,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               },
             );
           } else {
-            debugPrint('CreateGame: Has $numExistingFriends existing friends, showing Player List');
+            debugPrint(
+                'CreateGame: Has $numExistingFriends existing friends, showing Player List');
             context.pushNamed(
               PlayerListWidget.routeName,
               extra: <String, dynamic>{
@@ -554,7 +574,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             SnackBar(
               content: Text(
                 'You have created a game!',
-                style: TextStyle(fontFamily: 'Manrope',
+                style: TextStyle(
+                  fontFamily: 'Manrope',
                   color: AppTheme.of(context).secondaryBackground,
                   fontWeight: FontWeight.w500,
                 ),
@@ -584,7 +605,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         SnackBar(
           content: Text(
             'Failed to create game: $errorMsg',
-            style: TextStyle(fontFamily: 'Manrope',color: Colors.white),
+            style: TextStyle(fontFamily: 'Manrope', color: Colors.white),
           ),
           duration: Duration(milliseconds: 6000),
           backgroundColor: Colors.red,
@@ -607,7 +628,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     }
 
     // Display "Gross + Net" instead of "Both" for better readability
-    final handicap = scoringValue == 'Both' ? 'Gross + Net' : (scoringValue ?? '');
+    final handicap =
+        scoringValue == 'Both' ? 'Gross + Net' : (scoringValue ?? '');
     final stakes = styleGameValue ?? '';
     final vibe = rulesSetValue ?? '';
 
@@ -617,7 +639,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     // Add Games if any selected
     if (_selectedGames.isNotEmpty) {
       final gamesList = _selectedGames.map((game) {
-        if (game == 'Other' && _otherGameText != null && _otherGameText!.isNotEmpty) {
+        if (game == 'Other' &&
+            _otherGameText != null &&
+            _otherGameText!.isNotEmpty) {
           return _otherGameText!;
         }
         return game;
@@ -671,7 +695,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               SizedBox(height: AppSpacing.md),
               Text(
                 title,
-                style: TextStyle(fontFamily: 'Manrope',
+                style: TextStyle(
+                  fontFamily: 'Manrope',
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -681,7 +706,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               SizedBox(height: AppSpacing.sm),
               Text(
                 message,
-                style: TextStyle(fontFamily: 'Manrope',
+                style: TextStyle(
+                  fontFamily: 'Manrope',
                   fontSize: 15,
                   color: Colors.white.withValues(alpha: 0.9),
                   height: 1.5,
@@ -767,7 +793,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         _buildTimeOfDayCards(),
 
         // Summary bar
-        if (_buildFlexibleSummary().isNotEmpty && _buildFlexibleSummary() != 'Select your availability') ...[
+        if (_buildFlexibleSummary().isNotEmpty &&
+            _buildFlexibleSummary() != 'Select your availability') ...[
           SizedBox(height: AppSpacing.md),
           Container(
             width: double.infinity,
@@ -802,11 +829,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   }
 
   TextStyle _labelStyle() => TextStyle(
-    fontFamily: 'Manrope',
-    fontSize: 13,
-    fontWeight: FontWeight.w600,
-    color: Colors.white.withValues(alpha: 0.7),
-  );
+        fontFamily: 'Manrope',
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: Colors.white.withValues(alpha: 0.7),
+      );
 
   Widget _buildWeekChips() {
     final weeks = [
@@ -906,7 +933,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                       colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
                     )
                   : null,
-              color: isSelected ? null : AppTheme.of(context).secondaryBackground,
+              color:
+                  isSelected ? null : AppTheme.of(context).secondaryBackground,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isSelected
@@ -937,19 +965,19 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       {
         'value': 'morning',
         'label': 'Morning',
-        'emoji': '🌅',
+        'svgPath': AppIcons.morning,
         'subtitle': 'Before 11am',
       },
       {
         'value': 'afternoon',
         'label': 'Afternoon',
-        'emoji': '☀️',
+        'svgPath': AppIcons.afternoon,
         'subtitle': '11am-3pm',
       },
       {
         'value': 'twilight',
         'label': 'Twilight',
-        'emoji': '🌇',
+        'svgPath': AppIcons.twilight,
         'subtitle': 'After 3pm',
       },
     ];
@@ -984,7 +1012,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                       ],
                     )
                   : null,
-              color: isSelected ? null : AppColors.fairway.withValues(alpha: 0.2),
+              color:
+                  isSelected ? null : AppColors.fairway.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected
@@ -996,7 +1025,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(time['emoji'] as String, style: TextStyle(fontSize: 28)),
+                AppIcon(
+                  assetPath: time['svgPath'] as String,
+                  size: 28,
+                  color: Colors.white,
+                ),
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   time['label'] as String,
@@ -1069,750 +1102,976 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
-          statusBarColor: AppTheme.of(context).primary,
-          statusBarIconBrightness: Brightness.light,
-          statusBarBrightness: Brightness.dark,
-        ),
-        child: Scaffold(
-          key: scaffoldKey,
-          extendBodyBehindAppBar: true,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            surfaceTintColor: Colors.transparent,
-            scrolledUnderElevation: 0.0,
-            elevation: 0.0,
-            shadowColor: Colors.transparent,
-            automaticallyImplyLeading: false,
-            leading: const PremiumBackButton(),
-            title: Text(
-              'Create Game',
-              style: AppTypography.headlineMedium.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            centerTitle: false,
+        onTap: () {
+          FocusScope.of(context).unfocus();
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
+        child: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
+            statusBarColor: AppTheme.of(context).primary,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
           ),
-        body: FairwayBackgroundDark(
-          showOrganic: true,
-          showTexture: true,
-          child: SafeArea(
-            top: false,
-            child: _isLoading
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SpinKitWanderingCubes(
-                          color: AppColors.sunsetGold,
-                          size: 50.0,
-                        ),
-                        SizedBox(height: AppSpacing.md),
-                        Text(
-                          'Loading...',
-                          style: TextStyle(fontFamily: 'Manrope',
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+          child: Scaffold(
+            key: scaffoldKey,
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              scrolledUnderElevation: 0.0,
+              elevation: 0.0,
+              shadowColor: Colors.transparent,
+              automaticallyImplyLeading: false,
+              leading: const PremiumBackButton(),
+              title: Text(
+                'Create Game',
+                style: AppTheme.of(context).headlineLarge.override(
+                      font: TextStyle(
+                        fontFamily: 'Manrope',
+                        fontWeight: FontWeight.w500,
+                        fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
+                      ),
+                      color: AppColors.pure,
+                      fontSize: 24.0,
+                      letterSpacing: 0.0,
+                      fontWeight: FontWeight.w500,
+                      fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
                     ),
-                  )
-                : Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      AppSpacing.lg,
-                      MediaQuery.of(context).padding.top + 56 + AppSpacing.lg,
-                      AppSpacing.lg,
-                      AppSpacing.lg,
-                    ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          // Draft continuation banner
-                          if (_hasDraft) DraftBanner(onClear: _clearDraft),
+              ),
+              centerTitle: false,
+            ),
+            body: FairwayBackgroundDark(
+              showOrganic: true,
+              showTexture: true,
+              child: SafeArea(
+                top: false,
+                child: _isLoading
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SpinKitWanderingCubes(
+                              color: AppColors.sunsetGold,
+                              size: 50.0,
+                            ),
+                            SizedBox(height: AppSpacing.md),
+                            Text(
+                              'Loading...',
+                              style: TextStyle(
+                                fontFamily: 'Manrope',
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          AppSpacing.lg,
+                          MediaQuery.of(context).padding.top +
+                              56 +
+                              AppSpacing.lg,
+                          AppSpacing.lg,
+                          AppSpacing.lg,
+                        ),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              // Draft continuation banner
+                              if (_hasDraft) DraftBanner(onClear: _clearDraft),
 
-                          Container(
-                            width: double.infinity,
-                            child: Form(
-                              key: formKey,
-                              autovalidateMode: AutovalidateMode.always,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.sm),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SectionHeader(
-                                      emoji: '🏷️',
-                                      title: 'Game Name',
-                                      helpText:
-                                          'Auto-generated for you. Edit here if you want a custom name.',
-                                      onHelpTap: () => _showHelpDialog(
-                                          context,
-                                          'Game Name',
-                                          'Auto-generated for you. Edit here if you want a custom name.'),
+                              // Restriction banner
+                              Consumer<TrustProvider>(
+                                builder: (context, trust, _) {
+                                  final restriction = trust.myStanding?.currentRestriction;
+                                  if (restriction == null) return const SizedBox.shrink();
+                                  return Padding(
+                                    padding: EdgeInsets.only(bottom: AppSpacing.md),
+                                    child: RestrictionBanner(
+                                      restriction: restriction,
+                                      onViewStanding: () => context.pushNamed('YourStanding'),
                                     ),
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                          top: AppSpacing.xxs),
-                                      child: AppTextField(
-                                        label: 'Game name',
-                                        hint: 'Auto-generated',
-                                        controller: _gameNameController,
-                                        variant: AppTextFieldVariant.filled,
-                                        prefixIcon: Icons.label_rounded,
-                                        onChanged: (_) => _saveDraft(),
-                                      ),
-                                    ),
-
-                              SectionHeader(
-                                emoji: '📅',
-                                title: 'Schedule',
-                                helpText: 'Choose if you have a confirmed tee time or flexible availability.',
-                                onHelpTap: () => _showHelpDialog(
-                                    context,
-                                    'Schedule',
-                                    'Choose if you have a confirmed tee time or flexible availability.'),
-                              ),
-
-                              // Schedule Type Selector
-                              Padding(
-                                padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                child: SegmentedControl(
-                                  options: [
-                                    {'value': 'confirmed', 'label': 'I Have a Tee Time', 'icon': Icons.event_available_rounded},
-                                    {'value': 'flexible', 'label': 'Flexible Time', 'icon': Icons.event_note_rounded},
-                                  ],
-                                  selectedValue: _scheduleType,
-                                  onChanged: (val) {
-                                    if (mounted) {
-                                      setState(() {
-                                        _scheduleType = val;
-                                        if (val == 'flexible') {
-                                          datePicked = null;
-                                        } else {
-                                          _flexibleWeek = null;
-                                          _selectedDays.clear();
-                                          _flexibleTimeOfDay = null;
-                                        }
-                                      });
-                                      _saveDraft();
-                                    }
-                                  },
-                                ),
-                              ),
-
-                              if (_scheduleType == 'confirmed') ...[
-                                // Premium date picker
-                                Padding(
-                                  padding: EdgeInsets.only(top: AppSpacing.sm),
-                                  child: PremiumDatePicker(
-                                    selectedDate: datePicked,
-                                    onDateSelected: (date) {
-                                      if (mounted) {
-                                        setState(() {
-                                          datePicked = date;
-                                        });
-                                        _saveDraft();
-                                      }
-                                    },
-                                  ),
-                                ),
-
-                                // Tee time picker row
-                                if (datePicked != null) ...[
-                                  SizedBox(height: AppSpacing.sm),
-                                  InkWell(
-                                    onTap: () {
-                                      showTeeTimePicker(
-                                        context: context,
-                                        selectedDateTime: datePicked,
-                                        onTimeSelected: (dateTime) {
-                                          if (mounted) {
-                                            setState(() {
-                                              datePicked = dateTime;
-                                            });
-                                            _saveDraft();
-                                          }
-                                        },
-                                      );
-                                    },
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Container(
-                                      width: double.infinity,
-                                      padding: EdgeInsets.all(AppSpacing.md),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.of(context).secondaryBackground,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: AppTheme.of(context).primary,
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            Icons.access_time_rounded,
-                                            color: AppTheme.of(context).primary,
-                                            size: 24,
-                                          ),
-                                          SizedBox(width: AppSpacing.sm),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Tee Time',
-                                                  style: TextStyle(fontFamily: 'Manrope',
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: AppTheme.of(context).secondaryText,
-                                                  ),
-                                                ),
-                                                SizedBox(height: 2),
-                                                Text(
-                                                  dateTimeFormat("jm", datePicked),
-                                                  style: TextStyle(fontFamily: 'Manrope',
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: AppTheme.of(context).primaryText,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Icon(
-                                            Icons.edit_rounded,
-                                            color: AppTheme.of(context).secondaryText,
-                                            size: 20,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-
-                                // Human-readable summary
-                                if (datePicked != null) ...[
-                                  SizedBox(height: AppSpacing.sm),
-                                  Container(
-                                    width: double.infinity,
-                                    padding: EdgeInsets.all(AppSpacing.md),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [AppColors.fairwayLight, AppColors.fairway],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.golf_course_rounded,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
-                                        SizedBox(width: AppSpacing.sm),
-                                        Expanded(
-                                          child: Text(
-                                            '${dateTimeFormat("EEEE, MMM d", datePicked)} at ${dateTimeFormat("jm", datePicked)}',
-                                            style: TextStyle(fontFamily: 'Manrope',
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ] else ...[
-                                _buildFlexibleTimeUI(),
-                              ],
-                              SectionHeader(
-                                emoji: '👁️',
-                                title: 'Visibility',
-                                helpText: 'Choose whether your game is visible to friends only or everyone in your area.',
-                                onHelpTap: () => _showHelpDialog(
-                                    context,
-                                    'Visibility',
-                                    'Choose whether your game is visible to friends only or everyone in your area.'),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                child: SegmentedControl(
-                                  options: [
-                                    {'value': 'Friends', 'label': 'Friends', 'icon': Icons.people_rounded},
-                                    {'value': 'Public', 'label': 'Public', 'icon': Icons.public_rounded},
-                                  ],
-                                  selectedValue: friendsValue,
-                                  onChanged: (val) {
-                                    if (mounted) {
-                                      setState(() => friendsValue = val);
-                                      _saveDraft();
-                                    }
-                                  },
-                                ),
-                              ),
-                              SectionHeader(
-                                emoji: '🏌️',
-                                title: 'Course',
-                              ),
-                              Align(
-                                alignment: AlignmentDirectional(-1.0, 0.0),
-                                child: Padding(
-                                  padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                  child: StreamBuilder<
-                                      QuerySnapshot<Map<String, dynamic>>>(
-                                    stream: FirebaseFirestore.instance
-                                        .collection('course')
-                                        .orderBy('name')
-                                        .snapshots(),
-                                    builder: (context, snapshot) {
-                                      // Customize what your widget looks like when it's loading.
-                                      if (!snapshot.hasData) {
-                                        return Center(
-                                          child: SizedBox(
-                                            width: 50.0,
-                                            height: 50.0,
-                                            child: SpinKitWanderingCubes(
-                                              color: AppColors.sunsetGold,
-                                              size: 50.0,
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                      final courseCourseRecordList = snapshot
-                                          .data!.docs
-                                          .map((doc) => Course.fromDoc(doc))
-                                          .toList();
-
-                                      // Empty state
-                                      if (courseCourseRecordList.isEmpty) {
-                                        return Container(
-                                          padding: EdgeInsets.all(AppSpacing.lg),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.fairway.withValues(alpha: 0.2),
-                                            borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(
-                                              color: AppColors.fairwayLight.withValues(alpha: 0.3),
-                                            ),
-                                          ),
-                                          child: Column(
-                                            children: [
-                                              Icon(
-                                                Icons.golf_course_rounded,
-                                                size: 40,
-                                                color: Colors.white.withValues(alpha: 0.4),
-                                              ),
-                                              SizedBox(height: AppSpacing.sm),
-                                              Text(
-                                                'No courses available',
-                                                style: TextStyle(fontFamily: 'Manrope',
-                                                  color: Colors.white.withValues(alpha: 0.7),
-                                                  fontSize: 15,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      }
-
-                                      return AppDropDown<String>(
-                                        controller: courseValueController ??=
-                                            FormFieldController<String>(null),
-                                        options: courseCourseRecordList
-                                            .map((e) => e.name)
-                                            .toList(),
-                                        onChanged: (val) async {
-                                          if (mounted) {
-                                            setState(() => courseValue = val);
-                                          }
-                                          selectedCourse =
-                                              courseCourseRecordList
-                                                  .firstWhereOrNull((course) =>
-                                                      course.name == val);
-
-                                          _saveDraft();
-                                          if (mounted) setState(() {});
-                                        },
-                                        width: 300.0,
-                                        height: 50.0,
-                                        searchHintTextStyle: AppTheme.of(
-                                                context)
-                                            .labelMedium
-                                            .override(
-                                              font: TextStyle(fontFamily: 'Manrope',
-                                                fontWeight: AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontWeight,
-                                                fontStyle: AppTheme.of(context)
-                                                    .labelMedium
-                                                    .fontStyle,
-                                              ),
-                                              letterSpacing: 0.0,
-                                              fontWeight: AppTheme.of(context)
-                                                  .labelMedium
-                                                  .fontWeight,
-                                              fontStyle: AppTheme.of(context)
-                                                  .labelMedium
-                                                  .fontStyle,
-                                            ),
-                                        searchTextStyle: AppTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              font: TextStyle(fontFamily: 'Manrope',
-                                                fontWeight: AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                                fontStyle: AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                              ),
-                                              letterSpacing: 0.0,
-                                              fontWeight: AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontWeight,
-                                              fontStyle: AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
-                                            ),
-                                        textStyle: AppTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              font: TextStyle(fontFamily: 'Manrope',
-                                                fontWeight: AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                                fontStyle: AppTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                              ),
-                                              letterSpacing: 0.0,
-                                              fontWeight: AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontWeight,
-                                              fontStyle: AppTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
-                                            ),
-                                        hintText: 'Where are you playing?',
-                                        searchHintText: 'Find your course',
-                                        icon: Icon(
-                                          Icons.keyboard_arrow_down_rounded,
-                                          color: AppTheme.of(context)
-                                              .secondaryText,
-                                          size: 24.0,
-                                        ),
-                                        fillColor: AppTheme.of(context)
-                                            .secondaryBackground,
-                                        elevation: 2.0,
-                                        borderColor:
-                                            AppTheme.of(context).primary,
-                                        borderWidth: 1.0,
-                                        borderRadius: 10.0,
-                                        margin: EdgeInsetsDirectional.only(start: AppSpacing.md),
-                                        hidesUnderline: true,
-                                        isOverButton: true,
-                                        isSearchable: true,
-                                        isMultiSelect: false,
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: AppSpacing.md),
-                              ToggleSwitch(
-                                label: '💰 Member Perk',
-                                description: 'Does the course offer a discount for members bringing guests?',
-                                value: memberDiscount,
-                                onChanged: (val) {
-                                  if (mounted) {
-                                    setState(() {
-                                      memberDiscount = val;
-                                      memberValue = val ? 'Yes' : 'No';
-                                    });
-                                    _saveDraft();
-                                  }
-                                },
-                              ),
-                              SectionHeader(
-                                emoji: '🎭',
-                                title: 'Game Vibe',
-                                helpText: 'Set the tone for your round. Competitive focuses on rules and pace, while Casual keeps it relaxed and friendly.',
-                                onHelpTap: () => _showHelpDialog(
-                                    context,
-                                    'Game Vibe',
-                                    'Set the tone for your round. Competitive focuses on rules and pace, while Casual keeps it relaxed and friendly.'),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                child: CardGrid(
-                                  options: kCreateGameVibeOptions,
-                                  selectedValue: rulesSetValue,
-                                  onChanged: (val) {
-                                    if (mounted) {
-                                      setState(() => rulesSetValue = val);
-                                      _saveDraft();
-                                    }
-                                  },
-                                  crossAxisCount: 2,
-                                  childAspectRatio: 1.2,
-                                ),
-                              ),
-                              SectionHeader(
-                                emoji: '💰',
-                                title: 'Stakes',
-                                helpText: 'Playing for money or keeping it friendly? Choose your comfort level.',
-                                onHelpTap: () => _showHelpDialog(
-                                    context,
-                                    'Stakes',
-                                    'Playing for money or keeping it friendly? Choose your comfort level.'),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                child: CardGrid(
-                                  options: kCreateGameStakesOptions,
-                                  selectedValue: styleGameValue,
-                                  onChanged: (val) {
-                                    if (mounted) {
-                                      setState(() => styleGameValue = val);
-                                      _saveDraft();
-                                    }
-                                  },
-                                  crossAxisCount: 3,
-                                  childAspectRatio: 0.95,
-                                ),
-                              ),
-                              SectionHeader(
-                                emoji: '🏆',
-                                title: 'Primary Format',
-                                helpText: 'Choose your core scoring format: Match Play (hole-by-hole), Stroke Play (total strokes), Stableford (points).',
-                                onHelpTap: () => _showHelpDialog(
-                                    context,
-                                    'Primary Format',
-                                    'Choose your core scoring format: Match Play (hole-by-hole), Stroke Play (total strokes), Stableford (points).'),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                child: CardGrid(
-                                  options: kCreateGamePrimaryFormatOptions,
-                                  selectedValue: gameTypeValue,
-                                  onChanged: (val) {
-                                    if (mounted) {
-                                      setState(() {
-                                        gameTypeValue = val;
-                                      });
-                                      _saveDraft();
-                                    }
-                                  },
-                                  crossAxisCount: 3,
-                                  childAspectRatio: 0.95,
-                                ),
-                              ),
-
-                              // Team Setup Section
-                              SizedBox(height: AppSpacing.md),
-                              ToggleSwitch(
-                                label: '👥 2v2 (Teams)',
-                                description: 'Enable team play mode',
-                                value: _is2v2,
-                                onChanged: (val) {
-                                  if (mounted) {
-                                    setState(() {
-                                      _is2v2 = val;
-                                      if (!val) {
-                                        _teamStyle = null;
-                                      }
-                                    });
-                                    _saveDraft();
-                                  }
+                                  );
                                 },
                               ),
 
-                              // Team Style (conditional, shown only if 2v2 is enabled)
-                              if (_is2v2) ...[
-                                SizedBox(height: AppSpacing.sm),
-                                SectionHeader(
-                                  emoji: '🤝',
-                                  title: 'Team Style',
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                  child: CardGrid(
-                                    options: [
-                                      {'value': 'Best Ball', 'label': 'Best Ball', 'icon': Icons.star_rounded, 'emoji': '⭐'},
-                                      {'value': 'Scramble', 'label': 'Scramble', 'icon': Icons.groups_rounded, 'emoji': '👥'},
-                                    ],
-                                    selectedValue: _teamStyle,
-                                    onChanged: (val) {
-                                      if (mounted) {
-                                        setState(() {
-                                          _teamStyle = val;
-                                        });
-                                        _saveDraft();
-                                      }
-                                    },
-                                    crossAxisCount: 2,
-                                    childAspectRatio: 1.2,
-                                  ),
-                                ),
-                              ],
-
-                              SectionHeader(
-                                emoji: '📊',
-                                title: 'Handicap Use',
-                                helpText: 'Gross is total strokes. Net adjusts for handicap. Gross + Net tracks both scores.',
-                                onHelpTap: () => _showHelpDialog(
-                                    context,
-                                    'Handicap Use',
-                                    'Gross is total strokes. Net adjusts for handicap. Gross + Net tracks both scores.'),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                child: CardGrid(
-                                  options: kCreateGameHandicapOptions,
-                                  selectedValue: scoringValue,
-                                  onChanged: (val) {
-                                    if (mounted) {
-                                      setState(() => scoringValue = val);
-                                      _saveDraft();
-                                    }
-                                  },
-                                  crossAxisCount: 3,
-                                  childAspectRatio: 0.95,
-                                ),
-                              ),
-
-                              // Games Multi-Select Section
-                              SectionHeader(
-                                emoji: '🎮',
-                                title: 'Games (Optional)',
-                                helpText: 'Add up to 3 side games to your round. These are played alongside your primary format.',
-                                onHelpTap: () => _showHelpDialog(
-                                    context,
-                                    'Games',
-                                    'Add up to 3 side games to your round. These are played alongside your primary format.'),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(top: AppSpacing.xxs),
-                                child: GamesMultiSelect(
-                                  selectedGames: _selectedGames,
-                                  onGameToggled: (game) {
-                                    if (mounted) {
-                                      setState(() {
-                                        if (_selectedGames.contains(game)) {
-                                          _selectedGames.remove(game);
-                                          // Clear other game text if deselecting Other
-                                          if (game == 'Other') {
-                                            _otherGameText = null;
-                                            _otherGameController.clear();
-                                          }
-                                        } else {
-                                          _selectedGames.add(game);
-                                        }
-                                      });
-                                      _saveDraft();
-                                    }
-                                  },
-                                  otherGameController: _otherGameController,
-                                  onOtherGameChanged: (text) {
-                                    setState(() {
-                                      _otherGameText = text.trim().isEmpty ? null : text.trim();
-                                    });
-                                    _saveDraft();
-                                  },
-                                  maxGames: 3,
-                                ),
-                              ),
-
-                              // Auto-Generated Summary
-                              if (gameTypeValue != null &&
-                                  scoringValue != null &&
-                                  styleGameValue != null &&
-                                  rulesSetValue != null) ...[
-                                Padding(
-                                  padding: EdgeInsets.only(top: AppSpacing.lg),
-                                  child: Container(
-                                    width: double.infinity,
-                                    padding: EdgeInsets.all(AppSpacing.md),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          AppColors.fairway.withValues(alpha: 0.3),
-                                          AppColors.fairwayDark.withValues(alpha: 0.4),
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: AppColors.sunsetGold.withValues(alpha: 0.3),
-                                        width: 1,
-                                      ),
-                                    ),
+                              Container(
+                                width: double.infinity,
+                                child: Form(
+                                  key: formKey,
+                                  autovalidateMode: AutovalidateMode.always,
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.sm),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          'Game Summary',
-                                          style: TextStyle(fontFamily: 'Manrope',
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.white.withValues(alpha: 0.7),
+                                        SectionHeader(
+                                          svgPath: AppIcons.games,
+                                          title: 'Game Name',
+                                          helpText:
+                                              'Auto-generated for you. Edit here if you want a custom name.',
+                                          onHelpTap: () => _showHelpDialog(
+                                              context,
+                                              'Game Name',
+                                              'Auto-generated for you. Edit here if you want a custom name.'),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.only(
+                                              top: AppSpacing.xxs),
+                                          child: AppTextField(
+                                            label: 'Game name',
+                                            hint: 'Auto-generated',
+                                            controller: _gameNameController,
+                                            variant: AppTextFieldVariant.filled,
+                                            prefixIcon: Icons.label_rounded,
+                                            onChanged: (_) => _saveDraft(),
                                           ),
                                         ),
-                                        SizedBox(height: AppSpacing.xs),
-                                        Text(
-                                          _buildGameSummary(),
-                                          style: TextStyle(fontFamily: 'Manrope',
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.white,
-                                            height: 1.4,
+
+                                        SectionHeader(
+                                          svgPath: AppIcons.calendarCheck,
+                                          title: 'Schedule',
+                                          helpText:
+                                              'Choose if you have a confirmed tee time or flexible availability.',
+                                          onHelpTap: () => _showHelpDialog(
+                                              context,
+                                              'Schedule',
+                                              'Choose if you have a confirmed tee time or flexible availability.'),
+                                        ),
+
+                                        // Schedule Type Selector
+                                        Padding(
+                                          padding: EdgeInsets.only(
+                                              top: AppSpacing.xxs),
+                                          child: SegmentedControl(
+                                            options: [
+                                              {
+                                                'value': 'confirmed',
+                                                'label': 'I Have a Tee Time',
+                                                'icon': Icons
+                                                    .event_available_rounded
+                                              },
+                                              {
+                                                'value': 'flexible',
+                                                'label': 'Flexible Time',
+                                                'icon': Icons.event_note_rounded
+                                              },
+                                            ],
+                                            selectedValue: _scheduleType,
+                                            onChanged: (val) {
+                                              if (mounted) {
+                                                setState(() {
+                                                  _scheduleType = val;
+                                                  if (val == 'flexible') {
+                                                    datePicked = null;
+                                                  } else {
+                                                    _flexibleWeek = null;
+                                                    _selectedDays.clear();
+                                                    _flexibleTimeOfDay = null;
+                                                  }
+                                                });
+                                                _saveDraft();
+                                              }
+                                            },
                                           ),
                                         ),
-                                      ],
+
+                                        if (_scheduleType == 'confirmed') ...[
+                                          // Premium date picker
+                                          Padding(
+                                            padding: EdgeInsets.only(
+                                                top: AppSpacing.sm),
+                                            child: PremiumDatePicker(
+                                              selectedDate: datePicked,
+                                              onDateSelected: (date) {
+                                                if (mounted) {
+                                                  setState(() {
+                                                    datePicked = date;
+                                                  });
+                                                  _saveDraft();
+                                                }
+                                              },
+                                            ),
+                                          ),
+
+                                          // Tee time picker row
+                                          if (datePicked != null) ...[
+                                            SizedBox(height: AppSpacing.sm),
+                                            InkWell(
+                                              onTap: () {
+                                                showTeeTimePicker(
+                                                  context: context,
+                                                  selectedDateTime: datePicked,
+                                                  onTimeSelected: (dateTime) {
+                                                    if (mounted) {
+                                                      setState(() {
+                                                        datePicked = dateTime;
+                                                      });
+                                                      _saveDraft();
+                                                    }
+                                                  },
+                                                );
+                                              },
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              child: Container(
+                                                width: double.infinity,
+                                                padding: EdgeInsets.all(
+                                                    AppSpacing.md),
+                                                decoration: BoxDecoration(
+                                                  color: AppTheme.of(context)
+                                                      .secondaryBackground,
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                    color: AppTheme.of(context)
+                                                        .primary,
+                                                    width: 1.5,
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.access_time_rounded,
+                                                      color:
+                                                          AppTheme.of(context)
+                                                              .primary,
+                                                      size: 24,
+                                                    ),
+                                                    SizedBox(
+                                                        width: AppSpacing.sm),
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            'Tee Time',
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  'Manrope',
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              color: AppTheme.of(
+                                                                      context)
+                                                                  .secondaryText,
+                                                            ),
+                                                          ),
+                                                          SizedBox(height: 2),
+                                                          Text(
+                                                            dateTimeFormat("jm",
+                                                                datePicked),
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  'Manrope',
+                                                              fontSize: 16,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color: AppTheme.of(
+                                                                      context)
+                                                                  .primaryText,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    Icon(
+                                                      Icons.edit_rounded,
+                                                      color:
+                                                          AppTheme.of(context)
+                                                              .secondaryText,
+                                                      size: 20,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+
+                                          // Human-readable summary
+                                          if (datePicked != null) ...[
+                                            SizedBox(height: AppSpacing.sm),
+                                            Container(
+                                              width: double.infinity,
+                                              padding:
+                                                  EdgeInsets.all(AppSpacing.md),
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    AppColors.fairwayLight,
+                                                    AppColors.fairway
+                                                  ],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.golf_course_rounded,
+                                                    color: Colors.white,
+                                                    size: 20,
+                                                  ),
+                                                  SizedBox(
+                                                      width: AppSpacing.sm),
+                                                  Expanded(
+                                                    child: Text(
+                                                      '${dateTimeFormat("EEEE, MMM d", datePicked)} at ${dateTimeFormat("jm", datePicked)}',
+                                                      style: TextStyle(
+                                                        fontFamily: 'Manrope',
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ] else ...[
+                                          _buildFlexibleTimeUI(),
+                                        ],
+                                        SectionHeader(
+                                          svgPath: AppIcons.visibility,
+                                          title: 'Visibility',
+                                          helpText:
+                                              'Choose whether your game is visible to friends only or everyone in your area.',
+                                          onHelpTap: () => _showHelpDialog(
+                                              context,
+                                              'Visibility',
+                                              'Choose whether your game is visible to friends only or everyone in your area.'),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.only(
+                                              top: AppSpacing.xxs),
+                                          child: SegmentedControl(
+                                            options: [
+                                              {
+                                                'value': 'Friends',
+                                                'label': 'Friends',
+                                                'icon': Icons.people_rounded
+                                              },
+                                              {
+                                                'value': 'Public',
+                                                'label': 'Public',
+                                                'icon': Icons.public_rounded
+                                              },
+                                            ],
+                                            selectedValue: friendsValue,
+                                            onChanged: (val) {
+                                              if (mounted) {
+                                                setState(
+                                                    () => friendsValue = val);
+                                                _saveDraft();
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                        SectionHeader(
+                                          svgPath: AppIcons.course,
+                                          title: 'Course',
+                                        ),
+                                        Align(
+                                          alignment:
+                                              AlignmentDirectional(-1.0, 0.0),
+                                          child: Padding(
+                                            padding: EdgeInsets.only(
+                                                top: AppSpacing.xxs),
+                                            child: StreamBuilder<
+                                                QuerySnapshot<
+                                                    Map<String, dynamic>>>(
+                                              stream: FirebaseFirestore.instance
+                                                  .collection('course')
+                                                  .orderBy('name')
+                                                  .snapshots(),
+                                              builder: (context, snapshot) {
+                                                // Customize what your widget looks like when it's loading.
+                                                if (!snapshot.hasData) {
+                                                  return Center(
+                                                    child: SizedBox(
+                                                      width: 50.0,
+                                                      height: 50.0,
+                                                      child:
+                                                          SpinKitWanderingCubes(
+                                                        color: AppColors
+                                                            .sunsetGold,
+                                                        size: 50.0,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+                                                final courseCourseRecordList =
+                                                    snapshot.data!.docs
+                                                        .map((doc) =>
+                                                            Course.fromDoc(doc))
+                                                        .toList();
+
+                                                // Empty state
+                                                if (courseCourseRecordList
+                                                    .isEmpty) {
+                                                  return Container(
+                                                    padding: EdgeInsets.all(
+                                                        AppSpacing.lg),
+                                                    decoration: BoxDecoration(
+                                                      color: AppColors.fairway
+                                                          .withValues(
+                                                              alpha: 0.2),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12),
+                                                      border: Border.all(
+                                                        color: AppColors
+                                                            .fairwayLight
+                                                            .withValues(
+                                                                alpha: 0.3),
+                                                      ),
+                                                    ),
+                                                    child: Column(
+                                                      children: [
+                                                        Icon(
+                                                          Icons
+                                                              .golf_course_rounded,
+                                                          size: 40,
+                                                          color: Colors.white
+                                                              .withValues(
+                                                                  alpha: 0.4),
+                                                        ),
+                                                        SizedBox(
+                                                            height:
+                                                                AppSpacing.sm),
+                                                        Text(
+                                                          'No courses available',
+                                                          style: TextStyle(
+                                                            fontFamily:
+                                                                'Manrope',
+                                                            color: Colors.white
+                                                                .withValues(
+                                                                    alpha: 0.7),
+                                                            fontSize: 15,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                }
+
+                                                return AppDropDown<String>(
+                                                  controller:
+                                                      courseValueController ??=
+                                                          FormFieldController<
+                                                              String>(null),
+                                                  options:
+                                                      courseCourseRecordList
+                                                          .map((e) => e.name)
+                                                          .toList(),
+                                                  onChanged: (val) async {
+                                                    if (mounted) {
+                                                      setState(() =>
+                                                          courseValue = val);
+                                                    }
+                                                    selectedCourse =
+                                                        courseCourseRecordList
+                                                            .firstWhereOrNull(
+                                                                (course) =>
+                                                                    course
+                                                                        .name ==
+                                                                    val);
+
+                                                    _saveDraft();
+                                                    if (mounted)
+                                                      setState(() {});
+                                                  },
+                                                  width: 300.0,
+                                                  height: 50.0,
+                                                  searchHintTextStyle: AppTheme
+                                                          .of(context)
+                                                      .labelMedium
+                                                      .override(
+                                                        font: TextStyle(
+                                                          fontFamily: 'Manrope',
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                      context)
+                                                                  .labelMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                      context)
+                                                                  .labelMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            AppTheme.of(context)
+                                                                .labelMedium
+                                                                .fontWeight,
+                                                        fontStyle:
+                                                            AppTheme.of(context)
+                                                                .labelMedium
+                                                                .fontStyle,
+                                                      ),
+                                                  searchTextStyle: AppTheme.of(
+                                                          context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        font: TextStyle(
+                                                          fontFamily: 'Manrope',
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            AppTheme.of(context)
+                                                                .bodyMedium
+                                                                .fontWeight,
+                                                        fontStyle:
+                                                            AppTheme.of(context)
+                                                                .bodyMedium
+                                                                .fontStyle,
+                                                      ),
+                                                  textStyle: AppTheme.of(
+                                                          context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        font: TextStyle(
+                                                          fontFamily: 'Manrope',
+                                                          fontWeight:
+                                                              AppTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              AppTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            AppTheme.of(context)
+                                                                .bodyMedium
+                                                                .fontWeight,
+                                                        fontStyle:
+                                                            AppTheme.of(context)
+                                                                .bodyMedium
+                                                                .fontStyle,
+                                                      ),
+                                                  hintText:
+                                                      'Where are you playing?',
+                                                  searchHintText:
+                                                      'Find your course',
+                                                  icon: Icon(
+                                                    Icons
+                                                        .keyboard_arrow_down_rounded,
+                                                    color: AppTheme.of(context)
+                                                        .secondaryText,
+                                                    size: 24.0,
+                                                  ),
+                                                  fillColor:
+                                                      AppTheme.of(context)
+                                                          .secondaryBackground,
+                                                  elevation: 2.0,
+                                                  borderColor:
+                                                      AppTheme.of(context)
+                                                          .primary,
+                                                  borderWidth: 1.0,
+                                                  borderRadius: 10.0,
+                                                  margin: EdgeInsetsDirectional
+                                                      .only(
+                                                          start: AppSpacing.md),
+                                                  hidesUnderline: true,
+                                                  isOverButton: true,
+                                                  isSearchable: true,
+                                                  isMultiSelect: false,
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(height: AppSpacing.md),
+                                        ToggleSwitch(
+                                          label: 'Just for Fun',
+                                          description:
+                                              'Skip all the details. Just show up and play.',
+                                          value: _isJustForFun,
+                                          onChanged: (val) {
+                                            if (mounted) {
+                                              setState(() {
+                                                _isJustForFun = val;
+                                              });
+                                              _saveDraft();
+                                            }
+                                          },
+                                        ),
+                                        if (!_isJustForFun) ...[
+                                          ToggleSwitch(
+                                            label: 'Member Guest Rate',
+                                            description:
+                                                'This game is created by a course member who can offer guest-rate pricing.',
+                                            value: memberDiscount,
+                                            onChanged: (val) {
+                                              if (mounted) {
+                                                setState(() {
+                                                  memberDiscount = val;
+                                                  memberValue =
+                                                      val ? 'Yes' : 'No';
+                                                });
+                                                _saveDraft();
+                                              }
+                                            },
+                                          ),
+                                          SectionHeader(
+                                            svgPath: AppIcons.gameVibe,
+                                            title: 'Game Vibe',
+                                            helpText:
+                                                'Set the tone for your round. Competitive focuses on rules and pace, while Casual keeps it relaxed and friendly.',
+                                            onHelpTap: () => _showHelpDialog(
+                                                context,
+                                                'Game Vibe',
+                                                'Set the tone for your round. Competitive focuses on rules and pace, while Casual keeps it relaxed and friendly.'),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.only(
+                                                top: AppSpacing.xxs),
+                                            child: CardGrid(
+                                              options: kCreateGameVibeOptions,
+                                              selectedValue: rulesSetValue,
+                                              onChanged: (val) {
+                                                if (mounted) {
+                                                  setState(() =>
+                                                      rulesSetValue = val);
+                                                  _saveDraft();
+                                                }
+                                              },
+                                              crossAxisCount: 2,
+                                              childAspectRatio: 1.2,
+                                            ),
+                                          ),
+                                          SectionHeader(
+                                            svgPath: AppIcons.betting,
+                                            title: 'Stakes',
+                                            helpText:
+                                                'Playing for money or keeping it friendly? Choose your comfort level.',
+                                            onHelpTap: () => _showHelpDialog(
+                                                context,
+                                                'Stakes',
+                                                'Playing for money or keeping it friendly? Choose your comfort level.'),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.only(
+                                                top: AppSpacing.xxs),
+                                            child: CardGrid(
+                                              options: kCreateGameStakesOptions,
+                                              selectedValue: styleGameValue,
+                                              onChanged: (val) {
+                                                if (mounted) {
+                                                  setState(() =>
+                                                      styleGameValue = val);
+                                                  _saveDraft();
+                                                }
+                                              },
+                                              crossAxisCount: 3,
+                                              childAspectRatio: 0.95,
+                                            ),
+                                          ),
+                                          SectionHeader(
+                                            svgPath: AppIcons.gameType,
+                                            title: 'Primary Format',
+                                            helpText:
+                                                'Choose your core scoring format: Match Play (hole-by-hole), Stroke Play (total strokes), Stableford (points).',
+                                            onHelpTap: () => _showHelpDialog(
+                                                context,
+                                                'Primary Format',
+                                                'Choose your core scoring format: Match Play (hole-by-hole), Stroke Play (total strokes), Stableford (points).'),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.only(
+                                                top: AppSpacing.xxs),
+                                            child: CardGrid(
+                                              options:
+                                                  kCreateGamePrimaryFormatOptions,
+                                              selectedValue: gameTypeValue,
+                                              onChanged: (val) {
+                                                if (mounted) {
+                                                  setState(() {
+                                                    gameTypeValue = val;
+                                                  });
+                                                  _saveDraft();
+                                                }
+                                              },
+                                              crossAxisCount: 3,
+                                              childAspectRatio: 0.95,
+                                            ),
+                                          ),
+
+                                          // Team Setup Section
+                                          SizedBox(height: AppSpacing.md),
+                                          ToggleSwitch(
+                                            label: '2v2 (Teams)',
+                                            description:
+                                                'Enable team play mode',
+                                            value: _is2v2,
+                                            onChanged: (val) {
+                                              if (mounted) {
+                                                setState(() {
+                                                  _is2v2 = val;
+                                                  if (!val) {
+                                                    _teamStyle = null;
+                                                  }
+                                                });
+                                                _saveDraft();
+                                              }
+                                            },
+                                          ),
+
+                                          // Team Style (conditional, shown only if 2v2 is enabled)
+                                          if (_is2v2) ...[
+                                            SizedBox(height: AppSpacing.sm),
+                                            SectionHeader(
+                                              svgPath: AppIcons.teams2v2,
+                                              title: 'Team Style',
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.only(
+                                                  top: AppSpacing.xxs),
+                                              child: CardGrid(
+                                                options: [
+                                                  {
+                                                    'value': 'Best Ball',
+                                                    'label': 'Best Ball',
+                                                    'icon': Icons.star_rounded,
+                                                    'svgPath': AppIcons.bbb,
+                                                  },
+                                                  {
+                                                    'value': 'Scramble',
+                                                    'label': 'Scramble',
+                                                    'icon': Icons.groups_rounded,
+                                                    'svgPath': AppIcons.groups,
+                                                  },
+                                                ],
+                                                selectedValue: _teamStyle,
+                                                onChanged: (val) {
+                                                  if (mounted) {
+                                                    setState(() {
+                                                      _teamStyle = val;
+                                                    });
+                                                    _saveDraft();
+                                                  }
+                                                },
+                                                crossAxisCount: 2,
+                                                childAspectRatio: 1.2,
+                                              ),
+                                            ),
+                                          ],
+
+                                          SectionHeader(
+                                            svgPath: AppIcons.handicap,
+                                            title: 'Handicap Use',
+                                            helpText:
+                                                'Gross is total strokes. Net adjusts for handicap. Gross + Net tracks both scores.',
+                                            onHelpTap: () => _showHelpDialog(
+                                                context,
+                                                'Handicap Use',
+                                                'Gross is total strokes. Net adjusts for handicap. Gross + Net tracks both scores.'),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.only(
+                                                top: AppSpacing.xxs),
+                                            child: CardGrid(
+                                              options:
+                                                  kCreateGameHandicapOptions,
+                                              selectedValue: scoringValue,
+                                              onChanged: (val) {
+                                                if (mounted) {
+                                                  setState(
+                                                      () => scoringValue = val);
+                                                  _saveDraft();
+                                                }
+                                              },
+                                              crossAxisCount: 3,
+                                              childAspectRatio: 0.95,
+                                            ),
+                                          ),
+
+                                          // Games Multi-Select Section
+                                          SectionHeader(
+                                            svgPath: AppIcons.dots,
+                                            title: 'Games (Optional)',
+                                            helpText:
+                                                'Add up to 3 side games to your round. These are played alongside your primary format.',
+                                            onHelpTap: () => _showHelpDialog(
+                                                context,
+                                                'Games',
+                                                'Add up to 3 side games to your round. These are played alongside your primary format.'),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.only(
+                                                top: AppSpacing.xxs),
+                                            child: GamesMultiSelect(
+                                              selectedGames: _selectedGames,
+                                              onGameToggled: (game) {
+                                                if (mounted) {
+                                                  setState(() {
+                                                    if (_selectedGames
+                                                        .contains(game)) {
+                                                      _selectedGames
+                                                          .remove(game);
+                                                      // Clear other game text if deselecting Other
+                                                      if (game == 'Other') {
+                                                        _otherGameText = null;
+                                                        _otherGameController
+                                                            .clear();
+                                                      }
+                                                    } else {
+                                                      _selectedGames.add(game);
+                                                    }
+                                                  });
+                                                  _saveDraft();
+                                                }
+                                              },
+                                              otherGameController:
+                                                  _otherGameController,
+                                              onOtherGameChanged: (text) {
+                                                setState(() {
+                                                  _otherGameText =
+                                                      text.trim().isEmpty
+                                                          ? null
+                                                          : text.trim();
+                                                });
+                                                _saveDraft();
+                                              },
+                                              maxGames: 3,
+                                            ),
+                                          ),
+
+                                          // Auto-Generated Summary
+                                          if (gameTypeValue != null &&
+                                              scoringValue != null &&
+                                              styleGameValue != null &&
+                                              rulesSetValue != null) ...[
+                                            Padding(
+                                              padding: EdgeInsets.only(
+                                                  top: AppSpacing.lg),
+                                              child: Container(
+                                                width: double.infinity,
+                                                padding: EdgeInsets.all(
+                                                    AppSpacing.md),
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    colors: [
+                                                      AppColors.fairway
+                                                          .withValues(
+                                                              alpha: 0.3),
+                                                      AppColors.fairwayDark
+                                                          .withValues(
+                                                              alpha: 0.4),
+                                                    ],
+                                                    begin: Alignment.topLeft,
+                                                    end: Alignment.bottomRight,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                    color: AppColors.sunsetGold
+                                                        .withValues(alpha: 0.3),
+                                                    width: 1,
+                                                  ),
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      'Game Summary',
+                                                      style: TextStyle(
+                                                        fontFamily: 'Manrope',
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Colors.white
+                                                            .withValues(
+                                                                alpha: 0.7),
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                        height: AppSpacing.xs),
+                                                    Text(
+                                                      _buildGameSummary(),
+                                                      style: TextStyle(
+                                                        fontFamily: 'Manrope',
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: Colors.white,
+                                                        height: 1.4,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ], // end if (!_isJustForFun)
+
+
+                                        Padding(
+                                          padding: EdgeInsets.only(
+                                              top: AppSpacing.xxl),
+                                          child: Consumer<TrustProvider>(
+                                            builder: (context, trust, _) {
+                                              final isRestricted = trust.myStanding?.currentRestriction != null;
+                                              return AppButtonEnhanced(
+                                                text: 'Submit Game',
+                                                variant: AppButtonVariant.primary,
+                                                size: AppButtonSize.large,
+                                                onPressed: isRestricted ? null : _submitGame,
+                                                enabled: !isRestricted,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ]
+                                          .divide(
+                                              SizedBox(height: AppSpacing.xs))
+                                          .addToStart(
+                                              SizedBox(height: AppSpacing.xs))
+                                          .addToEnd(
+                                              SizedBox(height: AppSpacing.xs)),
                                     ),
                                   ),
                                 ),
-                              ],
-                              Padding(
-                                padding: EdgeInsets.only(top: AppSpacing.xxl),
-                                child: AppButtonEnhanced(
-                                  text: 'Submit Game',
-                                  variant: AppButtonVariant.primary,
-                                  size: AppButtonSize.large,
-                                  onPressed: _submitGame,
-                                ),
                               ),
-                            ]
-                                .divide(SizedBox(height: AppSpacing.xs))
-                                .addToStart(SizedBox(height: AppSpacing.xs))
-                                .addToEnd(SizedBox(height: AppSpacing.xs)),
+                            ],
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
-        ),
-      ),
-    ));
+        ));
   }
 }

@@ -20,6 +20,10 @@ import '/user_auth/sign_in/sign_in_widget.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
+import '/screens/trust/trust_profile_section.dart';
+import '/screens/trust/your_standing_screen.dart';
 
 class MainProfileWidget extends StatefulWidget {
   const MainProfileWidget({super.key});
@@ -133,8 +137,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             borderWidth: 0,
                             buttonSize: 44.0,
                             tooltip: 'Notifications',
-                            icon: Icon(
-                              Icons.notifications_none_rounded,
+                            icon: AppIcon(
+                              assetPath: AppIcons.notifications,
                               color: Colors.white,
                               size: 24.0,
                             ),
@@ -257,7 +261,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         // Quick Actions Grid
                         _buildQuickActionsGrid(context),
 
-                        SizedBox(height: AppSpacing.md),
+                        // Trust Profile Section
+                        AuthUserStreamWidget(
+                          builder: (context) {
+                            final userDoc = currentUserDocument;
+                            if (userDoc == null) return const SizedBox.shrink();
+                            return TrustProfileSection(
+                                user: userDoc, isOwnProfile: true);
+                          },
+                        ),
 
                         // Golf Info Section
                         _buildGolfInfoSection(context),
@@ -410,8 +422,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           ),
                         ],
                       ),
-                      child: Icon(
-                        Icons.camera_alt_rounded,
+                      child: AppIcon(
+                        assetPath: AppIcons.camera,
                         color: Colors.white,
                         size: buttonSize * 0.5,
                       ),
@@ -765,38 +777,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     ),
                   ],
                 ),
-                SizedBox(height: AppSpacing.sm),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildQuickActionCard(
-                        context,
-                        icon: Icons.people_outline_rounded,
-                        label: 'Friends',
-                        gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          _pushNamed(
-                            TabFriendsWidget.routeName,
-                            extra: <String, dynamic>{
-                              kTransitionInfoKey: TransitionInfo(
-                                hasTransition: true,
-                                transitionType: PageTransitionType.fade,
-                                enterDuration: Duration(milliseconds: 200),
-                                exitDuration: Duration(milliseconds: 170),
-                                scaleOnPush: true,
-                              ),
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                        child:
-                            SizedBox()), // Empty space to maintain grid alignment
-                  ],
-                ),
               ],
             );
           } else {
@@ -844,30 +824,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             enterDuration: Duration(milliseconds: 200),
                             exitDuration: Duration(milliseconds: 170),
                             scaleOnPush: false,
-                          ),
-                        },
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: _buildQuickActionCard(
-                    context,
-                    icon: Icons.people_outline_rounded,
-                    label: 'Friends',
-                    gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      _pushNamed(
-                        TabFriendsWidget.routeName,
-                        extra: <String, dynamic>{
-                          kTransitionInfoKey: TransitionInfo(
-                            hasTransition: true,
-                            transitionType: PageTransitionType.fade,
-                            enterDuration: Duration(milliseconds: 200),
-                            exitDuration: Duration(milliseconds: 170),
-                            scaleOnPush: true,
                           ),
                         },
                       );
@@ -975,7 +931,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           // Email
           _buildInfoRow(
             context,
-            icon: Icons.email_outlined,
+            svgPath: AppIcons.email,
             iconColor: AppColors.sunsetPeach,
             label: 'Email',
             value: currentUserEmail,
@@ -987,7 +943,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           AuthUserStreamWidget(
             builder: (context) => _buildInfoRow(
               context,
-              icon: Icons.phone_outlined,
+              svgPath: AppIcons.phone,
               iconColor: AppColors.sunsetGold,
               label: 'Phone',
               value: currentPhoneNumber.isNotEmpty
@@ -1002,7 +958,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   Widget _buildInfoRow(
     BuildContext context, {
-    required IconData icon,
+    IconData? icon,
+    String? svgPath,
     required Color iconColor,
     required String label,
     required String value,
@@ -1023,7 +980,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               color: iconColor.withOpacity(0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: iconColor, size: 20),
+            child: svgPath != null
+                ? AppIcon(assetPath: svgPath, color: iconColor, size: 20)
+                : Icon(icon, color: iconColor, size: 20),
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
@@ -1081,7 +1040,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 currentUserReference == null
                     ? _buildSettingsRow(
                         context,
-                        icon: Icons.notifications_outlined,
+                        svgPath: AppIcons.notifications,
                         label: 'Notifications',
                         onTap: () {
                           HapticFeedback.lightImpact();
@@ -1108,7 +1067,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           final unreadCount = snapshot.data?.docs.length ?? 0;
                           return _buildSettingsRow(
                             context,
-                            icon: Icons.notifications_outlined,
+                            svgPath: AppIcons.notifications,
                             label: 'Notifications',
                             trailing: unreadCount > 0
                                 ? NotificationBadge(count: unreadCount)
@@ -1134,7 +1093,28 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 Divider(height: 1, color: AppColors.cloud, indent: 56),
                 _buildSettingsRow(
                   context,
-                  icon: Icons.logout_rounded,
+                  svgPath: AppIcons.standing,
+                  label: 'Your Standing',
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    _pushNamed(
+                      YourStandingScreen.routeName,
+                      extra: <String, dynamic>{
+                        kTransitionInfoKey: TransitionInfo(
+                          hasTransition: true,
+                          transitionType: PageTransitionType.fade,
+                          enterDuration: const Duration(milliseconds: 200),
+                          exitDuration: const Duration(milliseconds: 170),
+                          scaleOnPush: false,
+                        ),
+                      },
+                    );
+                  },
+                ),
+                Divider(height: 1, color: AppColors.cloud, indent: 56),
+                _buildSettingsRow(
+                  context,
+                  svgPath: AppIcons.logOut,
                   label: 'Log Out',
                   isDestructive: true,
                   onTap: () async {
@@ -1206,7 +1186,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   Widget _buildSettingsRow(
     BuildContext context, {
-    required IconData icon,
+    IconData? icon,
+    String? svgPath,
     required String label,
     required VoidCallback onTap,
     bool isDestructive = false,
@@ -1221,7 +1202,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         padding: EdgeInsets.all(AppSpacing.md),
         child: Row(
           children: [
-            Icon(icon, color: color, size: 22),
+            svgPath != null
+                ? AppIcon(assetPath: svgPath, color: color, size: 22)
+                : Icon(icon, color: color, size: 22),
             SizedBox(width: AppSpacing.md),
             Expanded(
               child: Text(

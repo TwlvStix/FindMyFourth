@@ -6,6 +6,7 @@ import '/core/app_theme.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
@@ -282,14 +283,71 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     return type == 'game_created' || type == 'game_alert';
   }
 
+  bool _isDisputeNotification(String type) {
+    return type == 'attendance_dispute' ||
+        type == 'dispute_resolved_cleared' ||
+        type == 'dispute_resolved_upheld';
+  }
+
+  bool _isTrustGameNotification(String type) {
+    return const {
+      'host_checkin_due',
+      'player_rate_due',
+      'host_checkin_fallback',
+      'player_fallback_confirm',
+      'game_spot_opened',
+      'game_cancelled',
+    }.contains(type);
+  }
+
+  bool _isTrustAccountNotification(String type) {
+    return const {
+      'no_show_flagged',
+      'dispute_resolved',
+      'strike_issued',
+      'cooldown_started',
+      'restriction_started',
+      'suspension_started',
+      'restriction_ended',
+    }.contains(type);
+  }
+
+  bool _isBadgeNotification(String type) {
+    return const {'badge_earned', 'badge_progress'}.contains(type);
+  }
+
   IconData _iconForType(String type) {
-    if (type == 'chat_message') {
-      return Icons.chat_bubble_outline;
+    if (type == 'chat_message') return Icons.chat_bubble_outline;
+    if (_isGameNotification(type)) return Icons.sports_golf;
+    if (type == 'attendance_dispute') return Icons.info_outline_rounded;
+    if (type == 'dispute_resolved_cleared') return Icons.check_circle_rounded;
+    if (type == 'dispute_resolved_upheld') return Icons.warning_amber_rounded;
+    // Trust System types
+    if (type == 'host_checkin_due' ||
+        type == 'host_checkin_fallback' ||
+        type == 'player_fallback_confirm') {
+      return Icons.fact_check;
     }
-    if (_isGameNotification(type)) {
+    if (type == 'player_rate_due') return Icons.rate_review;
+    if (type == 'game_spot_opened' || type == 'game_cancelled') {
       return Icons.sports_golf;
     }
+    if (_isTrustAccountNotification(type)) {
+      return type == 'dispute_resolved' || type == 'restriction_ended'
+          ? Icons.shield
+          : Icons.warning_amber;
+    }
+    if (_isBadgeNotification(type)) return Icons.emoji_events;
     return Icons.notifications_none;
+  }
+
+  Color _iconBgColorForType(BuildContext context, String type) {
+    if (type == 'attendance_dispute') return AppColors.info;
+    if (type == 'dispute_resolved_cleared') return AppColors.success;
+    if (type == 'dispute_resolved_upheld') return AppColors.sunsetRose;
+    if (_isTrustAccountNotification(type)) return AppColors.sunsetRose;
+    if (_isBadgeNotification(type)) return AppColors.sunsetGold;
+    return AppTheme.of(context).primary;
   }
 
   String _titleFallback(String type) {
@@ -298,6 +356,15 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     }
     if (_isGameNotification(type)) {
       return 'New game posted';
+    }
+    if (type == 'attendance_dispute') {
+      return 'Attendance Dispute';
+    }
+    if (type == 'dispute_resolved_cleared') {
+      return 'Dispute Resolved';
+    }
+    if (type == 'dispute_resolved_upheld') {
+      return 'Strike Added';
     }
     return 'Notification';
   }
@@ -349,6 +416,44 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
           },
         );
       }
+      return;
+    }
+    if (type == 'dispute_resolved_upheld') {
+      context.pushNamed('YourStanding');
+      return;
+    }
+    if (_isTrustGameNotification(type)) {
+      final gameId = payload['gameId'] ?? payload['game_id'];
+      final gameRefPath = payload['gameRef'];
+      DocumentReference? gameRef;
+      if (gameRefPath is String && gameRefPath.isNotEmpty) {
+        gameRef = FirebaseFirestore.instance.doc(gameRefPath);
+      } else if (gameId is String && gameId.isNotEmpty) {
+        gameRef = FirebaseFirestore.instance.collection('games').doc(gameId);
+      }
+      if (gameRef != null) {
+        final shouldBlock = await _shouldBlockFriendsOnlyGame(gameRef);
+        if (shouldBlock) {
+          await _showFriendsOnlyDialog();
+          return;
+        }
+        context.pushNamed(
+          JoinGameDetailedWidget.routeName,
+          extra: <String, dynamic>{
+            'gameRef': gameRef,
+            kTransitionInfoKey: TransitionStandards.detailTransition,
+          },
+        );
+      }
+      return;
+    }
+    if (_isTrustAccountNotification(type)) {
+      context.pushNamed('YourStanding');
+      return;
+    }
+    if (_isBadgeNotification(type)) {
+      context.pushNamed('MainProfile');
+      return;
     }
   }
 
@@ -659,7 +764,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                       width: 36.0,
                                       height: 36.0,
                                       decoration: BoxDecoration(
-                                        color: AppTheme.of(context).primary,
+                                        color: _iconBgColorForType(context, type),
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(
@@ -788,6 +893,20 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                               .bodyMedium
                                                               .fontStyle,
                                                     ),
+                                              ),
+                                            ),
+                                          if (type == 'dispute_resolved_upheld')
+                                            Padding(
+                                              padding: EdgeInsetsDirectional.only(
+                                                top: AppSpacing.sm,
+                                              ),
+                                              child: AppButtonEnhanced(
+                                                text: 'View Your Standing',
+                                                variant: AppButtonVariant.ghost,
+                                                size: AppButtonSize.small,
+                                                onPressed: () {
+                                                  context.pushNamed('YourStanding');
+                                                },
                                               ),
                                             ),
                                         ],

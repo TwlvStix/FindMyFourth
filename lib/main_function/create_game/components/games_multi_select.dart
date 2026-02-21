@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/app_icons.dart';
 import '/core/widgets/app_text_field.dart';
+import '/core/widgets/app_icon.dart';
 
 /// Multi-select games widget with max 3 cap
 class GamesMultiSelect extends StatelessWidget {
@@ -22,15 +24,15 @@ class GamesMultiSelect extends StatelessWidget {
     this.maxGames = 3,
   });
 
-  static const List<Map<String, dynamic>> gameOptions = [
-    {'value': 'Skins', 'label': 'Skins', 'icon': Icons.workspace_premium_rounded, 'emoji': '🏅'},
-    {'value': 'Vegas', 'label': 'Vegas', 'icon': Icons.casino_rounded, 'emoji': '🎰'},
-    {'value': 'Nassau', 'label': 'Nassau', 'icon': Icons.emoji_events_rounded, 'emoji': '🏆'},
-    {'value': 'Wolf', 'label': 'Wolf', 'icon': Icons.pets_rounded, 'emoji': '🐺'},
-    {'value': 'BBB', 'label': 'BBB', 'icon': Icons.sports_golf_rounded, 'emoji': '⛳'},
-    {'value': '6-6-6', 'label': '6-6-6', 'icon': Icons.looks_6_rounded, 'emoji': '6️⃣'},
-    {'value': 'Dots', 'label': 'Dots', 'icon': Icons.fiber_manual_record_rounded, 'emoji': '🔴'},
-    {'value': 'Other', 'label': 'Other', 'icon': Icons.edit_note_rounded, 'emoji': '✏️'},
+  static final List<Map<String, dynamic>> gameOptions = [
+    {'value': 'Skins', 'label': 'Skins', 'icon': Icons.workspace_premium_rounded, 'svgPath': AppIcons.skins},
+    {'value': 'Vegas', 'label': 'Vegas', 'icon': Icons.casino_rounded, 'svgPath': AppIcons.vegas},
+    {'value': 'Nassau', 'label': 'Nassau', 'icon': Icons.emoji_events_rounded, 'svgPath': AppIcons.nassau},
+    {'value': 'Wolf', 'label': 'Wolf', 'icon': Icons.pets_rounded, 'svgPath': AppIcons.wolf},
+    {'value': 'BBB', 'label': 'BBB', 'icon': Icons.sports_golf_rounded, 'svgPath': AppIcons.bbb},
+    {'value': '6-6-6', 'label': '6-6-6', 'icon': Icons.looks_6_rounded, 'svgPath': AppIcons.sixSixSix},
+    {'value': 'Dots', 'label': 'Dots', 'icon': Icons.fiber_manual_record_rounded, 'svgPath': AppIcons.dots},
+    {'value': 'Other', 'label': 'Other', 'icon': Icons.edit_note_rounded, 'svgPath': AppIcons.otherCustom},
   ];
 
   @override
@@ -122,9 +124,10 @@ class GamesMultiSelect extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(
-                        child: Text(
-                          option['emoji'] as String,
-                          style: const TextStyle(fontSize: 16),
+                        child: AppIcon(
+                          assetPath: option['svgPath'] as String,
+                          size: 16,
+                          color: Colors.white,
                         ),
                       ),
                     ),

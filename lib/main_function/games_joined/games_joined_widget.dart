@@ -6,6 +6,8 @@ import '/utils/app_util.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/games_list/components/flexible_time_display.dart';
@@ -138,10 +140,12 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                           color: AppColors.fairway.withOpacity(0.3),
                                           shape: BoxShape.circle,
                                         ),
-                                        child: Icon(
-                                          Icons.golf_course_rounded,
-                                          size: 56,
-                                          color: Colors.white.withOpacity(0.5),
+                                        child: Center(
+                                          child: AppIcon(
+                                            assetPath: AppIcons.games,
+                                            size: 64,
+                                            color: Colors.white.withOpacity(0.5),
+                                          ),
                                         ),
                                       ),
                                       SizedBox(height: AppSpacing.lg),
@@ -216,6 +220,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildPremiumMyGameCard(BuildContext context, GamesRecord gameRecord) {
     final game = Game.fromRecord(gameRecord);
+    final isOwner = currentUserUid.isNotEmpty && game.userRef?.id == currentUserUid;
     final isCancelled = game.isCancelled;
     final isExpired = game.date != null && game.date!.isBefore(getCurrentTimestamp) && !isCancelled;
     final spotsLeft = game.maxPlayers - (game.joinedPlayers.length + game.guestPlayers.length);
@@ -360,6 +365,33 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             ),
                           ),
                         )
+                      else if (isOwner)
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xxs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Color(0xFF4A7C59).withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AppIcon(
+                                  assetPath: AppIcons.owner,
+                                  color: Colors.white, size: 14),
+                              SizedBox(width: 4),
+                              Text(
+                                'Owner',
+                                style: AppTypography.labelSmall.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
                       else
                         Container(
                           padding: EdgeInsets.symmetric(
@@ -375,7 +407,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.check_circle_rounded,
+                              AppIcon(
+                                  assetPath: AppIcons.joined,
                                   color: Colors.white, size: 14),
                               SizedBox(width: 4),
                               Text(
@@ -405,10 +438,12 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           ),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Icon(
-                          Icons.golf_course_rounded,
-                          color: Colors.white,
-                          size: 18,
+                        child: Center(
+                          child: AppIcon(
+                            assetPath: AppIcons.course,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                         ),
                       ),
                       SizedBox(width: AppSpacing.sm),
@@ -487,8 +522,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                 ),
                               ],
                             ),
-                            child: Icon(
-                              Icons.chat_bubble_rounded,
+                            child: AppIcon(
+                              assetPath: AppIcons.chat,
                               color: Colors.white,
                               size: 20,
                             ),
@@ -515,12 +550,12 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             color: AppColors.sunsetPeach.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Icon(
-                            game.isFlexible
-                                ? Icons.event_note_rounded
-                                : Icons.calendar_today_rounded,
-                            color: AppColors.sunsetPeach,
-                            size: 16,
+                          child: Center(
+                            child: AppIcon(
+                              assetPath: AppIcons.calendarCheck,
+                              color: AppColors.sunsetPeach,
+                              size: 16,
+                            ),
                           ),
                         ),
                         SizedBox(width: AppSpacing.sm),
@@ -574,8 +609,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
-                                Icons.people_rounded,
+                              AppIcon(
+                                assetPath: AppIcons.golfers,
                                 color: isFull ? AppColors.sunsetRose : Colors.white,
                                 size: 16,
                               ),
@@ -626,8 +661,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.local_offer_rounded,
+                          AppIcon(
+                            assetPath: AppIcons.memberDiscount,
                             color: AppColors.fairwayLight,
                             size: 12,
                           ),

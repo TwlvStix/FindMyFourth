@@ -131,6 +131,42 @@ class GamesRecord extends FirestoreRecord {
   String? get flexibleWeek => _flexibleWeek;
   bool hasFlexibleWeek() => _flexibleWeek != null;
 
+  // "is_fun_game" field.
+  bool? _isFunGame;
+  bool get isFunGame => _isFunGame ?? false;
+  bool hasIsFunGame() => _isFunGame != null;
+
+  // "status" field. Lifecycle: open > filled > played > verified | expired.
+  // Existing games use 'active'. Default kept as 'active' for backward compatibility.
+  String? _status;
+  String get status => _status ?? 'active';
+  bool hasStatus() => _status != null;
+
+  // "min_app_users" field. Minimum app users required to create the game.
+  int? _minAppUsers;
+  int get minAppUsers => _minAppUsers ?? 2;
+  bool hasMinAppUsers() => _minAppUsers != null;
+
+  // "app_user_count" field. Count of non-guest participants.
+  int? _appUserCount;
+  int get appUserCount => _appUserCount ?? 0;
+  bool hasAppUserCount() => _appUserCount != null;
+
+  // "guest_count" field. Count of guest spots filled.
+  int? _guestCount;
+  int get guestCount => _guestCount ?? 0;
+  bool hasGuestCount() => _guestCount != null;
+
+  // "verified_at" field. Timestamp when round was verified.
+  DateTime? _verifiedAt;
+  DateTime? get verifiedAt => _verifiedAt;
+  bool hasVerifiedAt() => _verifiedAt != null;
+
+  // "verification_status" field.
+  String? _verificationStatus;
+  String get verificationStatus => _verificationStatus ?? 'pending';
+  bool hasVerificationStatus() => _verificationStatus != null;
+
   void _initializeFields() {
     _nameGame = snapshotData['name_game'] as String?;
     _date = snapshotData['date'] as DateTime?;
@@ -155,6 +191,13 @@ class GamesRecord extends FirestoreRecord {
     _flexibleDays = getDataList(snapshotData['flexible_days']);
     _flexibleTimeOfDay = snapshotData['flexible_time_of_day'] as String?;
     _flexibleWeek = snapshotData['flexible_week'] as String?;
+    _isFunGame = snapshotData['is_fun_game'] as bool?;
+    _status = snapshotData['status'] as String?;
+    _minAppUsers = castToType<int>(snapshotData['min_app_users']);
+    _appUserCount = castToType<int>(snapshotData['app_user_count']);
+    _guestCount = castToType<int>(snapshotData['guest_count']);
+    _verifiedAt = snapshotData['verified_at'] as DateTime?;
+    _verificationStatus = snapshotData['verification_status'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -213,6 +256,13 @@ Map<String, dynamic> createGamesRecordData({
   List<int>? flexibleDays,
   String? flexibleTimeOfDay,
   String? flexibleWeek,
+  bool? isFunGame,
+  String? status,
+  int? minAppUsers,
+  int? appUserCount,
+  int? guestCount,
+  DateTime? verifiedAt,
+  String? verificationStatus,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -238,6 +288,13 @@ Map<String, dynamic> createGamesRecordData({
       'flexible_days': flexibleDays,
       'flexible_time_of_day': flexibleTimeOfDay,
       'flexible_week': flexibleWeek,
+      'is_fun_game': isFunGame,
+      'status': status,
+      'min_app_users': minAppUsers,
+      'app_user_count': appUserCount,
+      'guest_count': guestCount,
+      'verified_at': verifiedAt,
+      'verification_status': verificationStatus,
     }.withoutNulls,
   );
 
@@ -267,7 +324,14 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e1?.userRef == e2?.userRef &&
         e1?.uid == e2?.uid &&
         e1?.chatRef == e2?.chatRef &&
-        e1?.isCancelled == e2?.isCancelled;
+        e1?.isCancelled == e2?.isCancelled &&
+        e1?.isFunGame == e2?.isFunGame &&
+        e1?.status == e2?.status &&
+        e1?.minAppUsers == e2?.minAppUsers &&
+        e1?.appUserCount == e2?.appUserCount &&
+        e1?.guestCount == e2?.guestCount &&
+        e1?.verifiedAt == e2?.verifiedAt &&
+        e1?.verificationStatus == e2?.verificationStatus;
   }
 
   @override
@@ -289,7 +353,14 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e?.userRef,
         e?.uid,
         e?.chatRef,
-        e?.isCancelled
+        e?.isCancelled,
+        e?.isFunGame,
+        e?.status,
+        e?.minAppUsers,
+        e?.appUserCount,
+        e?.guestCount,
+        e?.verifiedAt,
+        e?.verificationStatus,
       ]);
 
   @override

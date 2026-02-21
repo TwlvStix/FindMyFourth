@@ -19,6 +19,7 @@ class Chat {
     required this.pinnedAt,
     required this.archivedAt,
     required this.typingUsers,
+    required this.memberJoinedAt,
   });
 
   final String id;
@@ -38,6 +39,10 @@ class Chat {
   final DateTime? pinnedAt;
   final DateTime? archivedAt;
   final Map<String, DateTime> typingUsers;
+  /// Per-member join timestamps. Used to implement "fresh start on rejoin":
+  /// a member only sees messages with createdAt >= memberJoinedAt[uid].
+  /// Null entry means the member has been present since chat creation (see all messages).
+  final Map<String, DateTime> memberJoinedAt;
 
   static Chat fromDoc(DocumentSnapshot doc) {
     final data = (doc.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
@@ -55,6 +60,16 @@ class Chat {
         }
       });
     }
+    final rawMemberJoinedAt = data['memberJoinedAt'];
+    final memberJoinedAt = <String, DateTime>{};
+    if (rawMemberJoinedAt is Map) {
+      rawMemberJoinedAt.forEach((key, value) {
+        if (value is Timestamp) {
+          memberJoinedAt[key.toString()] = value.toDate();
+        }
+      });
+    }
+
     return Chat(
       id: doc.id,
       memberIds: (data['memberIds'] as List<dynamic>?)
@@ -85,6 +100,7 @@ class Chat {
       pinnedAt: (data['pinnedAt'] as Timestamp?)?.toDate(),
       archivedAt: (data['archivedAt'] as Timestamp?)?.toDate(),
       typingUsers: typingUsers,
+      memberJoinedAt: memberJoinedAt,
     );
   }
 }

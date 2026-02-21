@@ -4,6 +4,8 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
@@ -888,6 +890,26 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                       _subscription!.copyWith(
                                         special: _subscription!.special
                                             .copyWith(twoVTwo: value),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                Divider(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  height: 1,
+                                  thickness: 1,
+                                ),
+                                _buildToggleRow(
+                                  emoji: '🏷️',
+                                  title: 'Discounted Games',
+                                  subtitle:
+                                      'Only notify for games with a discount',
+                                  value: _subscription!.special.discount,
+                                  onChanged: (value) {
+                                    _updateSubscription(
+                                      _subscription!.copyWith(
+                                        special: _subscription!.special
+                                            .copyWith(discount: value),
                                       ),
                                     );
                                   },

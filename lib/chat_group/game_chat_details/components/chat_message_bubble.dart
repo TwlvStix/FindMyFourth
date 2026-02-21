@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
@@ -23,6 +24,8 @@ class ChatMessageBubble extends StatelessWidget {
   final bool isSentByCurrentUser;
   final String messageText;
   final String imageUrl;
+  final double? imageWidth;
+  final double? imageHeight;
   final DateTime? timestamp;
   final bool isFirstInGroup;
   final bool isLastInGroup;
@@ -43,6 +46,8 @@ class ChatMessageBubble extends StatelessWidget {
     required this.isSentByCurrentUser,
     required this.messageText,
     this.imageUrl = '',
+    this.imageWidth,
+    this.imageHeight,
     this.timestamp,
     this.isFirstInGroup = true,
     this.isLastInGroup = true,
@@ -193,51 +198,47 @@ class ChatMessageBubble extends StatelessWidget {
                                 onTap: onImageTap,
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(10.0),
-                                  child: Container(
-                                    constraints: BoxConstraints(
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(
                                       maxWidth: 250,
                                       maxHeight: 300,
                                     ),
-                                    child: Image.network(
-                                      imageUrl,
+                                    child: CachedNetworkImage(
+                                      imageUrl: imageUrl,
                                       fit: BoxFit.cover,
-                                      loadingBuilder:
-                                          (context, child, loadingProgress) {
-                                        if (loadingProgress == null) {
-                                          return child;
-                                        }
+                                      placeholder: (context, url) {
+                                        // Use stored dimensions for correct aspect-ratio skeleton
+                                        final double w = (imageWidth != null &&
+                                                imageHeight != null &&
+                                                imageWidth! > 0)
+                                            ? 220.0
+                                            : 200.0;
+                                        final double h = (imageWidth != null &&
+                                                imageHeight != null &&
+                                                imageWidth! > 0)
+                                            ? (220.0 * imageHeight! / imageWidth!)
+                                                .clamp(80.0, 300.0)
+                                            : 200.0;
                                         return Container(
-                                          height: 200,
-                                          width: 200,
-                                          color: Colors.grey
-                                              .withValues(alpha: 0.2),
+                                          width: w,
+                                          height: h,
+                                          color: Colors.grey.withValues(alpha: 0.2),
                                           child: Center(
                                             child: CircularProgressIndicator(
-                                              value: loadingProgress
-                                                          .expectedTotalBytes !=
-                                                      null
-                                                  ? loadingProgress
-                                                          .cumulativeBytesLoaded /
-                                                      loadingProgress
-                                                          .expectedTotalBytes!
-                                                  : null,
                                               color: isSentByCurrentUser
                                                   ? Colors.white
                                                       .withValues(alpha: 0.8)
-                                                  : AppTheme.of(context)
-                                                      .primary,
+                                                  : AppTheme.of(context).primary,
                                               strokeWidth: 2,
                                             ),
                                           ),
                                         );
                                       },
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
+                                      errorWidget: (context, url, error) {
                                         return Container(
                                           height: 150,
                                           width: 200,
-                                          color: Colors.grey
-                                              .withValues(alpha: 0.2),
+                                          color: Colors.grey.withValues(alpha: 0.2),
                                           child: Column(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
@@ -248,7 +249,7 @@ class ChatMessageBubble extends StatelessWidget {
                                                     .withValues(alpha: 0.6),
                                                 size: 40,
                                               ),
-                                              SizedBox(height: 8),
+                                              const SizedBox(height: 8),
                                               Text(
                                                 'Failed to load',
                                                 style: AppTypography.text11

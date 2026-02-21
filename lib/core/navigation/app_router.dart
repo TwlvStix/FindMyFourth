@@ -40,6 +40,10 @@ import '/user_onboarding/vibe_onboarding_widget.dart';
 import '/user_onboarding/cinematic_onboarding_widget.dart';
 import '/vibe/premium_vibe_page/premium_vibe_page_data.dart';
 import '/vibe/premium_vibe_page/premium_vibe_page_widget.dart';
+import '/screens/trust/your_standing_screen.dart';
+import '/screens/confirmation/host_checkin_screen.dart';
+import '/screens/confirmation/peer_rating_screen.dart';
+import '/screens/confirmation/fallback_confirmation_screen.dart';
 
 export 'package:go_router/go_router.dart';
 export '/utils/serialization_util.dart';
@@ -505,6 +509,56 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               page: GameJoinedDetailedWidget(
                 gameRef: _gameRefFromState(state),
               ),
+            ),
+          ),
+        ),
+        GoRoute(
+          name: YourStandingScreen.routeName,
+          path: YourStandingScreen.routePath,
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            const YourStandingScreen(),
+          ),
+        ),
+        GoRoute(
+          name: HostCheckinScreen.routeName,
+          path: HostCheckinScreen.routePath,
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            HostCheckinScreen(
+              gameRef: _gameRefFromState(state)!,
+            ),
+          ),
+        ),
+        GoRoute(
+          name: PeerRatingScreen.routeName,
+          path: PeerRatingScreen.routePath,
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            PeerRatingScreen(
+              gameRef: _gameRefFromState(state)!,
+            ),
+          ),
+        ),
+        GoRoute(
+          name: FallbackConfirmationScreen.routeName,
+          path: FallbackConfirmationScreen.routePath,
+          redirect: _buildRedirect(appStateNotifier, requireAuth: true),
+          pageBuilder: (context, state) => _buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            FallbackConfirmationScreen(
+              gameRef: _gameRefFromState(state)!,
             ),
           ),
         ),

@@ -4,6 +4,7 @@ import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/widgets/app_icon.dart';
 
 /// A premium selection card widget for grid-based selections.
 ///
@@ -23,6 +24,7 @@ class SelectionCard extends StatelessWidget {
     required this.isSelected,
     required this.onTap,
     this.emoji,
+    this.svgPath,
   });
 
   final IconData icon;
@@ -30,6 +32,8 @@ class SelectionCard extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
   final String? emoji;
+  /// Optional SVG asset path (use AppIcons constants). Takes priority over emoji.
+  final String? svgPath;
 
   @override
   Widget build(BuildContext context) {
@@ -86,11 +90,19 @@ class SelectionCard extends StatelessWidget {
                 color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: emoji != null
+              child: svgPath != null
                   ? Center(
-                      child: Text(emoji!, style: TextStyle(fontSize: 18)),
+                      child: AppIcon(
+                        assetPath: svgPath!,
+                        size: 20,
+                        color: Colors.white,
+                      ),
                     )
-                  : Icon(icon, color: Colors.white, size: 20),
+                  : emoji != null
+                      ? Center(
+                          child: Text(emoji!, style: TextStyle(fontSize: 18)),
+                        )
+                      : Icon(icon, color: Colors.white, size: 20),
             ),
             SizedBox(height: AppSpacing.xxs),
             Flexible(

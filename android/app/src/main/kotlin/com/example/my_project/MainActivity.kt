@@ -11,16 +11,15 @@ class MainActivity: FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = getString(R.string.default_notification_channel_id)
-            val name = getString(R.string.default_notification_channel_name)
-            val descriptionText =
-                getString(R.string.default_notification_channel_description)
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(channelId, name, importance)
-            channel.description = descriptionText
-            val notificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            fun channel(id: String, name: String, importance: Int, desc: String) =
+                NotificationChannel(id, name, importance).apply { description = desc }
+                    .also { nm.createNotificationChannel(it) }
+
+            channel("critical",  "Account Alerts",  NotificationManager.IMPORTANCE_HIGH,    "Account standing notifications")
+            channel("important", "Game Updates",    NotificationManager.IMPORTANCE_HIGH,    "Game-related notifications")
+            channel("default",   "Round Activity",  NotificationManager.IMPORTANCE_DEFAULT, "Post-round check-ins and activity")
+            channel("updates",   "Progress",        NotificationManager.IMPORTANCE_LOW,     "Badge progress and updates")
         }
     }
 }

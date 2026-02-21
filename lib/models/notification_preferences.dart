@@ -8,6 +8,7 @@ class NotificationPreferences {
     required this.quietHours,
     required this.digestMode,
     required this.mutedThreads,
+    required this.trustCategories,
   });
 
   final bool pushEnabled;
@@ -16,6 +17,7 @@ class NotificationPreferences {
   final NotificationQuietHours quietHours;
   final String digestMode;
   final List<String> mutedThreads;
+  final NotificationTrustCategories trustCategories;
 
   static NotificationPreferences defaults() {
     return NotificationPreferences(
@@ -25,6 +27,7 @@ class NotificationPreferences {
       quietHours: NotificationQuietHours.defaults(),
       digestMode: 'instant',
       mutedThreads: const [],
+      trustCategories: NotificationTrustCategories.defaults(),
     );
   }
 
@@ -35,6 +38,7 @@ class NotificationPreferences {
     NotificationQuietHours? quietHours,
     String? digestMode,
     List<String>? mutedThreads,
+    NotificationTrustCategories? trustCategories,
   }) {
     return NotificationPreferences(
       pushEnabled: pushEnabled ?? this.pushEnabled,
@@ -43,6 +47,7 @@ class NotificationPreferences {
       quietHours: quietHours ?? this.quietHours,
       digestMode: digestMode ?? this.digestMode,
       mutedThreads: mutedThreads ?? this.mutedThreads,
+      trustCategories: trustCategories ?? this.trustCategories,
     );
   }
 
@@ -51,6 +56,7 @@ class NotificationPreferences {
     final gameAlertsMap = _mapValue(data, 'game_alerts');
     final chatAlertsMap = _mapValue(data, 'chat_alerts');
     final quietHoursMap = _mapValue(data, 'quiet_hours');
+    final trustCategoriesMap = _mapValue(data, 'trust_categories');
     return NotificationPreferences(
       pushEnabled: _boolValue(data, 'push_enabled', false),
       gameAlerts: NotificationGameAlerts.fromMap(gameAlertsMap),
@@ -58,6 +64,7 @@ class NotificationPreferences {
       quietHours: NotificationQuietHours.fromMap(quietHoursMap),
       digestMode: _stringValue(data, 'digest_mode', 'instant'),
       mutedThreads: _stringListValue(data, 'muted_threads'),
+      trustCategories: NotificationTrustCategories.fromMap(trustCategoriesMap),
     );
   }
 
@@ -69,6 +76,7 @@ class NotificationPreferences {
       'quiet_hours': quietHours.toFirestore(),
       'digest_mode': digestMode,
       'muted_threads': mutedThreads,
+      'trust_categories': trustCategories.toFirestore(),
     });
   }
 
@@ -131,7 +139,7 @@ class NotificationGameAlerts {
 
   static NotificationGameAlerts defaults() {
     return NotificationGameAlerts(
-      enabled: false, // Default to OFF as per requirements
+      enabled: true,
     );
   }
 
@@ -237,6 +245,55 @@ class NotificationQuietHours {
       'enabled': enabled,
       'start': start,
       'end': end,
+    };
+  }
+}
+
+class NotificationTrustCategories {
+  NotificationTrustCategories({
+    required this.postRound,
+    required this.trustAlerts,
+    required this.badges,
+  });
+
+  final bool postRound;
+  final bool trustAlerts;
+  final bool badges;
+
+  static NotificationTrustCategories defaults() {
+    return NotificationTrustCategories(
+      postRound: true,
+      trustAlerts: true,
+      badges: true,
+    );
+  }
+
+  NotificationTrustCategories copyWith({
+    bool? postRound,
+    bool? trustAlerts,
+    bool? badges,
+  }) {
+    return NotificationTrustCategories(
+      postRound: postRound ?? this.postRound,
+      trustAlerts: trustAlerts ?? this.trustAlerts,
+      badges: badges ?? this.badges,
+    );
+  }
+
+  static NotificationTrustCategories fromMap(Map<String, dynamic>? map) {
+    final data = map == null ? <String, dynamic>{} : Map<String, dynamic>.from(map);
+    return NotificationTrustCategories(
+      postRound:   NotificationPreferences._boolValue(data, 'post_round',   true),
+      trustAlerts: NotificationPreferences._boolValue(data, 'trust_alerts', true),
+      badges:      NotificationPreferences._boolValue(data, 'badges',       true),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'post_round':   postRound,
+      'trust_alerts': trustAlerts,
+      'badges':       badges,
     };
   }
 }

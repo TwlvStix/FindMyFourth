@@ -45,6 +45,24 @@ class UserProvider extends ChangeNotifier {
   final _friendRequestsManager = StreamRequestManager<List<UsersRecord>>(5);
   final _coursesManager = FutureRequestManager<List<CourseRecord>>(10);
 
+  // Track pending outgoing friend requests (for immediate UI updates)
+  final Set<String> _pendingOutgoingRequests = {};
+
+  /// Check if we have a pending outgoing request to this user (by uid)
+  bool hasPendingOutgoingRequest(String uid) => _pendingOutgoingRequests.contains(uid);
+
+  /// Add a pending outgoing request (called after successful send)
+  void _addPendingOutgoingRequest(String uid) {
+    _pendingOutgoingRequests.add(uid);
+    notifyListeners();
+  }
+
+  /// Clear pending outgoing request (e.g., when cancelled or accepted)
+  void clearPendingOutgoingRequest(String uid) {
+    _pendingOutgoingRequests.remove(uid);
+    notifyListeners();
+  }
+
   // Individual user document cache
   final Map<String, UsersRecord> _userCache = {};
   final Map<String, StreamRequestManager<UsersRecord?>> _userStreamManagers = {};
@@ -146,9 +164,7 @@ class UserProvider extends ChangeNotifier {
   String get displayName => _currentUser?.displayName ?? '';
   String get firstName => _currentUser?.firstName ?? '';
   String get lastName => _currentUser?.lastName ?? '';
-  String get email => _currentUser?.email ?? '';
   String get photoUrl => _currentUser?.photoUrl ?? '';
-  String get phoneNumber => _currentUser?.phoneNumber ?? '';
   String get homeCourse => _currentUser?.homeCourse ?? '';
   int get handicap => _currentUser?.handicap ?? 0;
   int get music => _currentUser?.music ?? 0;
@@ -641,6 +657,9 @@ class UserProvider extends ChangeNotifier {
         'friend_requests': FieldValue.arrayUnion([currentUserRef.id]),
       });
       debugPrint('✓ Friend request sent successfully!');
+
+      // Track locally for immediate UI updates across all screens
+      _addPendingOutgoingRequest(targetUserRef.id);
     } catch (e) {
       debugPrint('Error sending friend request: $e');
       debugPrint('CurrentUser: ${currentUserRef.id}, TargetUser: ${targetUserRef.id}');
@@ -714,6 +733,9 @@ class UserProvider extends ChangeNotifier {
         'friend_requests':
             FieldValue.arrayRemove([currentUserRef, currentUserRef.id]),
       });
+
+      // Clear local pending state
+      clearPendingOutgoingRequest(targetUserRef.id);
     } catch (e) {
       debugPrint('Error cancelling friend request: $e');
       rethrow;

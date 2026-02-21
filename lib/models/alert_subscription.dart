@@ -11,7 +11,7 @@ import '/backend/schema/util/firestore_util.dart';
 /// - formats: [string] (values: 'Stroke Play', 'Match Play', 'Stableford')
 /// - handicapUses: [string] (values: 'Gross', 'Net', 'Both')
 /// - courses: [string] (courseIds)
-/// - special: {games: boolean, twoVTwo: boolean}
+/// - special: {games: boolean, twoVTwo: boolean, discount: boolean}
 /// - createdAt: server timestamp
 /// - updatedAt: server timestamp
 class AlertSubscription {
@@ -39,11 +39,11 @@ class AlertSubscription {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
-  /// Create default subscription (disabled, all filters empty)
+  /// Create default subscription (enabled, all filters empty = matches all games)
   static AlertSubscription defaults(String userId) {
     return AlertSubscription(
       userId: userId,
-      enabled: false,
+      enabled: true,
       gameVibes: const [],
       stakes: const [],
       formats: const [],
@@ -128,7 +128,8 @@ class AlertSubscription {
         handicapUses.isNotEmpty ||
         courses.isNotEmpty ||
         special.games ||
-        special.twoVTwo;
+        special.twoVTwo ||
+        special.discount;
   }
 
   /// Get a human-readable summary of active filters
@@ -163,6 +164,9 @@ class AlertSubscription {
     }
     if (special.twoVTwo) {
       parts.add('2v2');
+    }
+    if (special.discount) {
+      parts.add('Discounted');
     }
 
     if (parts.isEmpty) {
@@ -199,30 +203,35 @@ class AlertSubscription {
   }
 }
 
-/// Special alert options (Games and 2v2)
+/// Special alert options (Games, 2v2, and Discount)
 class AlertSpecialOptions {
   AlertSpecialOptions({
     required this.games,
     required this.twoVTwo,
+    required this.discount,
   });
 
-  final bool games;  // User wants games with side games (Wolf, Nassau, etc.)
-  final bool twoVTwo; // User wants 2v2/team games
+  final bool games;    // User wants games with side games (Wolf, Nassau, etc.)
+  final bool twoVTwo;  // User wants 2v2/team games
+  final bool discount; // User wants games with a discount
 
   static AlertSpecialOptions defaults() {
     return AlertSpecialOptions(
       games: false,
       twoVTwo: false,
+      discount: false,
     );
   }
 
   AlertSpecialOptions copyWith({
     bool? games,
     bool? twoVTwo,
+    bool? discount,
   }) {
     return AlertSpecialOptions(
       games: games ?? this.games,
       twoVTwo: twoVTwo ?? this.twoVTwo,
+      discount: discount ?? this.discount,
     );
   }
 
@@ -231,6 +240,7 @@ class AlertSpecialOptions {
     return AlertSpecialOptions(
       games: data['games'] as bool? ?? false,
       twoVTwo: data['twoVTwo'] as bool? ?? false,
+      discount: data['discount'] as bool? ?? false,
     );
   }
 
@@ -238,6 +248,7 @@ class AlertSpecialOptions {
     return {
       'games': games,
       'twoVTwo': twoVTwo,
+      'discount': discount,
     };
   }
 }

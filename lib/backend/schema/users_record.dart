@@ -16,11 +16,6 @@ class UsersRecord extends FirestoreRecord {
     _initializeFields();
   }
 
-  // "email" field.
-  String? _email;
-  String get email => _email ?? '';
-  bool hasEmail() => _email != null;
-
   // "photo_url" field.
   String? _photoUrl;
   String get photoUrl => _photoUrl ?? '';
@@ -30,11 +25,6 @@ class UsersRecord extends FirestoreRecord {
   DateTime? _createdTime;
   DateTime? get createdTime => _createdTime;
   bool hasCreatedTime() => _createdTime != null;
-
-  // "phone_number" field.
-  String? _phoneNumber;
-  String get phoneNumber => _phoneNumber ?? '';
-  bool hasPhoneNumber() => _phoneNumber != null;
 
   // "last_active_time" field.
   DateTime? _lastActiveTime;
@@ -171,11 +161,70 @@ class UsersRecord extends FirestoreRecord {
   bool get onboardingCompleted => _onboardingCompleted ?? false;
   bool hasOnboardingCompleted() => _onboardingCompleted != null;
 
+  // "profile_completeness" field.
+  int? _profileCompleteness;
+  int get profileCompleteness => _profileCompleteness ?? 0;
+  bool hasProfileCompleteness() => _profileCompleteness != null;
+
+  // "total_verified_rounds" field.
+  int? _totalVerifiedRounds;
+  int get totalVerifiedRounds => _totalVerifiedRounds ?? 0;
+  bool hasTotalVerifiedRounds() => _totalVerifiedRounds != null;
+
+  // "unique_co_players" field. Array of UIDs of app users played with.
+  List<String>? _uniqueCoPlayers;
+  List<String> get uniqueCoPlayers => _uniqueCoPlayers ?? const [];
+  bool hasUniqueCoPlayers() => _uniqueCoPlayers != null;
+
+  // "games_hosted" field.
+  int? _gamesHosted;
+  int get gamesHosted => _gamesHosted ?? 0;
+  bool hasGamesHosted() => _gamesHosted != null;
+
+  // "show_up_rate" field. Null until player has 5+ verified rounds.
+  double? _showUpRate;
+  double? get showUpRate => _showUpRate;
+  bool hasShowUpRate() => _showUpRate != null;
+
+  // "badge_level" field.
+  String? _badgeLevel;
+  String get badgeLevel => _badgeLevel ?? 'new';
+  bool hasBadgeLevel() => _badgeLevel != null;
+
+  // "verified_round_count" field. Canonical count written by confirmation_flow.js.
+  // Note: total_verified_rounds is a separate (unpopulated) field kept for compat.
+  int? _verifiedRoundCount;
+  int get verifiedRoundCount => _verifiedRoundCount ?? 0;
+  bool hasVerifiedRoundCount() => _verifiedRoundCount != null;
+
+  // "weighted_rounds" field. Computed by trust_profile.js Stage 5.
+  double? _weightedRounds;
+  double get weightedRounds => _weightedRounds ?? 0.0;
+  bool hasWeightedRounds() => _weightedRounds != null;
+
+  // "cancellation_warning" field. True when 2+ bad cancels in rolling 90 days.
+  bool? _cancellationWarning;
+  bool get cancellationWarning => _cancellationWarning ?? false;
+  bool hasCancellationWarning() => _cancellationWarning != null;
+
+  // "cancellation_warning_count" field. Count of late/day_of/ghost in last 90 days.
+  int? _cancellationWarningCount;
+  int get cancellationWarningCount => _cancellationWarningCount ?? 0;
+  bool hasCancellationWarningCount() => _cancellationWarningCount != null;
+
+  // "cancellation_rate" field. 0.0–1.0, computed by Stage 5. Null until data exists.
+  double? _cancellationRate;
+  double? get cancellationRate => _cancellationRate;
+  bool hasCancellationRate() => _cancellationRate != null;
+
+  // "show_up_rate_denominator" field. Total commitments used alongside show_up_rate.
+  int? _showUpRateDenominator;
+  int get showUpRateDenominator => _showUpRateDenominator ?? 0;
+  bool hasShowUpRateDenominator() => _showUpRateDenominator != null;
+
   void _initializeFields() {
-    _email = snapshotData['email'] as String?;
     _photoUrl = snapshotData['photo_url'] as String?;
     _createdTime = snapshotData['created_time'] as DateTime?;
-    _phoneNumber = snapshotData['phone_number'] as String?;
     _lastActiveTime = snapshotData['last_active_time'] as DateTime?;
     _handicap = castToType<int>(snapshotData['handicap']);
     _golfCanadaNumber = snapshotData['golf_canada_number'] as String?;
@@ -238,6 +287,21 @@ class UsersRecord extends FirestoreRecord {
       _vibeProfile = Map<String, dynamic>.from(vibeProfileRaw);
     }
     _onboardingCompleted = snapshotData['onboarding_completed'] as bool?;
+    _profileCompleteness = castToType<int>(snapshotData['profile_completeness']);
+    _totalVerifiedRounds = castToType<int>(snapshotData['total_verified_rounds']);
+    _uniqueCoPlayers = getDataList(snapshotData['unique_co_players']);
+    _gamesHosted = castToType<int>(snapshotData['games_hosted']);
+    _showUpRate = castToType<double>(snapshotData['show_up_rate']);
+    _badgeLevel = snapshotData['badge_level'] as String?;
+    _verifiedRoundCount =
+        castToType<int>(snapshotData['verified_round_count']);
+    _weightedRounds = castToType<double>(snapshotData['weighted_rounds']);
+    _cancellationWarning = snapshotData['cancellation_warning'] as bool?;
+    _cancellationWarningCount =
+        castToType<int>(snapshotData['cancellation_warning_count']);
+    _cancellationRate = castToType<double>(snapshotData['cancellation_rate']);
+    _showUpRateDenominator =
+        castToType<int>(snapshotData['show_up_rate_denominator']);
   }
 
   static CollectionReference get collection =>
@@ -274,10 +338,8 @@ class UsersRecord extends FirestoreRecord {
 }
 
 Map<String, dynamic> createUsersRecordData({
-  String? email,
   String? photoUrl,
   DateTime? createdTime,
-  String? phoneNumber,
   DateTime? lastActiveTime,
   int? handicap,
   String? golfCanadaNumber,
@@ -305,14 +367,24 @@ Map<String, dynamic> createUsersRecordData({
   bool? onboardingCompleted,
   List<String>? friends,
   List<String>? friendRequests,
+  int? profileCompleteness,
+  int? totalVerifiedRounds,
+  List<String>? uniqueCoPlayers,
+  int? gamesHosted,
+  double? showUpRate,
+  String? badgeLevel,
+  int? verifiedRoundCount,
+  double? weightedRounds,
+  bool? cancellationWarning,
+  int? cancellationWarningCount,
+  double? cancellationRate,
+  int? showUpRateDenominator,
 }) {
   final displayNameLower = displayName?.toLowerCase();
   final firestoreData = mapToFirestore(
     <String, dynamic>{
-      'email': email,
       'photo_url': photoUrl,
       'created_time': createdTime,
-      'phone_number': phoneNumber,
       'last_active_time': lastActiveTime,
       'handicap': handicap,
       'golf_canada_number': golfCanadaNumber,
@@ -342,6 +414,18 @@ Map<String, dynamic> createUsersRecordData({
       'onboarding_completed': onboardingCompleted,
       'friends': friends,
       'friend_requests': friendRequests,
+      'profile_completeness': profileCompleteness,
+      'total_verified_rounds': totalVerifiedRounds,
+      'unique_co_players': uniqueCoPlayers,
+      'games_hosted': gamesHosted,
+      'show_up_rate': showUpRate,
+      'badge_level': badgeLevel,
+      'verified_round_count': verifiedRoundCount,
+      'weighted_rounds': weightedRounds,
+      'cancellation_warning': cancellationWarning,
+      'cancellation_warning_count': cancellationWarningCount,
+      'cancellation_rate': cancellationRate,
+      'show_up_rate_denominator': showUpRateDenominator,
     }.withoutNulls,
   );
 
@@ -355,10 +439,8 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
   bool equals(UsersRecord? e1, UsersRecord? e2) {
     const listEquality = ListEquality();
     const mapEquality = DeepCollectionEquality();
-    return e1?.email == e2?.email &&
-        e1?.photoUrl == e2?.photoUrl &&
+    return e1?.photoUrl == e2?.photoUrl &&
         e1?.createdTime == e2?.createdTime &&
-        e1?.phoneNumber == e2?.phoneNumber &&
         e1?.lastActiveTime == e2?.lastActiveTime &&
         e1?.handicap == e2?.handicap &&
         e1?.golfCanadaNumber == e2?.golfCanadaNumber &&
@@ -385,15 +467,25 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e1?.paceOfPlay == e2?.paceOfPlay &&
         e1?.playForMoney == e2?.playForMoney &&
         mapEquality.equals(e1?.vibeProfile, e2?.vibeProfile) &&
-        e1?.onboardingCompleted == e2?.onboardingCompleted;
+        e1?.onboardingCompleted == e2?.onboardingCompleted &&
+        e1?.profileCompleteness == e2?.profileCompleteness &&
+        e1?.totalVerifiedRounds == e2?.totalVerifiedRounds &&
+        listEquality.equals(e1?.uniqueCoPlayers, e2?.uniqueCoPlayers) &&
+        e1?.gamesHosted == e2?.gamesHosted &&
+        e1?.showUpRate == e2?.showUpRate &&
+        e1?.badgeLevel == e2?.badgeLevel &&
+        e1?.verifiedRoundCount == e2?.verifiedRoundCount &&
+        e1?.weightedRounds == e2?.weightedRounds &&
+        e1?.cancellationWarning == e2?.cancellationWarning &&
+        e1?.cancellationWarningCount == e2?.cancellationWarningCount &&
+        e1?.cancellationRate == e2?.cancellationRate &&
+        e1?.showUpRateDenominator == e2?.showUpRateDenominator;
   }
 
   @override
   int hash(UsersRecord? e) => const ListEquality().hash([
-        e?.email,
         e?.photoUrl,
         e?.createdTime,
-        e?.phoneNumber,
         e?.lastActiveTime,
         e?.handicap,
         e?.homeCourse,
@@ -419,7 +511,19 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.paceOfPlay,
         e?.playForMoney,
         const DeepCollectionEquality().hash(e?.vibeProfile),
-        e?.onboardingCompleted
+        e?.onboardingCompleted,
+        e?.profileCompleteness,
+        e?.totalVerifiedRounds,
+        e?.uniqueCoPlayers,
+        e?.gamesHosted,
+        e?.showUpRate,
+        e?.badgeLevel,
+        e?.verifiedRoundCount,
+        e?.weightedRounds,
+        e?.cancellationWarning,
+        e?.cancellationWarningCount,
+        e?.cancellationRate,
+        e?.showUpRateDenominator,
       ]);
 
   @override

@@ -7,7 +7,7 @@
  * - Format (gameType): 'Stroke Play', 'Match Play', 'Stableford'
  * - Handicap Use (scoring): 'Gross', 'Net', 'Both'
  * - Course (courseRef ID)
- * - Special: {games: boolean, twoVTwo: boolean}
+ * - Special: {games: boolean, twoVTwo: boolean, discount: boolean}
  *
  * Matching contract:
  * - Notifications triggered by GAME CREATION
@@ -45,7 +45,7 @@ function doesAlertSubMatchGame(subscription, gameData) {
   const formats = subscription.formats || [];
   const handicapUses = subscription.handicapUses || [];
   const courses = subscription.courses || [];
-  const special = subscription.special || { games: false, twoVTwo: false };
+  const special = subscription.special || { games: false, twoVTwo: false, discount: false };
 
   // If all categories are empty, match all games
   const hasActiveFilters =
@@ -55,7 +55,8 @@ function doesAlertSubMatchGame(subscription, gameData) {
     handicapUses.length > 0 ||
     courses.length > 0 ||
     special.games ||
-    special.twoVTwo;
+    special.twoVTwo ||
+    special.discount;
 
   if (!hasActiveFilters) {
     return true;
@@ -110,6 +111,13 @@ function doesAlertSubMatchGame(subscription, gameData) {
   //   if (!gameData.is_2v2) return false;
   // }
 
+  // 7. Discount (member_discount is non-null when a discount is applied)
+  if (special.discount) {
+    if (gameData.member_discount == null || gameData.member_discount === undefined) {
+      return false;
+    }
+  }
+
   // All categories matched
   return true;
 }
@@ -140,7 +148,7 @@ function getUserNotificationPrefs(userData) {
   const prefs = userData.notification_prefs || {};
   const quietHours = prefs.quiet_hours || {};
   const pushEnabled =
-    typeof prefs.push_enabled === "boolean" ? prefs.push_enabled : false;
+    typeof prefs.push_enabled === "boolean" ? prefs.push_enabled : true;
 
   return {
     pushEnabled,
