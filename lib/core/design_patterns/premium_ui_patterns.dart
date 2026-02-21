@@ -14,6 +14,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/spacing.dart';
@@ -116,7 +117,8 @@ class GlassCard extends StatelessWidget {
 /// A gradient-filled box containing an icon
 /// Used for action buttons, stat indicators, and category icons
 class GradientIconBox extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? svgPath;
   final List<Color> gradientColors;
   final double size;
   final double iconSize;
@@ -125,13 +127,14 @@ class GradientIconBox extends StatelessWidget {
 
   const GradientIconBox({
     super.key,
-    required this.icon,
+    this.icon,
+    this.svgPath,
     required this.gradientColors,
     this.size = 48,
     this.iconSize = 24,
     this.borderRadius = 14,
     this.withShadow = true,
-  });
+  }) : assert(icon != null || svgPath != null, 'Either icon or svgPath must be provided');
 
   @override
   Widget build(BuildContext context) {
@@ -151,11 +154,20 @@ class GradientIconBox extends StatelessWidget {
               ]
             : null,
       ),
-      child: Icon(
-        icon,
-        color: Colors.white,
-        size: iconSize,
-      ),
+      child: svgPath != null
+          ? Center(
+              child: SvgPicture.asset(
+                svgPath!,
+                width: iconSize,
+                height: iconSize,
+                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              ),
+            )
+          : Icon(
+              icon,
+              color: Colors.white,
+              size: iconSize,
+            ),
     );
   }
 }

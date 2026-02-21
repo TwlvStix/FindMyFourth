@@ -7,6 +7,8 @@ import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/models/game.dart';
 import '/models/user_profile.dart';
@@ -663,8 +665,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                     width: 1.5,
                   ),
                 ),
-                child: Icon(
-                  Icons.person_add_outlined,
+                child: AppIcon(
+                  assetPath: AppIcons.addPlayer,
                   color: AppColors.fairway.withValues(alpha: 0.6),
                   size: 24,
                 ),
@@ -1283,24 +1285,24 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                     ),
                                     SizedBox(height: AppSpacing.sm),
                                     _buildInfoRow(
-                                      Icons.golf_course,
-                                      game.coursePlay,
+                                      svgPath: AppIcons.course,
+                                      text: game.coursePlay,
                                     ),
                                     SizedBox(height: AppSpacing.xs),
                                     _buildInfoRow(
-                                      Icons.calendar_today,
-                                      '${dateTimeFormat("EEEE, MMM d", game.date)} • ${dateTimeFormat("jm", game.date)}',
+                                      svgPath: AppIcons.calendarCheck,
+                                      text: '${dateTimeFormat("EEEE, MMM d", game.date)} • ${dateTimeFormat("jm", game.date)}',
                                     ),
                                     SizedBox(height: AppSpacing.xs),
                                     _buildInfoRow(
-                                      Icons.people,
-                                      '$currentPlayerCount confirmed, $remainingSlots ${remainingSlots == 1 ? 'spot' : 'spots'} open',
+                                      svgPath: AppIcons.golfers,
+                                      text: '$currentPlayerCount confirmed, $remainingSlots ${remainingSlots == 1 ? 'spot' : 'spots'} open',
                                     ),
                                     if (game.gameType.isNotEmpty) ...[
                                       SizedBox(height: AppSpacing.xs),
                                       _buildInfoRow(
-                                        Icons.sports_golf,
-                                        game.gameType,
+                                        icon: Icons.sports_golf,
+                                        text: game.gameType,
                                       ),
                                     ],
                                   ],
@@ -1321,14 +1323,21 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String text) {
+  Widget _buildInfoRow({IconData? icon, String? svgPath, required String text}) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16.0,
-          color: Color(0xFF718096),
-        ),
+        if (svgPath != null)
+          AppIcon(
+            assetPath: svgPath,
+            size: 16.0,
+            color: Color(0xFF718096),
+          )
+        else if (icon != null)
+          Icon(
+            icon,
+            size: 16.0,
+            color: Color(0xFF718096),
+          ),
         SizedBox(width: 8.0),
         Expanded(
           child: Text(

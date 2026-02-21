@@ -12,6 +12,8 @@ import '/providers/trust_provider.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
@@ -556,7 +558,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 22),
+                                AppIcon(assetPath: AppIcons.chat, color: Colors.white, size: 22),
                                 SizedBox(width: AppSpacing.sm),
                                 Text(
                                   'Message Group',
@@ -842,8 +844,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                         gameJoinedDetailedGamesRecord,
                                                   ),
                                                 )
-                                              : const Icon(
-                                                  Icons.check_circle,
+                                              : const AppIcon(
+                                                  assetPath: AppIcons.joined,
                                                   color: Color(0xFFD4A843),
                                                   size: 24.0,
                                                 ),

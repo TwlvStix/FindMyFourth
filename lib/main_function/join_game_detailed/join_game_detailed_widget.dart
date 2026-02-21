@@ -11,6 +11,8 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/providers/trust_provider.dart';
 import '/models/game.dart';
 import '/models/vibe_profile.dart';
@@ -127,8 +129,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                     color: AppColors.fairway.withValues(alpha: 0.35),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.lock_outline_rounded,
+                  child: AppIcon(
+                    assetPath: AppIcons.lock,
                     color: Colors.white.withValues(alpha: 0.7),
                     size: 44,
                   ),
@@ -951,14 +953,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 ),
                                 _buildPremiumInfoCard(
                                   context,
-                                  icon: Icons.discount_rounded,
+                                  svgPath: AppIcons.memberDiscount,
                                   iconColors: [AppColors.fairwayLight, AppColors.fairway],
                                   label: 'Member Discount',
                                   value: joinGameDetailedGamesRecord.memberDiscount,
                                 ),
                                 _buildPremiumInfoCard(
                                   context,
-                                  icon: Icons.group_rounded,
+                                  svgPath: AppIcons.groups,
                                   iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
                                   label: 'Friends Only',
                                   value: joinGameDetailedGamesRecord.friendGame,
@@ -1143,8 +1145,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                           ),
                                                           if (isOwner) ...[
                                                             SizedBox(width: 6),
-                                                            Icon(
-                                                              Icons.star_rounded,
+                                                            AppIcon(
+                                                              assetPath: AppIcons.owner,
                                                               color: AppColors.sunsetGold,
                                                               size: 16,
                                                             ),
@@ -1192,8 +1194,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                   ),
                                                 ),
                                                 // Checkmark icon
-                                                Icon(
-                                                  Icons.check_circle,
+                                                AppIcon(
+                                                  assetPath: AppIcons.joined,
                                                   color: AppColors.sunsetGold,
                                                   size: 24.0,
                                                 ),
@@ -1742,7 +1744,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildPremiumInfoCard(
     BuildContext context, {
-    required IconData icon,
+    IconData? icon,
+    String? svgPath,
     required List<Color> iconColors,
     required String label,
     required String value,
@@ -1772,7 +1775,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                 ),
               ],
             ),
-            child: Icon(icon, color: Colors.white, size: 18),
+            child: svgPath != null
+                ? AppIcon(assetPath: svgPath, color: Colors.white, size: 18)
+                : Icon(icon, color: Colors.white, size: 18),
           ),
           SizedBox(width: AppSpacing.sm),
           Expanded(

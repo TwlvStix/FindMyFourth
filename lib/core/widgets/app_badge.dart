@@ -3,6 +3,8 @@ import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/border_radius.dart';
 import '../design_tokens/spacing.dart';
+import '../design_tokens/app_icons.dart';
+import 'app_icon.dart';
 
 enum AppBadgeVariant {
   /// Success state (green) - completed, confirmed, active
@@ -40,6 +42,7 @@ class AppBadge extends StatelessWidget {
   final AppBadgeVariant variant;
   final AppBadgeSize size;
   final IconData? icon;
+  final String? svgPath;
 
   const AppBadge({
     super.key,
@@ -47,6 +50,7 @@ class AppBadge extends StatelessWidget {
     this.variant = AppBadgeVariant.primary,
     this.size = AppBadgeSize.medium,
     this.icon,
+    this.svgPath,
   });
 
   @override
@@ -68,7 +72,14 @@ class AppBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[
+          if (svgPath != null) ...[
+            AppIcon(
+              assetPath: svgPath!,
+              color: colors.textColor,
+              size: _getIconSize(),
+            ),
+            SizedBox(width: AppSpacing.xxs),
+          ] else if (icon != null) ...[
             Icon(
               icon,
               color: colors.textColor,

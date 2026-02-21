@@ -8,6 +8,8 @@ import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -62,15 +64,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
   // ═══════════════════════════════════════════════════════════════════════════
   // LEGACY STATE (preserved for compatibility)
   // ═══════════════════════════════════════════════════════════════════════════
-  List<String> reqUserList = [];
-  void addToReqUserList(String item) => reqUserList.add(item);
-  void removeFromReqUserList(String item) => reqUserList.remove(item);
-  void removeAtIndexFromReqUserList(int index) => reqUserList.removeAt(index);
-  void insertAtIndexInReqUserList(int index, String item) =>
-      reqUserList.insert(index, item);
-  void updateReqUserListAtIndex(int index, Function(String) updateFn) =>
-      reqUserList[index] = updateFn(reqUserList[index]);
-
   List<DocumentReference> friendList = [];
   void addToFriendList(DocumentReference item) => friendList.add(item);
   void removeFromFriendList(DocumentReference item) => friendList.remove(item);
@@ -475,11 +468,13 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
             itemBuilder: (context, listViewUsersRecord) {
               return AuthUserStreamWidget(
                 builder: (context) {
+                  final userProvider = context.watch<UserProvider>();
                   final isFriend =
                       (currentUserDocument?.friends.toList() ?? [])
                           .contains(listViewUsersRecord.reference);
                   final isOutgoingPending = listViewUsersRecord.friendRequests
-                      .contains(currentUserReference);
+                          .contains(currentUserReference) ||
+                      userProvider.hasPendingOutgoingRequest(listViewUsersRecord.uid);
                   final isIncomingPending =
                       (currentUserDocument?.friendRequests.toList() ?? [])
                           .contains(listViewUsersRecord.reference);
@@ -491,17 +486,17 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
 
                   if (isFriend) {
                     actionLabel = 'Friends';
-                    actionIcon = Icons.people_rounded;
+                    actionIcon = Icons.people_rounded; // Keep Material - represents status
                     showActionButton = true;
                   } else if (hasPending) {
                     actionLabel = isOutgoingPending ? 'Cancel' : 'Pending';
                     actionIcon = isOutgoingPending
                         ? Icons.close_rounded
-                        : Icons.pending_rounded;
+                        : Icons.pending_rounded; // Keep Material - represents status
                     showActionButton = true;
                   } else {
                     actionLabel = 'Add';
-                    actionIcon = Icons.person_add_rounded;
+                    actionIcon = Icons.person_add_rounded; // Keep Material - PremiumFriendCard uses IconData
                     showActionButton = true;
                   }
 
@@ -572,8 +567,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
   Future<void> _sendFriendRequest(UsersRecord user) async {
     try {
       await context.read<UserProvider>().sendFriendRequest(user.reference);
-      addToReqUserList(valueOrDefault<String>(user.uid, '007'));
-      if (mounted) setState(() {});
       if (!mounted) return;
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(

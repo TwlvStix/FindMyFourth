@@ -1,5 +1,6 @@
 import '/core/widgets/app_drop_down.dart';
-import '/core/widgets/app_icon_button.dart';
+import '/core/widgets/app_icon.dart';
+import '/core/design_tokens/app_icons.dart';
 import '/core/widgets/app_text_field.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/motion/motion_helpers.dart';
@@ -964,19 +965,19 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       {
         'value': 'morning',
         'label': 'Morning',
-        'emoji': '🌅',
+        'svgPath': AppIcons.morning,
         'subtitle': 'Before 11am',
       },
       {
         'value': 'afternoon',
         'label': 'Afternoon',
-        'emoji': '☀️',
+        'svgPath': AppIcons.afternoon,
         'subtitle': '11am-3pm',
       },
       {
         'value': 'twilight',
         'label': 'Twilight',
-        'emoji': '🌇',
+        'svgPath': AppIcons.twilight,
         'subtitle': 'After 3pm',
       },
     ];
@@ -1024,7 +1025,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(time['emoji'] as String, style: TextStyle(fontSize: 28)),
+                AppIcon(
+                  assetPath: time['svgPath'] as String,
+                  size: 28,
+                  color: Colors.white,
+                ),
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   time['label'] as String,
@@ -1209,7 +1214,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           CrossAxisAlignment.start,
                                       children: [
                                         SectionHeader(
-                                          emoji: '🏷️',
+                                          svgPath: AppIcons.games,
                                           title: 'Game Name',
                                           helpText:
                                               'Auto-generated for you. Edit here if you want a custom name.',
@@ -1232,7 +1237,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         ),
 
                                         SectionHeader(
-                                          emoji: '📅',
+                                          svgPath: AppIcons.calendarCheck,
                                           title: 'Schedule',
                                           helpText:
                                               'Choose if you have a confirmed tee time or flexible availability.',
@@ -1443,7 +1448,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           _buildFlexibleTimeUI(),
                                         ],
                                         SectionHeader(
-                                          emoji: '👁️',
+                                          svgPath: AppIcons.visibility,
                                           title: 'Visibility',
                                           helpText:
                                               'Choose whether your game is visible to friends only or everyone in your area.',
@@ -1479,7 +1484,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           ),
                                         ),
                                         SectionHeader(
-                                          emoji: '🏌️',
+                                          svgPath: AppIcons.course,
                                           title: 'Course',
                                         ),
                                         Align(
@@ -1709,7 +1714,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         ),
                                         SizedBox(height: AppSpacing.md),
                                         ToggleSwitch(
-                                          label: '⛳ Just for Fun',
+                                          label: 'Just for Fun',
                                           description:
                                               'Skip all the details. Just show up and play.',
                                           value: _isJustForFun,
@@ -1724,7 +1729,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         ),
                                         if (!_isJustForFun) ...[
                                           ToggleSwitch(
-                                            label: '💰 Member Guest Rate',
+                                            label: 'Member Guest Rate',
                                             description:
                                                 'This game is created by a course member who can offer guest-rate pricing.',
                                             value: memberDiscount,
@@ -1740,7 +1745,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             },
                                           ),
                                           SectionHeader(
-                                            emoji: '🎭',
+                                            svgPath: AppIcons.gameVibe,
                                             title: 'Game Vibe',
                                             helpText:
                                                 'Set the tone for your round. Competitive focuses on rules and pace, while Casual keeps it relaxed and friendly.',
@@ -1767,7 +1772,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             ),
                                           ),
                                           SectionHeader(
-                                            emoji: '💰',
+                                            svgPath: AppIcons.betting,
                                             title: 'Stakes',
                                             helpText:
                                                 'Playing for money or keeping it friendly? Choose your comfort level.',
@@ -1794,7 +1799,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             ),
                                           ),
                                           SectionHeader(
-                                            emoji: '🏆',
+                                            svgPath: AppIcons.gameType,
                                             title: 'Primary Format',
                                             helpText:
                                                 'Choose your core scoring format: Match Play (hole-by-hole), Stroke Play (total strokes), Stableford (points).',
@@ -1826,7 +1831,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           // Team Setup Section
                                           SizedBox(height: AppSpacing.md),
                                           ToggleSwitch(
-                                            label: '👥 2v2 (Teams)',
+                                            label: '2v2 (Teams)',
                                             description:
                                                 'Enable team play mode',
                                             value: _is2v2,
@@ -1847,7 +1852,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           if (_is2v2) ...[
                                             SizedBox(height: AppSpacing.sm),
                                             SectionHeader(
-                                              emoji: '🤝',
+                                              svgPath: AppIcons.teams2v2,
                                               title: 'Team Style',
                                             ),
                                             Padding(
@@ -1859,14 +1864,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                     'value': 'Best Ball',
                                                     'label': 'Best Ball',
                                                     'icon': Icons.star_rounded,
-                                                    'emoji': '⭐'
+                                                    'svgPath': AppIcons.bbb,
                                                   },
                                                   {
                                                     'value': 'Scramble',
                                                     'label': 'Scramble',
-                                                    'icon':
-                                                        Icons.groups_rounded,
-                                                    'emoji': '👥'
+                                                    'icon': Icons.groups_rounded,
+                                                    'svgPath': AppIcons.groups,
                                                   },
                                                 ],
                                                 selectedValue: _teamStyle,
@@ -1885,7 +1889,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           ],
 
                                           SectionHeader(
-                                            emoji: '📊',
+                                            svgPath: AppIcons.handicap,
                                             title: 'Handicap Use',
                                             helpText:
                                                 'Gross is total strokes. Net adjusts for handicap. Gross + Net tracks both scores.',
@@ -1915,7 +1919,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
 
                                           // Games Multi-Select Section
                                           SectionHeader(
-                                            emoji: '🎮',
+                                            svgPath: AppIcons.dots,
                                             title: 'Games (Optional)',
                                             helpText:
                                                 'Add up to 3 side games to your round. These are played alongside your primary format.',

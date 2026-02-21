@@ -1,6 +1,8 @@
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/trust/restriction_banner.dart';
 import '/providers/trust_provider.dart';
 import '/core/design_patterns/premium_ui_patterns.dart';
@@ -553,8 +555,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       buttonSize: 44.0,
                       fillColor: Colors.transparent,
                       tooltip: 'Notifications',
-                      icon: Icon(
-                        Icons.notifications_none_rounded,
+                      icon: AppIcon(
+                        assetPath: AppIcons.notifications,
                         color: Colors.white,
                         size: 24.0,
                       ),
@@ -585,8 +587,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               buttonSize: 44.0,
                               fillColor: Colors.transparent,
                               tooltip: 'Notifications',
-                              icon: Icon(
-                                Icons.notifications_none_rounded,
+                              icon: AppIcon(
+                                assetPath: AppIcons.notifications,
                                 color: Colors.white,
                                 size: 24.0,
                               ),
@@ -810,11 +812,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                     .withOpacity(0.3),
                                                 shape: BoxShape.circle,
                                               ),
-                                              child: Icon(
-                                                Icons.golf_course_rounded,
-                                                size: 56,
-                                                color: Colors.white
-                                                    .withOpacity(0.5),
+                                              child: Center(
+                                                child: AppIcon(
+                                                  assetPath: AppIcons.games,
+                                                  size: 64,
+                                                  color: Colors.white
+                                                      .withOpacity(0.5),
+                                                ),
                                               ),
                                             ),
                                             SizedBox(height: AppSpacing.lg),
@@ -999,8 +1003,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 borderRadius:
                                                     BorderRadius.circular(10),
                                               ),
-                                              child: Icon(
-                                                Icons.lock_rounded,
+                                              child: AppIcon(
+                                                assetPath: AppIcons.lock,
                                                 color: Colors.white
                                                     .withOpacity(0.8),
                                                 size: 18,
@@ -1187,8 +1191,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
-                                    Icons.lock_rounded,
+                                  AppIcon(
+                                    assetPath: AppIcons.lock,
                                     size: 12,
                                     color: Colors.white.withOpacity(0.85),
                                   ),
@@ -1233,7 +1237,11 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text('⛳', style: TextStyle(fontSize: 11)),
+                                  AppIcon(
+                                    assetPath: AppIcons.games,
+                                    color: Colors.white,
+                                    size: 12,
+                                  ),
                                   SizedBox(width: 4),
                                   Text(
                                     'Just for Fun',
@@ -1365,7 +1373,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.star_rounded,
+                                AppIcon(
+                                    assetPath: AppIcons.owner,
                                     color: Colors.white, size: 14),
                                 SizedBox(width: 4),
                                 Text(
@@ -1391,7 +1400,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.check_circle_rounded,
+                                AppIcon(
+                                    assetPath: AppIcons.joined,
                                     color: Colors.white, size: 14),
                                 SizedBox(width: 4),
                                 Text(
@@ -1426,10 +1436,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               ),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Icon(
-                              Icons.golf_course_rounded,
-                              color: Colors.white,
-                              size: 18,
+                            child: Center(
+                              child: AppIcon(
+                                assetPath: AppIcons.course,
+                                color: Colors.white,
+                                size: 18,
+                              ),
                             ),
                           ),
                           SizedBox(width: AppSpacing.sm),
@@ -1488,12 +1500,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               color: AppColors.sunsetPeach.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Icon(
-                              game.isFlexible
-                                  ? Icons.event_note_rounded
-                                  : Icons.calendar_today_rounded,
-                              color: AppColors.sunsetPeach,
-                              size: 16,
+                            child: Center(
+                              child: AppIcon(
+                                assetPath: AppIcons.calendarCheck,
+                                color: AppColors.sunsetPeach,
+                                size: 16,
+                              ),
                             ),
                           ),
                           SizedBox(width: AppSpacing.sm),
@@ -1551,8 +1563,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.people_rounded,
+                                AppIcon(
+                                  assetPath: AppIcons.golfers,
                                   color: isFull
                                       ? AppColors.sunsetRose
                                       : Colors.white,
@@ -1611,8 +1623,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.local_offer_rounded,
+                                AppIcon(
+                                  assetPath: AppIcons.memberDiscount,
                                   color: AppColors.fairwayLight,
                                   size: 12,
                                 ),
@@ -1661,8 +1673,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
-                                      Icons.person_add_rounded,
+                                    AppIcon(
+                                      assetPath: AppIcons.addPlayer,
                                       color: Colors.white,
                                       size: 16,
                                     ),
@@ -1715,15 +1727,24 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
-                                    isUserGame
-                                        ? Icons.visibility_rounded
-                                        : (isFull
-                                            ? Icons.hourglass_empty_rounded
-                                            : Icons.add_rounded),
-                                    color: Colors.white,
-                                    size: 16,
-                                  ),
+                                  if (isUserGame)
+                                    Icon(
+                                      Icons.visibility_rounded,
+                                      color: Colors.white,
+                                      size: 16,
+                                    )
+                                  else if (isFull)
+                                    AppIcon(
+                                      assetPath: AppIcons.pending,
+                                      color: Colors.white,
+                                      size: 16,
+                                    )
+                                  else
+                                    Icon(
+                                      Icons.add_rounded,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
                                   SizedBox(width: 6),
                                   Text(
                                     isUserGame

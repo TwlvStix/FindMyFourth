@@ -4,11 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '/utils/app_util.dart';
+import '../design_tokens/app_icons.dart';
+import 'app_icon.dart';
 
 class ChipData {
-  const ChipData(this.label, [this.iconData]);
+  const ChipData(this.label, [this.iconData, this.svgPath]);
   final String label;
   final IconData? iconData;
+  final String? svgPath;
 }
 
 class ChipStyle {
@@ -128,13 +131,19 @@ class _AppChoiceChipsState extends State<AppChoiceChips> {
               overflow: TextOverflow.ellipsis,
             ),
             labelPadding: style.labelPadding,
-            avatar: option.iconData != null
-                ? FaIcon(
-                    option.iconData,
-                    size: style.iconSize,
+            avatar: option.svgPath != null
+                ? AppIcon(
+                    assetPath: option.svgPath!,
+                    size: style.iconSize ?? 18,
                     color: style.iconColor,
                   )
-                : null,
+                : option.iconData != null
+                    ? FaIcon(
+                        option.iconData,
+                        size: style.iconSize,
+                        color: style.iconColor,
+                      )
+                    : null,
             elevation: style.elevation,
             disabledColor: widget.disabledColor,
             selectedColor:

@@ -8,6 +8,8 @@ import '../design_tokens/typography.dart';
 import '../design_tokens/border_radius.dart';
 import '../design_tokens/elevation.dart';
 import '../design_tokens/opacity.dart';
+import '../design_tokens/app_icons.dart';
+import 'app_icon.dart';
 
 /// Visual variants for AppCard
 enum AppCardVariant {
@@ -390,12 +392,14 @@ class StatCard extends StatelessWidget {
     required this.label,
     required this.value,
     this.icon,
+    this.svgPath,
     this.onTap,
   });
 
   final String label;
   final String value;
   final IconData? icon;
+  final String? svgPath;
   final VoidCallback? onTap;
 
   @override
@@ -409,7 +413,14 @@ class StatCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              if (icon != null) ...[
+              if (svgPath != null) ...[
+                AppIcon(
+                  assetPath: svgPath!,
+                  color: AppColors.fairway,
+                  size: 20,
+                ),
+                AppSpacing.horizontalSmBox,
+              ] else if (icon != null) ...[
                 Icon(
                   icon,
                   color: AppColors.fairway,

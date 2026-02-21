@@ -113,13 +113,13 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
   void _fetchMutualFriends(
     String profileUserId,
     List<DocumentReference> theirFriends,
+    List<DocumentReference> myFriends,
   ) async {
     if (_lastMutualFriendsProfileId == profileUserId && _mutualFriendsLoaded) {
       return;
     }
     _lastMutualFriendsProfileId = profileUserId;
 
-    final myFriends = context.read<UserProvider>().friends;
     final myUids = myFriends.map((r) => r.id).toSet();
     final theirUids = theirFriends.map((r) => r.id).toSet();
     final mutualUids = myUids.intersection(theirUids);
@@ -531,6 +531,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
   ) {
     return AuthUserStreamWidget(
       builder: (context) {
+        final userProvider = context.watch<UserProvider>();
         final currentUserRef = currentUserReference;
         final currentFriends = currentUserDocument?.friends.toList() ?? [];
         final currentRequests =
@@ -541,7 +542,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         final isFriend = currentFriends.contains(widget.userRef);
         final hasPending = currentRequests.contains(widget.userRef) ||
             (currentUserRef != null &&
-                theirRequestsList.contains(currentUserRef));
+                theirRequestsList.contains(currentUserRef)) ||
+            userProvider.hasPendingOutgoingRequest(widget.userRef.id);
 
         IconData icon;
         String label;
@@ -750,15 +752,16 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
 
   /// Light-themed overlapping avatars for bottom sheet quick actions area
   Widget _buildOverlappingAvatarsLight(List<UsersRecord> friends) {
-    const avatarSize = 28.0;
-    const overlap = 10.0;
+    const avatarSize = 40.0;
+    const overlap = 14.0;
     final count = friends.length.clamp(1, 3);
     final totalWidth = avatarSize + (count - 1) * (avatarSize - overlap);
 
     return SizedBox(
       width: totalWidth,
-      height: avatarSize,
+      height: 48, // Match other action card icon heights
       child: Stack(
+        alignment: Alignment.center,
         children: List.generate(count, (i) {
           final friend = friends[i];
           return Positioned(
@@ -769,10 +772,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.sand, width: 2),
-                color: AppColors.fairway.withOpacity(0.15),
+                color: AppColors.fairway.withValues(alpha: 0.15),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 4,
                     offset: Offset(0, 2),
                   ),
@@ -785,13 +788,13 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Icon(
                           Icons.person,
-                          size: 14,
+                          size: 20,
                           color: AppColors.fairway,
                         ),
                       )
                     : Icon(
                         Icons.person,
-                        size: 14,
+                        size: 20,
                         color: AppColors.fairway,
                       ),
               ),
@@ -1040,12 +1043,74 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
       child: StreamBuilder<UsersRecord?>(
         stream: context.read<ProfileProvider>().watchProfile(widget.userRef.id),
         builder: (context, snapshot) {
+          // Handle error state
+          if (snapshot.hasError) {
+            return Scaffold(
+              key: scaffoldKey,
+              backgroundColor: AppColors.fairwayDark,
+              body: SafeArea(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(AppSpacing.md),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: PremiumBackButton(onTap: () => Navigator.of(context).pop()),
+                      ),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(AppSpacing.lg),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.error_outline, color: Colors.white54, size: 48),
+                              SizedBox(height: AppSpacing.md),
+                              Text(
+                                'Unable to load profile',
+                                style: AppTypography.titleMedium.copyWith(color: Colors.white),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: AppSpacing.xs),
+                              Text(
+                                'Please try again later',
+                                style: AppTypography.bodySmall.copyWith(color: Colors.white54),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          // Handle loading state
           if (!snapshot.hasData || snapshot.data == null) {
             return Scaffold(
               key: scaffoldKey,
               backgroundColor: AppColors.fairwayDark,
-              body: const Center(
-                child: CircularProgressIndicator(),
+              body: SafeArea(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(AppSpacing.md),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: PremiumBackButton(onTap: () => Navigator.of(context).pop()),
+                      ),
+                    ),
+                    const Expanded(
+                      child: Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -1067,7 +1132,11 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             });
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                _fetchMutualFriends(widget.userRef.id, userRecord.friends);
+                _fetchMutualFriends(
+                  widget.userRef.id,
+                  userRecord.friends,
+                  currentUserDocument?.friends.toList() ?? [],
+                );
               }
             });
           }

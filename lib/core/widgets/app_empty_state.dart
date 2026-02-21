@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/spacing.dart';
+import '../design_tokens/app_icons.dart';
+import 'app_icon.dart';
 
 class AppEmptyState extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? svgPath;
   final String title;
   final String? message;
   final String? actionText;
@@ -12,12 +15,13 @@ class AppEmptyState extends StatelessWidget {
 
   const AppEmptyState({
     super.key,
-    required this.icon,
+    this.icon,
+    this.svgPath,
     required this.title,
     this.message,
     this.actionText,
     this.onAction,
-  });
+  }) : assert(icon != null || svgPath != null, 'Either icon or svgPath must be provided');
 
   @override
   Widget build(BuildContext context) {
@@ -27,11 +31,18 @@ class AppEmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 64,
-              color: AppColors.cloud,
-            ),
+            if (svgPath != null)
+              AppIcon(
+                assetPath: svgPath!,
+                size: 64,
+                color: AppColors.cloud,
+              )
+            else if (icon != null)
+              Icon(
+                icon,
+                size: 64,
+                color: AppColors.cloud,
+              ),
             SizedBox(height: AppSpacing.md),
             Text(
               title,

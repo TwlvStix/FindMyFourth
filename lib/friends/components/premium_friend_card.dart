@@ -5,6 +5,8 @@ import '/core/motion/reduced_motion.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/services/vibe_matcher.dart';
 import '/models/vibe_profile.dart';
 
@@ -23,9 +25,11 @@ class PremiumFriendCard extends StatefulWidget {
   final VoidCallback? onMessage;
   final VoidCallback? onAction;
   final String messageLabel;
-  final IconData messageIcon;
+  final IconData? messageIcon;
+  final String? messageSvgPath;
   final String actionLabel;
-  final IconData actionIcon;
+  final IconData? actionIcon;
+  final String? actionSvgPath;
   final Color actionColor;
   final bool showActionButton;
   final bool isLoading;
@@ -43,8 +47,10 @@ class PremiumFriendCard extends StatefulWidget {
     this.onAction,
     this.messageLabel = 'Chat',
     this.messageIcon = Icons.message_rounded,
+    this.messageSvgPath,
     this.actionLabel = 'Add',
     this.actionIcon = Icons.person_add_rounded,
+    this.actionSvgPath,
     this.actionColor = AppColors.fairway,
     this.showActionButton = true,
     this.isLoading = false,
@@ -323,6 +329,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       actions.add(
         _buildIconOnlyButton(
           icon: widget.messageIcon,
+          svgPath: widget.messageSvgPath,
           onPressed: widget.onMessage!,
           isPrimary: true,
           tooltip: widget.messageLabel,
@@ -335,6 +342,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       actions.add(
         _buildIconOnlyButton(
           icon: widget.actionIcon,
+          svgPath: widget.actionSvgPath,
           onPressed: widget.onAction,
           isPrimary: false,
           isLoading: widget.isLoading,
@@ -353,7 +361,8 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   }
 
   Widget _buildIconOnlyButton({
-    required IconData icon,
+    IconData? icon,
+    String? svgPath,
     required VoidCallback? onPressed,
     required bool isPrimary,
     bool isLoading = false,
@@ -391,11 +400,17 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
                       ),
                     ),
                   )
-                : Icon(
-                    icon,
-                    size: 20,
-                    color: PremiumFriendCard.textPrimary,
-                  ),
+                : svgPath != null
+                    ? AppIcon(
+                        assetPath: svgPath,
+                        size: 20,
+                        color: PremiumFriendCard.textPrimary,
+                      )
+                    : Icon(
+                        icon,
+                        size: 20,
+                        color: PremiumFriendCard.textPrimary,
+                      ),
           ),
         ),
       ),

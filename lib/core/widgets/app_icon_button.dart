@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'app_icon.dart';
 
 class AppIconButton extends StatefulWidget {
   const AppIconButton({
@@ -62,23 +63,38 @@ class _AppIconButtonState extends State<AppIconButton> {
   }
 
   void _updateIcon() {
-    final isFontAwesome = widget.icon is FaIcon;
-    if (isFontAwesome) {
+    if (widget.icon is FaIcon) {
       FaIcon icon = widget.icon as FaIcon;
       effectiveIcon = FaIcon(
         icon.icon,
         size: icon.size,
+        color: icon.color,
       );
       iconSize = icon.size;
       iconColor = icon.color;
-    } else {
+    } else if (widget.icon is AppIcon) {
+      AppIcon icon = widget.icon as AppIcon;
+      effectiveIcon = AppIcon(
+        assetPath: icon.assetPath,
+        size: icon.size,
+        color: icon.color,
+      );
+      iconSize = icon.size;
+      iconColor = icon.color;
+    } else if (widget.icon is Icon) {
       Icon icon = widget.icon as Icon;
       effectiveIcon = Icon(
         icon.icon,
         size: icon.size,
+        color: icon.color,
       );
       iconSize = icon.size;
       iconColor = icon.color;
+    } else {
+      // Fallback for other widget types
+      effectiveIcon = widget.icon;
+      iconSize = null;
+      iconColor = null;
     }
   }
 

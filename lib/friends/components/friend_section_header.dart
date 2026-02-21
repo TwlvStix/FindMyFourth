@@ -5,10 +5,13 @@ import '/core/motion/reduced_motion.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 
 /// Section header for grouped friend lists
 class FriendSectionHeader extends StatefulWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? svgPath;
   final String title;
   final int count;
   final Color color;
@@ -17,13 +20,14 @@ class FriendSectionHeader extends StatefulWidget {
 
   const FriendSectionHeader({
     super.key,
-    required this.icon,
+    this.icon,
+    this.svgPath,
     required this.title,
     required this.count,
     this.color = AppColors.fairway,
     this.isCollapsed = false,
     this.onTap,
-  });
+  }) : assert(icon != null || svgPath != null, 'Either icon or svgPath must be provided');
 
   @override
   State<FriendSectionHeader> createState() => _FriendSectionHeaderState();
@@ -125,11 +129,17 @@ class _FriendSectionHeaderState extends State<FriendSectionHeader>
                     ),
                   ],
                 ),
-                child: Icon(
-                  widget.icon,
-                  size: 20,
-                  color: widget.color,
-                ),
+                child: widget.svgPath != null
+                    ? AppIcon(
+                        assetPath: widget.svgPath!,
+                        size: 20,
+                        color: widget.color,
+                      )
+                    : Icon(
+                        widget.icon,
+                        size: 20,
+                        color: widget.color,
+                      ),
               ),
 
               SizedBox(width: AppSpacing.md),

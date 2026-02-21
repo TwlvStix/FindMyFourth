@@ -4,6 +4,8 @@ import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/border_radius.dart';
 import '../design_tokens/spacing.dart';
+import '../design_tokens/app_icons.dart';
+import 'app_icon.dart';
 
 enum AppTextFieldVariant {
   /// Outlined border style (default)
@@ -38,7 +40,9 @@ class AppTextField extends StatefulWidget {
   final void Function(String)? onChanged;
   final void Function(String)? onSubmitted;
   final IconData? prefixIcon;
+  final String? prefixSvgPath;
   final IconData? suffixIcon;
+  final String? suffixSvgPath;
   final VoidCallback? onSuffixIconTap;
 
   const AppTextField({
@@ -61,7 +65,9 @@ class AppTextField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.prefixIcon,
+    this.prefixSvgPath,
     this.suffixIcon,
+    this.suffixSvgPath,
     this.onSuffixIconTap,
   });
 
@@ -162,15 +168,25 @@ class _AppTextFieldState extends State<AppTextField> {
           hintStyle: AppTypography.bodyMedium.copyWith(
             color: AppColors.stone,
           ),
-          prefixIcon: widget.prefixIcon != null
-              ? Icon(widget.prefixIcon, color: AppColors.slate)
-              : null,
-          suffixIcon: widget.suffixIcon != null
+          prefixIcon: widget.prefixSvgPath != null
+              ? Padding(
+                  padding: EdgeInsets.all(12),
+                  child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.slate, size: 20),
+                )
+              : widget.prefixIcon != null
+                  ? Icon(widget.prefixIcon, color: AppColors.slate)
+                  : null,
+          suffixIcon: widget.suffixSvgPath != null
               ? IconButton(
-                  icon: Icon(widget.suffixIcon, color: AppColors.slate),
+                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: 20),
                   onPressed: widget.onSuffixIconTap,
                 )
-              : null,
+              : widget.suffixIcon != null
+                  ? IconButton(
+                      icon: Icon(widget.suffixIcon, color: AppColors.slate),
+                      onPressed: widget.onSuffixIconTap,
+                    )
+                  : null,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppBorderRadius.sm),
             borderSide: BorderSide(color: AppColors.cloud),
@@ -199,15 +215,25 @@ class _AppTextFieldState extends State<AppTextField> {
           hintStyle: AppTypography.bodyMedium.copyWith(
             color: AppColors.stone,
           ),
-          prefixIcon: widget.prefixIcon != null
-              ? Icon(widget.prefixIcon, color: AppColors.slate)
-              : null,
-          suffixIcon: widget.suffixIcon != null
+          prefixIcon: widget.prefixSvgPath != null
+              ? Padding(
+                  padding: EdgeInsets.all(12),
+                  child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.slate, size: 20),
+                )
+              : widget.prefixIcon != null
+                  ? Icon(widget.prefixIcon, color: AppColors.slate)
+                  : null,
+          suffixIcon: widget.suffixSvgPath != null
               ? IconButton(
-                  icon: Icon(widget.suffixIcon, color: AppColors.slate),
+                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: 20),
                   onPressed: widget.onSuffixIconTap,
                 )
-              : null,
+              : widget.suffixIcon != null
+                  ? IconButton(
+                      icon: Icon(widget.suffixIcon, color: AppColors.slate),
+                      onPressed: widget.onSuffixIconTap,
+                    )
+                  : null,
           filled: true,
           fillColor: AppColors.sand,
           border: OutlineInputBorder(
@@ -230,15 +256,25 @@ class _AppTextFieldState extends State<AppTextField> {
           hintStyle: AppTypography.bodyMedium.copyWith(
             color: AppColors.stone,
           ),
-          prefixIcon: widget.prefixIcon != null
-              ? Icon(widget.prefixIcon, color: AppColors.slate)
-              : null,
-          suffixIcon: widget.suffixIcon != null
+          prefixIcon: widget.prefixSvgPath != null
+              ? Padding(
+                  padding: EdgeInsets.all(12),
+                  child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.slate, size: 20),
+                )
+              : widget.prefixIcon != null
+                  ? Icon(widget.prefixIcon, color: AppColors.slate)
+                  : null,
+          suffixIcon: widget.suffixSvgPath != null
               ? IconButton(
-                  icon: Icon(widget.suffixIcon, color: AppColors.slate),
+                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: 20),
                   onPressed: widget.onSuffixIconTap,
                 )
-              : null,
+              : widget.suffixIcon != null
+                  ? IconButton(
+                      icon: Icon(widget.suffixIcon, color: AppColors.slate),
+                      onPressed: widget.onSuffixIconTap,
+                    )
+                  : null,
           border: UnderlineInputBorder(
             borderSide: BorderSide(color: AppColors.cloud),
           ),
@@ -260,12 +296,17 @@ class _AppTextFieldState extends State<AppTextField> {
             color: AppColors.stone,
           ),
           prefixIcon: Icon(Icons.search, color: AppColors.slate),
-          suffixIcon: widget.suffixIcon != null
+          suffixIcon: widget.suffixSvgPath != null
               ? IconButton(
-                  icon: Icon(widget.suffixIcon, color: AppColors.slate),
+                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: 20),
                   onPressed: widget.onSuffixIconTap,
                 )
-              : null,
+              : widget.suffixIcon != null
+                  ? IconButton(
+                      icon: Icon(widget.suffixIcon, color: AppColors.slate),
+                      onPressed: widget.onSuffixIconTap,
+                    )
+                  : null,
           filled: true,
           fillColor: AppColors.sand,
           border: OutlineInputBorder(

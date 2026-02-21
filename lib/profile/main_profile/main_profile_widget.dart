@@ -20,6 +20,8 @@ import '/user_auth/sign_in/sign_in_widget.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/screens/trust/trust_profile_section.dart';
 import '/screens/trust/your_standing_screen.dart';
 
@@ -135,8 +137,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             borderWidth: 0,
                             buttonSize: 44.0,
                             tooltip: 'Notifications',
-                            icon: Icon(
-                              Icons.notifications_none_rounded,
+                            icon: AppIcon(
+                              assetPath: AppIcons.notifications,
                               color: Colors.white,
                               size: 24.0,
                             ),
@@ -420,8 +422,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           ),
                         ],
                       ),
-                      child: Icon(
-                        Icons.camera_alt_rounded,
+                      child: AppIcon(
+                        assetPath: AppIcons.camera,
                         color: Colors.white,
                         size: buttonSize * 0.5,
                       ),
@@ -929,7 +931,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           // Email
           _buildInfoRow(
             context,
-            icon: Icons.email_outlined,
+            svgPath: AppIcons.email,
             iconColor: AppColors.sunsetPeach,
             label: 'Email',
             value: currentUserEmail,
@@ -941,7 +943,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           AuthUserStreamWidget(
             builder: (context) => _buildInfoRow(
               context,
-              icon: Icons.phone_outlined,
+              svgPath: AppIcons.phone,
               iconColor: AppColors.sunsetGold,
               label: 'Phone',
               value: currentPhoneNumber.isNotEmpty
@@ -956,7 +958,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   Widget _buildInfoRow(
     BuildContext context, {
-    required IconData icon,
+    IconData? icon,
+    String? svgPath,
     required Color iconColor,
     required String label,
     required String value,
@@ -977,7 +980,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               color: iconColor.withOpacity(0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: iconColor, size: 20),
+            child: svgPath != null
+                ? AppIcon(assetPath: svgPath, color: iconColor, size: 20)
+                : Icon(icon, color: iconColor, size: 20),
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
@@ -1035,7 +1040,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 currentUserReference == null
                     ? _buildSettingsRow(
                         context,
-                        icon: Icons.notifications_outlined,
+                        svgPath: AppIcons.notifications,
                         label: 'Notifications',
                         onTap: () {
                           HapticFeedback.lightImpact();
@@ -1062,7 +1067,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           final unreadCount = snapshot.data?.docs.length ?? 0;
                           return _buildSettingsRow(
                             context,
-                            icon: Icons.notifications_outlined,
+                            svgPath: AppIcons.notifications,
                             label: 'Notifications',
                             trailing: unreadCount > 0
                                 ? NotificationBadge(count: unreadCount)
@@ -1088,7 +1093,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 Divider(height: 1, color: AppColors.cloud, indent: 56),
                 _buildSettingsRow(
                   context,
-                  icon: Icons.shield_outlined,
+                  svgPath: AppIcons.standing,
                   label: 'Your Standing',
                   onTap: () {
                     HapticFeedback.lightImpact();
@@ -1109,7 +1114,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 Divider(height: 1, color: AppColors.cloud, indent: 56),
                 _buildSettingsRow(
                   context,
-                  icon: Icons.logout_rounded,
+                  svgPath: AppIcons.logOut,
                   label: 'Log Out',
                   isDestructive: true,
                   onTap: () async {
@@ -1181,7 +1186,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   Widget _buildSettingsRow(
     BuildContext context, {
-    required IconData icon,
+    IconData? icon,
+    String? svgPath,
     required String label,
     required VoidCallback onTap,
     bool isDestructive = false,
@@ -1196,7 +1202,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         padding: EdgeInsets.all(AppSpacing.md),
         child: Row(
           children: [
-            Icon(icon, color: color, size: 22),
+            svgPath != null
+                ? AppIcon(assetPath: svgPath, color: color, size: 22)
+                : Icon(icon, color: color, size: 22),
             SizedBox(width: AppSpacing.md),
             Expanded(
               child: Text(

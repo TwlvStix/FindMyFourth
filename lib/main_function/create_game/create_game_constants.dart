@@ -1,81 +1,82 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/app_icons.dart';
 
-const List<Map<String, dynamic>> kCreateGamePrimaryFormatOptions = [
+final List<Map<String, dynamic>> kCreateGamePrimaryFormatOptions = [
   {
     'value': 'Stroke Play',
     'label': 'Stroke Play',
     'icon': Icons.format_list_numbered_rounded,
-    'emoji': '📝',
+    'svgPath': AppIcons.strokePlay,
   },
   {
     'value': 'Match Play',
     'label': 'Match Play',
     'icon': Icons.sports_golf_rounded,
-    'emoji': '🆚',
+    'svgPath': AppIcons.matchPlay,
   },
   {
     'value': 'Stableford',
     'label': 'Stableford',
     'icon': Icons.star_rounded,
-    'emoji': '⭐',
+    'svgPath': AppIcons.stableford,
   },
 ];
 
-const List<Map<String, dynamic>> kCreateGameVibeOptions = [
+final List<Map<String, dynamic>> kCreateGameVibeOptions = [
   {
     'value': 'Competitive',
     'label': 'Competitive',
     'icon': Icons.emoji_events_rounded,
-    'emoji': '🏆',
+    'svgPath': AppIcons.competitive,
     'subtitle': 'Rules-focused • pace matters',
   },
   {
     'value': 'Casual',
     'label': 'Casual',
     'icon': Icons.sentiment_satisfied_rounded,
-    'emoji': '😊',
+    'svgPath': AppIcons.casual,
     'subtitle': 'Relaxed rules • good vibes',
   },
 ];
 
-const List<Map<String, dynamic>> kCreateGameStakesOptions = [
+final List<Map<String, dynamic>> kCreateGameStakesOptions = [
   {
     'value': 'No Money',
     'label': 'No Money',
     'icon': Icons.handshake_rounded,
-    'emoji': '🤝',
+    'svgPath': AppIcons.noMoney,
   },
   {
     'value': 'Low Stakes',
     'label': 'Low Stakes',
     'icon': Icons.attach_money_rounded,
-    'emoji': '💵',
+    'svgPath': AppIcons.lowStakes,
   },
   {
     'value': 'High Stakes',
     'label': 'High Stakes',
     'icon': Icons.monetization_on_rounded,
-    'emoji': '💰',
+    'svgPath': AppIcons.highStakes,
   },
 ];
 
-const List<Map<String, dynamic>> kCreateGameHandicapOptions = [
+final List<Map<String, dynamic>> kCreateGameHandicapOptions = [
   {
     'value': 'Gross',
     'label': 'Gross',
     'icon': Icons.sports_golf_rounded,
-    'emoji': '📊',
+    'svgPath': AppIcons.scoring,
   },
   {
     'value': 'Net',
     'label': 'Net',
     'icon': Icons.calculate_rounded,
-    'emoji': '🧮',
+    'svgPath': AppIcons.handicap,
   },
   {
     'value': 'Both',
     'label': 'Gross + Net',
     'icon': Icons.compare_arrows_rounded,
-    'emoji': '↔️',
+    'svgPath': AppIcons.handicap, // TODO: May need a combined icon
   },
 ];

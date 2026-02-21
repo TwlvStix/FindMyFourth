@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/models/game.dart';
 import '/utils/app_util.dart';
@@ -47,7 +49,9 @@ class QuickStatsRow extends StatelessWidget {
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.calendar_today_rounded, color: Colors.white, size: 18),
+                  child: const Center(
+                    child: AppIcon(assetPath: AppIcons.calendarCheck, color: Colors.white, size: 18),
+                  ),
                 ),
                 SizedBox(width: AppSpacing.sm),
                 Expanded(
@@ -123,10 +127,10 @@ class QuickStatsRow extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  isFull ? Icons.groups_rounded : Icons.person_add_rounded,
-                  color: Colors.white,
-                  size: 18,
+                child: Center(
+                  child: isFull
+                      ? const Icon(Icons.groups_rounded, color: Colors.white, size: 18)
+                      : const AppIcon(assetPath: AppIcons.addPlayer, color: Colors.white, size: 18),
                 ),
               ),
               SizedBox(width: AppSpacing.sm),

@@ -2,21 +2,24 @@ import 'package:flutter/material.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/widgets/app_icon.dart';
 
-/// Consistent section header with emoji icon and title
+/// Consistent section header with icon and title
 ///
 /// Used throughout forms to mark distinct sections.
 /// Supports optional help text with info icon that shows dialog on tap.
 class SectionHeader extends StatelessWidget {
   const SectionHeader({
     super.key,
-    required this.emoji,
+    this.emoji,
+    this.svgPath,
     required this.title,
     this.helpText,
     this.onHelpTap,
   });
 
-  final String emoji;
+  final String? emoji;
+  final String? svgPath;
   final String title;
   final String? helpText;
   final VoidCallback? onHelpTap;
@@ -40,10 +43,16 @@ class SectionHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Center(
-              child: Text(
-                emoji,
-                style: TextStyle(fontSize: 18),
-              ),
+              child: svgPath != null
+                  ? AppIcon(
+                      assetPath: svgPath!,
+                      size: 18,
+                      color: Colors.white,
+                    )
+                  : Text(
+                      emoji ?? '',
+                      style: TextStyle(fontSize: 18),
+                    ),
             ),
           ),
           SizedBox(width: AppSpacing.sm),
