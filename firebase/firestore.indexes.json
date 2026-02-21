@@ -343,6 +343,64 @@
         { "fieldPath": "gameId", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "participants",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "player_id", "order": "ASCENDING" },
+        { "fieldPath": "participation_status", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "participants",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "player_id", "order": "ASCENDING" },
+        { "fieldPath": "participation_status", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "rounds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "round_status", "order": "ASCENDING" },
+        { "fieldPath": "tee_time", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "round_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "exported_to_bq", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "player_rounds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "player_id", "order": "ASCENDING" },
+        { "fieldPath": "tee_time", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "player_rounds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "match_source", "order": "ASCENDING" },
+        { "fieldPath": "tee_time", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "player_rounds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "algorithm_version", "order": "ASCENDING" },
+        { "fieldPath": "tee_time", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [

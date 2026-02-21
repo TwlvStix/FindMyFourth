@@ -491,6 +491,25 @@ service cloud.firestore {
         );
     }
 
+    // ── Behavioral Dataset Helper Functions ──────────────────────────────────
+
+    // Is the requesting user this specific player?
+    function isPlayer(playerId) {
+      return isSignedIn() && request.auth.uid == playerId;
+    }
+
+    // Is the requesting user the host of this round?
+    function isRoundHost(roundId) {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/rounds/$(roundId)).data.host_player_id == request.auth.uid;
+    }
+
+    // Is the requesting user a participant in this round?
+    function isRoundParticipant(roundId) {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/rounds/$(roundId)/participants/$(request.auth.uid));
+    }
+
     match /users/{document} {
       allow update: if roleUnchanged() &&
         ((request.auth.uid == document &&
@@ -737,6 +756,55 @@ service cloud.firestore {
     // scheduledNotifications — Cloud Tasks job tracking, Admin SDK only.
     match /scheduledNotifications/{jobId} {
       allow read, write: if false;
+    }
+
+    // ── Behavioral Dataset Collections ───────────────────────────────────────
+
+    // rounds — Cloud Functions only for writes, authenticated users can read
+    match /rounds/{roundId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+
+      // participants — round participants can read each other
+      match /participants/{playerId} {
+        allow read: if isSignedIn() && isRoundParticipant(roundId);
+        allow write: if false;
+      }
+
+      // pairwiseMatches — participants can read match scores
+      match /pairwiseMatches/{pairId} {
+        allow read: if isSignedIn() && isRoundParticipant(roundId);
+        allow write: if false;
+      }
+
+      // feedback — players can read/create/update their own
+      match /feedback/{playerId} {
+        allow read: if isPlayer(playerId);
+        allow create: if isPlayer(playerId) && isRoundParticipant(roundId);
+        allow update: if isPlayer(playerId) &&
+          !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['actually_played_again_any', 'actually_played_again_same_players',
+                     'days_until_next_round', 'next_round_id', 'behavioral_label_computed_at']);
+      }
+    }
+
+    // player_rounds — players can read their own trajectory
+    match /player_rounds/{docId} {
+      allow read: if isSignedIn() &&
+        resource.data.player_id == request.auth.uid;
+      allow write: if false;
+    }
+
+    // round_events — backend only
+    match /round_events/{eventId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // algorithm_versions — readable by authenticated users
+    match /algorithm_versions/{versionId} {
+      allow read: if isSignedIn();
+      allow write: if false;
     }
   }
 }
