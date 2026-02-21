@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/utils/app_log.dart';
 import '/models/notification_preferences.dart';
 
 /// NotificationProvider manages notification preferences with offline support
@@ -104,7 +105,7 @@ class NotificationProvider extends ChangeNotifier {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error loading notification preferences: $e');
+        AppLog.d('❌ NotificationProvider._loadPreferences error: $e');
       }
     }
   }
@@ -158,7 +159,7 @@ class NotificationProvider extends ChangeNotifier {
       _syncStatus = SyncStatus.error;
       _errorMessage = e.toString();
       if (kDebugMode) {
-        print('Error saving notification preferences: $e');
+        AppLog.d('❌ NotificationProvider._saveToFirestore error: $e');
       }
     }
 
@@ -202,7 +203,7 @@ class NotificationProvider extends ChangeNotifier {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error checking backend errors: $e');
+        AppLog.d('❌ NotificationProvider.checkBackendErrors error: $e');
       }
     }
   }

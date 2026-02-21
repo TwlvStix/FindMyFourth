@@ -242,9 +242,9 @@ class ChatService {
       await batch.commit();
 
       return chatRef;
-    } catch (e, stackTrace) {
-      AppLog.d('❌ ChatService: ERROR in createOrGetDirectChat: $e');
-      AppLog.d('❌ ChatService: Stack trace: $stackTrace');
+    } on FirebaseException catch (e, stackTrace) {
+      AppLog.d('❌ ChatService.createOrGetDirectChat error: ${e.code} - ${e.message}');
+      AppLog.d('❌ ChatService.createOrGetDirectChat stackTrace: $stackTrace');
       rethrow;
     }
   }
@@ -463,9 +463,9 @@ class ChatService {
       // Delete the chat document itself
       await chatRef.delete();
       AppLog.d('✅ Client-side deleteChat succeeded for $chatId');
-    } catch (e, stackTrace) {
-      AppLog.d('❌ ChatService: Error deleting chat: $e');
-      AppLog.d('❌ ChatService: StackTrace: $stackTrace');
+    } on FirebaseException catch (e, stackTrace) {
+      AppLog.d('❌ ChatService.deleteChat error: ${e.code} - ${e.message}');
+      AppLog.d('❌ ChatService.deleteChat stackTrace: $stackTrace');
       rethrow;
     }
   }
@@ -682,9 +682,9 @@ class ChatService {
         'batchCount': batchCount,
         'updatedCount': updatedCount,
       };
-    } catch (e, stackTrace) {
-      AppLog.d('❌ ChatService: ERROR in markMessagesAsReadBatch: $e');
-      AppLog.d('❌ ChatService: Stack trace: $stackTrace');
+    } on FirebaseException catch (e, stackTrace) {
+      AppLog.d('❌ ChatService.markMessagesAsReadBatch error: ${e.code} - ${e.message}');
+      AppLog.d('❌ ChatService.markMessagesAsReadBatch stackTrace: $stackTrace');
       rethrow;
     }
   }

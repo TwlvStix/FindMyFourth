@@ -1531,8 +1531,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                     if (!mounted) {
                                       return;
                                     }
-                                    context.userProvider.refreshAvailableGames();
-                                    context.userProvider.refreshMyGames();
+                                    context.gameProvider.invalidateAvailableGamesCache();
+                                    context.gameProvider.invalidateUserGamesCache(context.userProvider.userId);
                                     context.goNamed(
                                       GameJoinedDetailedWidget.routeName,
                                       extra: <String, dynamic>{

@@ -536,8 +536,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           if (!mounted) {
             return;
           }
-          context.userProvider.refreshAvailableGames();
-          context.userProvider.refreshMyGames();
+          context.gameProvider.invalidateAvailableGamesCache();
+          context.gameProvider.invalidateUserGamesCache(context.userProvider.userId);
           debugPrint('CreateGame: refreshed game caches');
 
           final numExistingFriends = 4 - numPlayers - 1;

@@ -14,11 +14,14 @@ import '/core/exceptions/app_exceptions.dart';
 /// - No business logic (filtering, vibe matching) - that stays in providers
 ///
 /// Usage:
-/// - Call directly: GameService.getGameById(gameId)
-/// - Or wrap with GameProvider for caching and state management
+/// - Create instance: final service = GameService();
+/// - Or inject for testing: GameService(firestore: mockFirestore)
+/// - Wrap with GameProvider for caching and state management
 class GameService {
-  // Private constructor to prevent instantiation (static-only class)
-  GameService._();
+  GameService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  final FirebaseFirestore _firestore;
 
   /// Query available games to join (open, public games)
   ///
@@ -28,13 +31,13 @@ class GameService {
   /// - dateFilter: filter by games on or after this date
   ///
   /// Returns Stream<List<GamesRecord>> for reactive updates
-  static Stream<List<GamesRecord>> queryAvailableGames({
+  Stream<List<GamesRecord>> queryAvailableGames({
     String? courseFilter,
     String? styleFilter,
     DateTime? dateFilter,
   }) {
     try {
-      Query baseQuery = FirebaseFirestore.instance.collection('games');
+      Query baseQuery = _firestore.collection('games');
 
       if (courseFilter != null && courseFilter.isNotEmpty) {
         baseQuery = baseQuery.where('course', isEqualTo: courseFilter);
@@ -101,7 +104,7 @@ class GameService {
   ///
   /// Returns games where userId is in joined_players array
   /// Ordered by date descending (most recent first)
-  static Stream<List<GamesRecord>> queryUserGames(String userId) {
+  Stream<List<GamesRecord>> queryUserGames(String userId) {
     try {
       final normalizedUserId = userId.trim();
       if (normalizedUserId.isEmpty) {
@@ -109,12 +112,12 @@ class GameService {
         return Stream.value(<GamesRecord>[]);
       }
       final userRef =
-          FirebaseFirestore.instance.collection('users').doc(normalizedUserId);
+          _firestore.collection('users').doc(normalizedUserId);
       return FirebaseAuth.instance.authStateChanges().switchMap((user) {
         if (user == null || user.uid != normalizedUserId) {
           return Stream.value(<GamesRecord>[]);
         }
-        return FirebaseFirestore.instance
+        return _firestore
             .collection('games')
             .where('joined_players', arrayContains: userRef)
             .orderBy('date', descending: true)
@@ -132,9 +135,9 @@ class GameService {
   /// Get a single game by ID
   ///
   /// Returns null if game doesn't exist
-  static Future<GamesRecord?> getGameById(String gameId) async {
+  Future<GamesRecord?> getGameById(String gameId) async {
     try {
-      final doc = await FirebaseFirestore.instance
+      final doc = await _firestore
           .collection('games')
           .doc(gameId)
           .get();
@@ -148,9 +151,9 @@ class GameService {
   /// Stream a single game by ID for reactive updates
   ///
   /// Returns Stream<GamesRecord?> that emits null if game doesn't exist
-  static Stream<GamesRecord?> watchGameById(String gameId) {
+  Stream<GamesRecord?> watchGameById(String gameId) {
     try {
-      return FirebaseFirestore.instance
+      return _firestore
           .collection('games')
           .doc(gameId)
           .snapshots()
@@ -176,12 +179,12 @@ class GameService {
   /// Updates:
   /// - joined_players: adds userId DocumentReference
   /// - updated_at: server timestamp
-  static Future<void> joinGame(String gameId, String userId) async {
+  Future<void> joinGame(String gameId, String userId) async {
     try {
-      await FirebaseFirestore.instance.runTransaction((transaction) async {
+      await _firestore.runTransaction((transaction) async {
         // 1. Read game document
         final gameRef =
-            FirebaseFirestore.instance.collection('games').doc(gameId);
+            _firestore.collection('games').doc(gameId);
         final gameDoc = await transaction.get(gameRef);
 
         if (!gameDoc.exists) {
@@ -200,7 +203,7 @@ class GameService {
 
         // 3. Check not already joined
         final userRef =
-            FirebaseFirestore.instance.collection('users').doc(userId);
+            _firestore.collection('users').doc(userId);
         final rawJoinedPlayers =
             (gameDoc.data())?['joined_players'];
         final alreadyJoined = rawJoinedPlayers is List &&
@@ -236,12 +239,12 @@ class GameService {
   /// Updates:
   /// - joined_players: removes userId DocumentReference
   /// - updated_at: server timestamp
-  static Future<void> leaveGame(String gameId, String userId) async {
+  Future<void> leaveGame(String gameId, String userId) async {
     try {
       final userRef =
-          FirebaseFirestore.instance.collection('users').doc(userId);
+          _firestore.collection('users').doc(userId);
 
-      await FirebaseFirestore.instance.collection('games').doc(gameId).update({
+      await _firestore.collection('games').doc(gameId).update({
         'joined_players': FieldValue.arrayRemove([userRef, userId]),
       });
     } on FirebaseException catch (e) {
@@ -253,13 +256,13 @@ class GameService {
   /// Update game details (partial update)
   ///
   /// Automatically adds updated_at timestamp to updates
-  static Future<void> updateGameDetails(
+  Future<void> updateGameDetails(
       String gameId, Map<String, dynamic> updates) async {
     try {
       final updateData = Map<String, dynamic>.from(updates);
       updateData['updated_at'] = FieldValue.serverTimestamp();
 
-      await FirebaseFirestore.instance
+      await _firestore
           .collection('games')
           .doc(gameId)
           .update(updateData);
@@ -272,10 +275,10 @@ class GameService {
   /// Create a new game
   ///
   /// Returns DocumentReference to the created game
-  static Future<DocumentReference> createGame(
+  Future<DocumentReference> createGame(
       Map<String, dynamic> gameData) async {
     try {
-      final gameRef = FirebaseFirestore.instance.collection('games').doc();
+      final gameRef = _firestore.collection('games').doc();
 
       final createData = Map<String, dynamic>.from(gameData);
       createData['created_at'] = FieldValue.serverTimestamp();
@@ -299,9 +302,9 @@ class GameService {
   /// - isCancelled: true
   /// - status: 'cancelled'
   /// - updated_at: server timestamp
-  static Future<void> cancelGame(String gameId) async {
+  Future<void> cancelGame(String gameId) async {
     try {
-      await FirebaseFirestore.instance.collection('games').doc(gameId).update({
+      await _firestore.collection('games').doc(gameId).update({
         'isCancelled': true,
         'status': 'cancelled',
         'updated_at': FieldValue.serverTimestamp(),

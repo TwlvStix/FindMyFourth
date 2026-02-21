@@ -1318,7 +1318,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 duration: Duration(seconds: 2),
                               ),
                             );
-                            context.userProvider.refreshMyGames();
+                            context.gameProvider.invalidateUserGamesCache(context.userProvider.userId);
 
                             // Navigate to Games list tab
                             context.goNamed(GamesListWidget.routeName);

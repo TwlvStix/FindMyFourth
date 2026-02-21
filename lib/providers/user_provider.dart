@@ -5,7 +5,8 @@ import 'package:rxdart/rxdart.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/request_manager.dart';
-import '/models/game.dart';
+import '/core/utils/app_log.dart';
+import '/services/friend_service.dart';
 
 /// UserProvider manages global user state and provides cached access to user data
 ///
@@ -19,9 +20,12 @@ import '/models/game.dart';
 /// - Automatic cache invalidation
 /// - Convenient helper methods
 class UserProvider extends ChangeNotifier {
-  UserProvider() {
+  UserProvider({FriendService? friendService})
+      : _friendService = friendService ?? FriendService() {
     _init();
   }
+
+  final FriendService _friendService;
 
   // Current user data
   UsersRecord? _currentUser;
@@ -39,8 +43,6 @@ class UserProvider extends ChangeNotifier {
   Timer? _notifyDebounce;
 
   // Request managers for caching
-  final _myGamesManager = StreamRequestManager<List<Game>>(5);
-  final _availableGamesManager = StreamRequestManager<List<Game>>(5);
   final _friendsManager = StreamRequestManager<List<UsersRecord>>(5);
   final _friendRequestsManager = StreamRequestManager<List<UsersRecord>>(5);
   final _coursesManager = FutureRequestManager<List<CourseRecord>>(10);
@@ -97,7 +99,7 @@ class UserProvider extends ChangeNotifier {
         notifyListeners();
       },
       onError: (error) {
-        debugPrint('UserProvider error: $error');
+        AppLog.d('❌ UserProvider._init error: $error');
         _isLoading = false;
         notifyListeners();
       },
@@ -113,14 +115,14 @@ class UserProvider extends ChangeNotifier {
 
       // If friend_requests field doesn't exist, initialize it
       if (data != null && !data.containsKey('friend_requests')) {
-        debugPrint('Initializing friend_requests field for user ${user.uid}');
+        AppLog.d('📖 UserProvider: Initializing friend_requests field for user ${user.uid}');
         await userRef.update({
           'friend_requests': [],
         });
-        debugPrint('friend_requests field initialized');
+        AppLog.d('✅ UserProvider: friend_requests field initialized');
       }
     } catch (e) {
-      debugPrint('Error ensuring friend_requests field: $e');
+      AppLog.d('❌ UserProvider._ensureFriendRequestsFieldExists error: $e');
       // Don't rethrow - this is a non-critical operation
     }
   }
@@ -319,77 +321,6 @@ class UserProvider extends ChangeNotifier {
   }
 
   // ========================================
-  // GAMES QUERIES (CACHED)
-  // ========================================
-
-  /// Get games the current user has joined (cached)
-  Stream<List<Game>> getMyGames({
-    bool overrideCache = false,
-  }) {
-    final currentUser = _currentUser;
-    final userRef = currentUser?.reference ?? currentUserReference;
-    if (userRef == null) {
-      return Stream.value([]);
-    }
-    final resolvedUserId = currentUser?.reference.id ?? userRef.id;
-
-    return _myGamesManager.performRequest(
-      uniqueQueryKey: 'my_games_${resolvedUserId}',
-      overrideCache: overrideCache,
-      requestFn: () => queryGamesRecord(
-        queryBuilder: (gamesRecord) => gamesRecord
-            .where('joined_players', arrayContains: userRef)
-            .where('isCancelled', isEqualTo: false)
-            .orderBy('date'),
-      ).map((records) => records.map(Game.fromRecord).toList()),
-    );
-  }
-
-  /// Get available games to join (cached)
-  Stream<List<Game>> getAvailableGames({
-    bool overrideCache = false,
-    DateTime? fromDate,
-  }) {
-    if (!isLoggedIn) return Stream.value([]);
-
-    final queryKey = fromDate != null
-        ? 'available_games_${fromDate.toIso8601String()}'
-        : 'available_games';
-
-    return _availableGamesManager.performRequest(
-      uniqueQueryKey: queryKey,
-      overrideCache: overrideCache,
-      requestFn: () {
-        Query query = GamesRecord.collection.where(
-          'isCancelled',
-          isEqualTo: false,
-        );
-        if (fromDate != null) {
-          query = query.where('date', isGreaterThanOrEqualTo: fromDate);
-        }
-        return queryGamesRecord(
-          queryBuilder: (_) => query.orderBy('date'),
-        ).map((records) => records.map(Game.fromRecord).toList());
-      },
-    );
-  }
-
-  /// Refresh my games cache
-  void refreshMyGames() {
-    final currentUser = _currentUser;
-    final userRef = currentUser?.reference ?? currentUserReference;
-    final resolvedUserId = currentUser?.reference.id ?? userRef?.id ?? '';
-    _myGamesManager.clearRequest('my_games_${resolvedUserId}');
-    _scheduleNotify();
-  }
-
-  /// Refresh available games cache
-  void refreshAvailableGames() {
-    _availableGamesManager.clear();
-    _scheduleNotify();
-  }
-
-  // ========================================
   // FRIENDS QUERIES (CACHED)
   // ========================================
 
@@ -490,7 +421,7 @@ class UserProvider extends ChangeNotifier {
       await currentUserReference!.update(data);
       // User data will automatically update via authenticatedUserStream
     } catch (e) {
-      debugPrint('Error updating profile: $e');
+      AppLog.d('❌ UserProvider.updateProfile error: $e');
       rethrow;
     }
   }
@@ -512,69 +443,24 @@ class UserProvider extends ChangeNotifier {
 
       refreshFriends();
     } catch (e) {
-      debugPrint('Error adding friend: $e');
+      AppLog.d('❌ UserProvider.addFriend error: $e');
       rethrow;
     }
   }
 
   /// Remove a friend (bidirectional - removes both users from each other's friends list)
   Future<void> removeFriend(DocumentReference friendRef) async {
-    // Use Firebase Auth directly instead of UserProvider's internal state
     final firebaseUser = FirebaseAuth.instance.currentUser;
-
-    if (firebaseUser == null) {
-      return;
-    }
+    if (firebaseUser == null) return;
 
     try {
-      final currentUserRef = UsersRecord.collection.doc(firebaseUser.uid);
-      final friendPath = friendRef.path;
-
-      // Try bidirectional removal first
-      try {
-        final batch = FirebaseFirestore.instance.batch();
-
-        // Current user list: remove friend in all legacy formats
-        batch.update(currentUserRef, {
-          'friends': FieldValue.arrayRemove([
-            friendRef,
-            friendRef.id,
-            friendPath,
-            '/$friendPath',
-          ]),
-        });
-
-        // Friend list: ONLY remove formats that security rule can validate
-        // Security rule checks: userRef(auth.uid) and auth.uid
-        // So we can only remove: DocumentReference and UID string
-        batch.update(friendRef, {
-          'friends': FieldValue.arrayRemove([
-            currentUserRef,      // DocumentReference format
-            currentUserRef.id,   // UID string format
-          ]),
-        });
-
-        await batch.commit();
-      } catch (e) {
-        // If batch fails (likely due to permission error on friend's document),
-        // fallback to one-way removal (only from current user's list)
-        debugPrint('UserProvider: Bidirectional removal failed, using one-way fallback: $e');
-
-        await currentUserRef.update({
-          'friends': FieldValue.arrayRemove([
-            friendRef,
-            friendRef.id,
-            friendPath,
-            '/$friendPath',
-          ]),
-        });
-      }
-
-      // Clear cache to ensure fresh data on next query
+      await _friendService.removeFriend(
+        currentUserId: firebaseUser.uid,
+        friendRef: friendRef,
+      );
       refreshFriends();
-    } catch (e, stackTrace) {
-      debugPrint('Error removing friend: $e');
-      debugPrint('Stack trace: $stackTrace');
+    } catch (e) {
+      AppLog.d('❌ UserProvider.removeFriend error: $e');
       rethrow;
     }
   }
@@ -588,81 +474,22 @@ class UserProvider extends ChangeNotifier {
 
     // Check current user's lists for target
     final currentUserFriends = friends;
-    if (currentUserFriends.any((ref) => ref.id == targetUserRef.id)) {
-      return;
-    }
+    if (currentUserFriends.any((ref) => ref.id == targetUserRef.id)) return;
 
     final currentUserRequests = friendRequests;
-    if (currentUserRequests.any((ref) => ref.id == targetUserRef.id)) {
-      return;
-    }
+    if (currentUserRequests.any((ref) => ref.id == targetUserRef.id)) return;
 
     try {
-      // Force fresh read from server, not cache
-      final targetSnapshot = await targetUserRef.get();
-      debugPrint('Target user exists: ${targetSnapshot.exists}');
+      final sent = await _friendService.sendFriendRequest(
+        currentUserId: authUser.uid,
+        targetUserRef: targetUserRef,
+      );
 
-      if (!targetSnapshot.exists) {
-        debugPrint('Target user document does not exist');
-        return;
+      if (sent) {
+        _addPendingOutgoingRequest(targetUserRef.id);
       }
-
-      // Check raw Firestore data to see actual format
-      final rawData = targetSnapshot.data() as Map<String, dynamic>?;
-      final rawRequests = rawData?['friend_requests'];
-      debugPrint('Raw friend_requests from Firestore: $rawRequests');
-      debugPrint('Type: ${rawRequests.runtimeType}');
-
-      final targetUser = await UsersRecord.getDocumentOnce(targetUserRef);
-
-      // Check target user's lists for current user
-      final targetFriends = targetUser.friends;
-      if (targetFriends.any((ref) => ref.id == currentUserRef.id)) {
-        debugPrint('Friend request not sent: Already friends');
-        return;
-      }
-
-      final targetRequests = targetUser.friendRequests;
-      if (targetRequests.any((ref) => ref.id == currentUserRef.id)) {
-        debugPrint('Friend request not sent: Request already exists');
-        debugPrint('Existing requests: ${targetRequests.map((r) => r.id).toList()}');
-        debugPrint('Trying to add: ${currentUserRef.id}');
-        return;
-      }
-
-      debugPrint('=== FRIEND REQUEST DEBUG ===');
-      debugPrint('Authenticated user (sender): ${authUser.uid}');
-      debugPrint('Target user (receiver): ${targetUserRef.id}');
-      debugPrint('Existing friend_requests in target: $rawRequests');
-
-      // If friend_requests field doesn't exist, initialize it as empty array first
-      if (rawRequests == null) {
-        debugPrint('friend_requests field is null - initializing for target user');
-        // This will fail with permission-denied, but let's try anyway
-        try {
-          await targetUserRef.update({
-            'friend_requests': [],
-          });
-          debugPrint('Initialized friend_requests field');
-        } catch (e) {
-          debugPrint('Failed to initialize field (expected): $e');
-          // Expected to fail - security rules don't allow us to modify other user's document
-          // except for friend_requests changes that add ourselves
-        }
-      }
-
-      // Now try to add the friend request
-      debugPrint('Adding friend request using arrayUnion');
-      await targetUserRef.update({
-        'friend_requests': FieldValue.arrayUnion([currentUserRef.id]),
-      });
-      debugPrint('✓ Friend request sent successfully!');
-
-      // Track locally for immediate UI updates across all screens
-      _addPendingOutgoingRequest(targetUserRef.id);
     } catch (e) {
-      debugPrint('Error sending friend request: $e');
-      debugPrint('CurrentUser: ${currentUserRef.id}, TargetUser: ${targetUserRef.id}');
+      AppLog.d('❌ UserProvider.sendFriendRequest error: $e');
       rethrow;
     }
   }
@@ -671,38 +498,22 @@ class UserProvider extends ChangeNotifier {
   Future<void> acceptFriendRequest(DocumentReference requesterRef) async {
     final authUser = FirebaseAuth.instance.currentUser;
     if (authUser == null) return;
-    final currentUserRef = UsersRecord.collection.doc(authUser.uid);
 
-    // Remove from friend_requests list (non-fatal if fails)
     try {
-      await currentUserRef.update({
-        'friend_requests': FieldValue.arrayRemove(
-          [requesterRef, requesterRef.id],
-        ),
-      });
+      await _friendService.acceptFriendRequest(
+        currentUserId: authUser.uid,
+        requesterRef: requesterRef,
+      );
     } catch (e) {
-      debugPrint('Failed to remove from friend_requests: $e');
-    }
-
-    // Add to friends lists (current user and requester)
-    try {
-      await currentUserRef.update({
-        'friends': FieldValue.arrayUnion([requesterRef]),
-      });
-      await requesterRef.update({
-        'friends': FieldValue.arrayUnion([currentUserRef]),
-      });
-    } catch (e) {
-      debugPrint('Error accepting friend request: $e');
+      AppLog.d('❌ UserProvider.acceptFriendRequest error: $e');
       rethrow;
     }
 
-    // Refresh UI state
     try {
       refreshFriends();
       refreshFriendRequests();
     } catch (e) {
-      debugPrint('Error refreshing friends: $e');
+      AppLog.d('❌ UserProvider.acceptFriendRequest refresh error: $e');
     }
   }
 
@@ -711,14 +522,14 @@ class UserProvider extends ChangeNotifier {
     try {
       final authUser = FirebaseAuth.instance.currentUser;
       if (authUser == null) return;
-      final currentUserRef = UsersRecord.collection.doc(authUser.uid);
-      await currentUserRef.update({
-        'friend_requests':
-            FieldValue.arrayRemove([requesterRef, requesterRef.id]),
-      });
+
+      await _friendService.rejectFriendRequest(
+        currentUserId: authUser.uid,
+        requesterRef: requesterRef,
+      );
       refreshFriendRequests();
     } catch (e) {
-      debugPrint('Error rejecting friend request: $e');
+      AppLog.d('❌ UserProvider.rejectFriendRequest error: $e');
       rethrow;
     }
   }
@@ -728,16 +539,14 @@ class UserProvider extends ChangeNotifier {
     try {
       final authUser = FirebaseAuth.instance.currentUser;
       if (authUser == null) return;
-      final currentUserRef = UsersRecord.collection.doc(authUser.uid);
-      await targetUserRef.update({
-        'friend_requests':
-            FieldValue.arrayRemove([currentUserRef, currentUserRef.id]),
-      });
 
-      // Clear local pending state
+      await _friendService.cancelFriendRequest(
+        currentUserId: authUser.uid,
+        targetUserRef: targetUserRef,
+      );
       clearPendingOutgoingRequest(targetUserRef.id);
     } catch (e) {
-      debugPrint('Error cancelling friend request: $e');
+      AppLog.d('❌ UserProvider.cancelFriendRequest error: $e');
       rethrow;
     }
   }
@@ -748,8 +557,6 @@ class UserProvider extends ChangeNotifier {
 
   /// Clear all caches
   void clearAllCaches() {
-    _myGamesManager.clear();
-    _availableGamesManager.clear();
     _friendsManager.clear();
     _friendRequestsManager.clear();
     _coursesManager.clear();
@@ -768,12 +575,6 @@ class UserProvider extends ChangeNotifier {
       manager.clear();
     }
     _userQueryManagers.clear();
-  }
-
-  /// Clear game-related caches
-  void clearGameCaches() {
-    _myGamesManager.clear();
-    _availableGamesManager.clear();
   }
 
   /// Clear social-related caches

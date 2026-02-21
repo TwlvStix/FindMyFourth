@@ -49,3 +49,4 @@ keys/*.json
 .env
 node_modules/
 firebase/functions/service-account.json
+firebase/functions/node_modules/

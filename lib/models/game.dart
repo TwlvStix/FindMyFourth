@@ -59,46 +59,70 @@ class Game {
   final String? flexibleTimeOfDay;
   final String? flexibleWeek;
 
+  static String resolveGameStatus({
+    required String rawStatus,
+    required bool isCancelled,
+    required String scheduleType,
+    required DateTime? date,
+    required DateTime? createdTime,
+    required String? flexibleWeek,
+  }) {
+    if (rawStatus != 'active') {
+      return rawStatus;
+    }
+
+    if (isCancelled) {
+      return 'cancelled';
+    }
+
+    if (scheduleType == 'flexible') {
+      // Flexible game expiration logic
+      if (flexibleWeek == 'this_week') {
+        final endOfWeek = _getEndOfWeek(DateTime.now());
+        if (DateTime.now().isAfter(endOfWeek)) {
+          return 'expired';
+        }
+      } else if (flexibleWeek == 'next_week') {
+        final endOfNextWeek =
+            _getEndOfWeek(DateTime.now().add(Duration(days: 7)));
+        if (DateTime.now().isAfter(endOfNextWeek)) {
+          return 'expired';
+        }
+      } else if (flexibleWeek == 'flexible' && createdTime != null) {
+        // Expire after 30 days
+        final expireDate = createdTime.add(Duration(days: 30));
+        if (DateTime.now().isAfter(expireDate)) {
+          return 'expired';
+        }
+      }
+    } else if (date != null && date.isBefore(DateTime.now())) {
+      // Confirmed game expiration logic
+      return 'expired';
+    }
+
+    return rawStatus;
+  }
+
   static Game fromDoc(DocumentSnapshot doc) {
     final data = (doc.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
 
-    // For backward compatibility, derive status from isCancelled if status field doesn't exist
+    // Parse raw fields
     final scheduleType = (data['schedule_type'] as String?) ?? 'confirmed';
-    String gameStatus = (data['status'] as String?) ?? 'active';
-    if (gameStatus == 'active') {
-      // Check if game should be marked as expired based on date
-      final gameDate = (data['date'] as Timestamp?)?.toDate();
-      final isCancelled = (data['isCancelled'] as bool?) ?? false;
+    final rawStatus = (data['status'] as String?) ?? 'active';
+    final isCancelled = (data['isCancelled'] as bool?) ?? false;
+    final gameDate = (data['date'] as Timestamp?)?.toDate();
+    final createdTime = (data['created_time'] as Timestamp?)?.toDate();
+    final flexibleWeek = data['flexible_week'] as String?;
 
-      if (isCancelled) {
-        gameStatus = 'cancelled';
-      } else if (scheduleType == 'flexible') {
-        // Flexible game expiration logic
-        final flexibleWeek = data['flexible_week'] as String?;
-        final createdTime = (data['created_time'] as Timestamp?)?.toDate();
-
-        if (flexibleWeek == 'this_week') {
-          final endOfWeek = _getEndOfWeek(DateTime.now());
-          if (DateTime.now().isAfter(endOfWeek)) {
-            gameStatus = 'expired';
-          }
-        } else if (flexibleWeek == 'next_week') {
-          final endOfNextWeek = _getEndOfWeek(DateTime.now().add(Duration(days: 7)));
-          if (DateTime.now().isAfter(endOfNextWeek)) {
-            gameStatus = 'expired';
-          }
-        } else if (flexibleWeek == 'flexible' && createdTime != null) {
-          // Expire after 30 days
-          final expireDate = createdTime.add(Duration(days: 30));
-          if (DateTime.now().isAfter(expireDate)) {
-            gameStatus = 'expired';
-          }
-        }
-      } else if (gameDate != null && gameDate.isBefore(DateTime.now())) {
-        // Confirmed game expiration logic
-        gameStatus = 'expired';
-      }
-    }
+    // Resolve status using shared logic
+    final gameStatus = resolveGameStatus(
+      rawStatus: rawStatus,
+      isCancelled: isCancelled,
+      scheduleType: scheduleType,
+      date: gameDate,
+      createdTime: createdTime,
+      flexibleWeek: flexibleWeek,
+    );
 
     return Game(
       reference: doc.reference,
@@ -139,36 +163,17 @@ class Game {
   }
 
   static Game fromRecord(GamesRecord record) {
-    String gameStatus = record.snapshotData['status'] as String? ?? 'active';
-    if (gameStatus == 'active') {
-      final gameDate = record.date;
-      final isCancelled = record.isCancelled;
+    final rawStatus = record.snapshotData['status'] as String? ?? 'active';
 
-      if (isCancelled) {
-        gameStatus = 'cancelled';
-      } else if (record.scheduleType == 'flexible') {
-        // Flexible game expiration logic
-        if (record.flexibleWeek == 'this_week') {
-          final endOfWeek = _getEndOfWeek(DateTime.now());
-          if (DateTime.now().isAfter(endOfWeek)) {
-            gameStatus = 'expired';
-          }
-        } else if (record.flexibleWeek == 'next_week') {
-          final endOfNextWeek = _getEndOfWeek(DateTime.now().add(Duration(days: 7)));
-          if (DateTime.now().isAfter(endOfNextWeek)) {
-            gameStatus = 'expired';
-          }
-        } else if (record.flexibleWeek == 'flexible' && record.createdTime != null) {
-          // Expire after 30 days
-          final expireDate = record.createdTime!.add(Duration(days: 30));
-          if (DateTime.now().isAfter(expireDate)) {
-            gameStatus = 'expired';
-          }
-        }
-      } else if (gameDate != null && gameDate.isBefore(DateTime.now())) {
-        gameStatus = 'expired';
-      }
-    }
+    // Resolve status using shared logic
+    final gameStatus = resolveGameStatus(
+      rawStatus: rawStatus,
+      isCancelled: record.isCancelled,
+      scheduleType: record.scheduleType,
+      date: record.date,
+      createdTime: record.createdTime,
+      flexibleWeek: record.flexibleWeek,
+    );
 
     return Game(
       reference: record.reference,

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 
 import '/backend/backend.dart';
 import '/core/request_manager.dart';
+import '/core/utils/app_log.dart';
 import '/models/chat.dart';
 import '/models/chat_message.dart';
 import '/providers/profile_provider.dart';
@@ -180,20 +181,18 @@ class ChatProvider extends ChangeNotifier {
     required String currentUid,
     required String otherUid,
   }) async {
-    debugPrint('📱 ChatProvider: createOrGetDirectChat called');
-    debugPrint('📱 ChatProvider: currentUid=$currentUid, otherUid=$otherUid');
+    AppLog.d('📱 ChatProvider: createOrGetDirectChat called');
+    AppLog.d('📱 ChatProvider: currentUid=$currentUid, otherUid=$otherUid');
 
     try {
       final result = await _service.createOrGetDirectChat(
         currentUid: currentUid,
         otherUid: otherUid,
       );
-      debugPrint('📱 ChatProvider: Success! Chat ID: ${result.id}');
+      AppLog.d('✅ ChatProvider: createOrGetDirectChat success, chatId=${result.id}');
       return result;
-    } catch (e, stackTrace) {
-      debugPrint('📱 ChatProvider: ERROR in createOrGetDirectChat');
-      debugPrint('📱 ChatProvider: Error: $e');
-      debugPrint('📱 ChatProvider: StackTrace: $stackTrace');
+    } catch (e) {
+      AppLog.d('❌ ChatProvider.createOrGetDirectChat error: $e');
       rethrow;
     }
   }
@@ -278,8 +277,8 @@ class ChatProvider extends ChangeNotifier {
     required String chatId,
     required String uid,
   }) async {
-    debugPrint('📱 ChatProvider: deleteChat called');
-    debugPrint('📱 ChatProvider: chatId=$chatId, uid=$uid');
+    AppLog.d('📱 ChatProvider: deleteChat called');
+    AppLog.d('📱 ChatProvider: chatId=$chatId, uid=$uid');
 
     try {
       await _service.deleteChat(chatId: chatId, uid: uid);
@@ -290,11 +289,10 @@ class ChatProvider extends ChangeNotifier {
       _messagesCacheTimestamps.remove(chatId);
       _messageStreamManagers[chatId]?.clear();
       _messageStreamManagers.remove(chatId);
-      debugPrint('📱 ChatProvider: Delete successful');
+      AppLog.d('✅ ChatProvider: deleteChat successful');
       _scheduleNotify();
-    } catch (e, stackTrace) {
-      debugPrint('📱 ChatProvider: Error deleting chat: $e');
-      debugPrint('📱 ChatProvider: StackTrace: $stackTrace');
+    } catch (e) {
+      AppLog.d('❌ ChatProvider.deleteChat error: $e');
       rethrow;
     }
   }
@@ -495,7 +493,7 @@ class ChatProvider extends ChangeNotifier {
     DateTime? visibleAfter,
   }) {
     if (kDebugMode) {
-      debugPrint('🔵 ChatProvider: Creating VM stream for chatId=$chatId (should happen once per screen)');
+      AppLog.d('🔵 ChatProvider: Creating VM stream for chatId=$chatId (should happen once per screen)');
     }
 
     return messagesSnapshotStream(chatId: chatId, limit: limit, visibleAfter: visibleAfter)
@@ -516,7 +514,7 @@ class ChatProvider extends ChangeNotifier {
           .toList();
 
       if (kDebugMode) {
-        debugPrint('🔵 ChatProvider: VM stream emit - ${messages.length} messages, ${senderIds.length} unique senders');
+        AppLog.d('🔵 ChatProvider: VM stream emit - ${messages.length} messages, ${senderIds.length} unique senders');
       }
 
       // Fetch profiles using ProfileProvider's memoized cache
@@ -532,12 +530,12 @@ class ChatProvider extends ChangeNotifier {
                 .where((id) => !profileProvider.isProfileCacheValid(id))
                 .toList();
             if (newSenderIds.isNotEmpty) {
-              debugPrint('🆕 ChatProvider: Profile fetch triggered for new senderIds: $newSenderIds');
+              AppLog.d('🆕 ChatProvider: Profile fetch triggered for new senderIds: $newSenderIds');
             }
           }
         } catch (e) {
           if (kDebugMode) {
-            debugPrint('❌ ChatProvider: Failed to fetch profiles: $e');
+            AppLog.d('❌ ChatProvider: Failed to fetch profiles: $e');
           }
           // Continue with empty profile map on error
         }
@@ -571,7 +569,7 @@ class ChatProvider extends ChangeNotifier {
     int limit = 50,
   }) {
     if (kDebugMode) {
-      debugPrint('💬 ChatProvider: Creating chat rows VM stream for userId=$currentUserId (should happen once per screen)');
+      AppLog.d('💬 ChatProvider: Creating chat rows VM stream for userId=$currentUserId (should happen once per screen)');
     }
 
     return chatListStream(uid: currentUserId, limit: limit)
@@ -594,7 +592,7 @@ class ChatProvider extends ChangeNotifier {
       }
 
       if (kDebugMode) {
-        debugPrint('💬 ChatProvider: Chat rows VM emit - ${chats.length} chats, ${directUserIds.length} direct chat profiles needed');
+        AppLog.d('💬 ChatProvider: Chat rows VM emit - ${chats.length} chats, ${directUserIds.length} direct chat profiles needed');
       }
 
       // Fetch profiles using ProfileProvider's memoized cache
@@ -610,12 +608,12 @@ class ChatProvider extends ChangeNotifier {
                 .where((id) => !profileProvider.isProfileCacheValid(id))
                 .toList();
             if (newUserIds.isNotEmpty) {
-              debugPrint('🆕 ChatProvider: Profile fetch triggered for new userIds: $newUserIds');
+              AppLog.d('🆕 ChatProvider: Profile fetch triggered for new userIds: $newUserIds');
             }
           }
         } catch (e) {
           if (kDebugMode) {
-            debugPrint('❌ ChatProvider: Failed to fetch profiles: $e');
+            AppLog.d('❌ ChatProvider: Failed to fetch profiles: $e');
           }
           // Continue with empty profile map on error
         }

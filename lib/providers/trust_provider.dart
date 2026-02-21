@@ -6,6 +6,7 @@ import '/backend/api_requests/trust_repository.dart';
 import '/backend/schema/player_standing.dart';
 import '/backend/schema/trust_profile.dart';
 import '/core/request_manager.dart';
+import '/core/utils/app_log.dart';
 
 /// TrustProvider manages trust system state with 5-minute TTL caching.
 ///
@@ -87,7 +88,7 @@ class TrustProvider extends ChangeNotifier {
       }
       return profile;
     } catch (e) {
-      debugPrint('TrustProvider.fetchTrustProfile error for $userId: $e');
+      AppLog.d('❌ TrustProvider.fetchTrustProfile error for $userId: $e');
       return null;
     }
   }
@@ -106,7 +107,7 @@ class TrustProvider extends ChangeNotifier {
       _myStandingTimestamp = DateTime.now();
       return standing;
     } catch (e) {
-      debugPrint('TrustProvider.fetchPlayerStanding error: $e');
+      AppLog.d('❌ TrustProvider.fetchPlayerStanding error: $e');
       return null;
     } finally {
       _standingLoading = false;

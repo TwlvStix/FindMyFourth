@@ -197,7 +197,7 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                                       uid: currentUser.uid,
                                     );
                               }
-                              context.userProvider.refreshMyGames();
+                              context.gameProvider.invalidateUserGamesCache(context.userProvider.userId);
 
                               context.pushNamed(
                                 SuccessPageWidget.routeName,

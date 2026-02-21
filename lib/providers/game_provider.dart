@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '/backend/api_requests/game_service.dart';
 import '/backend/backend.dart';
 import '/core/request_manager.dart';
+import '/core/utils/app_log.dart';
 import '/services/chat_service.dart';
 
 /// GameProvider manages global game state and provides cached access to game data
@@ -18,7 +19,9 @@ import '/services/chat_service.dart';
 /// - Access via Provider.of<GameProvider>(context)
 /// - Or use Consumer<GameProvider> for reactive updates
 class GameProvider extends ChangeNotifier {
-  GameProvider();
+  GameProvider({GameService? service}) : _service = service ?? GameService();
+
+  final GameService _service;
 
   // ========================================
   // STATE FIELDS
@@ -84,7 +87,7 @@ class GameProvider extends ChangeNotifier {
     }
 
     try {
-      final game = await GameService.getGameById(gameId);
+      final game = await _service.getGameById(gameId);
       if (game != null) {
         _gameCache[gameId] = game;
         _gameCacheTimestamps[gameId] = DateTime.now();
@@ -92,7 +95,7 @@ class GameProvider extends ChangeNotifier {
       }
       return game;
     } catch (e) {
-      debugPrint('GameProvider.getGame error: $e');
+      AppLog.d('❌ GameProvider.getGame error: $e');
       rethrow;
     }
   }
@@ -102,7 +105,7 @@ class GameProvider extends ChangeNotifier {
   /// Caches game data as it streams through
   Stream<GamesRecord?> watchGame(String gameId) {
     try {
-      return GameService.watchGameById(gameId).map((game) {
+      return _service.watchGameById(gameId).map((game) {
         if (game != null) {
           // Cache the game when it comes through the stream
           _gameCache[gameId] = game;
@@ -112,7 +115,7 @@ class GameProvider extends ChangeNotifier {
         return game;
       });
     } catch (e) {
-      debugPrint('GameProvider.watchGame error: $e');
+      AppLog.d('❌ GameProvider.watchGame error: $e');
       rethrow;
     }
   }
@@ -142,7 +145,7 @@ class GameProvider extends ChangeNotifier {
     return _gameStreamManagers[queryKey]!.performRequest(
       uniqueQueryKey: queryKey,
       overrideCache: overrideCache,
-      requestFn: () => GameService.queryAvailableGames(
+      requestFn: () => _service.queryAvailableGames(
         courseFilter: courseFilter,
         styleFilter: styleFilter,
         dateFilter: dateFilter,
@@ -176,7 +179,7 @@ class GameProvider extends ChangeNotifier {
     return _gameStreamManagers[queryKey]!.performRequest(
       uniqueQueryKey: queryKey,
       overrideCache: overrideCache,
-      requestFn: () => GameService.queryUserGames(normalizedUserId),
+      requestFn: () => _service.queryUserGames(normalizedUserId),
     ).map((games) {
       // Cache query results when they come through the stream
       _queryResultCache[queryKey] = games;
@@ -229,7 +232,7 @@ class GameProvider extends ChangeNotifier {
   /// Invalidates game cache and refreshes data
   Future<void> joinGame(String gameId, String userId) async {
     try {
-      await GameService.joinGame(gameId, userId);
+      await _service.joinGame(gameId, userId);
       await _ensureChatMembership(gameId, userId);
       // Invalidate game cache to force refresh
       invalidateGameCache(gameId);
@@ -238,7 +241,7 @@ class GameProvider extends ChangeNotifier {
       // Refresh the game data
       await getGame(gameId);
     } catch (e) {
-      debugPrint('GameProvider.joinGame error: $e');
+      AppLog.d('❌ GameProvider.joinGame error: $e');
       rethrow;
     }
   }
@@ -248,7 +251,7 @@ class GameProvider extends ChangeNotifier {
   /// Invalidates game cache and refreshes data
   Future<void> leaveGame(String gameId, String userId) async {
     try {
-      await GameService.leaveGame(gameId, userId);
+      await _service.leaveGame(gameId, userId);
       // Invalidate game cache to force refresh
       invalidateGameCache(gameId);
       // Invalidate user games cache to refresh joined games list
@@ -256,7 +259,7 @@ class GameProvider extends ChangeNotifier {
       // Refresh the game data
       await getGame(gameId);
     } catch (e) {
-      debugPrint('GameProvider.leaveGame error: $e');
+      AppLog.d('❌ GameProvider.leaveGame error: $e');
       rethrow;
     }
   }
@@ -266,13 +269,13 @@ class GameProvider extends ChangeNotifier {
   /// Invalidates game cache and refreshes data
   Future<void> updateGame(String gameId, Map<String, dynamic> updates) async {
     try {
-      await GameService.updateGameDetails(gameId, updates);
+      await _service.updateGameDetails(gameId, updates);
       // Invalidate game cache to force refresh
       invalidateGameCache(gameId);
       // Refresh the game data
       await getGame(gameId);
     } catch (e) {
-      debugPrint('GameProvider.updateGame error: $e');
+      AppLog.d('❌ GameProvider.updateGame error: $e');
       rethrow;
     }
   }
@@ -282,9 +285,9 @@ class GameProvider extends ChangeNotifier {
   /// Returns the created game's DocumentReference
   Future<GamesRecord?> createGame(Map<String, dynamic> gameData) async {
     try {
-      final gameRef = await GameService.createGame(gameData);
+      final gameRef = await _service.createGame(gameData);
       // Fetch and cache the newly created game
-      final game = await GameService.getGameById(gameRef.id);
+      final game = await _service.getGameById(gameRef.id);
       if (game != null) {
         _gameCache[gameRef.id] = game;
         _gameCacheTimestamps[gameRef.id] = DateTime.now();
@@ -292,7 +295,7 @@ class GameProvider extends ChangeNotifier {
       }
       return game;
     } catch (e) {
-      debugPrint('GameProvider.createGame error: $e');
+      AppLog.d('❌ GameProvider.createGame error: $e');
       rethrow;
     }
   }
@@ -324,7 +327,7 @@ class GameProvider extends ChangeNotifier {
         await Future.delayed(const Duration(milliseconds: 250));
       }
     } catch (error) {
-      debugPrint('GameProvider: chat membership sync failed: $error');
+      AppLog.d('❌ GameProvider: chat membership sync failed: $error');
     }
   }
 
@@ -333,13 +336,13 @@ class GameProvider extends ChangeNotifier {
   /// Invalidates game cache and refreshes data
   Future<void> cancelGame(String gameId) async {
     try {
-      await GameService.cancelGame(gameId);
+      await _service.cancelGame(gameId);
       // Invalidate game cache to force refresh
       invalidateGameCache(gameId);
       // Refresh the game data
       await getGame(gameId);
     } catch (e) {
-      debugPrint('GameProvider.cancelGame error: $e');
+      AppLog.d('❌ GameProvider.cancelGame error: $e');
       rethrow;
     }
   }

@@ -10,18 +10,21 @@ import '/core/utils/app_log.dart';
 /// - No business logic (vibe matching, filtering) - that stays in providers
 ///
 /// Usage:
-/// - Call directly: ProfileService.getUserProfile(userId)
-/// - Or wrap with ProfileProvider for caching and state management
+/// - Create instance: final service = ProfileService();
+/// - Or inject for testing: ProfileService(firestore: mockFirestore)
+/// - Wrap with ProfileProvider for caching and state management
 class ProfileService {
-  // Private constructor to prevent instantiation (static-only class)
-  ProfileService._();
+  ProfileService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  final FirebaseFirestore _firestore;
 
   /// Get a user profile by ID (one-time fetch)
   ///
   /// Returns null if user doesn't exist
-  static Future<UsersRecord?> getUserProfile(String userId) async {
+  Future<UsersRecord?> getUserProfile(String userId) async {
     try {
-      final doc = await FirebaseFirestore.instance
+      final doc = await _firestore
           .collection('users')
           .doc(userId)
           .get();
@@ -35,9 +38,9 @@ class ProfileService {
   /// Watch a user profile by ID for reactive updates
   ///
   /// Returns Stream<UsersRecord?> that emits null if user doesn't exist
-  static Stream<UsersRecord?> watchUserProfile(String userId) {
+  Stream<UsersRecord?> watchUserProfile(String userId) {
     try {
-      return FirebaseFirestore.instance
+      return _firestore
           .collection('users')
           .doc(userId)
           .snapshots()
@@ -52,13 +55,13 @@ class ProfileService {
   /// Update user profile (partial update)
   ///
   /// Automatically adds updated_at timestamp to updates
-  static Future<void> updateProfile(
+  Future<void> updateProfile(
       String userId, Map<String, dynamic> updates) async {
     try {
       final updateData = Map<String, dynamic>.from(updates);
       updateData['updated_at'] = FieldValue.serverTimestamp();
 
-      await FirebaseFirestore.instance
+      await _firestore
           .collection('users')
           .doc(userId)
           .update(updateData);
@@ -72,7 +75,7 @@ class ProfileService {
   ///
   /// Updates nested fields in vibe_profile map
   /// Example: {'vibe_profile.music': 5, 'vibe_profile.drinks': 3}
-  static Future<void> updateVibeProfile(
+  Future<void> updateVibeProfile(
       String userId, Map<String, dynamic> vibeData) async {
     try {
       // Prefix all keys with 'vibe_profile.' for nested update
@@ -82,7 +85,7 @@ class ProfileService {
       });
       updateData['updated_at'] = FieldValue.serverTimestamp();
 
-      await FirebaseFirestore.instance
+      await _firestore
           .collection('users')
           .doc(userId)
           .update(updateData);
@@ -96,10 +99,10 @@ class ProfileService {
   /// Get user statistics (games played, friends count, etc.)
   ///
   /// Returns aggregated stats from user document and related collections
-  static Future<Map<String, dynamic>> getUserStats(String userId) async {
+  Future<Map<String, dynamic>> getUserStats(String userId) async {
     try {
       // Get user document
-      final userDoc = await FirebaseFirestore.instance
+      final userDoc = await _firestore
           .collection('users')
           .doc(userId)
           .get();
@@ -123,8 +126,8 @@ class ProfileService {
 
       // Count games played (query games where user is in joined_players)
       final userRef =
-          FirebaseFirestore.instance.collection('users').doc(userId);
-      final gamesSnapshot = await FirebaseFirestore.instance
+          _firestore.collection('users').doc(userId);
+      final gamesSnapshot = await _firestore
           .collection('games')
           .where('joined_players', arrayContains: userRef)
           .where('isCancelled', isEqualTo: false)
@@ -147,7 +150,7 @@ class ProfileService {
   ///
   /// Returns Stream<List<UsersRecord>> matching the search query
   /// Note: Firestore text search is limited - this uses >= and <= for prefix matching
-  static Stream<List<UsersRecord>> searchUsersByName(String searchQuery) {
+  Stream<List<UsersRecord>> searchUsersByName(String searchQuery) {
     try {
       if (searchQuery.isEmpty) {
         return Stream.value([]);
@@ -159,7 +162,7 @@ class ProfileService {
           String.fromCharCode(
               searchLower.codeUnitAt(searchLower.length - 1) + 1);
 
-      return FirebaseFirestore.instance
+      return _firestore
           .collection('users')
           .where('display_name_lowercase', isGreaterThanOrEqualTo: searchLower)
           .where('display_name_lowercase', isLessThan: searchEnd)
@@ -179,7 +182,7 @@ class ProfileService {
   ///
   /// Returns Map<String, UsersRecord> where key is userId
   /// Efficiently fetches multiple users in a single read batch
-  static Future<Map<String, UsersRecord>> batchGetUserProfiles(
+  Future<Map<String, UsersRecord>> batchGetUserProfiles(
       List<String> userIds) async {
     try {
       if (userIds.isEmpty) {
@@ -193,7 +196,7 @@ class ProfileService {
         final end = (i + 10) > userIds.length ? userIds.length : i + 10;
         final batchIds = userIds.sublist(i, end);
 
-        final snapshot = await FirebaseFirestore.instance
+        final snapshot = await _firestore
             .collection('users')
             .where(FieldPath.documentId, whereIn: batchIds)
             .get();

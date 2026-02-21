@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '/backend/api_requests/profile_service.dart';
 import '/backend/backend.dart';
 import '/core/request_manager.dart';
+import '/core/utils/app_log.dart';
 
 /// ProfileProvider manages user profile state and provides cached access to profile data
 ///
@@ -17,7 +18,10 @@ import '/core/request_manager.dart';
 /// - Access via Provider.of<ProfileProvider>(context)
 /// - Or use Consumer<ProfileProvider> for reactive updates
 class ProfileProvider extends ChangeNotifier {
-  ProfileProvider();
+  ProfileProvider({ProfileService? service})
+      : _service = service ?? ProfileService();
+
+  final ProfileService _service;
 
   // ========================================
   // STATE FIELDS
@@ -86,7 +90,7 @@ class ProfileProvider extends ChangeNotifier {
     }
 
     try {
-      final profile = await ProfileService.getUserProfile(userId);
+      final profile = await _service.getUserProfile(userId);
       if (profile != null) {
         _profileCache[userId] = profile;
         _profileCacheTimestamps[userId] = DateTime.now();
@@ -94,7 +98,7 @@ class ProfileProvider extends ChangeNotifier {
       }
       return profile;
     } catch (e) {
-      debugPrint('ProfileProvider.getProfile error: $e');
+      AppLog.d('❌ ProfileProvider.getProfile error: $e');
       rethrow;
     }
   }
@@ -113,7 +117,7 @@ class ProfileProvider extends ChangeNotifier {
 
     return _profileStreamManagers[queryKey]!.performRequest(
       uniqueQueryKey: queryKey,
-      requestFn: () => ProfileService.watchUserProfile(userId).map((profile) {
+      requestFn: () => _service.watchUserProfile(userId).map((profile) {
         if (profile != null) {
           // Cache the profile when it comes through the stream
           _profileCache[userId] = profile;
@@ -135,13 +139,13 @@ class ProfileProvider extends ChangeNotifier {
     }
 
     try {
-      final stats = await ProfileService.getUserStats(userId);
+      final stats = await _service.getUserStats(userId);
       _statsCache[userId] = stats;
       _statsCacheTimestamps[userId] = DateTime.now();
       _scheduleNotify();
       return stats;
     } catch (e) {
-      debugPrint('ProfileProvider.getStats error: $e');
+      AppLog.d('❌ ProfileProvider.getStats error: $e');
       rethrow;
     }
   }
@@ -162,7 +166,7 @@ class ProfileProvider extends ChangeNotifier {
     return _searchStreamManagers[queryKey]!.performRequest(
       uniqueQueryKey: queryKey,
       overrideCache: overrideCache,
-      requestFn: () => ProfileService.searchUsersByName(searchQuery),
+      requestFn: () => _service.searchUsersByName(searchQuery),
     );
   }
 
@@ -192,7 +196,7 @@ class ProfileProvider extends ChangeNotifier {
     // Fetch missing profiles in batch
     if (missingIds.isNotEmpty) {
       try {
-        final fetched = await ProfileService.batchGetUserProfiles(missingIds);
+        final fetched = await _service.batchGetUserProfiles(missingIds);
         // Cache fetched profiles
         fetched.forEach((userId, profile) {
           _profileCache[userId] = profile;
@@ -201,7 +205,7 @@ class ProfileProvider extends ChangeNotifier {
         });
         _scheduleNotify();
       } catch (e) {
-        debugPrint('ProfileProvider.batchGetProfiles error: $e');
+        AppLog.d('❌ ProfileProvider.batchGetProfiles error: $e');
         rethrow;
       }
     }
@@ -235,7 +239,7 @@ class ProfileProvider extends ChangeNotifier {
     if (missingIds.isEmpty) {
       // All profiles already cached
       assert(() {
-        debugPrint('🔥 ProfileProvider.warmProfiles: All ${userIds.length} profiles already cached');
+        AppLog.d('🔥 ProfileProvider.warmProfiles: All ${userIds.length} profiles already cached');
         return true;
       }());
       return;
@@ -244,12 +248,12 @@ class ProfileProvider extends ChangeNotifier {
     // Debug log batch operation (proof of no N+1)
     assert(() {
       final batchCount = (missingIds.length / 10).ceil();
-      debugPrint('🔥 ProfileProvider.warmProfiles: Warming ${missingIds.length} profiles in $batchCount batch(es)');
+      AppLog.d('🔥 ProfileProvider.warmProfiles: Warming ${missingIds.length} profiles in $batchCount batch(es)');
       return true;
     }());
 
     try {
-      final fetched = await ProfileService.batchGetUserProfiles(missingIds);
+      final fetched = await _service.batchGetUserProfiles(missingIds);
 
       // Cache all fetched profiles
       fetched.forEach((userId, profile) {
@@ -260,11 +264,11 @@ class ProfileProvider extends ChangeNotifier {
       _scheduleNotify();
 
       assert(() {
-        debugPrint('✅ ProfileProvider.warmProfiles: Cached ${fetched.length} profiles');
+        AppLog.d('✅ ProfileProvider.warmProfiles: Cached ${fetched.length} profiles');
         return true;
       }());
     } catch (e) {
-      debugPrint('❌ ProfileProvider.warmProfiles error: $e');
+      AppLog.d('❌ ProfileProvider.warmProfiles error: $e');
       // Don't rethrow - warming is a best-effort operation that shouldn't break the UI
     }
   }
@@ -279,13 +283,13 @@ class ProfileProvider extends ChangeNotifier {
   Future<void> updateProfile(
       String userId, Map<String, dynamic> updates) async {
     try {
-      await ProfileService.updateProfile(userId, updates);
+      await _service.updateProfile(userId, updates);
       // Invalidate profile cache to force refresh
       invalidateProfileCache(userId);
       // Refresh the profile data
       await getProfile(userId);
     } catch (e) {
-      debugPrint('ProfileProvider.updateProfile error: $e');
+      AppLog.d('❌ ProfileProvider.updateProfile error: $e');
       rethrow;
     }
   }
@@ -296,13 +300,13 @@ class ProfileProvider extends ChangeNotifier {
   Future<void> updateVibeProfile(
       String userId, Map<String, dynamic> vibeData) async {
     try {
-      await ProfileService.updateVibeProfile(userId, vibeData);
+      await _service.updateVibeProfile(userId, vibeData);
       // Invalidate profile cache to force refresh
       invalidateProfileCache(userId);
       // Refresh the profile data
       await getProfile(userId);
     } catch (e) {
-      debugPrint('ProfileProvider.updateVibeProfile error: $e');
+      AppLog.d('❌ ProfileProvider.updateVibeProfile error: $e');
       rethrow;
     }
   }
