@@ -43,7 +43,7 @@ class CancellationWarningIcon extends StatelessWidget {
           child: Icon(
             Icons.warning_amber_rounded,
             size: AppIconSize.sm,
-            // Intentionally sunsetPeach, NOT error — this is informational
+            // Intentionally goldLight, NOT error — this is informational
             color: AppColors.goldLight,
           ),
         ),

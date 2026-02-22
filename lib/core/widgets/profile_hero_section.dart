@@ -161,12 +161,12 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                           height: 48,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [AppColors.gold, AppColors.goldLight],
+                              colors: [AppColors.green, AppColors.greenLight],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             shape: BoxShape.circle,
-                            boxShadow: [AppElevation.glowGold],
+                            boxShadow: [AppElevation.glowGreen],
                           ),
                           child: AppIcon(
                             assetPath: AppIcons.camera,

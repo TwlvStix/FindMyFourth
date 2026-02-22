@@ -26,9 +26,9 @@ enum AppCardVariant {
   /// Standard card with gradient accent bar
   gradientAccent,
 
-  /// Premium card with gradient background and gold glow shadow
+  /// Premium card with gradient background and green glow shadow
   /// Usage: Featured content, premium games, VIP features, special offers
-  /// Golf aesthetic: Like the gleaming trophy case at sunset
+  /// Golf aesthetic: Like the pristine fairway at a championship course
   premium,
 
   /// Glass-effect card with subtle background and blur (for overlays)
@@ -285,11 +285,11 @@ class _AppCardState extends State<AppCard>
 
       case AppCardVariant.premium:
         return BoxDecoration(
-          gradient: AppColors.goldGradient,
+          gradient: AppColors.greenGradient,
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          boxShadow: [AppElevation.glowGold],
+          boxShadow: [AppElevation.glowGreen],
           border: Border.all(
-            color: AppColors.gold.withValues(alpha: AppOpacity.light),
+            color: AppColors.green.withValues(alpha: AppOpacity.light),
             width: 1,
           ),
         );

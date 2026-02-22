@@ -60,14 +60,14 @@ class AppGradients {
     end: Alignment.bottomCenter,
   );
 
-  /// Full spectrum sweep for animated rings
+  /// Full spectrum sweep for animated rings - green-centric with navy depth
   static const accentSweep = SweepGradient(
     colors: [
-      AppColors.gold,
-      AppColors.goldLight,
-      AppColors.error,
+      AppColors.green,
       AppColors.greenLight,
       AppColors.gold,
+      AppColors.navy,
+      AppColors.green,
     ],
   );
 }
@@ -237,7 +237,7 @@ class _AnimatedAvatarRingState extends State<AnimatedAvatarRing>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppColors.gold.withValues(alpha:0.3),
+                color: AppColors.green.withValues(alpha:0.3),
                 blurRadius: 40,
                 spreadRadius: 5,
               ),
@@ -302,9 +302,9 @@ class _AnimatedAvatarRingState extends State<AnimatedAvatarRing>
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  gradient: AppGradients.gold,
+                  gradient: AppGradients.green,
                   shape: BoxShape.circle,
-                  boxShadow: [AppElevation.glowGold],
+                  boxShadow: [AppElevation.glowGreen],
                 ),
                 child: AppIcon(
                   assetPath: AppIcons.camera,

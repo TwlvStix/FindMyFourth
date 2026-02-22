@@ -6,10 +6,10 @@ import '../design_tokens/icon_size.dart';
 
 /// Visual variants for AppIconBadge
 enum AppIconBadgeVariant {
-  /// Filled with primary color (fairway green)
+  /// Filled with primary accent color (Clubhouse green)
   primary,
 
-  /// Filled with accent color (sunset gold)
+  /// Filled with secondary accent color (prestige gold)
   accent,
 
   /// Filled with success color

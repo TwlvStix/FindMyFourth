@@ -14,7 +14,7 @@ import '/core/widgets/app_icon.dart';
 ///
 /// Features:
 /// - Animated selection state with gradient background
-/// - Gold border and shadow when selected
+/// - Green border and shadow when selected (primary accent)
 /// - Supports both icon and emoji display
 /// - Haptic feedback on tap
 /// - Consistent styling with design tokens
@@ -64,11 +64,11 @@ class SelectionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
             color: isSelected
-                ? AppColors.gold
+                ? AppColors.green
                 : Colors.white.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected ? [AppElevation.glowGold] : null,
+          boxShadow: isSelected ? [AppElevation.glowGreen] : null,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -80,7 +80,7 @@ class SelectionCard extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: isSelected
                     ? LinearGradient(
-                        colors: [AppColors.gold, AppColors.goldLight],
+                        colors: [AppColors.green, AppColors.greenLight],
                       )
                     : null,
                 color: isSelected ? null : Colors.white.withValues(alpha: 0.1),

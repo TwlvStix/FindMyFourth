@@ -37,7 +37,7 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: AppColors.navy,
-      body: FairwayBackgroundSunset(
+      body: FairwayBackgroundClubhouse(
         showOrganic: true,
         child: SafeArea(
           top: true,

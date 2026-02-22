@@ -187,7 +187,7 @@ class _CinematicOnboardingWidgetState extends State<CinematicOnboardingWidget>
       },
       child: Scaffold(
         body: FairwayBackground(
-          variant: FairwayBackgroundVariant.sunset,
+          variant: FairwayBackgroundVariant.clubhouse,
           showOrganic: true,
           child: SafeArea(
             top: true,

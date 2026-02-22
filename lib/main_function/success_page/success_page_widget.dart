@@ -37,7 +37,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: AppColors.navy,
-      body: FairwayBackgroundSunset(
+      body: FairwayBackgroundClubhouse(
         child: SafeArea(
           top: true,
           child: Row(

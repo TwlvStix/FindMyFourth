@@ -439,12 +439,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                     height: 48,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [AppColors.gold, AppColors.goldLight],
+                        colors: [AppColors.green, AppColors.greenLight],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       shape: BoxShape.circle,
-                      boxShadow: [AppElevation.glowGold],
+                      boxShadow: [AppElevation.glowGreen],
                     ),
                     child: Icon(Icons.camera_alt_rounded,
                         color: AppColors.pure, size: AppIconSize.md),

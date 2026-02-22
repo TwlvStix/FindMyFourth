@@ -337,7 +337,7 @@ class _ProgressiveOnboardingWidgetState
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: AppColors.navyDark,
-      body: FairwayBackgroundSunset(
+      body: FairwayBackgroundClubhouse(
         child: SafeArea(
           top: true,
           child: Column(

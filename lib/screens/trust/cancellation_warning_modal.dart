@@ -18,7 +18,7 @@ import '/services/cancellation_service.dart';
 ///
 /// Three states:
 ///   Early (36+ hrs)  → success treatment, ghost cancel button, no penalty
-///   Late (12–36 hrs) → sunsetPeach warning, cancellation is tracked
+///   Late (12–36 hrs) → goldLight warning, cancellation is tracked
 ///   Day-of (< 12 hrs) → error treatment, 1 strike will be recorded
 ///
 /// "Keep My Spot" is always the visually primary action.

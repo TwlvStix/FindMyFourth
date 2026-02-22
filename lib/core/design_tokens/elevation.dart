@@ -88,22 +88,22 @@ class AppElevation {
   // SPECIALTY GLOWS (COLORED SHADOWS FOR PREMIUM ACCENTS)
   // ============================================================================
 
-  /// Gold glow - premium accent shadow with sunset gold color
-  /// Usage: Premium features, VIP cards, special offers, highlighted achievements
-  /// Shadow: offset (0, 4), blur 12, color: sunsetGold with 0.30 opacity
-  /// Golf aesthetic: Like the warm glow of sunset on the 18th hole
-  static const BoxShadow glowGold = BoxShadow(
-    color: Color(0x4DE8B44C), // sunsetGold with 0.30 opacity
+  /// Green glow - primary accent shadow for golf/active elements
+  /// Usage: Success states, active selections, CTAs, achievements, golf elements
+  /// Shadow: offset (0, 4), blur 12, color: green with 0.30 opacity
+  /// Golf aesthetic: The rich green glow of a pristine fairway at dusk
+  static const BoxShadow glowGreen = BoxShadow(
+    color: Color(0x4D1F6B4E), // AppColors.green (#1F6B4E) with 0.30 opacity
     blurRadius: 12,
     offset: Offset(0, 4),
   );
 
-  /// Green glow - success/active state shadow with fairway green color
-  /// Usage: Success states, active selections, winning scores, achievements
-  /// Shadow: offset (0, 4), blur 12, color: fairway with 0.25 opacity
-  /// Golf aesthetic: Like the rich green glow of a pristine fairway
-  static const BoxShadow glowGreen = BoxShadow(
-    color: Color(0x402D5F4C), // fairway with 0.25 opacity
+  /// Gold glow - secondary accent shadow for trust/premium elements
+  /// Usage: Trust badges, premium features, achievements (use sparingly)
+  /// Shadow: offset (0, 4), blur 12, color: gold with 0.25 opacity
+  /// Golf aesthetic: Subtle prestige accent, never dominant
+  static const BoxShadow glowGold = BoxShadow(
+    color: Color(0x40C9A24D), // AppColors.gold (#C9A24D) with 0.25 opacity
     blurRadius: 12,
     offset: Offset(0, 4),
   );

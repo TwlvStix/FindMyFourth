@@ -544,10 +544,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             ),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [AppColors.gold, AppColors.goldLight],
+                                colors: [AppColors.green, AppColors.greenLight],
                               ),
                               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-                              boxShadow: [AppElevation.glowGold],
+                              boxShadow: [AppElevation.glowGreen],
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,

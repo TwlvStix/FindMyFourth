@@ -78,7 +78,7 @@ class BadgeTierStyle {
 /// Reusable trust badge chip for displaying a player's badge tier.
 ///
 /// Uses AppBadge-style pill shape for all tiers except Anchor, which
-/// gets a custom premium treatment with AppElevation.glowGold.
+/// gets a custom premium treatment with AppElevation.glowGreen.
 ///
 /// Compact mode: icon + label (use in lobbies and other profiles)
 /// Expanded mode: icon + label + descriptor (use on own profile)
@@ -110,10 +110,10 @@ class TrustBadgeChip extends StatelessWidget {
           label: 'New',
           descriptor: 'Welcome! Play your first rounds to build your reputation.',
           icon: Icons.golf_course_rounded,
-          backgroundColor: AppColors.goldLight.withValues(alpha:0.15),
-          borderColor: AppColors.goldLight.withValues(alpha:0.55),
-          textColor: AppColors.goldLight,
-          boxShadow: AppElevation.glowGold,
+          backgroundColor: AppColors.greenLight.withValues(alpha:0.12),
+          borderColor: AppColors.greenLight.withValues(alpha:0.4),
+          textColor: AppColors.greenLight,
+          boxShadow: AppElevation.glowGreen,
         );
       case BadgeTier.confirmed:
         return _BadgeConfig(
@@ -147,9 +147,9 @@ class TrustBadgeChip extends StatelessWidget {
           label: 'Anchor',
           descriptor: 'A cornerstone of the community.',
           icon: Icons.verified_rounded,
-          backgroundColor: AppColors.gold.withValues(alpha:0.12),
-          borderColor: AppColors.gold.withValues(alpha:0.4),
-          textColor: AppColors.gold,
+          backgroundColor: AppColors.green.withValues(alpha:0.12),
+          borderColor: AppColors.green.withValues(alpha:0.4),
+          textColor: AppColors.green,
         );
     }
   }
@@ -229,7 +229,7 @@ class _AnchorBadgeChip extends StatelessWidget {
             color: config.backgroundColor,
             borderRadius: BorderRadius.circular(AppBorderRadius.full),
             border: Border.all(color: config.borderColor, width: 1),
-            boxShadow: const [AppElevation.glowGold],
+            boxShadow: const [AppElevation.glowGreen],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
