@@ -1631,7 +1631,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 Text(
                                   'Discount',
                                   style: AppTypography.text10.copyWith(
-                                    color: AppColors.navyDarkBtnText,
+                                    color: AppColors.pure,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),

@@ -149,7 +149,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.navyDarkBackground,
+        color: AppColors.navyDark,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
@@ -183,11 +183,11 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                     style: TextStyle(fontFamily: 'Manrope',
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.navyDarkText,
+                      color: AppColors.pure,
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close, color: AppColors.navyText),
+                    icon: Icon(Icons.close, color: AppColors.pure),
                     onPressed: () => Navigator.pop(context),
                     padding: EdgeInsets.zero,
                     constraints: BoxConstraints(),
@@ -202,7 +202,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                 style: TextStyle(fontFamily: 'Manrope',
                   fontSize: 40,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.navyDarkText,
+                  color: AppColors.pure,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -226,7 +226,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
               Container(
                 height: 160,
                 decoration: BoxDecoration(
-                  color: AppColors.navyBackground,
+                  color: AppColors.navy,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: AppColors.greenLight.withValues(alpha: 0.2),
@@ -247,7 +247,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                               style: TextStyle(fontFamily: 'Manrope',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.navyText,
+                                color: AppColors.pure,
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -280,7 +280,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                                     style: TextStyle(fontFamily: 'Manrope',
                                       fontSize: 28,
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.navyDarkText,
+                                      color: AppColors.pure,
                                     ),
                                   ),
                                 );
@@ -299,7 +299,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                         style: TextStyle(fontFamily: 'Manrope',
                           fontSize: 28,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.navyDarkText,
+                          color: AppColors.pure,
                         ),
                       ),
                     ),
@@ -316,7 +316,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                               style: TextStyle(fontFamily: 'Manrope',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.navyText,
+                                color: AppColors.pure,
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -349,7 +349,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                                     style: TextStyle(fontFamily: 'Manrope',
                                       fontSize: 28,
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.navyDarkText,
+                                      color: AppColors.pure,
                                     ),
                                   ),
                                 );
@@ -368,7 +368,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
               // AM/PM Toggle
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.navyBackground,
+                  color: AppColors.navy,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: AppColors.greenLight.withValues(alpha: 0.3),
@@ -401,8 +401,8 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: !_isPM
-                                  ? AppColors.navyDarkBtnText
-                                  : AppColors.navyText,
+                                  ? AppColors.pure
+                                  : AppColors.pure,
                             ),
                           ),
                         ),
@@ -433,8 +433,8 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: _isPM
-                                  ? AppColors.navyDarkBtnText
-                                  : AppColors.navyText,
+                                  ? AppColors.pure
+                                  : AppColors.pure,
                             ),
                           ),
                         ),
@@ -452,7 +452,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                 style: TextStyle(fontFamily: 'Manrope',
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.navyText,
+                  color: AppColors.pure,
                 ),
               ),
               SizedBox(height: AppSpacing.xs),
@@ -498,7 +498,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
           vertical: 8,
         ),
         decoration: BoxDecoration(
-          color: AppColors.navyBackground,
+          color: AppColors.navy,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: AppColors.greenLight.withValues(alpha: 0.3),
@@ -509,7 +509,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
           style: TextStyle(fontFamily: 'Manrope',
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: AppColors.navyDarkText,
+            color: AppColors.pure,
           ),
         ),
       ),

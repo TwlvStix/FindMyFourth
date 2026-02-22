@@ -261,7 +261,7 @@ class _ChatWidgetState extends State<ChatWidget> {
 
       return Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppColors.navyBackground,
+        backgroundColor: AppColors.navy,
         body: Center(
           child: Text(
             'Please sign in to view chats.',

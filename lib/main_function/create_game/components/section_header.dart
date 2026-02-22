@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_icon.dart';
 
 /// Consistent section header with icon and title
@@ -57,17 +58,11 @@ class SectionHeader extends StatelessWidget {
           SizedBox(width: AppSpacing.sm),
           Text(
             title,
-            style: AppTypography.labelMedium.override(
-                  font: TextStyle(fontFamily: 'Manrope',
-                    fontWeight: AppTypography.labelMedium.fontWeight,
-                    fontStyle: AppTypography.labelMedium.fontStyle,
-                  ),
-                  color: Colors.white,
-                  fontSize: 16,
-                  letterSpacing: 0.0,
-                  fontWeight: FontWeight.w600,
-                  fontStyle: AppTypography.labelMedium.fontStyle,
-                ),
+            style: AppTypography.labelMedium.copyWith(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           if (helpText != null && onHelpTap != null) ...[
             SizedBox(width: AppSpacing.xs),

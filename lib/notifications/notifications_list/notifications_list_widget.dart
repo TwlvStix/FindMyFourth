@@ -243,13 +243,13 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
       builder: (dialogContext) => AlertDialog(
         title: Text('Delete All Notifications'),
         content: Text('Are you sure you want to delete all notifications? This action cannot be undone.'),
-        backgroundColor: AppColors.navyBackground,
+        backgroundColor: AppColors.navy,
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
             child: Text(
               'Cancel',
-              style: TextStyle(color: AppColors.navyText),
+              style: TextStyle(color: AppColors.pure),
             ),
           ),
           TextButton(
@@ -511,7 +511,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                       Icons.more_vert,
                       color: Colors.white,
                     ),
-                    color: AppColors.navyBackground,
+                    color: AppColors.navy,
                     onSelected: (value) {
                       if (value == 'delete_all') {
                         _showDeleteAllConfirmDialog(userRef);
@@ -550,16 +550,9 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
               ? Center(
                   child: Text(
                     'Please sign in to view notifications.',
-                    style: AppTypography.bodyMedium.override(
-                          font: TextStyle(fontFamily: 'Manrope',
-                            fontWeight:
-                                AppTypography.bodyMedium.fontWeight,
-                            fontStyle:
-                                AppTypography.bodyMedium.fontStyle,
-                          ),
-                          color: AppColors.navyText,
-                          letterSpacing: 0.0,
-                        ),
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.pure,
+                    ),
                   ),
                 )
               : StreamBuilder<QuerySnapshot>(
@@ -573,16 +566,9 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                       return Center(
                         child: Text(
                           'Failed to load notifications.',
-                          style: AppTypography.bodyMedium.override(
-                                font: TextStyle(fontFamily: 'Manrope',
-                                  fontWeight:
-                                      AppTypography.bodyMedium.fontWeight,
-                                  fontStyle:
-                                      AppTypography.bodyMedium.fontStyle,
-                                ),
-                                color: AppColors.navyText,
-                                letterSpacing: 0.0,
-                              ),
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.pure,
+                          ),
                         ),
                       );
                     }
@@ -598,16 +584,9 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                       return Center(
                         child: Text(
                           'No notifications yet.',
-                          style: AppTypography.bodyMedium.override(
-                                font: TextStyle(fontFamily: 'Manrope',
-                                  fontWeight:
-                                      AppTypography.bodyMedium.fontWeight,
-                                  fontStyle:
-                                      AppTypography.bodyMedium.fontStyle,
-                                ),
-                                color: AppColors.navyText,
-                                letterSpacing: 0.0,
-                              ),
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.pure,
+                          ),
                         ),
                       );
                     }
@@ -666,13 +645,13 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                 builder: (dialogContext) => AlertDialog(
                                   title: Text('Delete Notification'),
                                   content: Text('Are you sure you want to delete this notification?'),
-                                  backgroundColor: AppColors.navyBackground,
+                                  backgroundColor: AppColors.navy,
                                   actions: [
                                     TextButton(
                                       onPressed: () => Navigator.of(dialogContext).pop(false),
                                       child: Text(
                                         'Cancel',
-                                        style: TextStyle(color: AppColors.navyText),
+                                        style: TextStyle(color: AppColors.pure),
                                       ),
                                     ),
                                     TextButton(
@@ -699,7 +678,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                   context: context,
                                   builder: (dialogContext) => AlertDialog(
                                     title: Text('Notification Actions'),
-                                    backgroundColor: AppColors.navyBackground,
+                                    backgroundColor: AppColors.navy,
                                     content: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
@@ -741,7 +720,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               child: Container(
                                 decoration: BoxDecoration(
                                   color:
-                                      AppColors.navyBackground,
+                                      AppColors.navy,
                                   borderRadius: BorderRadius.circular(12.0),
                                   border: Border.all(
                                     color: AppColors.cloud,
@@ -769,7 +748,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                       child: Icon(
                                         _iconForType(type),
                                         color:
-                                            AppColors.navyDarkBtnText,
+                                            AppColors.pure,
                                         size: 18.0,
                                       ),
                                     ),
@@ -788,22 +767,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                       : _titleFallback(type),
                                                   maxLines: 1,
                                                   overflow: TextOverflow.ellipsis,
-                                                  style: AppTypography.bodyLarge
-                                                      .override(
-                                                        font: TextStyle(fontFamily: 'Manrope',
-                                                          fontWeight: AppTypography.bodyLarge
-                                                              .fontWeight,
-                                                          fontStyle: AppTypography.bodyLarge
-                                                              .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            AppTypography.bodyLarge
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTypography.bodyLarge
-                                                                .fontStyle,
-                                                      ),
+                                                  style: AppTypography.bodyLarge,
                                                 ),
                                               ),
                                               if (timeLabel.isNotEmpty)
@@ -814,20 +778,9 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                   ),
                                                   child: Text(
                                                     timeLabel,
-                                                    style: AppTypography.labelSmall
-                                                        .override(
-                                                          font:
-                                                              TextStyle(fontFamily: 'Manrope',
-                                                            fontWeight:
-                                                                AppTypography.labelSmall
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTypography.labelSmall
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: AppColors.slate,
-                                                          letterSpacing: 0.0,
-                                                        ),
+                                                    style: AppTypography.labelSmall.copyWith(
+                                                      color: AppColors.slate,
+                                                    ),
                                                   ),
                                                 ),
                                               if (!isRead)
@@ -855,26 +808,9 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                 body!,
                                                 maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: AppTypography.bodyMedium
-                                                    .override(
-                                                      font: TextStyle(fontFamily: 'Manrope',
-                                                        fontWeight:
-                                                            AppTypography.bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTypography.bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                      color:
-                                                          AppColors.onyx,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          AppTypography.bodyMedium
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          AppTypography.bodyMedium
-                                                              .fontStyle,
-                                                    ),
+                                                style: AppTypography.bodyMedium.copyWith(
+                                                  color: AppColors.onyx,
+                                                ),
                                               ),
                                             ),
                                           if (type == 'dispute_resolved_upheld')

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
 import '/utils/app_util.dart';
 
 /// Premium date picker with quick date chips and calendar bottom sheet
@@ -35,7 +36,7 @@ class PremiumDatePicker extends StatelessWidget {
       isScrollControlled: true,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: AppColors.navyDarkBackground,
+          color: AppColors.navyDark,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: SafeArea(
@@ -64,11 +65,11 @@ class PremiumDatePicker extends StatelessWidget {
                       style: TextStyle(fontFamily: 'Manrope',
                         fontSize: 22,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.navyDarkText,
+                        color: AppColors.pure,
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.close, color: AppColors.navyText),
+                      icon: Icon(Icons.close, color: AppColors.pure),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -80,9 +81,9 @@ class PremiumDatePicker extends StatelessWidget {
                   data: Theme.of(context).copyWith(
                     colorScheme: ColorScheme.light(
                       primary: AppColors.navyDark,
-                      onPrimary: AppColors.navyDarkBtnText,
-                      surface: AppColors.navyDarkBackground,
-                      onSurface: AppColors.navyDarkText,
+                      onPrimary: AppColors.pure,
+                      surface: AppColors.navyDark,
+                      onSurface: AppColors.pure,
                     ),
                   ),
                   child: CalendarDatePicker(
@@ -157,7 +158,7 @@ class PremiumDatePicker extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? AppColors.navyDark
-                : AppColors.navyBackground,
+                : AppColors.navy,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected
@@ -175,8 +176,8 @@ class PremiumDatePicker extends StatelessWidget {
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: isSelected
-                      ? AppColors.navyDarkBtnText
-                      : AppColors.navyDarkText,
+                      ? AppColors.pure
+                      : AppColors.pure,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -187,8 +188,8 @@ class PremiumDatePicker extends StatelessWidget {
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
                   color: isSelected
-                      ? AppColors.navyDarkBtnText.withValues(alpha: 0.8)
-                      : AppColors.navyText,
+                      ? AppColors.pure.withValues(alpha: 0.8)
+                      : AppColors.pure,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -247,7 +248,7 @@ class PremiumDatePicker extends StatelessWidget {
               horizontal: AppSpacing.md,
             ),
             decoration: BoxDecoration(
-              color: AppColors.navyBackground,
+              color: AppColors.navy,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: AppColors.greenLight.withValues(alpha: 0.3),
@@ -268,7 +269,7 @@ class PremiumDatePicker extends StatelessWidget {
                   style: TextStyle(fontFamily: 'Manrope',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.navyDarkText,
+                    color: AppColors.pure,
                   ),
                 ),
               ],

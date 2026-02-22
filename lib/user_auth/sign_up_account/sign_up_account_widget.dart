@@ -127,7 +127,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                   ),
                                   child: AppText.bodySmall(
                                     'Let\'s get started by filling out the form below.',
-                                    color: AppColors.navyText,
+                                    color: AppColors.pure,
                                   ),
                                 ),
                                 Padding(
@@ -593,7 +593,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             TextSpan(
                                               text: 'Already have an account? ',
                                               style: AppTypography.bodyMedium.copyWith(
-                                                color: AppColors.navyText,
+                                                color: AppColors.pure,
                                               ),
                                             ),
                                             TextSpan(
@@ -605,7 +605,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             )
                                           ],
                                           style: AppTypography.bodyMedium.copyWith(
-                                            color: AppColors.navyText,
+                                            color: AppColors.pure,
                                           ),
                                         ),
                                       ),

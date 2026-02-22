@@ -5,8 +5,9 @@
 /// This file contains reusable premium UI patterns extracted from the Profile
 /// redesign. Use these patterns throughout the app for consistency.
 ///
-/// Design Language: "Fairway Sunset"
-/// - Deep forest greens + warm sunset accents
+/// Design Language: "The Clubhouse"
+/// - Club Navy structural backgrounds + Fairway Green accents
+/// - Prestige Gold for trust tiers, achievements, premium elements
 /// - Glass-morphic cards on dark backgrounds
 /// - Gradient accents for emphasis
 /// - Subtle animations for delight

@@ -9,6 +9,7 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 import '/utils/upload_data.dart';
 import 'package:flutter/material.dart';
 
@@ -45,7 +46,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
           width: MediaQuery.sizeOf(context).width * 1.0,
           height: 350.0,
           decoration: BoxDecoration(
-            color: AppColors.navyBackground,
+            color: AppColors.navy,
             borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(0.0),
               bottomRight: Radius.circular(0.0),
@@ -71,7 +72,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                             thickness: 3.0,
                             indent: 150.0,
                             endIndent: 150.0,
-                            color: AppColors.navyDarkBackground,
+                            color: AppColors.navyDark,
                           ),
                         Row(
                           mainAxisSize: MainAxisSize.max,
@@ -108,22 +109,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                 padding: EdgeInsets.only(top: AppSpacing.xs),
                                 child: Text(
                                   'Upload a new photo below in order to change your profile picture.',
-                                  style: AppTypography.labelMedium
-                                      .override(
-                                        font: TextStyle(fontFamily: 'Manrope',
-                                          fontWeight:
-                                              AppTypography.labelMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTypography.labelMedium
-                                                  .fontStyle,
-                                        ),
-                                        letterSpacing: 0.0,
-                                        fontWeight: AppTypography.labelMedium
-                                            .fontWeight,
-                                        fontStyle: AppTypography.labelMedium
-                                            .fontStyle,
-                                      ),
+                                  style: AppTypography.labelMedium,
                                 ),
                               ),
                             ),

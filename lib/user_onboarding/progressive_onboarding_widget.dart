@@ -9,6 +9,8 @@ import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/form_field_controller.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 import '/user_onboarding/vibe_onboarding_widget.dart';
@@ -332,7 +334,7 @@ class _ProgressiveOnboardingWidgetState
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: AppColors.navyDarkBackground,
+      backgroundColor: AppColors.navyDark,
       body: FairwayBackgroundSunset(
         child: SafeArea(
           top: true,
@@ -417,15 +419,7 @@ class _ProgressiveOnboardingWidgetState
             padding: AppSpacing.only(top: AppSpacing.sm),
             child: Text(
               'Connect with golfers, join games, and never play alone again.',
-              style: AppTypography.bodyLarge.override(
-                    font: TextStyle(fontFamily: 'Manrope',
-                      fontWeight: AppTypography.bodyLarge.fontWeight,
-                      fontStyle: AppTypography.bodyLarge.fontStyle,
-                    ),
-                    letterSpacing: 0.0,
-                    fontWeight: AppTypography.bodyLarge.fontWeight,
-                    fontStyle: AppTypography.bodyLarge.fontStyle,
-                  ),
+              style: AppTypography.bodyLarge,
             ),
           ),
           Padding(
@@ -488,16 +482,7 @@ class _ProgressiveOnboardingWidgetState
               padding: AppSpacing.only(top: AppSpacing.xs),
               child: Text(
                 'This helps other golfers find and connect with you.',
-                style: AppTypography.bodyMedium.override(
-                      font: TextStyle(fontFamily: 'Manrope',
-                        fontWeight:
-                            AppTypography.bodyMedium.fontWeight,
-                        fontStyle: AppTypography.bodyMedium.fontStyle,
-                      ),
-                      letterSpacing: 0.0,
-                      fontWeight: AppTypography.bodyMedium.fontWeight,
-                      fontStyle: AppTypography.bodyMedium.fontStyle,
-                    ),
+                style: AppTypography.bodyMedium,
               ),
             ),
             SizedBox(height: AppSpacing.xl),
@@ -540,7 +525,7 @@ class _ProgressiveOnboardingWidgetState
                   borderRadius: BorderRadius.circular(12.0),
                 ),
                 filled: true,
-                fillColor: AppColors.navyBackground,
+                fillColor: AppColors.navy,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -588,7 +573,7 @@ class _ProgressiveOnboardingWidgetState
                   borderRadius: BorderRadius.circular(12.0),
                 ),
                 filled: true,
-                fillColor: AppColors.navyBackground,
+                fillColor: AppColors.navy,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -636,7 +621,7 @@ class _ProgressiveOnboardingWidgetState
                   borderRadius: BorderRadius.circular(12.0),
                 ),
                 filled: true,
-                fillColor: AppColors.navyBackground,
+                fillColor: AppColors.navy,
               ),
               validator: _validateUsername,
             ),
@@ -667,7 +652,7 @@ class _ProgressiveOnboardingWidgetState
                   borderRadius: BorderRadius.circular(12.0),
                 ),
                 filled: true,
-                fillColor: AppColors.navyBackground,
+                fillColor: AppColors.navy,
               ),
             ),
             SizedBox(height: AppSpacing.md),
@@ -710,7 +695,7 @@ class _ProgressiveOnboardingWidgetState
                   borderRadius: BorderRadius.circular(12.0),
                 ),
                 filled: true,
-                fillColor: AppColors.navyBackground,
+                fillColor: AppColors.navy,
               ),
               validator: _validateEmail,
             ),
@@ -745,15 +730,7 @@ class _ProgressiveOnboardingWidgetState
             padding: AppSpacing.only(top: AppSpacing.xs),
             child: Text(
               'Help us match you with the right players and games.',
-              style: AppTypography.bodyMedium.override(
-                    font: TextStyle(fontFamily: 'Manrope',
-                      fontWeight: AppTypography.bodyMedium.fontWeight,
-                      fontStyle: AppTypography.bodyMedium.fontStyle,
-                    ),
-                    letterSpacing: 0.0,
-                    fontWeight: AppTypography.bodyMedium.fontWeight,
-                    fontStyle: AppTypography.bodyMedium.fontStyle,
-                  ),
+              style: AppTypography.bodyMedium,
             ),
           ),
           SizedBox(height: AppSpacing.xl),
@@ -785,10 +762,10 @@ class _ProgressiveOnboardingWidgetState
                 hintText: 'Select your home course',
                 icon: Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: AppColors.navyText,
+                  color: AppColors.pure,
                   size: 24.0,
                 ),
-                fillColor: AppColors.navyBackground,
+                fillColor: AppColors.navy,
                 elevation: 2.0,
                 borderColor: AppColors.cloud,
                 borderWidth: 2.0,
@@ -805,21 +782,15 @@ class _ProgressiveOnboardingWidgetState
           // Handicap
           Text(
             'Handicap',
-            style: AppTypography.titleMedium.override(
-                  font: TextStyle(fontFamily: 'Manrope',
-                    fontWeight: FontWeight.w600,
-                    fontStyle: AppTypography.titleMedium.fontStyle,
-                  ),
-                  letterSpacing: 0.0,
-                  fontWeight: FontWeight.w600,
-                  fontStyle: AppTypography.titleMedium.fontStyle,
-                ),
+            style: AppTypography.titleMedium.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
           SizedBox(height: AppSpacing.sm),
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: AppColors.navyBackground,
+              color: AppColors.navy,
               borderRadius: BorderRadius.circular(12.0),
               border: Border.all(
                 color: AppColors.cloud,
@@ -833,14 +804,14 @@ class _ProgressiveOnboardingWidgetState
                   FontAwesomeIcons.minus,
                   color: enabled
                       ? AppColors.navyDark
-                      : AppColors.navyText,
+                      : AppColors.pure,
                   size: 20.0,
                 ),
                 incrementIconBuilder: (enabled) => Icon(
                   FontAwesomeIcons.plus,
                   color: enabled
                       ? AppColors.navyDark
-                      : AppColors.navyText,
+                      : AppColors.pure,
                   size: 20.0,
                 ),
                 countBuilder: (count) => Text(
@@ -897,15 +868,7 @@ class _ProgressiveOnboardingWidgetState
             padding: AppSpacing.only(top: AppSpacing.xs),
             child: Text(
               'Rate your preferences from 0 (not at all) to 5 (very much).',
-              style: AppTypography.bodyMedium.override(
-                    font: TextStyle(fontFamily: 'Manrope',
-                      fontWeight: AppTypography.bodyMedium.fontWeight,
-                      fontStyle: AppTypography.bodyMedium.fontStyle,
-                    ),
-                    letterSpacing: 0.0,
-                    fontWeight: AppTypography.bodyMedium.fontWeight,
-                    fontStyle: AppTypography.bodyMedium.fontStyle,
-                  ),
+              style: AppTypography.bodyMedium,
             ),
           ),
           SizedBox(height: AppSpacing.xl),
@@ -960,15 +923,9 @@ class _ProgressiveOnboardingWidgetState
             SizedBox(width: AppSpacing.sm),
             Text(
               title,
-              style: AppTypography.titleMedium.override(
-                    font: TextStyle(fontFamily: 'Manrope',
-                      fontWeight: FontWeight.w600,
-                      fontStyle: AppTypography.titleMedium.fontStyle,
-                    ),
-                    letterSpacing: 0.0,
-                    fontWeight: FontWeight.w600,
-                    fontStyle: AppTypography.titleMedium.fontStyle,
-                  ),
+              style: AppTypography.titleMedium.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -976,7 +933,7 @@ class _ProgressiveOnboardingWidgetState
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.navyBackground,
+            color: AppColors.navy,
             borderRadius: BorderRadius.circular(12.0),
             border: Border.all(
               color: AppColors.cloud,
@@ -990,14 +947,14 @@ class _ProgressiveOnboardingWidgetState
                 FontAwesomeIcons.minus,
                 color: enabled
                     ? AppColors.navyDark
-                    : AppColors.navyText,
+                    : AppColors.pure,
                 size: 18.0,
               ),
               incrementIconBuilder: (enabled) => Icon(
                 FontAwesomeIcons.plus,
                 color: enabled
                     ? AppColors.navyDark
-                    : AppColors.navyText,
+                    : AppColors.pure,
                 size: 18.0,
               ),
               countBuilder: (count) => Text(
@@ -1101,33 +1058,15 @@ class _OnboardingFeature extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppTypography.titleMedium.override(
-                          font: TextStyle(fontFamily: 'Manrope',
-                            fontWeight: FontWeight.w600,
-                            fontStyle:
-                                AppTypography.titleMedium.fontStyle,
-                          ),
-                          letterSpacing: 0.0,
-                          fontWeight: FontWeight.w600,
-                          fontStyle: AppTypography.titleMedium.fontStyle,
-                        ),
+                    style: AppTypography.titleMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   Padding(
                     padding: AppSpacing.only(top: AppSpacing.xxs),
                     child: Text(
                       description,
-                      style: AppTypography.bodyMedium.override(
-                            font: TextStyle(fontFamily: 'Manrope',
-                              fontWeight:
-                                  AppTypography.bodyMedium.fontWeight,
-                              fontStyle:
-                                  AppTypography.bodyMedium.fontStyle,
-                            ),
-                            letterSpacing: 0.0,
-                            fontWeight:
-                                AppTypography.bodyMedium.fontWeight,
-                            fontStyle: AppTypography.bodyMedium.fontStyle,
-                          ),
+                      style: AppTypography.bodyMedium,
                     ),
                   ),
                 ],

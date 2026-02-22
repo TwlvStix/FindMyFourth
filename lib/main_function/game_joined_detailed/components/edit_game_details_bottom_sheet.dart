@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/main_function/create_game/components/premium_date_picker.dart';
 import '/main_function/create_game/components/tee_time_picker.dart';
@@ -93,7 +94,7 @@ class _EditGameDetailsBottomSheetState
     debugPrint('🎯 Edit Game Details Bottom Sheet: Building UI');
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.navyDarkBackground,
+        color: AppColors.navyDark,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
@@ -122,7 +123,7 @@ class _EditGameDetailsBottomSheetState
                   fontFamily: 'Manrope',
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.navyDarkText,
+                  color: AppColors.pure,
                 ),
               ),
               SizedBox(height: AppSpacing.lg),
@@ -151,7 +152,7 @@ class _EditGameDetailsBottomSheetState
                   child: Container(
                     padding: EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: AppColors.navyBackground,
+                      color: AppColors.navy,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: AppColors.navyDark,
@@ -228,21 +229,14 @@ class _EditGameDetailsBottomSheetState
                     },
                     width: 300.0,
                     height: 50.0,
-                    textStyle: AppTypography.bodyMedium.override(
-                      font: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontWeight: AppTypography.bodyMedium.fontWeight,
-                        fontStyle: AppTypography.bodyMedium.fontStyle,
-                      ),
-                      letterSpacing: 0.0,
-                    ),
+                    textStyle: AppTypography.bodyMedium,
                     hintText: 'Select a course',
                     icon: Icon(
                       Icons.keyboard_arrow_down_rounded,
-                      color: AppColors.navyText,
+                      color: AppColors.pure,
                       size: 24.0,
                     ),
-                    fillColor: AppColors.navyBackground,
+                    fillColor: AppColors.navy,
                     elevation: 2.0,
                     borderColor: AppColors.navyDark,
                     borderWidth: 1.0,
@@ -278,6 +272,6 @@ class _EditGameDetailsBottomSheetState
         fontFamily: 'Manrope',
         fontSize: 13,
         fontWeight: FontWeight.w600,
-        color: AppColors.navyText,
+        color: AppColors.pure,
       );
 }

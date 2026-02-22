@@ -580,7 +580,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: AppColors.navyDarkBackground,
+      backgroundColor: AppColors.navyDark,
       body: FairwayBackgroundDark(
         showOrganic: true,
         showTexture: true,

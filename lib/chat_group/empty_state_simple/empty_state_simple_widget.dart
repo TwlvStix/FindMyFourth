@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 
 class EmptyStateSimpleWidget extends StatefulWidget {
   const EmptyStateSimpleWidget({
@@ -50,7 +52,7 @@ class _EmptyStateSimpleWidgetState extends State<EmptyStateSimpleWidget> {
                       fontStyle:
                           AppTypography.headlineSmall.fontStyle,
                     ),
-                    color: AppColors.navyDarkText,
+                    color: AppColors.pure,
                     letterSpacing: 0.0,
                     fontWeight:
                         AppTypography.headlineSmall.fontWeight,
@@ -64,19 +66,7 @@ class _EmptyStateSimpleWidgetState extends State<EmptyStateSimpleWidget> {
             child: Text(
               widget.body,
               textAlign: TextAlign.center,
-              style: AppTypography.labelMedium.override(
-                    font: TextStyle(fontFamily: 'Manrope',
-                      fontWeight:
-                          AppTypography.labelMedium.fontWeight,
-                      fontStyle:
-                          AppTypography.labelMedium.fontStyle,
-                    ),
-                    letterSpacing: 0.0,
-                    fontWeight:
-                        AppTypography.labelMedium.fontWeight,
-                    fontStyle:
-                        AppTypography.labelMedium.fontStyle,
-                  ),
+              style: AppTypography.labelMedium,
             ),
           ),
         ],

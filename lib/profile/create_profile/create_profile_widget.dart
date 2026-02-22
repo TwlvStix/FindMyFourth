@@ -232,7 +232,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
           content: Text(
             'Please update your Firebase Auth email ($currentUserEmail) before saving your profile.',
             style: AppTypography.bodySmall.copyWith(
-              color: AppColors.navyBackground,
+              color: AppColors.navy,
             ),
           ),
           duration: Duration(milliseconds: 2000),
@@ -484,7 +484,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppColors.navyBackground,
+        backgroundColor: AppColors.navy,
         body: FairwayBackgroundDark(
           showOrganic: true,
           child: Form(

@@ -108,7 +108,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                 ),
                                 child: AppText.bodySmall(
                                   'Welcome Back. Ready to Play a game?',
-                                  color: AppColors.navyText,
+                                  color: AppColors.pure,
                                 ),
                               ),
                               Padding(
@@ -124,24 +124,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     obscureText: false,
                                     decoration: InputDecoration(
                                       labelText: 'Email',
-                                      labelStyle: AppTypography.labelLarge
-                                          .override(
-                                            font: TextStyle(fontFamily: 'Manrope',
-                                              fontWeight:
-                                                  AppTypography.labelLarge
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTypography.labelLarge
-                                                      .fontStyle,
-                                            ),
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTypography.labelLarge
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTypography.labelLarge
-                                                    .fontStyle,
-                                          ),
+                                      labelStyle: AppTypography.labelLarge,
                                       enabledBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
                                           color: AppColors.sand,
@@ -177,24 +160,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       filled: true,
                                       fillColor: AppColors.sand,
                                     ),
-                                    style: AppTypography.bodyLarge
-                                        .override(
-                                          font: TextStyle(fontFamily: 'Manrope',
-                                            fontWeight:
-                                                AppTypography.bodyLarge
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTypography.bodyLarge
-                                                    .fontStyle,
-                                          ),
-                                          letterSpacing: 0.0,
-                                          fontWeight:
-                                              AppTypography.bodyLarge
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTypography.bodyLarge
-                                                  .fontStyle,
-                                        ),
+                                    style: AppTypography.bodyLarge,
                                     keyboardType: TextInputType.emailAddress,
                                     validator: emailAddressTextControllerValidator
                                         .asValidator(context),
@@ -214,24 +180,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     obscureText: !passwordVisibility,
                                     decoration: InputDecoration(
                                       labelText: 'Password',
-                                      labelStyle: AppTypography.labelLarge
-                                          .override(
-                                            font: TextStyle(fontFamily: 'Manrope',
-                                              fontWeight:
-                                                  AppTypography.labelLarge
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTypography.labelLarge
-                                                      .fontStyle,
-                                            ),
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                AppTypography.labelLarge
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTypography.labelLarge
-                                                    .fontStyle,
-                                          ),
+                                      labelStyle: AppTypography.labelLarge,
                                       enabledBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
                                           color: AppColors.sand,
@@ -284,24 +233,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                         ),
                                       ),
                                     ),
-                                    style: AppTypography.bodyLarge
-                                        .override(
-                                          font: TextStyle(fontFamily: 'Manrope',
-                                            fontWeight:
-                                                AppTypography.bodyLarge
-                                                    .fontWeight,
-                                            fontStyle:
-                                                AppTypography.bodyLarge
-                                                    .fontStyle,
-                                          ),
-                                          letterSpacing: 0.0,
-                                          fontWeight:
-                                              AppTypography.bodyLarge
-                                                  .fontWeight,
-                                          fontStyle:
-                                              AppTypography.bodyLarge
-                                                  .fontStyle,
-                                        ),
+                                    style: AppTypography.bodyLarge,
                                     validator: passwordTextControllerValidator
                                         .asValidator(context),
                                   ),
@@ -390,24 +322,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                               AlignmentDirectional(0.0, 0.0),
                                           child: Text(
                                             'OR',
-                                            style: AppTypography.labelLarge
-                                                .override(
-                                                  font: TextStyle(fontFamily: 'Manrope',
-                                                    fontWeight:
-                                                        AppTypography.labelLarge
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        AppTypography.labelLarge
-                                                            .fontStyle,
-                                                  ),
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      AppTypography.labelLarge
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      AppTypography.labelLarge
-                                                          .fontStyle,
-                                                ),
+                                            style: AppTypography.labelLarge,
                                           ),
                                         ),
                                       ),
@@ -543,45 +458,15 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           ),
                                           TextSpan(
                                             text: ' Sign Up here',
-                                            style: AppTypography.bodyMedium
-                                                .override(
-                                                  font: TextStyle(fontFamily: 'Manrope',
-                                                    fontWeight: FontWeight.w600,
-                                                    fontStyle:
-                                                        AppTypography
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                                  color: AppColors.navyDark,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontStyle:
-                                                      AppTypography
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
+                                            style: AppTypography.bodyMedium.copyWith(
+                                              color: AppColors.navyDark,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           )
                                         ],
-                                        style: AppTypography.bodyMedium
-                                            .override(
-                                              font: TextStyle(fontFamily: 'Manrope',
-                                                fontWeight:
-                                                    AppTypography.bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTypography.bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                              color:
-                                                  AppColors.onyx,
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  AppTypography.bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTypography.bodyMedium
-                                                      .fontStyle,
-                                            ),
+                                        style: AppTypography.bodyMedium.copyWith(
+                                          color: AppColors.onyx,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -623,25 +508,9 @@ class _SignInWidgetState extends State<SignInWidget> {
                                             style: TextStyle(),
                                           )
                                         ],
-                                        style: AppTypography.bodyMedium
-                                            .override(
-                                              font: TextStyle(fontFamily: 'Manrope',
-                                                fontWeight:
-                                                    AppTypography.bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    AppTypography.bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                              color: AppColors.navyDarkBtnText,
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  AppTypography.bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  AppTypography.bodyMedium
-                                                      .fontStyle,
-                                            ),
+                                        style: AppTypography.bodyMedium.copyWith(
+                                          color: AppColors.pure,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -746,26 +615,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                             ),
                                             Text(
                                               'UserName',
-                                              style:
-                                                  AppTypography.titleMedium
-                                                      .override(
-                                                        font:
-                                                            TextStyle(fontFamily: 'Manrope',
-                                                          fontWeight:
-                                                              AppTypography.titleMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTypography.titleMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            AppTypography.titleMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTypography.titleMedium
-                                                                .fontStyle,
-                                                      ),
+                                              style: AppTypography.titleMedium,
                                             ),
                                           ],
                                         ),
@@ -776,26 +626,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           children: [
                                             Text(
                                               'Overall',
-                                              style:
-                                                  AppTypography.bodySmall
-                                                      .override(
-                                                        font:
-                                                            TextStyle(fontFamily: 'Manrope',
-                                                          fontWeight:
-                                                              AppTypography.bodySmall
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTypography.bodySmall
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            AppTypography.bodySmall
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTypography.bodySmall
-                                                                .fontStyle,
-                                                      ),
+                                              style: AppTypography.bodySmall,
                                             ),
                                             Row(
                                               mainAxisSize: MainAxisSize.max,
@@ -806,25 +637,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                           0.0, 0.0, AppSpacing.xxs, 0.0),
                                                   child: Text(
                                                     '5',
-                                                    style: AppTypography.headlineMedium
-                                                        .override(
-                                                          font: TextStyle(
-                                                            fontFamily: 'Manrope',
-                                                            fontWeight:
-                                                                AppTypography.headlineMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                AppTypography.headlineMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              AppTypography.headlineMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTypography.headlineMedium
-                                                                  .fontStyle,
-                                                        ),
+                                                    style: AppTypography.headlineMedium,
                                                   ),
                                                 ),
                                                 Icon(
@@ -848,24 +661,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                         Expanded(
                                           child: AutoSizeText(
                                             'Nice outdoor courts, solid concrete and good hoops for the neighborhood.',
-                                            style: AppTypography.bodyMedium
-                                                .override(
-                                                  font: TextStyle(fontFamily: 'Manrope',
-                                                    fontWeight:
-                                                        AppTypography.bodyMedium
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        AppTypography.bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      AppTypography.bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      AppTypography.bodyMedium
-                                                          .fontStyle,
-                                                ),
+                                            style: AppTypography.bodyMedium,
                                           ),
                                         ),
                                       ],

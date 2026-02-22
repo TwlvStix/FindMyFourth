@@ -68,10 +68,10 @@ class ChatMessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final bubbleColor = isSentByCurrentUser
         ? AppColors.navyDark
-        : AppColors.navyBackground;
+        : AppColors.navy;
     final textColor = isSentByCurrentUser
-        ? AppColors.navyDarkBtnText
-        : AppColors.navyDarkText;
+        ? AppColors.pure
+        : AppColors.pure;
 
     return Dismissible(
       key: Key('message_${message.id}'),

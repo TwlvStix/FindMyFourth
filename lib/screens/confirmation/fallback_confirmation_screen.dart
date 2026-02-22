@@ -83,7 +83,7 @@ class _FallbackConfirmationScreenState
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        backgroundColor: AppColors.navyDarkBackground,
+        backgroundColor: AppColors.navyDark,
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -91,7 +91,7 @@ class _FallbackConfirmationScreenState
     // Post-answer confirmation view
     if (_answered != null) {
       return Scaffold(
-        backgroundColor: AppColors.navyDarkBackground,
+        backgroundColor: AppColors.navyDark,
         body: SafeArea(
           child: Center(
             child: Padding(
@@ -101,7 +101,7 @@ class _FallbackConfirmationScreenState
                 children: [
                   Icon(
                     _answered! ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                    color: _answered! ? AppColors.navyDark : AppColors.navyText,
+                    color: _answered! ? AppColors.navyDark : AppColors.pure,
                     size: 64,
                   ),
                   SizedBox(height: AppSpacing.lg),
@@ -128,14 +128,14 @@ class _FallbackConfirmationScreenState
     }
 
     return Scaffold(
-      backgroundColor: AppColors.navyDarkBackground,
+      backgroundColor: AppColors.navyDark,
       appBar: AppBar(
-        backgroundColor: AppColors.navyDarkBackground,
+        backgroundColor: AppColors.navyDark,
         elevation: 0,
         title: Text('Round Check-in', style: AppTypography.titleMedium),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.navyDarkText),
+          icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.pure),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -160,9 +160,8 @@ class _FallbackConfirmationScreenState
               SizedBox(height: AppSpacing.sm),
               Text(
                 "The host hasn't confirmed the round yet. Let us know if it happened.",
-                style: AppTypography.bodyMedium.override(
-                  font: const TextStyle(fontFamily: 'Manrope'),
-                  color: AppColors.navyText,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.pure,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -170,8 +169,7 @@ class _FallbackConfirmationScreenState
                 SizedBox(height: AppSpacing.md),
                 Text(
                   _error!,
-                  style: AppTypography.bodySmall.override(
-                    font: const TextStyle(fontFamily: 'Manrope'),
+                  style: AppTypography.bodySmall.copyWith(
                     color: AppColors.error,
                   ),
                   textAlign: TextAlign.center,
@@ -193,7 +191,7 @@ class _FallbackConfirmationScreenState
                     child: _YesNoButton(
                       label: 'No',
                       icon: Icons.close_rounded,
-                      color: AppColors.navyText,
+                      color: AppColors.pure,
                       onTap: _submitting ? null : () => _submit(false),
                     ),
                   ),
@@ -241,8 +239,7 @@ class _YesNoButton extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 label,
-                style: AppTypography.titleMedium.override(
-                  font: const TextStyle(fontFamily: 'Manrope'),
+                style: AppTypography.titleMedium.copyWith(
                   color: color,
                   fontWeight: FontWeight.w700,
                 ),

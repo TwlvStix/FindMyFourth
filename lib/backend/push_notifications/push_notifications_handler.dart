@@ -8,6 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/core/design_tokens/colors.dart';
 
 final _handledMessageIds = <String?>{};
 
@@ -290,7 +291,7 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   @override
   Widget build(BuildContext context) => _loading
       ? Container(
-          color: AppColors.navyDarkBackground,
+          color: AppColors.navyDark,
           child: Image.asset(
             'assets/images/Blackfixed.png',
             fit: BoxFit.contain,

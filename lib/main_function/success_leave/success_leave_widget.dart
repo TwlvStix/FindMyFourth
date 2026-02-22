@@ -2,6 +2,8 @@ import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -33,7 +35,7 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: AppColors.navyBackground,
+      backgroundColor: AppColors.navy,
       body: FairwayBackgroundSunset(
         showOrganic: true,
         child: SafeArea(
@@ -54,7 +56,7 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                         color: AppColors.navyDark,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: AppColors.navyDarkBtnText,
+                          color: AppColors.pure,
                           width: 2.0,
                         ),
                       ),
@@ -63,7 +65,7 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                         padding: AppSpacing.only(left: 30.0, top: 30.0, right: 30.0, bottom: 30.0),
                         child: Icon(
                           Icons.check_rounded,
-                          color: AppColors.navyDarkBtnText,
+                          color: AppColors.pure,
                           size: 60.0,
                         ),
                       ),
@@ -73,38 +75,14 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                     padding: AppSpacing.only(top: AppSpacing.xl),
                     child: Text(
                       'Enjoy Your Boring Existence',
-                      style: AppTypography.titleLarge.override(
-                            font: TextStyle(fontFamily: 'Manrope',
-                              fontWeight: AppTypography.titleLarge
-                                  .fontWeight,
-                              fontStyle: AppTypography.titleLarge
-                                  .fontStyle,
-                            ),
-                            letterSpacing: 0.0,
-                            fontWeight: AppTypography.titleLarge
-                                .fontWeight,
-                            fontStyle: AppTypography.titleLarge
-                                .fontStyle,
-                          ),
+                      style: AppTypography.titleLarge,
                     ),
                   ),
                   Padding(
                     padding: AppSpacing.only(top: AppSpacing.md),
                     child: Text(
                       'We will have fun without you!',
-                      style: AppTypography.titleLarge.override(
-                            font: TextStyle(fontFamily: 'Manrope',
-                              fontWeight: AppTypography.titleLarge
-                                  .fontWeight,
-                              fontStyle: AppTypography.titleLarge
-                                  .fontStyle,
-                            ),
-                            letterSpacing: 0.0,
-                            fontWeight: AppTypography.titleLarge
-                                .fontWeight,
-                            fontStyle: AppTypography.titleLarge
-                                .fontStyle,
-                          ),
+                      style: AppTypography.titleLarge,
                     ),
                   ),
                   Expanded(

@@ -67,9 +67,9 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppColors.navyDarkBackground,
+        backgroundColor: AppColors.navyDark,
         appBar: AppBar(
-          backgroundColor: AppColors.navyDarkBackground,
+          backgroundColor: AppColors.navyDark,
           automaticallyImplyLeading: false,
           leading: PremiumBackButton(
             onTap: _returnToSignIn,
@@ -101,7 +101,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                         width: 100.0,
                         height: 100.0,
                         decoration: BoxDecoration(
-                          color: AppColors.navyDarkBackground,
+                          color: AppColors.navyDark,
                         ),
                         child: Padding(
                           padding: EdgeInsets.only(
@@ -153,7 +153,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                               decoration: InputDecoration(
                                 labelText: 'Enter Email Here',
                                 labelStyle: AppTypography.bodyLarge.copyWith(
-                                  color: AppColors.navyDarkBtnText,
+                                  color: AppColors.pure,
                                   fontWeight: FontWeight.w500,
                                 ),
                                 enabledBorder: InputBorder.none,
@@ -162,7 +162,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                                 focusedErrorBorder: InputBorder.none,
                               ),
                               style: AppTypography.bodyLarge.copyWith(
-                                color: AppColors.navyDarkBtnText,
+                                color: AppColors.pure,
                                 fontWeight: FontWeight.w500,
                               ),
                               textAlign: TextAlign.start,
@@ -215,7 +215,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                   ),
                   child: AppText.body(
                     'Check your email for the reset link. You can return to sign in once you receive it.',
-                    color: AppColors.navyText,
+                    color: AppColors.pure,
                     textAlign: TextAlign.center,
                   ),
                 ),

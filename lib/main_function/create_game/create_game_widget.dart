@@ -10,6 +10,7 @@ import '/core/widgets/fairway_background.dart';
 import '/core/widgets/trust/restriction_banner.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/form_field_controller.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
@@ -575,7 +576,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 'You have created a game!',
                 style: TextStyle(
                   fontFamily: 'Manrope',
-                  color: AppColors.navyBackground,
+                  color: AppColors.navy,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -861,7 +862,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppColors.navyDark
-                      : AppColors.navyBackground,
+                      : AppColors.navy,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isSelected
@@ -878,8 +879,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: isSelected
-                        ? AppColors.navyDarkBtnText
-                        : AppColors.navyDarkText,
+                        ? AppColors.pure
+                        : AppColors.pure,
                   ),
                 ),
               ),
@@ -933,7 +934,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                     )
                   : null,
               color:
-                  isSelected ? null : AppColors.navyBackground,
+                  isSelected ? null : AppColors.navy,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isSelected
@@ -950,7 +951,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 fontWeight: FontWeight.w600,
                 color: isSelected
                     ? Colors.white
-                    : AppColors.navyDarkText,
+                    : AppColors.pure,
               ),
             ),
           ),
@@ -1124,18 +1125,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               leading: const PremiumBackButton(),
               title: Text(
                 'Create Game',
-                style: AppTypography.headlineLarge.override(
-                      font: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontWeight: FontWeight.w500,
-                        fontStyle: AppTypography.headlineLarge.fontStyle,
-                      ),
-                      color: AppColors.pure,
-                      fontSize: 24.0,
-                      letterSpacing: 0.0,
-                      fontWeight: FontWeight.w500,
-                      fontStyle: AppTypography.headlineLarge.fontStyle,
-                    ),
+                style: AppTypography.headlineMedium.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               centerTitle: false,
             ),
@@ -1589,66 +1582,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   },
                                                   width: 300.0,
                                                   height: 50.0,
-                                                  searchHintTextStyle: AppTypography
-                                                      .labelMedium
-                                                      .override(
-                                                        font: TextStyle(
-                                                          fontFamily: 'Manrope',
-                                                          fontWeight:
-                                                              AppTypography.labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTypography.labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            AppTypography.labelMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTypography.labelMedium
-                                                                .fontStyle,
-                                                      ),
-                                                  searchTextStyle: AppTypography
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: TextStyle(
-                                                          fontFamily: 'Manrope',
-                                                          fontWeight:
-                                                              AppTypography.bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTypography.bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            AppTypography.bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTypography.bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                  textStyle: AppTypography
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: TextStyle(
-                                                          fontFamily: 'Manrope',
-                                                          fontWeight:
-                                                              AppTypography.bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              AppTypography.bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            AppTypography.bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            AppTypography.bodyMedium
-                                                                .fontStyle,
-                                                      ),
+                                                  searchHintTextStyle: AppTypography.labelMedium,
+                                                  searchTextStyle: AppTypography.bodyMedium,
+                                                  textStyle: AppTypography.bodyMedium,
                                                   hintText:
                                                       'Where are you playing?',
                                                   searchHintText:

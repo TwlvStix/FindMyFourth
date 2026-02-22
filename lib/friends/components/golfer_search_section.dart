@@ -251,44 +251,22 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                         helperStyle: AppTypography.labelSmall.copyWith(
                           color: Colors.white,
                         ),
-                        labelStyle: AppTypography.labelMedium.override(
-                              font: TextStyle(fontFamily: 'Manrope',
-                                fontWeight:
-                                    AppTypography.labelMedium.fontWeight,
-                                fontStyle:
-                                    AppTypography.labelMedium.fontStyle,
-                              ),
-                              color: AppColors.navyDarkBtnText,
-                              letterSpacing: 0.0,
-                              fontWeight:
-                                  AppTypography.labelMedium.fontWeight,
-                              fontStyle:
-                                  AppTypography.labelMedium.fontStyle,
-                            ),
-                        hintStyle: AppTypography.labelMedium.override(
-                              font: TextStyle(fontFamily: 'Manrope',
-                                fontWeight:
-                                    AppTypography.labelMedium.fontWeight,
-                                fontStyle:
-                                    AppTypography.labelMedium.fontStyle,
-                              ),
-                              color: AppColors.navyDarkBtnText,
-                              letterSpacing: 0.0,
-                              fontWeight:
-                                  AppTypography.labelMedium.fontWeight,
-                              fontStyle:
-                                  AppTypography.labelMedium.fontStyle,
-                            ),
+                        labelStyle: AppTypography.labelMedium.copyWith(
+                          color: AppColors.pure,
+                        ),
+                        hintStyle: AppTypography.labelMedium.copyWith(
+                          color: AppColors.pure,
+                        ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: AppColors.navyDarkBtnText,
+                            color: AppColors.pure,
                             width: 2.0,
                           ),
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: AppColors.navyDarkBtnText,
+                            color: AppColors.pure,
                             width: 2.0,
                           ),
                           borderRadius: BorderRadius.circular(8.0),
@@ -309,23 +287,12 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                         ),
                         prefixIcon: Icon(
                           Icons.search_rounded,
-                          color: AppColors.navyDarkBtnText,
+                          color: AppColors.pure,
                         ),
                       ),
-                      style: AppTypography.bodyMedium.override(
-                            font: TextStyle(fontFamily: 'Manrope',
-                              fontWeight:
-                                  AppTypography.bodyMedium.fontWeight,
-                              fontStyle:
-                                  AppTypography.bodyMedium.fontStyle,
-                            ),
-                            color: AppColors.navyBackground,
-                            letterSpacing: 0.0,
-                            fontWeight:
-                                AppTypography.bodyMedium.fontWeight,
-                            fontStyle:
-                                AppTypography.bodyMedium.fontStyle,
-                          ),
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.navy,
+                      ),
                     ),
                   ),
                 ),
@@ -348,7 +315,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                         Icons.tune_rounded,
                         color: widget.friendFilters?.hasActiveFilters == true
                             ? AppColors.navy
-                            : AppColors.navyDarkBtnText,
+                            : AppColors.pure,
                         size: 24.0,
                       ),
                       onPressed: widget.onFilterPressed,
@@ -365,7 +332,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                     tooltip: 'Clear search',
                     icon: Icon(
                       Icons.clear_sharp,
-                      color: AppColors.navyDarkBtnText,
+                      color: AppColors.pure,
                       size: 24.0,
                     ),
                     onPressed: _clearSearch,
@@ -429,7 +396,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
               child: Text(
                 widget.resultsLabel,
                 style: AppTypography.labelMedium.copyWith(
-                  color: AppColors.navyDarkBtnText,
+                  color: AppColors.pure,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.8,
                 ),

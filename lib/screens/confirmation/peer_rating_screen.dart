@@ -193,14 +193,14 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        backgroundColor: AppColors.navyDarkBackground,
+        backgroundColor: AppColors.navyDark,
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_submitted) {
       return Scaffold(
-        backgroundColor: AppColors.navyDarkBackground,
+        backgroundColor: AppColors.navyDark,
         body: SafeArea(
           child: Center(
             child: Padding(
@@ -238,14 +238,14 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
 
     if (_ratees.isEmpty) {
       return Scaffold(
-        backgroundColor: AppColors.navyDarkBackground,
+        backgroundColor: AppColors.navyDark,
         appBar: AppBar(
-          backgroundColor: AppColors.navyDarkBackground,
+          backgroundColor: AppColors.navyDark,
           elevation: 0,
           title: Text('Rate Your Group', style: AppTypography.titleMedium),
           centerTitle: true,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.navyDarkText),
+            icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.pure),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
@@ -265,14 +265,14 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.navyDarkBackground,
+      backgroundColor: AppColors.navyDark,
       appBar: AppBar(
-        backgroundColor: AppColors.navyDarkBackground,
+        backgroundColor: AppColors.navyDark,
         elevation: 0,
         title: Text('Rate Your Group', style: AppTypography.titleMedium),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.navyDarkText),
+          icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.pure),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -333,8 +333,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
                 padding: AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 child: Text(
                   _error!,
-                  style: AppTypography.bodySmall.override(
-                    font: const TextStyle(fontFamily: 'Manrope'),
+                  style: AppTypography.bodySmall.copyWith(
                     color: AppColors.error,
                   ),
                   textAlign: TextAlign.center,
@@ -405,11 +404,11 @@ class _RateeRow extends StatelessWidget {
       margin: AppSpacing.only(bottom: AppSpacing.sm),
       padding: AppSpacing.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.navyBackground,
+        color: AppColors.navy,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: rating == null
-              ? AppColors.navyText.withValues(alpha:0.2)
+              ? AppColors.pure.withValues(alpha:0.2)
               : (rating! ? AppColors.navyDark.withValues(alpha:0.4) : AppColors.error.withValues(alpha:0.4)),
           width: 1,
         ),
@@ -501,13 +500,13 @@ class _ThumbButton extends StatelessWidget {
           color: selected ? activeColor : Colors.transparent,
           shape: BoxShape.circle,
           border: Border.all(
-            color: selected ? activeColor : AppColors.navyText.withValues(alpha:0.3),
+            color: selected ? activeColor : AppColors.pure.withValues(alpha:0.3),
           ),
         ),
         child: Icon(
           icon,
           size: 22,
-          color: selected ? Colors.white : AppColors.navyText,
+          color: selected ? Colors.white : AppColors.pure,
         ),
       ),
     );

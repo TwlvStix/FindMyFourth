@@ -3,6 +3,7 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 import 'dart:ui';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/models/game.dart';
@@ -60,7 +61,7 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: AppColors.navyBackground,
+                    color: AppColors.navy,
                     boxShadow: [
                       BoxShadow(
                         blurRadius: 7.0,

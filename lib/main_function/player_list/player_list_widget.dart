@@ -344,7 +344,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                             ),
                             prefixIcon: Icon(Icons.search, size: 20.0),
                             filled: true,
-                            fillColor: AppColors.navyBackground,
+                            fillColor: AppColors.navy,
                             contentPadding: EdgeInsets.symmetric(
                               horizontal: 12.0,
                               vertical: 12.0,
@@ -905,7 +905,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         if (!snapshot.hasData) {
           return Scaffold(
             key: scaffoldKey,
-            backgroundColor: AppColors.navyDarkBtnText,
+            backgroundColor: AppColors.pure,
             body: Center(
               child: SizedBox(
                 width: 50.0,

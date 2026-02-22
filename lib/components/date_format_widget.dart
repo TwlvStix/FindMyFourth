@@ -1,5 +1,7 @@
 import '/utils/app_util.dart';
 import 'package:flutter/material.dart';
+import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 
 class DateFormatWidget extends StatefulWidget {
   const DateFormatWidget({
@@ -36,16 +38,9 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
             dateTimeFormat("EEEE", widget.date),
             'Friday',
           ),
-          style: AppTypography.bodyLarge.override(
-                font: TextStyle(fontFamily: 'Manrope',
-                  fontWeight: AppTypography.bodyLarge.fontWeight,
-                  fontStyle: AppTypography.bodyLarge.fontStyle,
-                ),
-                color: AppColors.navyDarkBtnText,
-                letterSpacing: 0.0,
-                fontWeight: AppTypography.bodyLarge.fontWeight,
-                fontStyle: AppTypography.bodyLarge.fontStyle,
-              ),
+          style: AppTypography.bodyLarge.copyWith(
+            color: AppColors.pure,
+          ),
         ),
         Text(
           ',',
@@ -71,17 +66,9 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
               dateTimeFormat("MMMM", widget.date),
               'July',
             ),
-            style: AppTypography.bodyLarge.override(
-                  font: TextStyle(fontFamily: 'Manrope',
-                    fontWeight:
-                        AppTypography.bodyLarge.fontWeight,
-                    fontStyle: AppTypography.bodyLarge.fontStyle,
-                  ),
-                  color: Colors.white,
-                  letterSpacing: 0.0,
-                  fontWeight: AppTypography.bodyLarge.fontWeight,
-                  fontStyle: AppTypography.bodyLarge.fontStyle,
-                ),
+            style: AppTypography.bodyLarge.copyWith(
+              color: Colors.white,
+            ),
           ),
         ),
         Padding(
@@ -91,17 +78,9 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
               dateTimeFormat("d", widget.date),
               '1',
             ),
-            style: AppTypography.bodyLarge.override(
-                  font: TextStyle(fontFamily: 'Manrope',
-                    fontWeight:
-                        AppTypography.bodyLarge.fontWeight,
-                    fontStyle: AppTypography.bodyLarge.fontStyle,
-                  ),
-                  color: Colors.white,
-                  letterSpacing: 0.0,
-                  fontWeight: AppTypography.bodyLarge.fontWeight,
-                  fontStyle: AppTypography.bodyLarge.fontStyle,
-                ),
+            style: AppTypography.bodyLarge.copyWith(
+              color: Colors.white,
+            ),
           ),
         ),
         Padding(
@@ -111,17 +90,9 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
               dateTimeFormat("jm", widget.date),
               '00:00',
             ),
-            style: AppTypography.bodyLarge.override(
-                  font: TextStyle(fontFamily: 'Manrope',
-                    fontWeight:
-                        AppTypography.bodyLarge.fontWeight,
-                    fontStyle: AppTypography.bodyLarge.fontStyle,
-                  ),
-                  color: Colors.white,
-                  letterSpacing: 0.0,
-                  fontWeight: AppTypography.bodyLarge.fontWeight,
-                  fontStyle: AppTypography.bodyLarge.fontStyle,
-                ),
+            style: AppTypography.bodyLarge.copyWith(
+              color: Colors.white,
+            ),
           ),
         ),
       ],

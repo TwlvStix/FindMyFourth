@@ -898,21 +898,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         child: Center(
                                           child: Text(
                                             'G',
-                                            style: AppTypography.titleMedium
-                                                .override(
-                                                  font: TextStyle(fontFamily: 'Manrope',
-                                                    fontWeight: FontWeight.w600,
-                                                    fontStyle:
-                                                        AppTypography.titleMedium
-                                                            .fontStyle,
-                                                  ),
-                                                  color: Colors.white,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontStyle:
-                                                      AppTypography.titleMedium
-                                                          .fontStyle,
-                                                ),
+                                            style: AppTypography.titleMedium.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -926,46 +915,19 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                           children: [
                                             Text(
                                               guestName,
-                                              style: AppTypography.bodyLarge
-                                                  .override(
-                                                    font: TextStyle(fontFamily: 'Manrope',
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle:
-                                                          AppTypography.bodyLarge
-                                                              .fontStyle,
-                                                    ),
-                                                    color: Colors.white,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight: FontWeight.w500,
-                                                    fontStyle:
-                                                        AppTypography.bodyLarge
-                                                            .fontStyle,
-                                                  ),
+                                              style: AppTypography.bodyLarge.copyWith(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w500,
+                                              ),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                             SizedBox(height: AppSpacing.xxs),
                                             Text(
                                               'Guest',
-                                              style: AppTypography.bodySmall
-                                                  .override(
-                                                    font: TextStyle(fontFamily: 'Manrope',
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      fontStyle:
-                                                          AppTypography.bodySmall
-                                                              .fontStyle,
-                                                    ),
-                                                    color: Colors.white
-                                                        .withValues(alpha: 0.7),
-                                                    letterSpacing: 0.0,
-                                                    fontWeight:
-                                                        FontWeight.normal,
-                                                    fontStyle:
-                                                        AppTypography.bodySmall
-                                                            .fontStyle,
-                                                  ),
+                                              style: AppTypography.bodySmall.copyWith(
+                                                color: Colors.white.withValues(alpha: 0.7),
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -1790,16 +1752,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
           child: Center(
             child: Text(
               text,
-              style: AppTypography.bodyLarge.override(
-                    font: TextStyle(fontFamily: 'Manrope',
-                      fontWeight: FontWeight.w600,
-                      fontStyle: AppTypography.bodyLarge.fontStyle,
-                    ),
-                    color: AppColors.error,
-                    letterSpacing: 0.0,
-                    fontWeight: FontWeight.w600,
-                    fontStyle: AppTypography.bodyLarge.fontStyle,
-                  ),
+              style: AppTypography.bodyLarge.copyWith(
+                color: AppColors.error,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),

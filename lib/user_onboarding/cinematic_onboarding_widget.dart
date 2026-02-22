@@ -8,6 +8,7 @@ import '/main_function/games_list/games_list_widget.dart';
 import '../core/design_tokens/colors.dart';
 import '../core/design_tokens/spacing.dart';
 import '../core/design_tokens/border_radius.dart';
+import '../core/design_tokens/typography.dart';
 import '../core/widgets/app_button_enhanced.dart';
 import '../core/widgets/fairway_background.dart';
 

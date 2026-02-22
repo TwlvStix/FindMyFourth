@@ -203,7 +203,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
           content: Text(
             'Friend removed',
             style: AppTypography.titleMedium.copyWith(
-              color: AppColors.navyDarkBtnText,
+              color: AppColors.pure,
             ),
           ),
           duration: Duration(milliseconds: 1500),
@@ -550,7 +550,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
           content: Text(
             'Request cancelled.',
             style: AppTypography.titleMedium.copyWith(
-              color: AppColors.navyDarkBtnText,
+              color: AppColors.pure,
             ),
           ),
           duration: const Duration(milliseconds: 1500),
@@ -573,7 +573,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
           content: Text(
             'Friend request sent!',
             style: AppTypography.titleMedium.copyWith(
-              color: AppColors.navyDarkBtnText,
+              color: AppColors.pure,
             ),
           ),
           duration: const Duration(milliseconds: 1500),
@@ -694,7 +694,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
           content: Text(
             'Friend request accepted!',
             style: AppTypography.titleMedium.copyWith(
-              color: AppColors.navyDarkBtnText,
+              color: AppColors.pure,
             ),
           ),
           duration: const Duration(milliseconds: 1500),
@@ -717,7 +717,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
           content: Text(
             'Request denied.',
             style: AppTypography.titleMedium.copyWith(
-              color: AppColors.navyDarkBtnText,
+              color: AppColors.pure,
             ),
           ),
           duration: const Duration(milliseconds: 1500),

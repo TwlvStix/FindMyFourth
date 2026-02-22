@@ -169,14 +169,14 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        backgroundColor: AppColors.navyDarkBackground,
+        backgroundColor: AppColors.navyDark,
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_successMessage != null) {
       return Scaffold(
-        backgroundColor: AppColors.navyDarkBackground,
+        backgroundColor: AppColors.navyDark,
         body: SafeArea(
           child: Center(
             child: Padding(
@@ -208,9 +208,9 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.navyDarkBackground,
+      backgroundColor: AppColors.navyDark,
       appBar: AppBar(
-        backgroundColor: AppColors.navyDarkBackground,
+        backgroundColor: AppColors.navyDark,
         elevation: 0,
         title: Text(
           'Confirm Attendance',
@@ -218,7 +218,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.navyDarkText),
+          icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.pure),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -242,8 +242,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
                 padding: AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 child: Text(
                   _error!,
-                  style: AppTypography.bodySmall.override(
-                    font: const TextStyle(fontFamily: 'Manrope'),
+                  style: AppTypography.bodySmall.copyWith(
                     color: AppColors.error,
                   ),
                   textAlign: TextAlign.center,
@@ -319,7 +318,7 @@ class _ParticipantRow extends StatelessWidget {
       margin: AppSpacing.only(bottom: AppSpacing.sm),
       padding: AppSpacing.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.navyBackground,
+        color: AppColors.navy,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isPresent
@@ -341,15 +340,13 @@ class _ParticipantRow extends StatelessWidget {
                 Text(participant.displayName, style: AppTypography.bodyLarge),
                 if (participant.role == 'host')
                   Text('Host',
-                      style: AppTypography.bodySmall.override(
-                        font: const TextStyle(fontFamily: 'Manrope'),
+                      style: AppTypography.bodySmall.copyWith(
                         color: AppColors.navyDark,
                       ))
                 else if (participant.isGuest)
                   Text('Guest',
-                      style: AppTypography.bodySmall.override(
-                        font: const TextStyle(fontFamily: 'Manrope'),
-                        color: AppColors.navyText,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.pure,
                       )),
               ],
             ),
@@ -431,14 +428,13 @@ class _ToggleChip extends StatelessWidget {
           color: selected ? selectedColor : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? selectedColor : AppColors.navyText.withValues(alpha:0.4),
+            color: selected ? selectedColor : AppColors.pure.withValues(alpha:0.4),
           ),
         ),
         child: Text(
           label,
-          style: AppTypography.bodySmall.override(
-            font: const TextStyle(fontFamily: 'Manrope'),
-            color: selected ? Colors.white : AppColors.navyText,
+          style: AppTypography.bodySmall.copyWith(
+            color: selected ? Colors.white : AppColors.pure,
             fontWeight: FontWeight.w600,
           ),
         ),

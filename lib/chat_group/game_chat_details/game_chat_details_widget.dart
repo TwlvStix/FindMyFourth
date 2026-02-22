@@ -18,6 +18,7 @@ import '/providers/profile_provider.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
@@ -288,7 +289,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       builder: (BuildContext context) {
         return Container(
           decoration: BoxDecoration(
-            color: AppColors.navyDarkBackground,
+            color: AppColors.navyDark,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),
@@ -309,9 +310,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
               SizedBox(height: AppSpacing.md),
               Text(
                 'React to message',
-                style: AppTypography.titleMedium.override(
-                      letterSpacing: 0.0,
-                    ),
+                style: AppTypography.titleMedium,
               ),
               SizedBox(height: AppSpacing.lg),
               Wrap(
@@ -345,7 +344,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                       decoration: BoxDecoration(
                         color: hasReacted
                             ? AppColors.navyDark.withValues(alpha:0.3)
-                            : AppColors.navyBackground,
+                            : AppColors.navy,
                         borderRadius: BorderRadius.circular(12),
                         border: hasReacted
                             ? Border.all(
@@ -491,7 +490,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     return PopupMenuButton<String>(
       icon: Icon(
         Icons.more_vert,
-        color: AppColors.navyDarkBtnText,
+        color: AppColors.pure,
       ),
       tooltip: 'More options',
       onSelected: (String value) {
@@ -512,10 +511,9 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
               SizedBox(width: 12.0),
               Text(
                 'Delete Chat',
-                style: AppTypography.bodyMedium.override(
-                      color: AppColors.error,
-                      letterSpacing: 0.0,
-                    ),
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.error,
+                ),
               ),
             ],
           ),
@@ -620,21 +618,19 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
               onPressed: () => Navigator.of(dialogContext).pop(false),
               child: Text(
                 'Cancel',
-                style: AppTypography.bodyLarge.override(
-                      color: AppColors.navyDarkText,
-                      letterSpacing: 0.0,
-                    ),
+                style: AppTypography.bodyLarge.copyWith(
+                  color: AppColors.pure,
+                ),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
               child: Text(
                 'Delete',
-                style: AppTypography.bodyLarge.override(
-                      color: AppColors.error,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.0,
-                    ),
+                style: AppTypography.bodyLarge.copyWith(
+                  color: AppColors.error,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -721,7 +717,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   void _showImageSourceSheet() {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppColors.navyDarkBackground,
+      backgroundColor: AppColors.navyDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -1040,7 +1036,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
             backgroundColor: Colors.transparent,
             surfaceTintColor: Colors.transparent,
             scrolledUnderElevation: 0,
-            foregroundColor: AppColors.navyDarkBtnText,
+            foregroundColor: AppColors.pure,
             elevation: 0.0,
             shadowColor: Colors.transparent,
             leading: PremiumBackButton(
@@ -1077,7 +1073,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                       ),
                       padding: EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: AppColors.navyDarkBackground,
+                        color: AppColors.navyDark,
                         borderRadius: BorderRadius.circular(12.0),
                         border: Border.all(
                           color: AppColors.navyDark
@@ -1101,10 +1097,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                   _bannerText.isNotEmpty
                                       ? _bannerText
                                       : 'This chat is archived.',
-                                  style: AppTypography.bodyMedium
-                                      .override(
-                                                          letterSpacing: 0.0,
-                                      ),
+                                  style: AppTypography.bodyMedium,
                                 ),
                                 if (_isArchived)
                                   Padding(
@@ -1113,10 +1106,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                     ),
                                     child: Text(
                                       'Messages are disabled.',
-                                      style: AppTypography.labelMedium
-                                          .override(
-                                                                  letterSpacing: 0.0,
-                                          ),
+                                      style: AppTypography.labelMedium,
                                     ),
                                   ),
                               ],
@@ -1183,11 +1173,10 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                 SizedBox(width: AppSpacing.sm),
                                 Text(
                                   typingText,
-                                  style: AppTypography.bodySmall.override(
-                                                      color: AppColors.glassTextSecondary,
-                                        fontStyle: FontStyle.italic,
-                                        letterSpacing: 0.0,
-                                      ),
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: AppColors.glassTextSecondary,
+                                    fontStyle: FontStyle.italic,
+                                  ),
                                 ),
                               ],
                             ),
@@ -1201,7 +1190,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                         ? Center(
                             child: AppText.body(
                               'Unable to load chat.',
-                              color: AppColors.navyText,
+                              color: AppColors.pure,
                             ),
                           )
                         : !_chatLoaded
@@ -1212,7 +1201,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                 ? Center(
                                     child: AppText.body(
                                       'Chat not found.',
-                                      color: AppColors.navyText,
+                                      color: AppColors.pure,
                                     ),
                                   )
                                 : StreamBuilder<List<ChatMessageViewModel>>(
@@ -1237,7 +1226,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                         return Center(
                                           child: AppText.body(
                                             'Unable to load messages.',
-                                            color: AppColors.navyText,
+                                            color: AppColors.pure,
                                           ),
                                         );
                                       }
@@ -1273,7 +1262,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                         return Center(
                                           child: AppText.body(
                                             'No messages yet.',
-                                            color: AppColors.navyText,
+                                            color: AppColors.pure,
                                           ),
                                         );
                                       }

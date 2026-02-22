@@ -106,26 +106,61 @@ firebase deploy
 
 ### Design System
 
-**Philosophy: "Elevated Country Club Modernism"** — blends traditional golf club sophistication (serif typography, deep forest greens) with modern athletic energy (geometric sans-serif, warm sunset accents, contemporary monospace for data).
+**Philosophy: "The Clubhouse"** — A trust-first golf matchmaking aesthetic built on three color roles: Green (every interactive element), Navy (structural surfaces and headers), Gold (trust, achievements, premium). Typography blends traditional golf club sophistication with modern athletic energy.
 
 **For new code: always use design tokens directly.** Import from `lib/core/design_tokens/` and use `AppColors`, `AppTypography`, `AppSpacing`, etc. Do not hardcode colors, font sizes, or spacing values. Do not introduce new `AppTheme.of(context)` usage (see legacy note below).
 
 #### Design Tokens (`lib/core/design_tokens/`)
 
-The token system is the source of truth for all visual design. 118 files use tokens directly.
+The token system is the source of truth for all visual design.
+
+**Colors** (`colors.dart`) — "The Clubhouse" palette with three color roles:
+
+*Primary Accent — Fairway Green (all interactive elements):*
+- `green` (#3A8F65) — primary CTAs, Join Game, active nav, links
+- `greenDark` (#2B7050) — pressed states, deep accents
+- `greenLight` (#4EAD7E) — hover highlights, score accents
+- Interaction states: `greenHovered`, `greenPressed`
+
+*Structural — Club Navy (headers, cards, navigation):*
+- `navy` (#1B2E4A) — card headers, secondary buttons, structural fills
+- `navyDark` (#0F1C30) — app bar backgrounds, deep gradients
+- `navyLight` (#2B4A72) — hover accents on navy, borders
+- Interaction states: `navyHovered`, `navyPressed`
+
+*Secondary Accent — Prestige Gold (trust, achievements, premium):*
+- `gold` (#C49A3D) — trust badges, upgrade CTAs, star ratings
+- `goldDark` (#A6832F) — pressed states
+- `goldLight` (#D4A84B) — hover highlights
+- Interaction states: `goldHovered`, `goldPressed`
+
+*Neutrals (warm-tinted):*
+- `pure` (#FFFFFF), `sand` (#FAF9F6), `cloud` (#F4F2EE), `mist` (#DDD8D0), `stone` (#8694A8), `slate` (#556275), `onyx` (#141A24)
+
+*Semantic:* `success` (= green), `warning` (= gold), `error` (#D64545), `info` (#5B8DBE) — each with `Hovered` and `Pressed` variants
+
+*Trust Tier Palette:* Each tier has foreground + background colors:
+- `trustPlatinumFg/Bg` — cool blue-silver (highest trust)
+- `trustGoldFg/Bg` — warm gold
+- `trustSilverFg/Bg` — neutral grey
+- `trustBronzeFg/Bg` — rich warm brown
+- `trustCopperFg/Bg` — reddish-rust (new/unverified)
+
+*Glass / Overlay Presets (pre-computed for performance):*
+- `glassBorder` — white at 20%, `glassSurface` — white at 10%
+- `glassTextSecondary` — white at 70%, `glassTextTertiary` — white at 50%
+- `overlayDark` — black at 40%, `scrim` — black at 60%
+
+*Gradients:* `navyGradient`, `greenGradient`, `goldGradient`, `subtleOverlay`
+
+*Dark theme:* `AppColorsDark` provides full dark variants of all colors, interaction states, trust tiers, and glass presets with navy-tinted dark surfaces.
+
+*Utility:* `AppColorStates.pressed(color)` and `AppColorStates.hovered(color)` for computing interaction states on arbitrary colors.
 
 **Typography** (`typography.dart`) — Three font families:
 - **Fraunces**: Sophisticated serif for headers and titles (`AppTypography.headlineLarge`, `displayLarge`)
 - **Manrope**: Refined sans-serif for body text and UI (`AppTypography.bodyMedium`, `button`)
 - **DM Mono**: Elegant monospace for scores and data (`AppTypography.monoLarge`, `monoDisplay`)
-
-**Colors** (`colors.dart`) — "Fairway Sunset" palette:
-- **Primary**: `fairwayDark` (#1B3A2F), `fairway` (#2D5F4C), `fairwayLight` (#4A8B6F) — deep forest greens
-- **Accent**: `sunsetGold` (#E8B44C), `sunsetPeach` (#E89E71), `sunsetRose` (#D97D70) — warm sunset colors
-- **Neutrals**: `pure` (#FFFEFA), `sand` (#F4F1E8), `cloud` (#E5E3DA), `stone` (#9B9A91), `slate` (#4A4A42), `onyx` (#1C1C16)
-- **Semantic**: `success`, `warning`, `error`, `info`
-- **Gradients**: `fairwayGradient`, `sunsetGradient`, `subtleOverlay`
-- **Dark theme**: `AppColorsDark` provides inverted variants
 
 **Spacing** (`spacing.dart`) — 8-point grid with 4px increments:
 - **Scale**: `xxs` (4px), `xs` (8px), `sm` (12px), `md` (16px), `lg` (20px), `xl` (24px), `xxl` (32px), `xxxl` (48px)
@@ -150,6 +185,11 @@ The token system is the source of truth for all visual design. 118 files use tok
 - **Scale**: `xs` (16px), `sm` (20px), `md` (24px), `lg` (32px), `xl` (40px), `xxl` (48px)
 - **Semantic**: `AppIconSize.nav` (24px), `button` (20px), `listItem` (24px), `section` (32px), `feature` (40px), `avatar` (48px)
 
+**App Icons** (`app_icons.dart`) — SVG icon asset paths:
+- Unified icon system using custom SVGs with 1.75px stroke weight, round caps/joins, 24x24 grid
+- Usage: `AppIcon(assetPath: AppIcons.games, size: AppIconSize.md, color: AppColors.navy)`
+- All icons use `currentColor` for dynamic theming via `colorFilter`
+
 #### Motion System (`lib/core/motion/motion_tokens.dart`)
 
 - **Curves**: Enter = `Curves.easeOutCubic` (starts fast, ends slow). Exit = `Curves.easeInCubic` (starts slow, ends fast).
@@ -164,9 +204,9 @@ The token system is the source of truth for all visual design. 118 files use tok
 
 #### Premium UI Patterns (`lib/core/design_patterns/premium_ui_patterns.dart`)
 
-Reusable premium components built on design tokens (used in 2 screens currently):
-- `AppGradients` — preset gradients: `sunsetGold`, `sunsetRose`, `fairway`, `fairwayDark`, `sunsetSweep` (animated rings)
-- `GlassCard` — semi-transparent card for dark backgrounds (uses `AppOpacity`)
+Reusable premium components built on design tokens (note: file comments still reference old "Fairway Sunset" naming but code uses current tokens):
+- `AppGradients` — preset gradients: `sunsetGold`, `sunsetRose`, `fairway`, `fairwayDark`, `sunsetSweep` (animated rings). **Note: these gradient names are stale and reference the old palette — they should be updated to match The Clubhouse naming (`goldGradient`, `greenGradient`, etc.) when this file is next touched.**
+- `GlassCard` — semi-transparent card for dark backgrounds
 - `GradientIconBox` — gradient-filled icon container with optional shadow
 - `AnimatedAvatarRing` — rotating gradient ring around avatar (8s rotation)
 - `StatCard` — compact metric display on glass background
@@ -190,7 +230,7 @@ Prefixed with `app_` and built on design tokens:
 - `app_loading_state.dart` — Loading state pattern
 - `app_list_tile.dart` — Consistent list item
 - `app_choice_chips.dart` — Chip group selection
-- `app_icon.dart` — Icon wrapper with `AppIconSize`
+- `app_icon.dart` — Icon wrapper with `AppIconSize` and SVG support
 - `app_icon_badge.dart` — Icon with notification badge
 - `app_info_grid.dart` — Grid layout for info display
 - `premium_back_button.dart` — Styled back navigation
@@ -206,10 +246,31 @@ Text('Title', style: AppTypography.headlineMedium)
 Text('Body', style: AppTypography.bodyMedium)
 Text('72', style: AppTypography.monoDisplay)
 
-// Colors
-Container(color: AppColors.fairwayDark)
-Container(decoration: BoxDecoration(gradient: AppColors.fairwayGradient))
-Container(decoration: BoxDecoration(gradient: AppGradients.sunsetGold))
+// Colors — use the three roles
+Container(color: AppColors.green)         // Primary accent (CTAs)
+Container(color: AppColors.navy)          // Structural (headers/cards)
+Container(color: AppColors.gold)          // Secondary accent (trust/premium)
+
+// Interaction states
+color: isPressed ? AppColors.greenPressed : AppColors.green
+// Or for arbitrary colors:
+color: AppColorStates.pressed(someColor)
+
+// Trust tiers
+Container(color: AppColors.trustGoldBg)
+Text('Gold', style: TextStyle(color: AppColors.trustGoldFg))
+
+// Glass presets (no more manual withOpacity)
+Container(
+  decoration: BoxDecoration(
+    color: AppColors.glassSurface,
+    border: Border.all(color: AppColors.glassBorder),
+  ),
+)
+
+// Gradients
+Container(decoration: BoxDecoration(gradient: AppColors.navyGradient))
+Container(decoration: BoxDecoration(gradient: AppColors.greenGradient))
 
 // Spacing
 Padding(padding: AppSpacing.card)   // 20px all sides
@@ -222,8 +283,8 @@ Container(decoration: BoxDecoration(boxShadow: [AppElevation.card]))
 // Border radius
 Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(AppBorderRadius.card)))
 
-// Opacity
-Container(color: AppColors.fairway.withValues(alpha: AppOpacity.glass))
+// Icons (SVG)
+AppIcon(assetPath: AppIcons.games, size: AppIconSize.md, color: AppColors.navy)
 
 // Motion
 AnimatedContainer(duration: MotionTokens.microInteraction, curve: MotionTokens.curveEnter)
@@ -231,22 +292,20 @@ AnimatedContainer(duration: MotionTokens.microInteraction, curve: MotionTokens.c
 
 #### AppTheme Bridge (Legacy — `lib/core/app_theme.dart`)
 
-`AppTheme` is a `ThemeExtension` that maps design tokens to Flutter's theme system using FlutterFlow-era naming. It exists because 39 widget files still reference `AppTheme.of(context)`. The mapping:
-- `AppTheme.of(context).primary` → `AppColors.fairwayDark`
-- `AppTheme.of(context).secondary` → `AppColors.fairway`
-- `AppTheme.of(context).accent1` → `AppColors.sunsetGold`
+`AppTheme` is a `ThemeExtension` that maps design tokens to Flutter's theme system using FlutterFlow-era naming. It exists because some widget files still reference `AppTheme.of(context)`. The current mapping:
+- `AppTheme.of(context).primary` → `AppColors.navyDark`
+- `AppTheme.of(context).secondary` → `AppColors.navy`
+- `AppTheme.of(context).accent1` → `AppColors.gold` (approximately)
 - `AppTheme.of(context).primaryText` → `AppColors.onyx`
-- `AppTheme.of(context).primaryBackground` → `AppColors.sand`
-- `AppTheme.of(context).secondaryBackground` → `AppColors.pure`
 
-**Do not add new `AppTheme.of(context)` usage.** For new code, use tokens directly. `AppTheme` is scheduled for cleanup — either rename to match token vocabulary or migrate all 39 files to direct token usage.
+**Do not add new `AppTheme.of(context)` usage.** For new code, use tokens directly. `AppTheme` is scheduled for cleanup.
 
 #### Known Design Debt
 
-- **~88 hardcoded hex colors** in widget files that should use tokens. Main categories: interaction state variants (pressed/hover colors for buttons) and trust tier colors (gold, silver, bronze, copper palettes in `trust_badge_chip.dart` and `luxury_player_card.dart`).
-- **Token gaps**: No interaction state color variants (pressed/hover/focused), no trust tier color palette, no pre-composed opacity+color constants for common patterns like glass borders.
-- **~372 `withOpacity()` deprecation warnings** — Flutter deprecated `Color.withOpacity()` in favor of `Color.withValues(alpha: ...)`. The `AppOpacity` constants are fine; the warnings are in files calling the old `Color` method.
-- **39 files use `AppTheme.of(context)`** with FlutterFlow naming instead of direct tokens.
+- **`premium_ui_patterns.dart`** has stale naming — `AppGradients` references old "Fairway Sunset" names (`sunsetGold`, `fairway`) instead of The Clubhouse vocabulary. Comments in the file also reference the old design language. Update when next modifying this file.
+- **Remaining `withOpacity()` deprecation warnings** — use `Color.withValues(alpha: ...)` or the pre-computed glass/overlay constants in `AppColors` instead.
+- **Some files still use `AppTheme.of(context)`** with FlutterFlow naming instead of direct tokens.
+- **Flutter analyze: 61 remaining issues** (non-blocking: unused imports, deprecated API usage, unused local variables).
 
 ### Data Models: Record Classes vs Model Classes
 
