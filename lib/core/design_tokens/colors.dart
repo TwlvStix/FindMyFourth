@@ -1,73 +1,79 @@
 import 'package:flutter/material.dart';
 
-/// "The Clubhouse" Color System
+/// "The Clubhouse" Color System — Premium Edition
 /// A trust-first golf matchmaking palette
 ///
 /// Color Hierarchy:
 /// - GREEN (Primary Accent): All CTAs, active states, Join Game, scores, links
-/// - NAVY (Structural): Headers, card backgrounds, secondary buttons, nav bar
-/// - GOLD (Secondary Accent): Trust tiers, upgrades, achievements, premium
-/// - NEUTRALS: Navy-tinted darks and warm lights for cohesion
+///   Darker, richer "fairway at dusk" greens for premium feel
+/// - DEEP TEAL-NAVY (Structural): Headers, card backgrounds, secondary buttons, nav bar
+///   Navy with green undertones — masculine, athletic, grounded
+/// - GOLD (Secondary Accent — demoted): Trust tiers, achievements, premium
+///   Deeper gold used sparingly — accent only, never dominant
+/// - NEUTRALS: Cool-tinted darks and refined lights for cohesion
 /// - SEMANTIC: Green=success, Gold=warning, plus error and info
 
 class AppColors {
   // ==========================================================================
   // PRIMARY ACCENT — Fairway Green (Every interactive element)
+  // Darker, richer greens — "fairway at dusk, not neon grass"
   // ==========================================================================
 
   /// Dark green - pressed states, deep accents
-  static const Color greenDark = Color(0xFF2B7050);
+  static const Color greenDark = Color(0xFF18543E);
 
   /// Main green - primary CTAs, Join Game, active nav, links
-  static const Color green = Color(0xFF3A8F65);
+  static const Color green = Color(0xFF1F6B4E);
 
   /// Light green - hover highlights, score accents, birdie/eagle
-  static const Color greenLight = Color(0xFF4EAD7E);
+  static const Color greenLight = Color(0xFF2E8B68);
 
   // ==========================================================================
-  // STRUCTURAL — Club Navy (Headers, cards, navigation, surfaces)
+  // STRUCTURAL — Deep Teal-Navy (Headers, cards, navigation, surfaces)
+  // Navy with green undertones for depth and groundedness
   // ==========================================================================
 
-  /// Darkest navy - app bar backgrounds, deep gradients
-  static const Color navyDark = Color(0xFF0F1C30);
+  /// Darkest background - app bar backgrounds, deep gradients
+  static const Color navyDark = Color(0xFF0E1C26);
 
-  /// Main navy - card headers, secondary buttons, structural fills
-  static const Color navy = Color(0xFF1B2E4A);
+  /// Main structural - card headers, secondary buttons, structural fills
+  static const Color navy = Color(0xFF142A36);
 
-  /// Light navy - hover accents on navy elements, borders
-  static const Color navyLight = Color(0xFF2B4A72);
+  /// Light structural - hover accents on navy elements, borders
+  static const Color navyLight = Color(0xFF1A2F3A);
 
   // ==========================================================================
   // SECONDARY ACCENT — Prestige Gold (Tiers, achievements, premium)
+  // Deeper gold — accent only, never dominant
   // ==========================================================================
 
   /// Dark gold - pressed states on gold elements
-  static const Color goldDark = Color(0xFFA6832F);
+  static const Color goldDark = Color(0xFF9A7E2A);
 
   /// Main gold - trust badges, upgrade CTAs, star ratings
-  static const Color gold = Color(0xFFC49A3D);
+  static const Color gold = Color(0xFFC9A24D);
 
   /// Light gold - hover highlights on gold elements
-  static const Color goldLight = Color(0xFFD4A84B);
+  static const Color goldLight = Color(0xFFD4B060);
 
   // ==========================================================================
-  // NEUTRALS (Light theme - warm-tinted for cohesion with gold)
+  // NEUTRALS (Light theme - cool-tinted for cohesion)
   // ==========================================================================
 
   /// Pure white - card backgrounds
   static const Color pure = Color(0xFFFFFFFF);
 
   /// Off-white - subtle background variation
-  static const Color sand = Color(0xFFFAF9F6);
+  static const Color sand = Color(0xFFF8FAFB);
 
-  /// Light warm grey - page backgrounds
-  static const Color cloud = Color(0xFFF4F2EE);
+  /// Light cool grey - page backgrounds
+  static const Color cloud = Color(0xFFF2F5F7);
 
-  /// Mid warm grey - borders and dividers
-  static const Color mist = Color(0xFFDDD8D0);
+  /// Mid cool grey - borders and dividers
+  static const Color mist = Color(0xFFD5DCE1);
 
   /// Blue-grey - secondary text, icons
-  static const Color stone = Color(0xFF8694A8);
+  static const Color stone = Color(0xFF7F98A6);
 
   /// Dark blue-grey - primary body text
   static const Color slate = Color(0xFF556275);
@@ -80,10 +86,10 @@ class AppColors {
   // ==========================================================================
 
   /// Success - reuses green (golf-positive: birdies, confirmations)
-  static const Color success = Color(0xFF3A8F65);
+  static const Color success = Color(0xFF1F6B4E);
 
   /// Warning - reuses gold for consistency
-  static const Color warning = Color(0xFFC49A3D);
+  static const Color warning = Color(0xFFC9A24D);
 
   /// Error red - hazards, failed actions, cancellations
   static const Color error = Color(0xFFD64545);
@@ -96,24 +102,24 @@ class AppColors {
   // ==========================================================================
 
   // Green (Primary Actions)
-  static const Color greenHovered = Color(0xFF48A478);
-  static const Color greenPressed = Color(0xFF2F7A55);
+  static const Color greenHovered = Color(0xFF2E8B68);
+  static const Color greenPressed = Color(0xFF18543E);
 
   // Navy (Secondary Actions)
-  static const Color navyHovered = Color(0xFF243D62);
-  static const Color navyPressed = Color(0xFF142338);
+  static const Color navyHovered = Color(0xFF1A2F3A);
+  static const Color navyPressed = Color(0xFF0A1219);
 
   // Gold (Premium Actions)
-  static const Color goldHovered = Color(0xFFD4AA52);
-  static const Color goldPressed = Color(0xFFB08A32);
+  static const Color goldHovered = Color(0xFFD4B060);
+  static const Color goldPressed = Color(0xFF9A7E2A);
 
   // Error
   static const Color errorHovered = Color(0xFFE05555);
   static const Color errorPressed = Color(0xFFC03838);
 
   // Success (mirrors green)
-  static const Color successHovered = Color(0xFF48A478);
-  static const Color successPressed = Color(0xFF2F7A55);
+  static const Color successHovered = Color(0xFF2E8B68);
+  static const Color successPressed = Color(0xFF18543E);
 
   // ==========================================================================
   // TRUST TIER PALETTE (Light theme)
@@ -140,6 +146,32 @@ class AppColors {
   /// Copper tier — new/unverified (reddish-rust)
   static const Color trustCopperFg = Color(0xFF8C4432);
   static const Color trustCopperBg = Color(0xFFF2E6DD);
+
+  // ==========================================================================
+  // INPUT FIELD TOKENS (Premium contrast for form elements)
+  // ==========================================================================
+
+  /// Input field background
+  static const Color inputBackground = Color(0xFF1A2F3A);
+
+  /// Input border - idle state
+  static const Color inputBorderIdle = Color(0xFF274453);
+
+  /// Input border - focused state (ties back to green accent)
+  static const Color inputBorderFocused = Color(0xFF2E8B68);
+
+  // ==========================================================================
+  // TEXT HIERARCHY TOKENS (Premium polish — avoid pure white)
+  // ==========================================================================
+
+  /// Primary text on dark backgrounds
+  static const Color textPrimary = Color(0xFFF2F6F8);
+
+  /// Secondary text on dark backgrounds
+  static const Color textSecondary = Color(0xFFA7BCC9);
+
+  /// Muted / helper text on dark backgrounds
+  static const Color textMuted = Color(0xFF7F98A6);
 
   // ==========================================================================
   // GLASS / OVERLAY PRESETS (Pre-computed for performance + consistency)
@@ -190,7 +222,7 @@ class AppColors {
     stops: [0.0, 0.5, 1.0],
   );
 
-  /// Subtle overlay gradient for backgrounds
+  /// Subtle overlay gradient for backgrounds (darker anchor at bottom)
   static const LinearGradient subtleOverlay = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -199,6 +231,14 @@ class AppColors {
       Color(0x1A000000),
     ],
   );
+
+  /// Background gradient - primary screen background with depth
+  static const LinearGradient backgroundGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [navyDark, navy, Color(0xFF0B1920)],
+    stops: [0.0, 0.65, 1.0],
+  );
 }
 
 // ============================================================================
@@ -206,63 +246,63 @@ class AppColors {
 // ============================================================================
 
 /// Dark Theme Color Variant
-/// Navy-tinted dark surfaces with adjusted accents for dark backgrounds
+/// Deep teal-navy surfaces with premium green and gold accents
 class AppColorsDark {
   // ==========================================================================
   // PRIMARY ACCENT — Fairway Green (Dark)
   // ==========================================================================
 
-  static const Color greenDark = Color(0xFF246145);
-  static const Color green = Color(0xFF3A8F65);
-  static const Color greenLight = Color(0xFF4EAD7E);
+  static const Color greenDark = Color(0xFF134232);
+  static const Color green = Color(0xFF1F6B4E);
+  static const Color greenLight = Color(0xFF2E8B68);
 
   // ==========================================================================
-  // STRUCTURAL — Club Navy (Dark)
+  // STRUCTURAL — Deep Teal-Navy (Dark)
   // ==========================================================================
 
-  static const Color navyDark = Color(0xFF0A1220);
-  static const Color navy = Color(0xFF1B2E4A);
-  static const Color navyLight = Color(0xFF2B4A72);
+  static const Color navyDark = Color(0xFF091318);
+  static const Color navy = Color(0xFF0E1C26);
+  static const Color navyLight = Color(0xFF142A36);
 
   // ==========================================================================
   // SECONDARY ACCENT — Prestige Gold (Dark - slightly brighter for dark bg)
   // ==========================================================================
 
-  static const Color goldDark = Color(0xFFB8923E);
-  static const Color gold = Color(0xFFD4A84B);
-  static const Color goldLight = Color(0xFFE0BD6A);
+  static const Color goldDark = Color(0xFFB18A3A);
+  static const Color gold = Color(0xFFC9A24D);
+  static const Color goldLight = Color(0xFFD4B060);
 
   // ==========================================================================
-  // NEUTRALS (Dark theme - navy-tinted dark surfaces)
+  // NEUTRALS (Dark theme - teal-navy-tinted dark surfaces)
   // ==========================================================================
 
   /// Deepest background
-  static const Color pure = Color(0xFF0C1018);
+  static const Color pure = Color(0xFF091318);
 
   /// Card background
-  static const Color sand = Color(0xFF141A24);
+  static const Color sand = Color(0xFF0E1C26);
 
   /// Elevated surface (sheets, dialogs)
-  static const Color cloud = Color(0xFF1B2230);
+  static const Color cloud = Color(0xFF142A36);
 
   /// Borders and dividers
-  static const Color mist = Color(0xFF253042);
+  static const Color mist = Color(0xFF274453);
 
   /// Secondary text, icons
-  static const Color stone = Color(0xFF556275);
+  static const Color stone = Color(0xFF7F98A6);
 
   /// Primary body text on dark
-  static const Color slate = Color(0xFF8694A8);
+  static const Color slate = Color(0xFFA7BCC9);
 
   /// Headings and important text on dark
-  static const Color onyx = Color(0xFFE8ECF2);
+  static const Color onyx = Color(0xFFF2F6F8);
 
   // ==========================================================================
   // SEMANTIC COLORS (Dark - slightly brighter for legibility)
   // ==========================================================================
 
-  static const Color success = Color(0xFF4EAD7E);
-  static const Color warning = Color(0xFFD4A84B);
+  static const Color success = Color(0xFF2E8B68);
+  static const Color warning = Color(0xFFD4B060);
   static const Color error = Color(0xFFE85555);
   static const Color info = Color(0xFF6B9DCE);
 
@@ -271,50 +311,64 @@ class AppColorsDark {
   // ==========================================================================
 
   // Green (Primary Actions)
-  static const Color greenHovered = Color(0xFF48A478);
-  static const Color greenPressed = Color(0xFF2F7A55);
+  static const Color greenHovered = Color(0xFF2E8B68);
+  static const Color greenPressed = Color(0xFF18543E);
 
   // Navy (Secondary Actions)
-  static const Color navyHovered = Color(0xFF243D62);
-  static const Color navyPressed = Color(0xFF142338);
+  static const Color navyHovered = Color(0xFF1A2F3A);
+  static const Color navyPressed = Color(0xFF0A1219);
 
   // Gold (Premium Actions)
-  static const Color goldHovered = Color(0xFFE0BD6A);
-  static const Color goldPressed = Color(0xFFC09540);
+  static const Color goldHovered = Color(0xFFD4B060);
+  static const Color goldPressed = Color(0xFFB18A3A);
 
   // Error
   static const Color errorHovered = Color(0xFFF06565);
   static const Color errorPressed = Color(0xFFD14444);
 
   // Success (mirrors green)
-  static const Color successHovered = Color(0xFF5EC08E);
-  static const Color successPressed = Color(0xFF3F9A6C);
+  static const Color successHovered = Color(0xFF3A9D78);
+  static const Color successPressed = Color(0xFF1F6B4E);
 
   // ==========================================================================
   // TRUST TIER PALETTE (Dark)
-  // Platinum = icy blue, Gold = warm gold, Silver = neutral grey,
-  // Bronze = rich amber, Copper = distinct reddish
   // ==========================================================================
 
   /// Platinum tier (cool icy blue on dark blue-grey)
   static const Color trustPlatinumFg = Color(0xFF8AACC8);
-  static const Color trustPlatinumBg = Color(0xFF1A2535);
+  static const Color trustPlatinumBg = Color(0xFF132028);
 
   /// Gold tier (warm gold on dark brown)
-  static const Color trustGoldFg = Color(0xFFD4A84B);
-  static const Color trustGoldBg = Color(0xFF2A2418);
+  static const Color trustGoldFg = Color(0xFFC9A24D);
+  static const Color trustGoldBg = Color(0xFF221E12);
 
   /// Silver tier (neutral grey on dark grey)
   static const Color trustSilverFg = Color(0xFF8A909A);
-  static const Color trustSilverBg = Color(0xFF20242A);
+  static const Color trustSilverBg = Color(0xFF181C22);
 
   /// Bronze tier (rich amber on dark warm brown)
   static const Color trustBronzeFg = Color(0xFFC48840);
-  static const Color trustBronzeBg = Color(0xFF2A2015);
+  static const Color trustBronzeBg = Color(0xFF221A10);
 
   /// Copper tier (reddish-rust on dark warm)
   static const Color trustCopperFg = Color(0xFFC46650);
-  static const Color trustCopperBg = Color(0xFF2A1C18);
+  static const Color trustCopperBg = Color(0xFF221612);
+
+  // ==========================================================================
+  // INPUT FIELD TOKENS (Dark)
+  // ==========================================================================
+
+  static const Color inputBackground = Color(0xFF1A2F3A);
+  static const Color inputBorderIdle = Color(0xFF274453);
+  static const Color inputBorderFocused = Color(0xFF2E8B68);
+
+  // ==========================================================================
+  // TEXT HIERARCHY TOKENS (Dark)
+  // ==========================================================================
+
+  static const Color textPrimary = Color(0xFFF2F6F8);
+  static const Color textSecondary = Color(0xFFA7BCC9);
+  static const Color textMuted = Color(0xFF7F98A6);
 
   // ==========================================================================
   // GLASS / OVERLAY PRESETS (Dark - lower opacity for dark surfaces)
@@ -360,6 +414,13 @@ class AppColorsDark {
     end: Alignment.bottomLeft,
     colors: [goldDark, gold, goldLight],
     stops: [0.0, 0.5, 1.0],
+  );
+
+  static const LinearGradient backgroundGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [navyDark, navy, Color(0xFF071018)],
+    stops: [0.0, 0.65, 1.0],
   );
 }
 

@@ -10,10 +10,15 @@ enum FairwayBackgroundVariant {
   dark,
 
   /// Warm sunset gradient - for special moments, hero screens
+  @Deprecated('Use clubhouse variant for The Clubhouse design system')
   sunset,
 
   /// Minimal subtle background - when content should dominate
   minimal,
+
+  /// The Clubhouse - navy structural background with green/gold accents
+  /// Use for auth screens, hero moments, and immersive experiences
+  clubhouse,
 }
 
 /// Atmospheric background component with organic overlays and depth
@@ -163,6 +168,19 @@ class _BaseGradient extends StatelessWidget {
             AppColors.sand.withValues(alpha:0.5),
           ],
         );
+
+      case FairwayBackgroundVariant.clubhouse:
+        // The Clubhouse: Deep navy gradient with subtle depth
+        return LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.navyDark,
+            AppColors.navy,
+            AppColors.navyLight.withValues(alpha: 0.4),
+          ],
+          stops: const [0.0, 0.6, 1.0],
+        );
     }
   }
 }
@@ -309,6 +327,35 @@ class _OrganicOverlays extends StatelessWidget {
             right: -50,
             size: 300,
             color: AppColors.cloud.withValues(alpha:0.05),
+            opacity: 0.5,
+          ),
+        ];
+
+      case FairwayBackgroundVariant.clubhouse:
+        return [
+          // Top-right green accent glow
+          _OverlayConfig(
+            top: -180,
+            right: -120,
+            size: 500,
+            color: AppColors.green.withValues(alpha: 0.12),
+            opacity: 1.0,
+          ),
+          // Mid-left subtle navy depth
+          _OverlayConfig(
+            top: 300,
+            left: -150,
+            size: 450,
+            color: AppColors.navyLight.withValues(alpha: 0.2),
+            opacity: 0.7,
+          ),
+          // Bottom-center gold accent (subtle trust/premium feel)
+          _OverlayConfig(
+            bottom: -200,
+            left: null,
+            right: null,
+            size: 600,
+            color: AppColors.gold.withValues(alpha: 0.06),
             opacity: 0.5,
           ),
         ];
@@ -488,6 +535,34 @@ class FairwayBackgroundMinimal extends StatelessWidget {
       variant: FairwayBackgroundVariant.minimal,
       showOrganic: false,
       showTexture: false,
+      child: child,
+    );
+  }
+}
+
+/// Pre-configured Clubhouse background for auth and hero screens
+///
+/// Uses the navy structural gradient with green/gold accent glows
+/// to create an immersive, trust-first atmosphere aligned with
+/// The Clubhouse design system.
+class FairwayBackgroundClubhouse extends StatelessWidget {
+  const FairwayBackgroundClubhouse({
+    super.key,
+    required this.child,
+    this.showOrganic = true,
+    this.showTexture = false,
+  });
+
+  final Widget child;
+  final bool showOrganic;
+  final bool showTexture;
+
+  @override
+  Widget build(BuildContext context) {
+    return FairwayBackground(
+      variant: FairwayBackgroundVariant.clubhouse,
+      showOrganic: showOrganic,
+      showTexture: showTexture,
       child: child,
     );
   }

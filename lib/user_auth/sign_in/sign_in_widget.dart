@@ -2,6 +2,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/google_logo.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
@@ -72,7 +73,7 @@ class _SignInWidgetState extends State<SignInWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        body: FairwayBackgroundSunset(
+        body: FairwayBackgroundClubhouse(
           showOrganic: true,
           child: Row(
             mainAxisSize: MainAxisSize.max,
@@ -103,7 +104,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                             mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              AppText.screenTitle('Sign In'),
+                              AppText.screenTitle('Sign In', color: AppColors.textPrimary),
                               Padding(
                                 padding: EdgeInsets.only(
                                     top: AppSpacing.xs,
@@ -111,7 +112,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                 ),
                                 child: AppText.bodySmall(
                                   'Welcome Back. Ready to Play a game?',
-                                  color: AppColors.pure,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                               Padding(
@@ -127,18 +128,20 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     obscureText: false,
                                     decoration: InputDecoration(
                                       labelText: 'Email',
-                                      labelStyle: AppTypography.labelLarge,
+                                      labelStyle: AppTypography.labelLarge.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
                                       enabledBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: AppColors.sand,
-                                          width: 2.0,
+                                          color: AppColors.inputBorderIdle,
+                                          width: 1.5,
                                         ),
                                         borderRadius:
                                             BorderRadius.circular(AppBorderRadius.md),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: AppColors.navyDark,
+                                          color: AppColors.inputBorderFocused,
                                           width: 2.0,
                                         ),
                                         borderRadius:
@@ -161,10 +164,13 @@ class _SignInWidgetState extends State<SignInWidget> {
                                             BorderRadius.circular(AppBorderRadius.md),
                                       ),
                                       filled: true,
-                                      fillColor: AppColors.sand,
+                                      fillColor: AppColors.inputBackground,
                                     ),
-                                    style: AppTypography.bodyLarge,
+                                    style: AppTypography.bodyLarge.copyWith(
+                                      color: AppColors.textPrimary,
+                                    ),
                                     keyboardType: TextInputType.emailAddress,
+                                    cursorColor: AppColors.green,
                                     validator: emailAddressTextControllerValidator
                                         .asValidator(context),
                                   ),
@@ -183,18 +189,20 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     obscureText: !passwordVisibility,
                                     decoration: InputDecoration(
                                       labelText: 'Password',
-                                      labelStyle: AppTypography.labelLarge,
+                                      labelStyle: AppTypography.labelLarge.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
                                       enabledBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: AppColors.sand,
-                                          width: 2.0,
+                                          color: AppColors.inputBorderIdle,
+                                          width: 1.5,
                                         ),
                                         borderRadius:
                                             BorderRadius.circular(AppBorderRadius.md),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: AppColors.navyDark,
+                                          color: AppColors.inputBorderFocused,
                                           width: 2.0,
                                         ),
                                         borderRadius:
@@ -217,7 +225,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                             BorderRadius.circular(AppBorderRadius.md),
                                       ),
                                       filled: true,
-                                      fillColor: AppColors.sand,
+                                      fillColor: AppColors.inputBackground,
                                       suffixIcon: InkWell(
                                         onTap: () {
                                           if (mounted) {
@@ -231,12 +239,15 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           passwordVisibility
                                               ? Icons.visibility_outlined
                                               : Icons.visibility_off_outlined,
-                                          color: AppColors.slate,
+                                          color: AppColors.textMuted,
                                           size: AppIconSize.md,
                                         ),
                                       ),
                                     ),
-                                    style: AppTypography.bodyLarge,
+                                    style: AppTypography.bodyLarge.copyWith(
+                                      color: AppColors.textPrimary,
+                                    ),
+                                    cursorColor: AppColors.green,
                                     validator: passwordTextControllerValidator
                                         .asValidator(context),
                                   ),
@@ -304,10 +315,9 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                   0.0, AppSpacing.sm, 0.0, AppSpacing.sm),
                                           child: Container(
                                             width: double.infinity,
-                                            height: 2.0,
+                                            height: 1.0,
                                             decoration: BoxDecoration(
-                                              color:
-                                                  AppColors.cloud,
+                                              color: AppColors.inputBorderIdle,
                                             ),
                                           ),
                                         ),
@@ -319,13 +329,16 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           width: 70.0,
                                           height: 32.0,
                                           decoration: BoxDecoration(
-                                            color: AppColors.pure,
+                                            color: AppColors.navyLight,
+                                            borderRadius: BorderRadius.circular(AppBorderRadius.xs),
                                           ),
                                           alignment:
                                               AlignmentDirectional(0.0, 0.0),
                                           child: Text(
                                             'OR',
-                                            style: AppTypography.labelLarge,
+                                            style: AppTypography.labelLarge.copyWith(
+                                              color: AppColors.textSecondary,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -368,8 +381,8 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     );
                                   },
                                   text: 'Continue with Google',
-                                  leadingIcon: FontAwesomeIcons.google,
-                                  variant: AppButtonVariant.gradient,
+                                  leadingWidget: const GoogleLogo(size: 20),
+                                  variant: AppButtonVariant.google,
                                   size: AppButtonSize.large,
                                   fullWidth: true,
                                 ),
@@ -419,7 +432,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                         },
                                         text: 'Continue with Apple',
                                         leadingIcon: FontAwesomeIcons.apple,
-                                        variant: AppButtonVariant.gradient,
+                                        variant: AppButtonVariant.navyFilled,
                                         size: AppButtonSize.large,
                                         fullWidth: true,
                                       ),
@@ -457,18 +470,20 @@ class _SignInWidgetState extends State<SignInWidget> {
                                         children: [
                                           TextSpan(
                                             text: 'Don\'t have an account? ',
-                                            style: TextStyle(),
+                                            style: AppTypography.bodyMedium.copyWith(
+                                              color: AppColors.textSecondary,
+                                            ),
                                           ),
                                           TextSpan(
                                             text: ' Sign Up here',
                                             style: AppTypography.bodyMedium.copyWith(
-                                              color: AppColors.navyDark,
+                                              color: AppColors.greenLight,
                                               fontWeight: FontWeight.w600,
                                             ),
                                           )
                                         ],
                                         style: AppTypography.bodyMedium.copyWith(
-                                          color: AppColors.onyx,
+                                          color: AppColors.textSecondary,
                                         ),
                                       ),
                                     ),
@@ -508,11 +523,13 @@ class _SignInWidgetState extends State<SignInWidget> {
                                         children: [
                                           TextSpan(
                                             text: 'Forgot Password?',
-                                            style: TextStyle(),
+                                            style: AppTypography.bodyMedium.copyWith(
+                                              color: AppColors.textMuted,
+                                            ),
                                           )
                                         ],
                                         style: AppTypography.bodyMedium.copyWith(
-                                          color: AppColors.pure,
+                                          color: AppColors.textMuted,
                                         ),
                                       ),
                                     ),

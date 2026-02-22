@@ -4,25 +4,30 @@ import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
-import '../design_tokens/app_icons.dart';
 import 'app_icon.dart';
 
 /// Button variant types for different visual styles
 enum AppButtonVariant {
-  /// Filled button with primary brand color - use for main actions
+  /// Filled button with GREEN (primary accent) - use for main CTAs
   primary,
 
-  /// Outlined button with brand color border - use for secondary actions
+  /// Outlined button with navy border - use for secondary actions
   secondary,
 
   /// Minimal text-only button - use for tertiary actions
   ghost,
 
-  /// Gradient-filled button with sunset colors - use for special CTAs
+  /// Gradient-filled button with gold colors - use for accent CTAs (social auth, premium)
   gradient,
 
   /// Destructive action button with error color - use for delete, cancel, remove actions
   destructive,
+
+  /// Filled button with NAVY (structural) - use for secondary prominent actions
+  navyFilled,
+
+  /// Google sign-in button - transparent with border and multicolor G logo
+  google,
 }
 
 /// Button size presets with proper touch targets
@@ -72,6 +77,7 @@ class AppButtonEnhanced extends StatefulWidget {
     this.trailingIcon,
     this.leadingSvgPath,
     this.trailingSvgPath,
+    this.leadingWidget,
     this.isLoading = false,
     this.enabled = true,
     this.fullWidth = false,
@@ -102,6 +108,9 @@ class AppButtonEnhanced extends StatefulWidget {
 
   /// Optional SVG icon after text (takes precedence over trailingIcon)
   final String? trailingSvgPath;
+
+  /// Optional custom widget before text (takes precedence over leadingSvgPath and leadingIcon)
+  final Widget? leadingWidget;
 
   /// Show loading indicator and disable interaction
   final bool isLoading;
@@ -276,10 +285,10 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
     switch (widget.variant) {
       case AppButtonVariant.primary:
         return _isPressed
-            ? AppColors.navyDark
+            ? AppColors.greenPressed
             : _isHovered
-                ? AppColors.navy
-                : AppColors.navyDark;
+                ? AppColors.greenHovered
+                : AppColors.green;
 
       case AppButtonVariant.secondary:
         return _isPressed
@@ -305,6 +314,20 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
             : _isHovered
                 ? AppColors.errorHovered // Lighter error red on hover
                 : AppColors.error;
+
+      case AppButtonVariant.navyFilled:
+        return _isPressed
+            ? AppColors.navyPressed
+            : _isHovered
+                ? AppColors.navyHovered
+                : AppColors.navy;
+
+      case AppButtonVariant.google:
+        return _isPressed
+            ? AppColors.navyLight.withValues(alpha: 0.15)
+            : _isHovered
+                ? AppColors.navyLight.withValues(alpha: 0.08)
+                : Colors.transparent;
     }
   }
 
@@ -317,7 +340,11 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
       case AppButtonVariant.primary:
       case AppButtonVariant.gradient:
       case AppButtonVariant.destructive:
+      case AppButtonVariant.navyFilled:
         return AppColors.pure;
+
+      case AppButtonVariant.google:
+        return AppColors.textPrimary;
 
       case AppButtonVariant.secondary:
         return _isPressed
@@ -348,6 +375,13 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
                 ? AppColors.navy
                 : AppColors.navy;
 
+      case AppButtonVariant.google:
+        return _isPressed
+            ? AppColors.inputBorderFocused
+            : _isHovered
+                ? AppColors.textMuted
+                : AppColors.inputBorderIdle;
+
       default:
         return Colors.transparent;
     }
@@ -358,7 +392,8 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
       return [];
     }
 
-    if (widget.variant == AppButtonVariant.secondary) {
+    if (widget.variant == AppButtonVariant.secondary ||
+        widget.variant == AppButtonVariant.google) {
       return [];
     }
 
@@ -382,11 +417,51 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
       ];
     }
 
-    // Default shadow for primary/gradient variants
+    // Primary button gets green shadow
+    if (widget.variant == AppButtonVariant.primary) {
+      if (_isPressed) {
+        return [
+          BoxShadow(
+            color: AppColors.green.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ];
+      }
+      return [
+        BoxShadow(
+          color: AppColors.green.withValues(alpha: 0.25),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ];
+    }
+
+    // Navy filled button gets navy shadow
+    if (widget.variant == AppButtonVariant.navyFilled) {
+      if (_isPressed) {
+        return [
+          BoxShadow(
+            color: AppColors.navy.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ];
+      }
+      return [
+        BoxShadow(
+          color: AppColors.navy.withValues(alpha: 0.25),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ];
+    }
+
+    // Gradient variant gets gold shadow
     if (_isPressed) {
       return [
         BoxShadow(
-          color: AppColors.navyDark.withValues(alpha:0.15),
+          color: AppColors.gold.withValues(alpha: 0.2),
           blurRadius: 8,
           offset: const Offset(0, 2),
         ),
@@ -395,10 +470,10 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
 
     return [
       BoxShadow(
-        color: AppColors.navyDark.withValues(alpha:0.2),
+        color: AppColors.gold.withValues(alpha: 0.25),
         blurRadius: 12,
         offset: const Offset(0, 4),
-      ),
+        ),
     ];
   }
 
@@ -436,7 +511,11 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
                 borderRadius: BorderRadius.circular(_borderRadius),
                 border: Border.all(
                   color: _getBorderColor(),
-                  width: widget.variant == AppButtonVariant.secondary ? 2.0 : 0.0,
+                  width: widget.variant == AppButtonVariant.secondary
+                      ? 2.0
+                      : widget.variant == AppButtonVariant.google
+                          ? 1.5
+                          : 0.0,
                 ),
                 boxShadow: _getShadows(),
               ),
@@ -469,7 +548,10 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
       mainAxisSize: widget.fullWidth ? MainAxisSize.max : MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (widget.leadingSvgPath != null) ...[
+        if (widget.leadingWidget != null) ...[
+          widget.leadingWidget!,
+          SizedBox(width: widget.size == AppButtonSize.small ? 6.0 : 8.0),
+        ] else if (widget.leadingSvgPath != null) ...[
           AppIcon(
             assetPath: widget.leadingSvgPath!,
             size: _iconSize,

@@ -106,7 +106,7 @@ firebase deploy
 
 ### Design System
 
-**Philosophy: "The Clubhouse"** — A trust-first golf matchmaking aesthetic built on three color roles: Green (every interactive element), Navy (structural surfaces and headers), Gold (trust, achievements, premium). Typography blends traditional golf club sophistication with modern athletic energy.
+**Philosophy: "The Clubhouse"** — A trust-first golf matchmaking aesthetic built on three color roles: Green (darker, richer "fairway at dusk" — every interactive element), Deep Teal-Navy (structural surfaces with green undertones), Gold (demoted to accent-only — trust, achievements, premium). Typography blends traditional golf club sophistication with modern athletic energy.
 
 **For new code: always use design tokens directly.** Import from `lib/core/design_tokens/` and use `AppColors`, `AppTypography`, `AppSpacing`, etc. Do not hardcode colors, font sizes, or spacing values. Do not introduce new `AppTheme.of(context)` usage (see legacy note below).
 
@@ -114,28 +114,41 @@ firebase deploy
 
 The token system is the source of truth for all visual design.
 
-**Colors** (`colors.dart`) — "The Clubhouse" palette with three color roles:
+**Colors** (`colors.dart`) — "The Clubhouse" premium palette with three color roles:
 
 *Primary Accent — Fairway Green (all interactive elements):*
-- `green` (#3A8F65) — primary CTAs, Join Game, active nav, links
-- `greenDark` (#2B7050) — pressed states, deep accents
-- `greenLight` (#4EAD7E) — hover highlights, score accents
+Darker, richer greens — "fairway at dusk, not neon grass"
+- `green` (#1F6B4E) — primary CTAs, Join Game, active nav, links
+- `greenDark` (#18543E) — pressed states, deep accents
+- `greenLight` (#2E8B68) — hover highlights, score accents
 - Interaction states: `greenHovered`, `greenPressed`
 
-*Structural — Club Navy (headers, cards, navigation):*
-- `navy` (#1B2E4A) — card headers, secondary buttons, structural fills
-- `navyDark` (#0F1C30) — app bar backgrounds, deep gradients
-- `navyLight` (#2B4A72) — hover accents on navy, borders
+*Structural — Deep Teal-Navy (headers, cards, navigation):*
+Navy with green undertones — masculine, athletic, grounded
+- `navy` (#142A36) — card headers, secondary buttons, structural fills
+- `navyDark` (#0E1C26) — app bar backgrounds, deep gradients, primary background
+- `navyLight` (#1A2F3A) — hover accents on navy, borders
 - Interaction states: `navyHovered`, `navyPressed`
 
 *Secondary Accent — Prestige Gold (trust, achievements, premium):*
-- `gold` (#C49A3D) — trust badges, upgrade CTAs, star ratings
-- `goldDark` (#A6832F) — pressed states
-- `goldLight` (#D4A84B) — hover highlights
+Deeper gold — accent only, never dominant. Use sparingly for icons, divider accents, trust badges.
+- `gold` (#C9A24D) — trust badges, upgrade CTAs, star ratings
+- `goldDark` (#9A7E2A) — pressed states
+- `goldLight` (#D4B060) — hover highlights
 - Interaction states: `goldHovered`, `goldPressed`
 
-*Neutrals (warm-tinted):*
-- `pure` (#FFFFFF), `sand` (#FAF9F6), `cloud` (#F4F2EE), `mist` (#DDD8D0), `stone` (#8694A8), `slate` (#556275), `onyx` (#141A24)
+*Input Field Tokens (premium contrast for forms):*
+- `inputBackground` (#1A2F3A) — input field fill
+- `inputBorderIdle` (#274453) — input border default state
+- `inputBorderFocused` (#2E8B68) — input border focused (ties to green accent)
+
+*Text Hierarchy Tokens (premium polish — avoid pure white):*
+- `textPrimary` (#F2F6F8) — primary text on dark backgrounds
+- `textSecondary` (#A7BCC9) — secondary text on dark backgrounds
+- `textMuted` (#7F98A6) — helper/muted text on dark backgrounds
+
+*Neutrals (cool-tinted):*
+- `pure` (#FFFFFF), `sand` (#F8FAFB), `cloud` (#F2F5F7), `mist` (#D5DCE1), `stone` (#7F98A6), `slate` (#556275), `onyx` (#141A24)
 
 *Semantic:* `success` (= green), `warning` (= gold), `error` (#D64545), `info` (#5B8DBE) — each with `Hovered` and `Pressed` variants
 
@@ -151,9 +164,11 @@ The token system is the source of truth for all visual design.
 - `glassTextSecondary` — white at 70%, `glassTextTertiary` — white at 50%
 - `overlayDark` — black at 40%, `scrim` — black at 60%
 
-*Gradients:* `navyGradient`, `greenGradient`, `goldGradient`, `subtleOverlay`
+*Gradients:* `navyGradient`, `greenGradient`, `goldGradient`, `subtleOverlay`, `backgroundGradient` (primary screen background with depth and dark anchor at bottom)
 
-*Dark theme:* `AppColorsDark` provides full dark variants of all colors, interaction states, trust tiers, and glass presets with navy-tinted dark surfaces.
+*Dark theme:* `AppColorsDark` provides full dark variants of all colors, interaction states, trust tiers, input fields, text hierarchy, and glass presets with teal-navy-tinted dark surfaces.
+
+*Design principles for gold usage:* Gold should be accent only, never dominant. Use for icons, divider accents, one social button max. Social auth buttons should be neutral (Google = `secondary` (outlined), Apple = `navyFilled`). Visual hierarchy should always point to the primary CTA (Sign In), not social auth.
 
 *Utility:* `AppColorStates.pressed(color)` and `AppColorStates.hovered(color)` for computing interaction states on arbitrary colors.
 
@@ -232,7 +247,7 @@ Reusable premium components built on design tokens (note: file comments still re
 #### Reusable Core Widgets (`lib/core/widgets/`)
 
 Prefixed with `app_` and built on design tokens:
-- `app_button_enhanced.dart` — Primary, secondary, outline, ghost, and destructive button variants
+- `app_button_enhanced.dart` — Button variants: `primary`, `secondary` (outlined), `ghost` (transparent/text), `gradient` (gold-filled), `destructive`, `navyFilled` (solid dark fill)
 - `app_card.dart` — Standard card with token-based elevation and border radius
 - `app_text_field.dart` — Form input with token-based styling
 - `app_text.dart` — Text component wrapping `AppTypography`
@@ -263,9 +278,20 @@ Text('Badge', style: AppTypography.labelMicro)
 Text('72', style: AppTypography.monoDisplay)
 
 // Colors — use the three roles
-Container(color: AppColors.green)         // Primary accent (CTAs)
-Container(color: AppColors.navy)          // Structural (headers/cards)
-Container(color: AppColors.gold)          // Secondary accent (trust/premium)
+Container(color: AppColors.green)         // Primary accent (CTAs) — #1F6B4E
+Container(color: AppColors.navy)          // Structural (headers/cards) — #142A36
+Container(color: AppColors.gold)          // Secondary accent (trust/premium) — #C9A24D
+
+// Input fields (premium contrast)
+decoration: BoxDecoration(
+  color: AppColors.inputBackground,
+  border: Border.all(color: isFocused ? AppColors.inputBorderFocused : AppColors.inputBorderIdle),
+)
+
+// Text hierarchy on dark backgrounds (avoid pure white)
+Text('Heading', style: TextStyle(color: AppColors.textPrimary))    // #F2F6F8
+Text('Subtext', style: TextStyle(color: AppColors.textSecondary))  // #A7BCC9
+Text('Helper', style: TextStyle(color: AppColors.textMuted))       // #7F98A6
 
 // Interaction states
 color: isPressed ? AppColors.greenPressed : AppColors.green
@@ -309,10 +335,10 @@ AnimatedContainer(duration: MotionTokens.microInteraction, curve: MotionTokens.c
 #### AppTheme Bridge (Legacy — `lib/core/app_theme.dart`)
 
 `AppTheme` is a `ThemeExtension` that maps design tokens to Flutter's theme system using FlutterFlow-era naming. It exists because some widget files still reference `AppTheme.of(context)`. The current mapping:
-- `AppTheme.of(context).primary` → `AppColors.navyDark`
-- `AppTheme.of(context).secondary` → `AppColors.navy`
-- `AppTheme.of(context).accent1` → `AppColors.gold` (approximately)
-- `AppTheme.of(context).primaryText` → `AppColors.onyx`
+- `AppTheme.of(context).primary` → `AppColors.navyDark` (#0E1C26)
+- `AppTheme.of(context).secondary` → `AppColors.navy` (#142A36)
+- `AppTheme.of(context).accent1` → `AppColors.gold` (#C9A24D approximately)
+- `AppTheme.of(context).primaryText` → `AppColors.onyx` (#141A24)
 
 **Do not add new `AppTheme.of(context)` usage.** For new code, use tokens directly. `AppTheme` is scheduled for cleanup.
 
