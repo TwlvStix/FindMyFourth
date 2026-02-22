@@ -11,7 +11,7 @@ import '/services/vibe_matcher.dart';
 import '/models/vibe_profile.dart';
 
 /// Redesigned premium friend card matching LuxuryPlayerCard design language:
-/// - Dark fairway surface (AppColors.fairway @ 30% alpha)
+/// - Dark fairway surface (AppColors.navy @ 30% alpha)
 /// - Rounded-square avatars (52×52, radius 14)
 /// - Manrope typography with cream/gold color tokens
 /// - 20px border radius, consistent padding (20h × 18v)
@@ -51,7 +51,7 @@ class PremiumFriendCard extends StatefulWidget {
     this.actionLabel = 'Add',
     this.actionIcon = Icons.person_add_rounded,
     this.actionSvgPath,
-    this.actionColor = AppColors.fairway,
+    this.actionColor = AppColors.navy,
     this.showActionButton = true,
     this.isLoading = false,
     this.mutualFriendsCount,
@@ -137,12 +137,12 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
             vertical: AppSpacing.xs,
           ),
           decoration: BoxDecoration(
-            color: AppColors.fairway.withValues(alpha: 0.3),
+            color: AppColors.navy.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: _isPressed
-                  ? AppColors.fairwayLight.withValues(alpha: 0.4)
-                  : AppColors.fairwayLight.withValues(alpha: 0.3),
+                  ? AppColors.navyLight.withValues(alpha: 0.4)
+                  : AppColors.navyLight.withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -187,7 +187,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       width: 52,
       height: 52,
       decoration: BoxDecoration(
-        color: AppColors.fairwayLight.withValues(alpha: 0.4),
+        color: AppColors.navyLight.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.2),
@@ -304,7 +304,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.sunsetGold,
+        color: AppColors.gold,
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -373,12 +373,12 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       height: 44,
       decoration: BoxDecoration(
         color: isPrimary
-            ? AppColors.fairwayDark
+            ? AppColors.navyDark
             : Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isPrimary
-              ? AppColors.fairwayLight.withValues(alpha: 0.3)
+              ? AppColors.navyLight.withValues(alpha: 0.3)
               : Colors.white.withValues(alpha: 0.15),
           width: 1,
         ),

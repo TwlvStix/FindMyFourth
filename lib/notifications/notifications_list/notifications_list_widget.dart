@@ -84,7 +84,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Notification deleted'),
-            backgroundColor: AppColors.fairway,
+            backgroundColor: AppColors.navy,
             duration: Duration(seconds: 2),
           ),
         );
@@ -115,7 +115,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('No notifications to delete'),
-              backgroundColor: AppColors.fairway,
+              backgroundColor: AppColors.navy,
               duration: Duration(seconds: 2),
             ),
           );
@@ -146,7 +146,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('All notifications deleted'),
-            backgroundColor: AppColors.fairway,
+            backgroundColor: AppColors.navy,
             duration: Duration(seconds: 2),
           ),
         );
@@ -344,9 +344,9 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
   Color _iconBgColorForType(BuildContext context, String type) {
     if (type == 'attendance_dispute') return AppColors.info;
     if (type == 'dispute_resolved_cleared') return AppColors.success;
-    if (type == 'dispute_resolved_upheld') return AppColors.sunsetRose;
-    if (_isTrustAccountNotification(type)) return AppColors.sunsetRose;
-    if (_isBadgeNotification(type)) return AppColors.sunsetGold;
+    if (type == 'dispute_resolved_upheld') return AppColors.error;
+    if (_isTrustAccountNotification(type)) return AppColors.error;
+    if (_isBadgeNotification(type)) return AppColors.gold;
     return AppTheme.of(context).primary;
   }
 
@@ -499,7 +499,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                           'Mark all read',
                           style: AppTypography.labelLarge.copyWith(
                             color: hasUnread
-                                ? AppColors.sunsetGold
+                                ? AppColors.gold
                                 : Colors.white.withValues(alpha: 0.5),
                             fontWeight: FontWeight.w600,
                           ),
@@ -730,7 +730,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text('Marked as unread'),
-                                        backgroundColor: AppColors.fairway,
+                                        backgroundColor: AppColors.navy,
                                         duration: Duration(seconds: 2),
                                       ),
                                     );

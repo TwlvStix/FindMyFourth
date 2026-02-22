@@ -46,18 +46,18 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color noColor;
 
   static const light = AppThemeColors(
-    primary: AppColors.fairwayDark,          // Deep forest green for headers
-    secondary: AppColors.fairway,            // Rich green for secondary elements
+    primary: AppColors.navyDark,          // Deep forest green for headers
+    secondary: AppColors.navy,            // Rich green for secondary elements
     tertiary: AppColors.stone,               // Mid grey for tertiary elements
     alternate: AppColors.cloud,              // Light grey for alternates
     primaryText: AppColors.onyx,             // Near black for primary text
     secondaryText: AppColors.slate,          // Dark grey for secondary text
     primaryBackground: AppColors.sand,       // Warm neutral background
     secondaryBackground: AppColors.pure,     // Off-white for cards/surfaces
-    accent1: AppColors.sunsetGold,           // Warm gold accent
-    accent2: AppColors.sunsetPeach,          // Soft peach accent
-    accent3: AppColors.sunsetRose,           // Muted coral accent
-    accent4: AppColors.fairwayLight,         // Light green accent
+    accent1: AppColors.gold,           // Warm gold accent
+    accent2: AppColors.goldLight,          // Soft peach accent
+    accent3: AppColors.error,           // Muted coral accent
+    accent4: AppColors.greenLight,        // Light green accent
     success: AppColors.success,              // Birdie green
     warning: AppColors.warning,              // Gold warning
     error: AppColors.error,                  // Hazard red
@@ -68,18 +68,18 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   );
 
   static const dark = AppThemeColors(
-    primary: AppColorsDark.fairwayLight,     // Lighter green for dark mode headers
-    secondary: AppColorsDark.fairway,        // Mid green for secondary elements
+    primary: AppColorsDark.greenLight,    // Lighter green for dark mode headers
+    secondary: AppColorsDark.navy,        // Mid green for secondary elements
     tertiary: AppColorsDark.stone,           // Grey for tertiary elements
     alternate: AppColorsDark.cloud,          // Darker grey for alternates
     primaryText: AppColorsDark.onyx,         // Off-white for primary text
     secondaryText: AppColorsDark.slate,      // Light grey for secondary text
     primaryBackground: AppColorsDark.sand,   // Dark background
     secondaryBackground: AppColorsDark.pure, // Darker surface for cards
-    accent1: AppColorsDark.sunsetGold,       // Muted gold accent
-    accent2: AppColorsDark.sunsetPeach,      // Muted peach accent
-    accent3: AppColorsDark.sunsetRose,       // Muted coral accent
-    accent4: AppColorsDark.fairwayLight,     // Mid green accent
+    accent1: AppColorsDark.gold,       // Muted gold accent
+    accent2: AppColorsDark.goldLight,      // Muted peach accent
+    accent3: AppColorsDark.error,       // Muted coral accent
+    accent4: AppColorsDark.greenLight,    // Light green accent
     success: AppColorsDark.success,          // Brighter success green
     warning: AppColorsDark.warning,          // Muted warning gold
     error: AppColorsDark.error,              // Brighter error red

@@ -38,7 +38,7 @@ class SectionHeader extends StatelessWidget {
             height: 32,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.fairwayLight, AppColors.fairway],
+                colors: [AppColors.navyLight, AppColors.navy],
               ),
               borderRadius: BorderRadius.circular(8),
             ),
@@ -78,12 +78,12 @@ class SectionHeader extends StatelessWidget {
                 width: 20,
                 height: 20,
                 decoration: BoxDecoration(
-                  color: AppColors.sunsetGold.withValues(alpha: 0.3),
+                  color: AppColors.gold.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.help_outline_rounded,
-                  color: AppColors.sunsetGold,
+                  color: AppColors.gold,
                   size: 14,
                 ),
               ),

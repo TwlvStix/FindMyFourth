@@ -17,6 +17,7 @@ import '/providers/chat_provider.dart';
 import '/providers/profile_provider.dart';
 import '/core/app_theme.dart';
 import '/core/motion/motion_helpers.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
@@ -302,7 +303,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha:0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -344,7 +345,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                       height: 60,
                       decoration: BoxDecoration(
                         color: hasReacted
-                            ? AppTheme.of(context).primary.withOpacity(0.3)
+                            ? AppTheme.of(context).primary.withValues(alpha:0.3)
                             : AppTheme.of(context).secondaryBackground,
                         borderRadius: BorderRadius.circular(12),
                         border: hasReacted
@@ -1179,7 +1180,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white.withOpacity(0.6),
+                                      AppColors.glassTextSecondary,
                                     ),
                                   ),
                                 ),
@@ -1187,7 +1188,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                 Text(
                                   typingText,
                                   style: AppTheme.of(context).bodySmall.override(
-                                                      color: Colors.white.withOpacity(0.6),
+                                                      color: AppColors.glassTextSecondary,
                                         fontStyle: FontStyle.italic,
                                         letterSpacing: 0.0,
                                       ),
@@ -1516,7 +1517,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                           gradient: LinearGradient(
                             colors: [
                               AppTheme.of(context).primary,
-                              AppTheme.of(context).primary.withOpacity(0.8),
+                              AppTheme.of(context).primary.withValues(alpha:0.8),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(16),
@@ -1524,7 +1525,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                             BoxShadow(
                               color: AppTheme.of(context)
                                   .primary
-                                  .withOpacity(0.4),
+                                  .withValues(alpha:0.4),
                               blurRadius: 8,
                               offset: Offset(0, 4),
                             ),

@@ -26,10 +26,10 @@ class GolferSegmentedControl extends StatelessWidget {
       height: 52,
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: AppColors.fairway.withValues(alpha: 0.4),
+        color: AppColors.navy.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.fairwayLight.withValues(alpha: 0.25),
+          color: AppColors.navyLight.withValues(alpha: 0.25),
           width: 1,
         ),
       ),
@@ -75,7 +75,7 @@ class GolferSegmentedControl extends StatelessWidget {
           curve: MotionTokens.curveEnter,
           decoration: BoxDecoration(
             color: isSelected
-                ? AppColors.fairwayLight.withValues(alpha: 0.5)
+                ? AppColors.navyLight.withValues(alpha: 0.5)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(14),
           ),
@@ -112,7 +112,7 @@ class GolferSegmentedControl extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.sunsetGold,
+        color: AppColors.gold,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
@@ -121,7 +121,7 @@ class GolferSegmentedControl extends StatelessWidget {
           fontFamily: 'Manrope',
           fontSize: 11,
           fontWeight: FontWeight.w700,
-          color: AppColors.fairwayDark,
+          color: AppColors.navyDark,
           height: 1.2,
         ),
       ),

@@ -126,7 +126,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   width: 88,
                   height: 88,
                   decoration: BoxDecoration(
-                    color: AppColors.fairway.withValues(alpha: 0.35),
+                    color: AppColors.navy.withValues(alpha: 0.35),
                     shape: BoxShape.circle,
                   ),
                   child: AppIcon(
@@ -329,7 +329,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   Text(
                     '${result.groupFitScore.round()}%',
                     style: AppTypography.displayMedium.copyWith(
-                      color: AppColors.fairwayDark,
+                      color: AppColors.navyDark,
                     ),
                   ),
                   SizedBox(height: AppSpacing.lg),
@@ -450,7 +450,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
           Text(
             '$matchScore%',
             style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.fairwayDark,
+              color: AppColors.navyDark,
               fontWeight: AppTypography.semiBold,
             ),
           ),
@@ -520,10 +520,10 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
           vertical: AppSpacing.xxs,
         ),
         decoration: BoxDecoration(
-          color: AppColors.fairway.withValues(alpha: 0.12),
+          color: AppColors.navy.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: AppColors.fairway.withValues(alpha: 0.3),
+            color: AppColors.navy.withValues(alpha: 0.3),
           ),
         ),
         child: Text(
@@ -531,7 +531,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: AppTypography.labelSmall.copyWith(
-            color: AppColors.fairwayDark,
+            color: AppColors.navyDark,
             letterSpacing: AppTypography.letterSpacingNormal,
           ),
         ),
@@ -581,7 +581,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppColors.fairway.withValues(alpha: 0.3),
+                    color: AppColors.navy.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -653,7 +653,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: AppColors.fairway.withValues(alpha: 0.3),
+                        color: AppColors.navy.withValues(alpha: 0.3),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -696,7 +696,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SpinKitWanderingCubes(
-                      color: AppColors.sunsetGold,
+                      color: AppColors.gold,
                       size: 50.0,
                     ),
                     SizedBox(height: AppSpacing.md),
@@ -760,7 +760,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                           ? Container(
                               height: 200,
                               decoration: BoxDecoration(
-                                color: AppColors.fairway.withValues(alpha: 0.3),
+                                color: AppColors.navy.withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(24),
                               ),
                               child: Center(
@@ -783,7 +783,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                               return Container(
                                 height: 200,
                                 decoration: BoxDecoration(
-                                  color: AppColors.fairway.withValues(alpha: 0.3),
+                                  color: AppColors.navy.withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(24),
                                 ),
                                 child: Center(
@@ -812,12 +812,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                               return Container(
                                 height: 200,
                                 decoration: BoxDecoration(
-                                  color: AppColors.fairway.withValues(alpha: 0.3),
+                                  color: AppColors.navy.withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(24),
                                 ),
                                 child: Center(
                                   child: SpinKitWanderingCubes(
-                                    color: AppColors.sunsetGold,
+                                    color: AppColors.gold,
                                     size: 30.0,
                                   ),
                                 ),
@@ -830,8 +830,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    AppColors.fairway.withValues(alpha: 0.4),
-                                    AppColors.fairwayDark.withValues(alpha: 0.6),
+                                    AppColors.navy.withValues(alpha: 0.4),
+                                    AppColors.navyDark.withValues(alpha: 0.6),
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(24),
@@ -841,7 +841,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.fairwayDark.withValues(alpha: 0.3),
+                                    color: AppColors.navyDark.withValues(alpha: 0.3),
                                     blurRadius: 20,
                                     offset: const Offset(0, 10),
                                   ),
@@ -896,7 +896,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                     gradient: LinearGradient(
                                       begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
-                                      colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                      colors: [AppColors.gold, AppColors.goldLight],
                                     ),
                                     borderRadius: BorderRadius.circular(2),
                                   ),
@@ -926,42 +926,42 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 _buildPremiumInfoCard(
                                   context,
                                   icon: Icons.attach_money_rounded,
-                                  iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                  iconColors: [AppColors.gold, AppColors.goldLight],
                                   label: 'Betting',
                                   value: joinGameDetailedGamesRecord.styleGame,
                                 ),
                                 _buildPremiumInfoCard(
                                   context,
                                   icon: Icons.rule_rounded,
-                                  iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                  iconColors: [AppColors.navyLight, AppColors.navy],
                                   label: 'Rule Style',
                                   value: joinGameDetailedGamesRecord.rulesSetting,
                                 ),
                                 _buildPremiumInfoCard(
                                   context,
                                   icon: Icons.sports_golf_rounded,
-                                  iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                  iconColors: [AppColors.navyLight, AppColors.navy],
                                   label: 'Game Type',
                                   value: joinGameDetailedGamesRecord.gameType,
                                 ),
                                 _buildPremiumInfoCard(
                                   context,
                                   icon: Icons.scoreboard_rounded,
-                                  iconColors: [AppColors.sunsetPeach, AppColors.sunsetRose],
+                                  iconColors: [AppColors.goldLight, AppColors.error],
                                   label: 'Scoring',
                                   value: joinGameDetailedGamesRecord.scoring,
                                 ),
                                 _buildPremiumInfoCard(
                                   context,
                                   svgPath: AppIcons.memberDiscount,
-                                  iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                  iconColors: [AppColors.navyLight, AppColors.navy],
                                   label: 'Member Discount',
                                   value: joinGameDetailedGamesRecord.memberDiscount,
                                 ),
                                 _buildPremiumInfoCard(
                                   context,
                                   svgPath: AppIcons.groups,
-                                  iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                  iconColors: [AppColors.gold, AppColors.goldLight],
                                   label: 'Friends Only',
                                   value: joinGameDetailedGamesRecord.friendGame,
                                 ),
@@ -1057,12 +1057,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                           child: Container(
                                             padding: EdgeInsets.all(AppSpacing.sm),
                                             decoration: BoxDecoration(
-                                              color: AppColors.fairway
+                                              color: AppColors.navy
                                                   .withValues(alpha: 0.3),
                                               borderRadius:
                                                   BorderRadius.circular(12),
                                               border: Border.all(
-                                                color: AppColors.fairwayLight
+                                                color: AppColors.navyLight
                                                     .withValues(alpha: 0.3),
                                                 width: 1,
                                               ),
@@ -1075,7 +1075,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                   height: 48.0,
                                                   decoration: BoxDecoration(
                                                     gradient: LinearGradient(
-                                                      colors: [AppColors.fairwayLight, AppColors.fairway],
+                                                      colors: [AppColors.navyLight, AppColors.navy],
                                                     ),
                                                     borderRadius: BorderRadius.circular(12),
                                                     border: Border.all(
@@ -1149,7 +1149,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                             SizedBox(width: 6),
                                                             AppIcon(
                                                               assetPath: AppIcons.owner,
-                                                              color: AppColors.sunsetGold,
+                                                              color: AppColors.gold,
                                                               size: 16,
                                                             ),
                                                           ],
@@ -1172,7 +1172,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                                         .fontStyle,
                                                               ),
                                                               color: AppColors
-                                                                  .sunsetGold,
+                                                                  .gold,
                                                               letterSpacing: 0.0,
                                                               fontWeight:
                                                                   FontWeight.normal,
@@ -1198,7 +1198,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                 // Checkmark icon
                                                 AppIcon(
                                                   assetPath: AppIcons.joined,
-                                                  color: AppColors.sunsetGold,
+                                                  color: AppColors.gold,
                                                   size: 24.0,
                                                 ),
                                               ],
@@ -1214,11 +1214,11 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                     child: Container(
                                       padding: EdgeInsets.all(AppSpacing.sm),
                                       decoration: BoxDecoration(
-                                        color: AppColors.fairway
+                                        color: AppColors.navy
                                             .withValues(alpha: 0.3),
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
-                                          color: AppColors.fairwayLight
+                                          color: AppColors.navyLight
                                               .withValues(alpha: 0.3),
                                           width: 1,
                                         ),
@@ -1230,7 +1230,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             width: 48.0,
                                             height: 48.0,
                                             decoration: BoxDecoration(
-                                              color: AppColors.fairwayLight
+                                              color: AppColors.navyLight
                                                   .withValues(alpha: 0.5),
                                               shape: BoxShape.circle,
                                               border: Border.all(
@@ -1582,8 +1582,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.fairway.withValues(alpha: 0.4),
-            AppColors.fairwayDark.withValues(alpha: 0.3),
+            AppColors.navy.withValues(alpha: 0.4),
+            AppColors.navyDark.withValues(alpha: 0.3),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
@@ -1599,7 +1599,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                 height: 40,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                    colors: [AppColors.gold, AppColors.goldLight],
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -1636,10 +1636,10 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   gradient: hasResult
                       ? LinearGradient(
                           colors: groupScore >= 70
-                              ? [AppColors.fairwayLight, AppColors.fairway]
+                              ? [AppColors.navyLight, AppColors.navy]
                               : groupScore >= 40
-                                  ? [AppColors.sunsetGold, AppColors.sunsetPeach]
-                                  : [AppColors.sunsetRose, AppColors.error],
+                                  ? [AppColors.gold, AppColors.goldLight]
+                                  : [AppColors.error, AppColors.error],
                         )
                       : null,
                   color: hasResult ? null : Colors.white.withValues(alpha: 0.1),
@@ -1658,7 +1658,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.sunsetGold,
+                          color: AppColors.gold,
                         ),
                       ),
               ),
@@ -1671,10 +1671,10 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
               Container(
                 padding: EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: AppColors.sunsetRose.withValues(alpha: 0.2),
+                  color: AppColors.error.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.sunsetRose.withValues(alpha: 0.4),
+                    color: AppColors.error.withValues(alpha: 0.4),
                   ),
                 ),
                 child: Row(
@@ -1714,7 +1714,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   children: [
                     Icon(
                       Icons.insights_rounded,
-                      color: AppColors.sunsetGold,
+                      color: AppColors.gold,
                       size: 18,
                     ),
                     SizedBox(width: AppSpacing.xs),
@@ -1755,7 +1755,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.fairway.withValues(alpha: 0.3),
+        color: AppColors.navy.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),

@@ -122,10 +122,10 @@ class _CardBody extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
       decoration: BoxDecoration(
-        color: AppColors.fairway.withValues(alpha: 0.3),
+        color: AppColors.navy.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.fairwayLight.withValues(alpha: 0.3),
+          color: AppColors.navyLight.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -178,7 +178,7 @@ class _CardBody extends StatelessWidget {
                         fontFamily: 'Manrope',
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.sunsetGold,
+                        color: AppColors.gold,
                         letterSpacing: 0.1,
                       ),
                     ),
@@ -220,7 +220,7 @@ class _Avatar extends StatelessWidget {
       width: 52,
       height: 52,
       decoration: BoxDecoration(
-        color: AppColors.fairwayLight.withValues(alpha: 0.4),
+        color: AppColors.navyLight.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.2),
@@ -267,7 +267,7 @@ class _PendantBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.fairway,
+        color: AppColors.navy,
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(10),
           bottomRight: Radius.circular(10),

@@ -40,7 +40,7 @@ class SegmentedControl extends StatelessWidget {
 
         return Container(
           decoration: BoxDecoration(
-            color: AppColors.fairway.withValues(alpha: 0.2),
+            color: AppColors.navy.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.1),
@@ -66,8 +66,8 @@ class SegmentedControl extends StatelessWidget {
                       gradient: isSelected
                           ? LinearGradient(
                               colors: [
-                                AppColors.sunsetGold,
-                                AppColors.sunsetPeach,
+                                AppColors.gold,
+                                AppColors.goldLight,
                               ],
                             )
                           : null,
@@ -75,7 +75,7 @@ class SegmentedControl extends StatelessWidget {
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: AppColors.sunsetGold.withValues(alpha: 0.4),
+                                color: AppColors.gold.withValues(alpha: 0.4),
                                 blurRadius: 8,
                                 offset: Offset(0, 2),
                               ),

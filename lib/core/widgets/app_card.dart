@@ -275,7 +275,7 @@ class _AppCardState extends State<AppCard>
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
           border: Border(
             left: BorderSide(
-              color: AppColors.sunsetGold,
+              color: AppColors.gold,
               width: widget.borderWidth ?? 4,
             ),
           ),
@@ -284,11 +284,11 @@ class _AppCardState extends State<AppCard>
 
       case AppCardVariant.premium:
         return BoxDecoration(
-          gradient: AppColors.sunsetGradient,
+          gradient: AppColors.goldGradient,
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
           boxShadow: [AppElevation.glowGold],
           border: Border.all(
-            color: AppColors.sunsetGold.withValues(alpha: AppOpacity.light),
+            color: AppColors.gold.withValues(alpha: AppOpacity.light),
             width: 1,
           ),
         );
@@ -346,7 +346,7 @@ class GameCard extends StatelessWidget {
           Text(
             title,
             style: AppTypography.headlineMedium
-                .withColor(AppColors.fairwayDark),
+                .withColor(AppColors.navyDark),
           ),
           if (subtitle != null) ...[
             AppSpacing.verticalXsBox,
@@ -416,14 +416,14 @@ class StatCard extends StatelessWidget {
               if (svgPath != null) ...[
                 AppIcon(
                   assetPath: svgPath!,
-                  color: AppColors.fairway,
+                  color: AppColors.navy,
                   size: 20,
                 ),
                 AppSpacing.horizontalSmBox,
               ] else if (icon != null) ...[
                 Icon(
                   icon,
-                  color: AppColors.fairway,
+                  color: AppColors.navy,
                   size: 20,
                 ),
                 AppSpacing.horizontalSmBox,
@@ -436,7 +436,7 @@ class StatCard extends StatelessWidget {
           ),
           Text(
             value,
-            style: AppTypography.monoLarge.withColor(AppColors.fairwayDark),
+            style: AppTypography.monoLarge.withColor(AppColors.navyDark),
           ),
         ],
       ),
@@ -485,7 +485,7 @@ class SectionCard extends StatelessWidget {
                   Text(
                     title,
                     style: AppTypography.titleLarge
-                        .withColor(AppColors.fairwayDark),
+                        .withColor(AppColors.navyDark),
                   ),
                   if (subtitle != null) ...[
                     AppSpacing.verticalXxs,

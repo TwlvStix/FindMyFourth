@@ -6,6 +6,7 @@ import '/utils/app_util.dart';
 import '/profile/create_profile/create_profile_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '../core/app_theme.dart';
+import '../core/design_tokens/colors.dart';
 import '../core/design_tokens/spacing.dart';
 import '../core/design_tokens/border_radius.dart';
 import '../core/widgets/app_button_enhanced.dart';
@@ -339,7 +340,7 @@ class _GameDetailCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: AppColors.overlayDark,
             blurRadius: 40,
             offset: const Offset(0, 12),
           ),
@@ -404,7 +405,7 @@ class _VibeMatchSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withValues(alpha:0.08),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -443,7 +444,7 @@ class _VibeMatchSection extends StatelessWidget {
                       'Based on your preferences',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.white.withOpacity(0.7),
+                        color: AppColors.glassTextSecondary,
                       ),
                     ),
                   ],
@@ -476,14 +477,14 @@ class _VibeMatchSection extends StatelessWidget {
               Icon(
                 Icons.insights,
                 size: 14,
-                color: Colors.white.withOpacity(0.6),
+                color: AppColors.glassTextSecondary,
               ),
               const SizedBox(width: 6),
               Text(
                 'View Detailed Breakdown >',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.white.withOpacity(0.7),
+                  color: AppColors.glassTextSecondary,
                 ),
               ),
             ],
@@ -613,7 +614,7 @@ class _DetailCell extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withValues(alpha:0.08),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -637,7 +638,7 @@ class _DetailCell extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 11,
-              color: Colors.white.withOpacity(0.7),
+              color: AppColors.glassTextSecondary,
             ),
           ),
           const SizedBox(height: 2),
@@ -676,7 +677,7 @@ class _PlayersSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFE8B44C).withOpacity(0.2),
+                color: const Color(0xFFE8B44C).withValues(alpha:0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
@@ -718,7 +719,7 @@ class _PlayersSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             border: Border.all(
-              color: Colors.white.withOpacity(0.2),
+              color: AppColors.glassBorder,
               width: 1.5,
               style: BorderStyle.solid,
             ),
@@ -730,14 +731,14 @@ class _PlayersSection extends StatelessWidget {
               Icon(
                 Icons.add_circle_outline,
                 size: 18,
-                color: Colors.white.withOpacity(0.6),
+                color: AppColors.glassTextSecondary,
               ),
               const SizedBox(width: 8),
               Text(
                 '+1 spot open',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.white.withOpacity(0.7),
+                  color: AppColors.glassTextSecondary,
                 ),
               ),
             ],
@@ -800,7 +801,7 @@ class _PlayerRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
-            color: const Color(0xFFE8B44C).withOpacity(0.15),
+            color: const Color(0xFFE8B44C).withValues(alpha:0.15),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
@@ -909,7 +910,7 @@ class _Slide2RightGroup extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.12),
+                              color: Colors.black.withValues(alpha:0.12),
                               blurRadius: 40,
                               offset: const Offset(0, 12),
                             ),
@@ -1038,7 +1039,7 @@ class _Slide3GetAlerted extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.12),
+                                      color: Colors.black.withValues(alpha:0.12),
                                       blurRadius: 40,
                                       offset: const Offset(0, 12),
                                     ),
@@ -1189,7 +1190,7 @@ class _Slide4FillFoursome extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.12),
+                                      color: Colors.black.withValues(alpha:0.12),
                                       blurRadius: 40,
                                       offset: const Offset(0, 12),
                                     ),
@@ -1285,7 +1286,7 @@ class _AppNotificationBanner extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: AppColors.overlayDark,
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -1377,7 +1378,7 @@ class _FoursomeCompleteToast extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1a3a2a).withOpacity(0.3),
+              color: const Color(0xFF1a3a2a).withValues(alpha:0.3),
               blurRadius: 20,
               offset: const Offset(0, 6),
             ),

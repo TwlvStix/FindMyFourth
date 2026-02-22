@@ -29,10 +29,10 @@ class PremiumVibePageStyles {
 
   /// Strength chip decoration - soft green with subtle border
   static BoxDecoration get strengthChipDecoration => BoxDecoration(
-        color: AppColors.fairwayLight.withOpacity(0.15),
+        color: AppColors.navyLight.withValues(alpha:0.15),
         borderRadius: BorderRadius.circular(AppBorderRadius.full),
         border: Border.all(
-          color: AppColors.fairway.withOpacity(0.3),
+          color: AppColors.navy.withValues(alpha:0.3),
           width: 1,
         ),
       );
@@ -49,27 +49,27 @@ class PremiumVibePageStyles {
 
   /// Dealbreaker watch point card - emphasizes severity with warm accent
   static BoxDecoration get dealbreakerCardDecoration => BoxDecoration(
-        color: AppColors.sunsetRose.withOpacity(0.08),
+        color: AppColors.error.withValues(alpha:0.08),
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
-          color: AppColors.sunsetRose.withOpacity(0.3),
+          color: AppColors.error.withValues(alpha:0.3),
           width: 1,
         ),
       );
 
   /// Primary archetype card (current user) - green accent
   static BoxDecoration get archetypeCardPrimary => BoxDecoration(
-        color: AppColors.fairwayLight.withOpacity(0.12),
+        color: AppColors.navyLight.withValues(alpha:0.12),
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
-          color: AppColors.fairway.withOpacity(0.25),
+          color: AppColors.navy.withValues(alpha:0.25),
           width: 1,
         ),
       );
 
   /// Secondary archetype card (matched user) - neutral
   static BoxDecoration get archetypeCardSecondary => BoxDecoration(
-        color: AppColors.sand.withOpacity(0.5),
+        color: AppColors.sand.withValues(alpha:0.5),
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
           color: AppColors.cloud,
@@ -87,7 +87,7 @@ class PremiumVibePageStyles {
   // ============================================================================
 
   /// Hero score color - primary dark green
-  static const Color heroScoreColor = AppColors.fairwayDark;
+  static const Color heroScoreColor = AppColors.navyDark;
 
   /// Verdict text color - muted secondary
   static const Color verdictTextColor = AppColors.slate;
@@ -96,7 +96,7 @@ class PremiumVibePageStyles {
   static const Color sectionTitleColor = AppColors.onyx;
 
   /// Aligned category icon color
-  static const Color alignedIconColor = AppColors.fairway;
+  static const Color alignedIconColor = AppColors.navy;
 
   /// Watch point icon color
   static const Color watchPointIconColor = AppColors.stone;
@@ -105,7 +105,7 @@ class PremiumVibePageStyles {
   static const Color dealbreakerIconColor = AppColors.error;
 
   /// "You" spectrum dot color
-  static const Color youDotColor = AppColors.fairwayDark;
+  static const Color youDotColor = AppColors.navyDark;
 
   /// "Them" spectrum dot color
   static const Color themDotColor = AppColors.slate;

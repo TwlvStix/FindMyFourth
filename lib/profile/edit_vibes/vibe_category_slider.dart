@@ -153,7 +153,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
           children: [
             Icon(
               Icons.block_rounded,
-              color: AppColors.fairway,
+              color: AppColors.navy,
               size: 24,
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -190,7 +190,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
             child: Text(
               'Got it',
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.fairway,
+                color: AppColors.navy,
                 fontWeight: AppTypography.semiBold,
               ),
             ),
@@ -241,17 +241,17 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
               vertical: AppSpacing.xxs,
             ),
             decoration: BoxDecoration(
-              color: AppColors.fairwayLight.withOpacity(0.15),
+              color: AppColors.navyLight.withValues(alpha:0.15),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: AppColors.fairway.withOpacity(0.3),
+                color: AppColors.navy.withValues(alpha:0.3),
                 width: 1,
               ),
             ),
             child: Text(
               currentLabel,
               style: AppTypography.labelMedium.copyWith(
-                color: AppColors.fairwayDark,
+                color: AppColors.navyDark,
                 fontWeight: AppTypography.medium,
               ),
             ),
@@ -261,10 +261,10 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
           // Slider
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: AppColors.fairway,
+              activeTrackColor: AppColors.navy,
               inactiveTrackColor: AppColors.cloud,
-              thumbColor: AppColors.sunsetGold,
-              overlayColor: AppColors.sunsetGold.withValues(alpha: 0.2),
+              thumbColor: AppColors.gold,
+              overlayColor: AppColors.gold.withValues(alpha: 0.2),
               trackHeight: 5,
               showValueIndicator: ShowValueIndicator.never,
               thumbShape: const RoundSliderThumbShape(
@@ -331,7 +331,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
               Switch.adaptive(
                 value: _currentDealbreaker,
                 onChanged: _handleDealbreakerChanged,
-                activeColor: AppColors.fairway,
+                activeColor: AppColors.navy,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ],

@@ -24,7 +24,7 @@ class FriendSectionHeader extends StatefulWidget {
     this.svgPath,
     required this.title,
     required this.count,
-    this.color = AppColors.fairway,
+    this.color = AppColors.navy,
     this.isCollapsed = false,
     this.onTap,
   }) : assert(icon != null || svgPath != null, 'Either icon or svgPath must be provided');
@@ -98,10 +98,10 @@ class _FriendSectionHeaderState extends State<FriendSectionHeader>
             bottom: AppSpacing.xs,
           ),
           decoration: BoxDecoration(
-            color: widget.color.withOpacity(0.08),
+            color: widget.color.withValues(alpha:0.08),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: widget.color.withOpacity(_isPressed ? 0.2 : 0.1),
+              color: widget.color.withValues(alpha:_isPressed ? 0.2 : 0.1),
               width: 1,
             ),
           ),
@@ -116,14 +116,14 @@ class _FriendSectionHeaderState extends State<FriendSectionHeader>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      widget.color.withOpacity(0.2),
-                      widget.color.withOpacity(0.15),
+                      widget.color.withValues(alpha:0.2),
+                      widget.color.withValues(alpha:0.15),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: widget.color.withOpacity(0.15),
+                      color: widget.color.withValues(alpha:0.15),
                       blurRadius: 8,
                       offset: Offset(0, 2),
                     ),
@@ -165,8 +165,8 @@ class _FriendSectionHeaderState extends State<FriendSectionHeader>
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            widget.color.withOpacity(0.25),
-                            widget.color.withOpacity(0.15),
+                            widget.color.withValues(alpha:0.25),
+                            widget.color.withValues(alpha:0.15),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),

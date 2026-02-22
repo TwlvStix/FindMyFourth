@@ -166,9 +166,9 @@ class AppBadge extends StatelessWidget {
         );
       case AppBadgeVariant.primary:
         return (
-          background: AppColors.fairway.withValues(alpha: 0.1),
-          textColor: AppColors.fairway,
-          borderColor: AppColors.fairway.withValues(alpha: 0.2),
+          background: AppColors.navy.withValues(alpha: 0.1),
+          textColor: AppColors.navy,
+          borderColor: AppColors.navy.withValues(alpha: 0.2),
         );
       case AppBadgeVariant.subtle:
         return (

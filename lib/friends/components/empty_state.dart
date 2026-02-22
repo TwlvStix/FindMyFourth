@@ -124,11 +124,11 @@ class _FriendsEmptyStateState extends State<FriendsEmptyState>
         break;
       case FriendsEmptyStateType.noFriendRequests:
         iconData = Icons.inbox_rounded;
-        gradientColors = [AppColors.fairway, AppColors.fairwayLight];
+        gradientColors = [AppColors.navy, AppColors.navyLight];
         break;
       case FriendsEmptyStateType.noFriends:
         iconData = Icons.people_outline_rounded;
-        gradientColors = [AppColors.sunsetPeach, AppColors.sunsetRose];
+        gradientColors = [AppColors.goldLight, AppColors.error];
         break;
     }
 
@@ -139,15 +139,15 @@ class _FriendsEmptyStateState extends State<FriendsEmptyState>
         shape: BoxShape.circle,
         gradient: LinearGradient(
           colors: [
-            gradientColors[0].withOpacity(0.12),
-            gradientColors[1].withOpacity(0.12),
+            gradientColors[0].withValues(alpha:0.12),
+            gradientColors[1].withValues(alpha:0.12),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: gradientColors[0].withOpacity(0.1),
+            color: gradientColors[0].withValues(alpha:0.1),
             blurRadius: 30,
             offset: Offset(0, 10),
           ),
@@ -166,7 +166,7 @@ class _FriendsEmptyStateState extends State<FriendsEmptyState>
             ),
             boxShadow: [
               BoxShadow(
-                color: gradientColors[0].withOpacity(0.3),
+                color: gradientColors[0].withValues(alpha:0.3),
                 blurRadius: 20,
                 offset: Offset(0, 8),
               ),

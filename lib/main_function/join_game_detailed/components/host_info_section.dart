@@ -30,11 +30,11 @@ class HostInfoSection extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [AppColors.fairwayLight, AppColors.fairway],
+                colors: [AppColors.navyLight, AppColors.navy],
               ),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: AppColors.sunsetGold,
+                color: AppColors.gold,
                 width: 2,
               ),
             ),

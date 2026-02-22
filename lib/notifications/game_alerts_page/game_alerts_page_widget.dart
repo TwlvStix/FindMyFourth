@@ -126,7 +126,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
               'Alert settings saved',
               style: TextStyle(fontFamily: 'Manrope',color: Colors.white),
             ),
-            backgroundColor: AppColors.fairway,
+            backgroundColor: AppColors.navy,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -146,7 +146,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.fairwayDark,
+        backgroundColor: AppColors.navyDark,
         title: Text(
           'Reset Alert Settings?',
           style: AppTypography.titleMedium.copyWith(color: Colors.white),
@@ -273,7 +273,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
           decoration: BoxDecoration(
             color: isDisabled
                 ? AppColors.stone.withValues(alpha: 0.3)
-                : AppColors.fairway,
+                : AppColors.navy,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isDisabled
@@ -285,7 +285,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                 ? []
                 : [
                     BoxShadow(
-                      color: AppColors.fairway.withValues(alpha: 0.3),
+                      color: AppColors.navy.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -336,7 +336,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
     return Container(
       margin: EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.fairway.withValues(alpha: 0.2),
+        color: AppColors.navy.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),
@@ -428,12 +428,12 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
               ),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.sunsetGold
+                    ? AppColors.gold
                     : Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: isSelected
-                      ? AppColors.sunsetGold
+                      ? AppColors.gold
                       : Colors.white.withValues(alpha: 0.2),
                   width: 1.5,
                 ),
@@ -449,7 +449,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                     label,
                     style: AppTypography.labelMedium.copyWith(
                       color: isSelected
-                          ? AppColors.fairwayDark
+                          ? AppColors.navyDark
                           : Colors.white.withValues(alpha: 0.9),
                       fontWeight: FontWeight.w600,
                     ),
@@ -512,7 +512,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
             }),
             trackColor: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.selected)) {
-                return AppColors.sunsetGold;
+                return AppColors.gold;
               }
               return Colors.white.withValues(alpha: 0.2);
             }),
@@ -552,7 +552,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CircularProgressIndicator(
-                        color: AppColors.sunsetGold,
+                        color: AppColors.gold,
                       ),
                       SizedBox(height: AppSpacing.md),
                       Text(
@@ -816,7 +816,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                                     vertical: AppSpacing.sm,
                                                   ),
                                                   decoration: BoxDecoration(
-                                                    color: AppColors.sunsetGold,
+                                                    color: AppColors.gold,
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             16),
@@ -827,7 +827,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                                         .labelMedium
                                                         .copyWith(
                                                       color:
-                                                          AppColors.fairwayDark,
+                                                          AppColors.navyDark,
                                                       fontWeight:
                                                           FontWeight.w600,
                                                     ),
@@ -923,8 +923,8 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    AppColors.fairway.withValues(alpha: 0.3),
-                                    AppColors.fairwayDark
+                                    AppColors.navy.withValues(alpha: 0.3),
+                                    AppColors.navyDark
                                         .withValues(alpha: 0.4),
                                   ],
                                   begin: Alignment.topLeft,
@@ -932,7 +932,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                 ),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: AppColors.sunsetGold
+                                  color: AppColors.gold
                                       .withValues(alpha: 0.3),
                                   width: 1,
                                 ),
@@ -944,7 +944,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                     children: [
                                       Icon(
                                         Icons.info_outline,
-                                        color: AppColors.sunsetGold,
+                                        color: AppColors.gold,
                                         size: 20,
                                       ),
                                       SizedBox(width: AppSpacing.xs),
@@ -985,8 +985,8 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                               gradient: LinearGradient(
                                 colors: [
                                   Colors.transparent,
-                                  AppColors.fairwayDark.withValues(alpha: 0.95),
-                                  AppColors.fairwayDark,
+                                  AppColors.navyDark.withValues(alpha: 0.95),
+                                  AppColors.navyDark,
                                 ],
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
@@ -1058,7 +1058,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
       decoration: BoxDecoration(
-        color: AppColors.fairwayDark,
+        color: AppColors.navyDark,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -1093,7 +1093,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                   child: Text(
                     'Done',
                     style: AppTypography.titleSmall.copyWith(
-                      color: AppColors.sunsetGold,
+                      color: AppColors.gold,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1164,12 +1164,12 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                           margin: EdgeInsets.only(bottom: AppSpacing.sm),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? AppColors.sunsetGold.withValues(alpha: 0.2)
+                                ? AppColors.gold.withValues(alpha: 0.2)
                                 : Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: isSelected
-                                  ? AppColors.sunsetGold
+                                  ? AppColors.gold
                                   : Colors.white.withValues(alpha: 0.1),
                               width: 1.5,
                             ),
@@ -1181,7 +1181,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                                     ? Icons.check_circle
                                     : Icons.radio_button_unchecked,
                                 color: isSelected
-                                    ? AppColors.sunsetGold
+                                    ? AppColors.gold
                                     : Colors.white.withValues(alpha: 0.3),
                               ),
                               SizedBox(width: AppSpacing.md),

@@ -314,10 +314,10 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: AppColors.fairway.withValues(alpha: 0.3),
+                            color: AppColors.navy.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: AppColors.fairwayLight.withValues(alpha: 0.3),
+                              color: AppColors.navyLight.withValues(alpha: 0.3),
                               width: 1,
                             ),
                           ),
@@ -454,7 +454,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
       key: const ValueKey('discover_view'),
       child: RefreshIndicator(
         onRefresh: _refreshSearchTab,
-        color: AppColors.fairway,
+        color: AppColors.navy,
         backgroundColor: Colors.white,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -528,7 +528,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                     actionLabel: actionLabel,
                     actionIcon: actionIcon,
                     actionColor:
-                        isOutgoingPending ? AppColors.stone : AppColors.fairway,
+                        isOutgoingPending ? AppColors.stone : AppColors.navy,
                     showActionButton: showActionButton,
                   );
                 },
@@ -595,7 +595,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
       key: const ValueKey('requests_view'),
       child: RefreshIndicator(
         onRefresh: _refreshRequestsTab,
-        color: AppColors.fairway,
+        color: AppColors.navy,
         backgroundColor: Colors.white,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -739,7 +739,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
       key: const ValueKey('friends_view'),
       child: RefreshIndicator(
         onRefresh: _refreshFriendsTab,
-        color: AppColors.fairway,
+        color: AppColors.navy,
         backgroundColor: Colors.white,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),

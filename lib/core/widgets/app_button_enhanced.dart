@@ -276,16 +276,16 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
     switch (widget.variant) {
       case AppButtonVariant.primary:
         return _isPressed
-            ? AppColors.fairwayDark
+            ? AppColors.navyDark
             : _isHovered
-                ? AppColors.fairway
-                : AppColors.fairwayDark;
+                ? AppColors.navy
+                : AppColors.navyDark;
 
       case AppButtonVariant.secondary:
         return _isPressed
-            ? AppColors.fairwayLight.withOpacity(0.1)
+            ? AppColors.navyLight.withValues(alpha:0.1)
             : _isHovered
-                ? AppColors.fairwayLight.withOpacity(0.05)
+                ? AppColors.navyLight.withValues(alpha:0.05)
                 : Colors.transparent;
 
       case AppButtonVariant.ghost:
@@ -321,17 +321,17 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
 
       case AppButtonVariant.secondary:
         return _isPressed
-            ? AppColors.fairwayDark
+            ? AppColors.navyDark
             : _isHovered
-                ? AppColors.fairway
-                : AppColors.fairwayDark;
+                ? AppColors.navy
+                : AppColors.navyDark;
 
       case AppButtonVariant.ghost:
         return _isPressed
-            ? AppColors.fairway
+            ? AppColors.navy
             : _isHovered
-                ? AppColors.fairwayDark
-                : AppColors.fairway;
+                ? AppColors.navyDark
+                : AppColors.navy;
     }
   }
 
@@ -343,10 +343,10 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
     switch (widget.variant) {
       case AppButtonVariant.secondary:
         return _isPressed
-            ? AppColors.fairwayDark
+            ? AppColors.navyDark
             : _isHovered
-                ? AppColors.fairway
-                : AppColors.fairway;
+                ? AppColors.navy
+                : AppColors.navy;
 
       default:
         return Colors.transparent;
@@ -367,7 +367,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
       if (_isPressed) {
         return [
           BoxShadow(
-            color: AppColors.error.withOpacity(0.15),
+            color: AppColors.error.withValues(alpha:0.15),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -375,7 +375,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
       }
       return [
         BoxShadow(
-          color: AppColors.error.withOpacity(0.2),
+          color: AppColors.error.withValues(alpha:0.2),
           blurRadius: 12,
           offset: const Offset(0, 4),
         ),
@@ -386,7 +386,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
     if (_isPressed) {
       return [
         BoxShadow(
-          color: AppColors.fairwayDark.withOpacity(0.15),
+          color: AppColors.navyDark.withValues(alpha:0.15),
           blurRadius: 8,
           offset: const Offset(0, 2),
         ),
@@ -395,7 +395,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
 
     return [
       BoxShadow(
-        color: AppColors.fairwayDark.withOpacity(0.2),
+        color: AppColors.navyDark.withValues(alpha:0.2),
         blurRadius: 12,
         offset: const Offset(0, 4),
       ),
@@ -428,7 +428,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
               height: _height,
               decoration: BoxDecoration(
                 gradient: widget.variant == AppButtonVariant.gradient && _isEnabled
-                    ? AppColors.sunsetGradient
+                    ? AppColors.goldGradient
                     : null,
                 color: widget.variant != AppButtonVariant.gradient
                     ? _getBackgroundColor()

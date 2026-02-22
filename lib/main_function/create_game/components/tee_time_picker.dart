@@ -268,7 +268,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                                 decoration: BoxDecoration(
                                   border: Border.symmetric(
                                     horizontal: BorderSide(
-                                      color: AppColors.fairway.withValues(alpha: 0.3),
+                                      color: AppColors.navy.withValues(alpha: 0.3),
                                       width: 2,
                                     ),
                                   ),
@@ -337,7 +337,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                                 decoration: BoxDecoration(
                                   border: Border.symmetric(
                                     horizontal: BorderSide(
-                                      color: AppColors.fairway.withValues(alpha: 0.3),
+                                      color: AppColors.navy.withValues(alpha: 0.3),
                                       width: 2,
                                     ),
                                   ),

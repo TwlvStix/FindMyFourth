@@ -301,10 +301,10 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: AppColors.sunsetGold.withOpacity(0.15),
+              color: AppColors.gold.withValues(alpha:0.15),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppColors.sunsetGold.withOpacity(0.3),
+                color: AppColors.gold.withValues(alpha:0.3),
               ),
             ),
             child: Column(
@@ -315,7 +315,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                     Icon(
                       Icons.emoji_events_rounded,
                       size: 20,
-                      color: AppColors.sunsetGold,
+                      color: AppColors.gold,
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
@@ -369,16 +369,16 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                 label: 'Top',
                 count: _topCount,
                 max: 2,
-                color: AppColors.fairway,
-                background: AppColors.fairwayLight.withOpacity(0.15),
+                color: AppColors.navy,
+                background: AppColors.navyLight.withValues(alpha:0.15),
               ),
               const SizedBox(width: AppSpacing.sm),
               _buildCountPill(
                 label: 'Bottom',
                 count: _bottomCount,
                 max: 1,
-                color: AppColors.sunsetGold,
-                background: AppColors.sunsetGold.withOpacity(0.15),
+                color: AppColors.gold,
+                background: AppColors.gold.withValues(alpha:0.15),
               ),
             ],
           ),
@@ -412,7 +412,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha:0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -445,14 +445,14 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     final isTop = importance == VibeImportance.top;
     final isBottom = importance == VibeImportance.bottom;
     final background = isTop
-        ? AppColors.fairwayDark.withOpacity(0.3)
+        ? AppColors.navyDark.withValues(alpha:0.3)
         : isBottom
-            ? AppColors.sunsetGold.withOpacity(0.2)
-            : AppColors.slate.withOpacity(0.15);
+            ? AppColors.gold.withValues(alpha:0.2)
+            : AppColors.slate.withValues(alpha:0.15);
     final borderColor = isTop
-        ? AppColors.fairway
+        ? AppColors.navy
         : isBottom
-            ? AppColors.sunsetGold
+            ? AppColors.gold
             : AppColors.cloud;
     final label = isTop
         ? 'Top priority'
@@ -466,7 +466,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor.withOpacity(0.5)),
+        border: Border.all(color: borderColor.withValues(alpha:0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -514,13 +514,13 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
               _buildSelectorChip(
                 label: 'Matters most',
                 selected: isTop,
-                color: AppColors.fairway,
+                color: AppColors.navy,
                 onTap: () => _setImportance(category, VibeImportance.top),
               ),
               _buildSelectorChip(
                 label: 'Does not matter',
                 selected: isBottom,
-                color: AppColors.sunsetGold,
+                color: AppColors.gold,
                 onTap: () => _setImportance(category, VibeImportance.bottom),
               ),
             ],
@@ -537,7 +537,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     required VoidCallback onTap,
   }) {
     final textColor = selected ? AppColors.pure : AppColors.onyx;
-    final bgColor = selected ? color : AppColors.sand.withOpacity(0.5);
+    final bgColor = selected ? color : AppColors.sand.withValues(alpha:0.5);
 
     return InkWell(
       onTap: onTap,
@@ -628,8 +628,8 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                   borderRadius: BorderRadius.circular(8),
                   child: LinearProgressIndicator(
                     value: (_currentIndex + 1) / (_categories.length + 1),
-                    backgroundColor: AppColors.slate.withOpacity(0.3),
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.fairway),
+                    backgroundColor: AppColors.slate.withValues(alpha:0.3),
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.navy),
                     minHeight: 6,
                   ),
                 ),
@@ -642,7 +642,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                 child: _isLoading
                     ? Center(
                         child: CircularProgressIndicator(
-                          color: AppColors.fairway,
+                          color: AppColors.navy,
                         ),
                       )
                     : PageView.builder(
@@ -672,10 +672,10 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                                 Container(
                                   padding: const EdgeInsets.all(AppSpacing.md),
                                   decoration: BoxDecoration(
-                                    color: AppColors.fairwayLight.withOpacity(0.1),
+                                    color: AppColors.navyLight.withValues(alpha:0.1),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: AppColors.fairway.withOpacity(0.2),
+                                      color: AppColors.navy.withValues(alpha:0.2),
                                     ),
                                   ),
                                   child: Row(
@@ -683,7 +683,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                                       Icon(
                                         Icons.lightbulb_outline_rounded,
                                         size: 20,
-                                        color: AppColors.fairway,
+                                        color: AppColors.navy,
                                       ),
                                       const SizedBox(width: AppSpacing.sm),
                                       Expanded(

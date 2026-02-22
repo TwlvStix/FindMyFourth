@@ -24,12 +24,12 @@ class GameDetailsCard extends StatelessWidget {
           height: 44,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+              colors: [AppColors.gold, AppColors.goldLight],
             ),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: AppColors.sunsetGold.withValues(alpha: 0.3),
+                color: AppColors.gold.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -60,7 +60,7 @@ class GameDetailsCard extends StatelessWidget {
               Text(
                 game.nameGame,
                 style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.sunsetGold,
+                  color: AppColors.gold,
                   fontWeight: FontWeight.w500,
                 ),
               ),

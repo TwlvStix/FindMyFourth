@@ -140,7 +140,7 @@ class AppListTile extends StatelessWidget {
             vertical: AppSpacing.xs,
           ),
           child: Material(
-            color: AppColors.fairwayLight.withValues(alpha: 0.1),
+            color: AppColors.navyLight.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppBorderRadius.md),
             child: InkWell(
               onTap: onTap,
@@ -148,7 +148,7 @@ class AppListTile extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: AppColors.fairway.withValues(alpha: 0.3),
+                    color: AppColors.navy.withValues(alpha: 0.3),
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),

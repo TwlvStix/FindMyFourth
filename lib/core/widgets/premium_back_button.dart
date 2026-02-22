@@ -49,7 +49,7 @@ class PremiumBackButton extends StatelessWidget {
         child: Container(
           margin: EdgeInsets.only(left: AppSpacing.sm),
           decoration: BoxDecoration(
-            color: AppColors.fairway.withValues(alpha: 0.3),
+            color: AppColors.navy.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(12.0),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.1),

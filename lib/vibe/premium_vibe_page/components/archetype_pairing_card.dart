@@ -45,7 +45,7 @@ class ArchetypePairingCard extends StatelessWidget {
                   label: 'You',
                   archetype: myArchetype,
                   decoration: PremiumVibePageStyles.archetypeCardPrimary,
-                  nameColor: AppColors.fairwayDark,
+                  nameColor: AppColors.navyDark,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -195,7 +195,7 @@ class _ExpandableArchetypeCardState extends State<_ExpandableArchetypeCard> {
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  _getBackgroundColor().withOpacity(0.0),
+                                  _getBackgroundColor().withValues(alpha:0.0),
                                   _getBackgroundColor(),
                                 ],
                               ),
@@ -208,7 +208,7 @@ class _ExpandableArchetypeCardState extends State<_ExpandableArchetypeCard> {
                             child: Icon(
                               Icons.expand_more,
                               size: 16,
-                              color: AppColors.stone.withOpacity(0.5),
+                              color: AppColors.stone.withValues(alpha:0.5),
                             ),
                           ),
                         ],
@@ -225,7 +225,7 @@ class _ExpandableArchetypeCardState extends State<_ExpandableArchetypeCard> {
                       child: Icon(
                         Icons.expand_less,
                         size: 16,
-                        color: AppColors.stone.withOpacity(0.5),
+                        color: AppColors.stone.withValues(alpha:0.5),
                       ),
                     ),
                   ),

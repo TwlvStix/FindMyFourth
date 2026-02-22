@@ -445,7 +445,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: AppColors.fairway,
+            color: AppColors.navy,
             width: 2.0,
           ),
         ),
@@ -599,7 +599,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                   height: 56,
                                   alignment: Alignment.center,
                                   child: CircularProgressIndicator(
-                                    color: AppColors.fairway,
+                                    color: AppColors.navy,
                                   ),
                                 );
                               }
@@ -621,7 +621,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                 hintText: 'Select Home Course',
                                 icon: Icon(
                                   Icons.golf_course_rounded,
-                                  color: AppColors.fairway,
+                                  color: AppColors.navy,
                                   size: 24,
                                 ),
                                 fillColor: Colors.white,
@@ -650,18 +650,18 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                           ProfilePreferenceItem(
                             icon: FontAwesomeIcons.flagCheckered,
                             label: 'Handicap',
-                            iconColor: AppColors.fairway,
+                            iconColor: AppColors.navy,
                             valueWidget: AppCountController(
                               decrementIconBuilder: (enabled) => Icon(
                                 Icons.remove_rounded,
                                 color:
-                                    enabled ? AppColors.fairway : AppColors.cloud,
+                                    enabled ? AppColors.navy : AppColors.cloud,
                                 size: 20,
                               ),
                               incrementIconBuilder: (enabled) => Icon(
                                 Icons.add_rounded,
                                 color:
-                                    enabled ? AppColors.fairway : AppColors.cloud,
+                                    enabled ? AppColors.navy : AppColors.cloud,
                                 size: 20,
                               ),
                               countBuilder: (count) => Text(

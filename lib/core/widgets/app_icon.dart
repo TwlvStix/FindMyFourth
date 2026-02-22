@@ -15,7 +15,7 @@ import '../design_tokens/icon_size.dart';
 /// AppIcon(
 ///   assetPath: AppIcons.games,
 ///   size: AppIconSize.md,
-///   color: AppColors.fairway,
+///   color: AppColors.navy,
 /// )
 /// ```
 class AppIcon extends StatelessWidget {
@@ -91,7 +91,7 @@ class AppNavIcon extends StatelessWidget {
   final bool isActive;
 
   /// Color when [isActive] is true.
-  /// Defaults to [AppColors.fairway].
+  /// Defaults to [AppColors.navy].
   final Color? activeColor;
 
   /// Color when [isActive] is false.
@@ -105,7 +105,7 @@ class AppNavIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveSize = size ?? AppIconSize.nav;
     final effectiveColor = isActive
-        ? (activeColor ?? AppColors.fairway)
+        ? (activeColor ?? AppColors.navy)
         : (inactiveColor ?? AppColors.stone);
 
     return SvgPicture.asset(
@@ -127,7 +127,7 @@ class AppNavIcon extends StatelessWidget {
 /// ```dart
 /// AppIconBox(
 ///   assetPath: AppIcons.betting,
-///   backgroundColor: AppColors.sunsetGold,
+///   backgroundColor: AppColors.gold,
 ///   iconColor: Colors.white,
 ///   size: 44,
 ///   iconSize: 22,
@@ -149,7 +149,7 @@ class AppIconBox extends StatelessWidget {
   final String assetPath;
 
   /// Background color of the container box.
-  /// Defaults to [AppColors.fairway].
+  /// Defaults to [AppColors.navy].
   final Color? backgroundColor;
 
   /// Color of the icon inside the box.
@@ -174,7 +174,7 @@ class AppIconBox extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.fairway,
+        color: backgroundColor ?? AppColors.navy,
         borderRadius: BorderRadius.circular(borderRadius),
       ),
       child: Center(

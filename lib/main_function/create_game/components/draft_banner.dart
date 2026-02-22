@@ -22,13 +22,13 @@ class DraftBanner extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.sunsetGold.withValues(alpha: 0.2),
-            AppColors.sunsetPeach.withValues(alpha: 0.15),
+            AppColors.gold.withValues(alpha: 0.2),
+            AppColors.goldLight.withValues(alpha: 0.15),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.sunsetGold.withValues(alpha: 0.4),
+          color: AppColors.gold.withValues(alpha: 0.4),
           width: 2,
         ),
       ),
@@ -39,7 +39,7 @@ class DraftBanner extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                colors: [AppColors.gold, AppColors.goldLight],
               ),
               borderRadius: BorderRadius.circular(12),
             ),
@@ -78,7 +78,7 @@ class DraftBanner extends StatelessWidget {
             child: Text(
               'Clear',
               style: TextStyle(fontFamily: 'Manrope',
-                color: AppColors.sunsetGold,
+                color: AppColors.gold,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),

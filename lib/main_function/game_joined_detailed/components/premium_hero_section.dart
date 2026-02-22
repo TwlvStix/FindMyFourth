@@ -24,18 +24,18 @@ class PremiumHeroSection extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.fairway.withValues(alpha: 0.4),
-            AppColors.fairwayDark.withValues(alpha: 0.6),
+            AppColors.navy.withValues(alpha: 0.4),
+            AppColors.navyDark.withValues(alpha: 0.6),
           ],
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppColors.sunsetGold.withValues(alpha: 0.3),
+          color: AppColors.gold.withValues(alpha: 0.3),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.sunsetGold.withValues(alpha: 0.15),
+            color: AppColors.gold.withValues(alpha: 0.15),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -52,7 +52,7 @@ class PremiumHeroSection extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                colors: [AppColors.gold, AppColors.goldLight],
               ),
               borderRadius: BorderRadius.circular(20),
             ),
@@ -80,12 +80,12 @@ class PremiumHeroSection extends StatelessWidget {
                 height: 48,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                    colors: [AppColors.gold, AppColors.goldLight],
                   ),
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.sunsetGold.withValues(alpha: 0.3),
+                      color: AppColors.gold.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),

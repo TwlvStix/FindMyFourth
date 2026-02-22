@@ -48,7 +48,7 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
       ),
       decoration: BoxDecoration(
         // Dark green tinted background - matches card style
-        color: AppColors.fairway.withValues(alpha: 0.3),
+        color: AppColors.navy.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),

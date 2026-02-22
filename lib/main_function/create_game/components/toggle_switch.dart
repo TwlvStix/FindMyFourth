@@ -34,11 +34,11 @@ class ToggleSwitch extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.fairway.withValues(alpha: 0.2),
+        color: AppColors.navy.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: value
-              ? AppColors.sunsetGold.withValues(alpha: 0.5)
+              ? AppColors.gold.withValues(alpha: 0.5)
               : Colors.white.withValues(alpha: 0.1),
           width: value ? 2 : 1,
         ),
@@ -81,7 +81,7 @@ class ToggleSwitch extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: value
                     ? LinearGradient(
-                        colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                        colors: [AppColors.gold, AppColors.goldLight],
                       )
                     : null,
                 color: value ? null : Colors.white.withValues(alpha: 0.2),

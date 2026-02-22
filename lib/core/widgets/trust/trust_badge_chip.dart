@@ -109,9 +109,9 @@ class TrustBadgeChip extends StatelessWidget {
           label: 'New',
           descriptor: 'Welcome! Play your first rounds to build your reputation.',
           icon: Icons.golf_course_rounded,
-          backgroundColor: AppColors.sunsetPeach.withOpacity(0.15),
-          borderColor: AppColors.sunsetPeach.withOpacity(0.55),
-          textColor: AppColors.sunsetPeach,
+          backgroundColor: AppColors.goldLight.withValues(alpha:0.15),
+          borderColor: AppColors.goldLight.withValues(alpha:0.55),
+          textColor: AppColors.goldLight,
           boxShadow: const BoxShadow(
             color: Color(0x40E89E71), // sunsetPeach ~25% opacity
             blurRadius: 10,
@@ -123,8 +123,8 @@ class TrustBadgeChip extends StatelessWidget {
           label: 'Confirmed',
           descriptor: "You've been verified by the community.",
           icon: Icons.check_circle_outline_rounded,
-          backgroundColor: AppColors.info.withOpacity(0.12),
-          borderColor: AppColors.info.withOpacity(0.4),
+          backgroundColor: AppColors.info.withValues(alpha:0.12),
+          borderColor: AppColors.info.withValues(alpha:0.4),
           textColor: AppColors.info,
         );
       case BadgeTier.regular:
@@ -132,8 +132,8 @@ class TrustBadgeChip extends StatelessWidget {
           label: 'Regular',
           descriptor: 'A reliable player on the platform.',
           icon: Icons.sports_golf_rounded,
-          backgroundColor: AppColors.success.withOpacity(0.12),
-          borderColor: AppColors.success.withOpacity(0.4),
+          backgroundColor: AppColors.success.withValues(alpha:0.12),
+          borderColor: AppColors.success.withValues(alpha:0.4),
           textColor: AppColors.success,
         );
       case BadgeTier.starter:
@@ -141,18 +141,18 @@ class TrustBadgeChip extends StatelessWidget {
           label: 'Starter',
           descriptor: 'An active host and trusted player.',
           icon: Icons.flag_rounded,
-          backgroundColor: AppColors.fairway.withOpacity(0.12),
-          borderColor: AppColors.fairway.withOpacity(0.4),
-          textColor: AppColors.fairway,
+          backgroundColor: AppColors.navy.withValues(alpha:0.12),
+          borderColor: AppColors.navy.withValues(alpha:0.4),
+          textColor: AppColors.navy,
         );
       case BadgeTier.anchor:
         return _BadgeConfig(
           label: 'Anchor',
           descriptor: 'A cornerstone of the community.',
           icon: Icons.verified_rounded,
-          backgroundColor: AppColors.sunsetGold.withOpacity(0.12),
-          borderColor: AppColors.sunsetGold.withOpacity(0.4),
-          textColor: AppColors.sunsetGold,
+          backgroundColor: AppColors.gold.withValues(alpha:0.12),
+          borderColor: AppColors.gold.withValues(alpha:0.4),
+          textColor: AppColors.gold,
         );
     }
   }

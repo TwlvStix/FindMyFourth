@@ -37,7 +37,7 @@ class AppLoadingState extends StatelessWidget {
       case AppLoadingVariant.spinner:
         return Center(
           child: SpinKitFadingCircle(
-            color: AppColors.fairway,
+            color: AppColors.navy,
             size: 50.0,
           ),
         );
@@ -48,7 +48,7 @@ class AppLoadingState extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SpinKitFadingCircle(
-                color: AppColors.fairway,
+                color: AppColors.navy,
                 size: 50.0,
               ),
               if (message != null) ...[
@@ -69,7 +69,7 @@ class AppLoadingState extends StatelessWidget {
         return Column(
           children: [
             LinearProgressIndicator(
-              color: AppColors.fairway,
+              color: AppColors.navy,
               backgroundColor: AppColors.sand,
             ),
             if (message != null) ...[

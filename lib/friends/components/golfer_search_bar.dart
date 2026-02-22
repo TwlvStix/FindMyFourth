@@ -24,10 +24,10 @@ class GolferSearchBar extends StatelessWidget {
     return Container(
       height: 52,
       decoration: BoxDecoration(
-        color: AppColors.fairway.withValues(alpha: 0.4),
+        color: AppColors.navy.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.fairwayLight.withValues(alpha: 0.3),
+          color: AppColors.navyLight.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -51,7 +51,7 @@ class GolferSearchBar extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 color: Colors.white,
               ),
-              cursorColor: AppColors.sunsetGold,
+              cursorColor: AppColors.gold,
               decoration: InputDecoration(
                 hintText: 'Search golfers...',
                 hintStyle: TextStyle(
@@ -75,7 +75,7 @@ class GolferSearchBar extends StatelessWidget {
               margin: const EdgeInsets.only(right: 6),
               decoration: BoxDecoration(
                 color: hasActiveFilters
-                    ? AppColors.fairwayLight.withValues(alpha: 0.3)
+                    ? AppColors.navyLight.withValues(alpha: 0.3)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(10),
               ),

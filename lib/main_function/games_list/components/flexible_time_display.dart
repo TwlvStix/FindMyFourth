@@ -65,10 +65,10 @@ class FlexibleTimeDisplay extends StatelessWidget {
               vertical: compact ? 2 : AppSpacing.xxs,
             ),
             decoration: BoxDecoration(
-              color: AppColors.fairway.withValues(alpha: 0.3),
+              color: AppColors.navy.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppColors.fairway.withValues(alpha: 0.5),
+                color: AppColors.navy.withValues(alpha: 0.5),
                 width: 1,
               ),
             ),
@@ -107,12 +107,12 @@ class FlexibleTimeDisplay extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+          colors: [AppColors.gold, AppColors.goldLight],
         ),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: AppColors.sunsetGold.withValues(alpha: 0.3),
+            color: AppColors.gold.withValues(alpha: 0.3),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),

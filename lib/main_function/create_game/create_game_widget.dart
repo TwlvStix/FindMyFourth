@@ -662,7 +662,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppColors.fairwayLight, AppColors.fairway],
+              colors: [AppColors.navyLight, AppColors.navy],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -801,7 +801,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             padding: EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.fairwayLight, AppColors.fairway],
+                colors: [AppColors.navyLight, AppColors.navy],
               ),
               borderRadius: BorderRadius.circular(12),
             ),
@@ -930,7 +930,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             decoration: BoxDecoration(
               gradient: isSelected
                   ? LinearGradient(
-                      colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                      colors: [AppColors.gold, AppColors.goldLight],
                     )
                   : null,
               color:
@@ -938,7 +938,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isSelected
-                    ? AppColors.sunsetGold
+                    ? AppColors.gold
                     : AppTheme.of(context).accent4.withValues(alpha: 0.3),
                 width: 1.5,
               ),
@@ -1007,17 +1007,17 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               gradient: isSelected
                   ? LinearGradient(
                       colors: [
-                        AppColors.fairway.withValues(alpha: 0.5),
-                        AppColors.fairwayDark.withValues(alpha: 0.7),
+                        AppColors.navy.withValues(alpha: 0.5),
+                        AppColors.navyDark.withValues(alpha: 0.7),
                       ],
                     )
                   : null,
               color:
-                  isSelected ? null : AppColors.fairway.withValues(alpha: 0.2),
+                  isSelected ? null : AppColors.navy.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected
-                    ? AppColors.sunsetGold
+                    ? AppColors.gold
                     : Colors.white.withValues(alpha: 0.1),
                 width: isSelected ? 2 : 1,
               ),
@@ -1151,7 +1151,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SpinKitWanderingCubes(
-                              color: AppColors.sunsetGold,
+                              color: AppColors.gold,
                               size: 50.0,
                             ),
                             SizedBox(height: AppSpacing.md),
@@ -1410,8 +1410,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               decoration: BoxDecoration(
                                                 gradient: LinearGradient(
                                                   colors: [
-                                                    AppColors.fairwayLight,
-                                                    AppColors.fairway
+                                                    AppColors.navyLight,
+                                                    AppColors.navy
                                                   ],
                                                   begin: Alignment.topLeft,
                                                   end: Alignment.bottomRight,
@@ -1510,7 +1510,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                       child:
                                                           SpinKitWanderingCubes(
                                                         color: AppColors
-                                                            .sunsetGold,
+                                                            .gold,
                                                         size: 50.0,
                                                       ),
                                                     ),
@@ -1529,7 +1529,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                     padding: EdgeInsets.all(
                                                         AppSpacing.lg),
                                                     decoration: BoxDecoration(
-                                                      color: AppColors.fairway
+                                                      color: AppColors.navy
                                                           .withValues(
                                                               alpha: 0.2),
                                                       borderRadius:
@@ -1537,7 +1537,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                               12),
                                                       border: Border.all(
                                                         color: AppColors
-                                                            .fairwayLight
+                                                            .navyLight
                                                             .withValues(
                                                                 alpha: 0.3),
                                                       ),
@@ -1983,10 +1983,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                 decoration: BoxDecoration(
                                                   gradient: LinearGradient(
                                                     colors: [
-                                                      AppColors.fairway
+                                                      AppColors.navy
                                                           .withValues(
                                                               alpha: 0.3),
-                                                      AppColors.fairwayDark
+                                                      AppColors.navyDark
                                                           .withValues(
                                                               alpha: 0.4),
                                                     ],
@@ -1996,7 +1996,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   borderRadius:
                                                       BorderRadius.circular(12),
                                                   border: Border.all(
-                                                    color: AppColors.sunsetGold
+                                                    color: AppColors.gold
                                                         .withValues(alpha: 0.3),
                                                     width: 1,
                                                   ),

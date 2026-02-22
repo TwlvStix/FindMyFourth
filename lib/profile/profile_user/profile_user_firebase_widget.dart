@@ -281,7 +281,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.sunsetGold.withOpacity(0.3),
+                    color: AppColors.gold.withValues(alpha:0.3),
                     blurRadius: 40,
                     spreadRadius: 5,
                   ),
@@ -300,11 +300,11 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                       shape: BoxShape.circle,
                       gradient: SweepGradient(
                         colors: [
-                          AppColors.sunsetGold,
-                          AppColors.sunsetPeach,
-                          AppColors.sunsetRose,
-                          AppColors.fairwayLight,
-                          AppColors.sunsetGold,
+                          AppColors.gold,
+                          AppColors.goldLight,
+                          AppColors.error,
+                          AppColors.navyLight,
+                          AppColors.gold,
                         ],
                       ),
                     ),
@@ -355,16 +355,16 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.fairway.withOpacity(0.4),
+              color: AppColors.navy.withValues(alpha:0.4),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: AppColors.glassSurface,
               ),
             ),
             child: Text(
               handle,
               style: AppTypography.bodySmall.copyWith(
-                color: AppColors.sunsetGold,
+                color: AppColors.gold,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -400,7 +400,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               icon: FontAwesomeIcons.golfBall,
               value: handicap,
               label: 'Handicap',
-              gradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
+              gradient: [AppColors.gold, AppColors.goldLight],
             ),
           ),
           SizedBox(width: AppSpacing.sm),
@@ -410,7 +410,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               icon: FontAwesomeIcons.mapMarkerAlt,
               value: shortCourse,
               label: 'Home Course',
-              gradient: [AppColors.fairwayLight, AppColors.fairway],
+              gradient: [AppColors.navyLight, AppColors.navy],
               isText: true,
             ),
           ),
@@ -422,7 +422,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                     icon: FontAwesomeIcons.userFriends,
                     value: friendsCount.toString(),
                     label: 'Friends',
-                    gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
+                    gradient: [AppColors.goldLight, AppColors.error],
                   )
                 : _buildFriendStatusButton(context, data),
           ),
@@ -449,10 +449,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           horizontal: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
-          color: AppColors.fairway.withOpacity(0.3),
+          color: AppColors.navy.withValues(alpha:0.3),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: AppColors.glassSurface,
           ),
         ),
         child: Column(
@@ -491,7 +491,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             Text(
               label,
               style: AppTypography.labelSmall.copyWith(
-                color: Colors.white.withOpacity(0.6),
+                color: AppColors.glassTextSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -555,10 +555,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           // Friends: premium checkmark with green gradient
           icon = Icons.check_rounded;
           label = 'FRIENDS';
-          gradientColors = [AppColors.fairwayDark, AppColors.fairway];
+          gradientColors = [AppColors.navyDark, AppColors.navy];
           boxShadow = [
             BoxShadow(
-              color: AppColors.fairway.withOpacity(0.4),
+              color: AppColors.navy.withValues(alpha:0.4),
               blurRadius: 8,
               offset: Offset(0, 3),
             ),
@@ -567,10 +567,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           // Pending: premium hourglass with warm golden gradient
           icon = Icons.hourglass_top_rounded;
           label = 'PENDING';
-          gradientColors = [AppColors.sunsetGold, AppColors.sunsetPeach];
+          gradientColors = [AppColors.gold, AppColors.goldLight];
           boxShadow = [
             BoxShadow(
-              color: AppColors.sunsetGold.withOpacity(0.3),
+              color: AppColors.gold.withValues(alpha:0.3),
               blurRadius: 8,
               offset: Offset(0, 3),
             ),
@@ -579,10 +579,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           // Add Friend: premium person-add with warm accent gradient
           icon = Icons.person_add_alt_1_rounded;
           label = 'ADD';
-          gradientColors = [AppColors.sunsetGold, AppColors.sunsetPeach];
+          gradientColors = [AppColors.gold, AppColors.goldLight];
           boxShadow = [
             BoxShadow(
-              color: AppColors.sunsetGold.withOpacity(0.4),
+              color: AppColors.gold.withValues(alpha:0.4),
               blurRadius: 8,
               offset: Offset(0, 3),
             ),
@@ -603,7 +603,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                     ),
                   ),
                   duration: Duration(milliseconds: 1500),
-                  backgroundColor: AppColors.fairwayDark,
+                  backgroundColor: AppColors.navyDark,
                 ),
               );
             } catch (error) {
@@ -631,10 +631,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               horizontal: AppSpacing.xs,
             ),
             decoration: BoxDecoration(
-              color: AppColors.fairway.withOpacity(0.3),
+              color: AppColors.navy.withValues(alpha:0.3),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: AppColors.glassSurface,
               ),
             ),
             child: Column(
@@ -662,7 +662,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                 Text(
                   label,
                   style: AppTypography.labelSmall.copyWith(
-                    color: Colors.white.withOpacity(0.8),
+                    color: AppColors.glassTextSecondary,
                     fontWeight: FontWeight.w500,
                     fontSize: 10,
                     letterSpacing: 0.5,
@@ -714,14 +714,14 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                 height: 48,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [AppColors.fairwayLight, AppColors.fairway],
+                    colors: [AppColors.navyLight, AppColors.navy],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.fairway.withOpacity(0.3),
+                      color: AppColors.navy.withValues(alpha:0.3),
                       blurRadius: 12,
                       offset: Offset(0, 4),
                     ),
@@ -772,7 +772,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.sand, width: 2),
-                color: AppColors.fairway.withValues(alpha: 0.15),
+                color: AppColors.navy.withValues(alpha: 0.15),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.08),
@@ -789,13 +789,13 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                         errorBuilder: (_, __, ___) => Icon(
                           Icons.person,
                           size: 20,
-                          color: AppColors.fairway,
+                          color: AppColors.navy,
                         ),
                       )
                     : Icon(
                         Icons.person,
                         size: 20,
-                        color: AppColors.fairway,
+                        color: AppColors.navy,
                       ),
               ),
             ),
@@ -825,7 +825,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             context,
             icon: Icons.chat_bubble_outline_rounded,
             label: 'Message',
-            gradient: [AppColors.fairwayLight, AppColors.fairway],
+            gradient: [AppColors.navyLight, AppColors.navy],
             onTap: () => _openChatWithUser(widget.userRef),
           ),
         ),
@@ -835,7 +835,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             context,
             icon: Icons.auto_awesome_rounded,
             label: vibeLabel,
-            gradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
+            gradient: [AppColors.gold, AppColors.goldLight],
             onTap: canOpenVibe ? _openVibePage : null,
             isDisabled: !canOpenVibe,
           ),
@@ -893,7 +893,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                     ? []
                     : [
                         BoxShadow(
-                          color: effectiveGradient[0].withOpacity(0.3),
+                          color: effectiveGradient[0].withValues(alpha:0.3),
                           blurRadius: 12,
                           offset: Offset(0, 4),
                         ),
@@ -952,7 +952,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           _buildInfoRow(
             context,
             icon: Icons.verified_rounded,
-            iconColor: AppColors.fairway,
+            iconColor: AppColors.navy,
             label: 'Golf Canada #',
             value: golfCanadaNumber,
           ),
@@ -961,7 +961,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             _buildInfoRow(
               context,
               icon: Icons.email_outlined,
-              iconColor: AppColors.sunsetPeach,
+              iconColor: AppColors.goldLight,
               label: 'Email',
               value: email,
             ),
@@ -971,7 +971,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             _buildInfoRow(
               context,
               icon: Icons.phone_outlined,
-              iconColor: AppColors.sunsetGold,
+              iconColor: AppColors.gold,
               label: 'Phone',
               value: phone,
             ),
@@ -1001,7 +1001,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.15),
+              color: iconColor.withValues(alpha:0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: iconColor, size: 20),
@@ -1047,7 +1047,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           if (snapshot.hasError) {
             return Scaffold(
               key: scaffoldKey,
-              backgroundColor: AppColors.fairwayDark,
+              backgroundColor: AppColors.navyDark,
               body: SafeArea(
                 child: Column(
                   children: [
@@ -1093,7 +1093,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           if (!snapshot.hasData || snapshot.data == null) {
             return Scaffold(
               key: scaffoldKey,
-              backgroundColor: AppColors.fairwayDark,
+              backgroundColor: AppColors.navyDark,
               body: SafeArea(
                 child: Column(
                   children: [
@@ -1228,7 +1228,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
+                              color: AppColors.overlayDark,
                               blurRadius: 30,
                               offset: Offset(0, -10),
                             ),
@@ -1333,7 +1333,7 @@ class MutualFriendsSheet extends StatelessWidget {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.fairway.withOpacity(0.12),
+                    color: AppColors.navy.withValues(alpha:0.12),
                     borderRadius: BorderRadius.circular(99),
                   ),
                   child: Text(
@@ -1341,7 +1341,7 @@ class MutualFriendsSheet extends StatelessWidget {
                         ? '3+'
                         : '${mutualFriends.length}',
                     style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.fairway,
+                      color: AppColors.navy,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1391,7 +1391,7 @@ class MutualFriendsSheet extends StatelessWidget {
                           height: 48,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppColors.fairway.withOpacity(0.15),
+                            color: AppColors.navy.withValues(alpha:0.15),
                           ),
                           child: ClipOval(
                             child: friend.photoUrl.isNotEmpty
@@ -1400,13 +1400,13 @@ class MutualFriendsSheet extends StatelessWidget {
                                     fit: BoxFit.cover,
                                     errorBuilder: (_, __, ___) => Icon(
                                       Icons.person,
-                                      color: AppColors.fairway,
+                                      color: AppColors.navy,
                                       size: 24,
                                     ),
                                   )
                                 : Icon(
                                     Icons.person,
-                                    color: AppColors.fairway,
+                                    color: AppColors.navy,
                                     size: 24,
                                   ),
                           ),
@@ -1446,13 +1446,13 @@ class MutualFriendsSheet extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.sunsetGold.withOpacity(0.12),
+                            color: AppColors.gold.withValues(alpha:0.12),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             handicapStr,
                             style: AppTypography.monoSmall.copyWith(
-                              color: AppColors.sunsetGold,
+                              color: AppColors.gold,
                               fontWeight: FontWeight.w700,
                             ),
                           ),

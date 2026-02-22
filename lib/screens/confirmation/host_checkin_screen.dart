@@ -326,8 +326,8 @@ class _ParticipantRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isPresent
-              ? theme.primary.withOpacity(0.3)
-              : theme.error.withOpacity(0.3),
+              ? theme.primary.withValues(alpha:0.3)
+              : theme.error.withValues(alpha:0.3),
           width: 1,
         ),
       ),
@@ -436,7 +436,7 @@ class _ToggleChip extends StatelessWidget {
           color: selected ? selectedColor : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? selectedColor : theme.secondaryText.withOpacity(0.4),
+            color: selected ? selectedColor : theme.secondaryText.withValues(alpha:0.4),
           ),
         ),
         child: Text(

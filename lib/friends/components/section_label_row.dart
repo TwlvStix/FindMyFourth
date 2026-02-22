@@ -28,7 +28,7 @@ class SectionLabelRow extends StatelessWidget {
               fontSize: 11,
               fontWeight: FontWeight.w600,
               letterSpacing: 1.5,
-              color: AppColors.sunsetGold.withValues(alpha: 0.8),
+              color: AppColors.gold.withValues(alpha: 0.8),
             ),
           ),
           Text(

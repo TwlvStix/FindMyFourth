@@ -125,10 +125,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            color: AppColors.fairway.withOpacity(0.3),
+                            color: AppColors.navy.withValues(alpha:0.3),
                             borderRadius: BorderRadius.circular(12.0),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
+                              color: AppColors.glassSurface,
                             ),
                           ),
                           child: AppIconButton(
@@ -166,15 +166,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    AppColors.sunsetRose,
-                                    AppColors.sunsetPeach,
+                                    AppColors.error,
+                                    AppColors.goldLight,
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(10.0),
                                 boxShadow: [
                                   BoxShadow(
                                     color:
-                                        AppColors.sunsetRose.withOpacity(0.4),
+                                        AppColors.error.withValues(alpha:0.4),
                                     blurRadius: 8,
                                     offset: Offset(0, 2),
                                   ),
@@ -234,7 +234,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
+                          color: AppColors.overlayDark,
                           blurRadius: 30,
                           offset: Offset(0, -10),
                         ),
@@ -318,7 +318,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.sunsetGold.withOpacity(0.3),
+                        color: AppColors.gold.withValues(alpha:0.3),
                         blurRadius: 40,
                         spreadRadius: 5,
                       ),
@@ -339,11 +339,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           shape: BoxShape.circle,
                           gradient: SweepGradient(
                             colors: [
-                              AppColors.sunsetGold,
-                              AppColors.sunsetPeach,
-                              AppColors.sunsetRose,
-                              AppColors.fairwayLight,
-                              AppColors.sunsetGold,
+                              AppColors.gold,
+                              AppColors.goldLight,
+                              AppColors.error,
+                              AppColors.navyLight,
+                              AppColors.gold,
                             ],
                           ),
                         ),
@@ -409,14 +409,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       height: buttonSize,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                          colors: [AppColors.gold, AppColors.goldLight],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.sunsetGold.withOpacity(0.4),
+                            color: AppColors.gold.withValues(alpha:0.4),
                             blurRadius: 12,
                             offset: Offset(0, 4),
                           ),
@@ -455,16 +455,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           builder: (context) => Container(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.fairway.withOpacity(0.4),
+              color: AppColors.navy.withValues(alpha:0.4),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: AppColors.glassSurface,
               ),
             ),
             child: Text(
               '@${currentUserDisplayName}',
               style: AppTypography.bodySmall.copyWith(
-                color: AppColors.sunsetGold,
+                color: AppColors.gold,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -492,7 +492,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   valueOrDefault(currentUserDocument?.handicap, 0),
                 ),
                 label: 'Handicap',
-                gradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                gradient: [AppColors.gold, AppColors.goldLight],
               ),
             ),
           ),
@@ -512,7 +512,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   icon: FontAwesomeIcons.mapMarkerAlt,
                   value: shortCourse,
                   label: 'Home Course',
-                  gradient: [AppColors.fairwayLight, AppColors.fairway],
+                  gradient: [AppColors.navyLight, AppColors.navy],
                   isText: true,
                 );
               },
@@ -530,7 +530,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   icon: FontAwesomeIcons.userFriends,
                   value: friendsCount.toString(),
                   label: 'Friends',
-                  gradient: [AppColors.sunsetPeach, AppColors.sunsetRose],
+                  gradient: [AppColors.goldLight, AppColors.error],
                   onTap: () {
                     HapticFeedback.lightImpact();
                     _pushNamed(TabFriendsWidget.routeName);
@@ -559,10 +559,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         padding: EdgeInsets.symmetric(
             vertical: AppSpacing.md, horizontal: AppSpacing.xs),
         decoration: BoxDecoration(
-          color: AppColors.fairway.withOpacity(0.3),
+          color: AppColors.navy.withValues(alpha:0.3),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: AppColors.glassSurface,
           ),
         ),
         child: Column(
@@ -600,7 +600,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             Text(
               label,
               style: AppTypography.labelSmall.copyWith(
-                color: Colors.white.withOpacity(0.6),
+                color: AppColors.glassTextSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -648,13 +648,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.sunsetGold.withOpacity(0.15),
-                    AppColors.sunsetPeach.withOpacity(0.1),
+                    AppColors.gold.withValues(alpha:0.15),
+                    AppColors.goldLight.withValues(alpha:0.1),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: AppColors.sunsetGold.withOpacity(0.3),
+                  color: AppColors.gold.withValues(alpha:0.3),
                 ),
               ),
               child: Row(
@@ -664,7 +664,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     height: 44,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                        colors: [AppColors.gold, AppColors.goldLight],
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -698,7 +698,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ),
                   Icon(
                     Icons.arrow_forward_ios_rounded,
-                    color: AppColors.sunsetGold,
+                    color: AppColors.gold,
                     size: 18,
                   ),
                 ],
@@ -733,7 +733,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         context,
                         icon: Icons.person_outline_rounded,
                         label: 'Edit Profile',
-                        gradient: [AppColors.fairwayLight, AppColors.fairway],
+                        gradient: [AppColors.navyLight, AppColors.navy],
                         onTap: () {
                           HapticFeedback.lightImpact();
                           _pushNamed(
@@ -757,7 +757,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         context,
                         icon: Icons.tune_rounded,
                         label: 'Golf Vibes',
-                        gradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                        gradient: [AppColors.gold, AppColors.goldLight],
                         onTap: () {
                           HapticFeedback.lightImpact();
                           _pushNamed(
@@ -788,7 +788,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     context,
                     icon: Icons.person_outline_rounded,
                     label: 'Edit Profile',
-                    gradient: [AppColors.fairwayLight, AppColors.fairway],
+                    gradient: [AppColors.navyLight, AppColors.navy],
                     onTap: () {
                       HapticFeedback.lightImpact();
                       _pushNamed(
@@ -812,7 +812,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     context,
                     icon: Icons.tune_rounded,
                     label: 'Golf Vibes',
-                    gradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                    gradient: [AppColors.gold, AppColors.goldLight],
                     onTap: () {
                       HapticFeedback.lightImpact();
                       _pushNamed(
@@ -866,7 +866,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: gradient[0].withOpacity(0.3),
+                    color: gradient[0].withValues(alpha:0.3),
                     blurRadius: 12,
                     offset: Offset(0, 4),
                   ),
@@ -919,7 +919,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             builder: (context) => _buildInfoRow(
               context,
               icon: Icons.verified_rounded,
-              iconColor: AppColors.fairway,
+              iconColor: AppColors.navy,
               label: 'Golf Canada #',
               value: valueOrDefault(
                   currentUserDocument?.golfCanadaNumber, 'Not set'),
@@ -932,7 +932,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           _buildInfoRow(
             context,
             svgPath: AppIcons.email,
-            iconColor: AppColors.sunsetPeach,
+            iconColor: AppColors.goldLight,
             label: 'Email',
             value: currentUserEmail,
           ),
@@ -944,7 +944,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             builder: (context) => _buildInfoRow(
               context,
               svgPath: AppIcons.phone,
-              iconColor: AppColors.sunsetGold,
+              iconColor: AppColors.gold,
               label: 'Phone',
               value: currentPhoneNumber.isNotEmpty
                   ? currentPhoneNumber
@@ -977,7 +977,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.15),
+              color: iconColor.withValues(alpha:0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: svgPath != null

@@ -202,10 +202,10 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                             return Container(
                               padding: const EdgeInsets.all(AppSpacing.md),
                               decoration: BoxDecoration(
-                                color: AppColors.sunsetGold.withOpacity(0.15),
+                                color: AppColors.gold.withValues(alpha:0.15),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: AppColors.sunsetGold.withOpacity(0.3),
+                                  color: AppColors.gold.withValues(alpha:0.3),
                                 ),
                               ),
                               child: Column(
@@ -216,7 +216,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                       Icon(
                                         Icons.emoji_events_rounded,
                                         size: 20,
-                                        color: AppColors.sunsetGold,
+                                        color: AppColors.gold,
                                       ),
                                       const SizedBox(width: AppSpacing.sm),
                                       Text(
@@ -281,12 +281,12 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                   height: 40,
                                   decoration: BoxDecoration(
                                     color:
-                                        AppColors.fairwayLight.withOpacity(0.2),
+                                        AppColors.navyLight.withValues(alpha:0.2),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Icon(
                                     Icons.star_rounded,
-                                    color: AppColors.fairway,
+                                    color: AppColors.navy,
                                     size: 20,
                                   ),
                                 ),

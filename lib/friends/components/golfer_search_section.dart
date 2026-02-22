@@ -335,20 +335,20 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                     padding: EdgeInsets.only(left: AppSpacing.sm),
                     child: AppIconButton(
                       borderColor: widget.friendFilters?.hasActiveFilters == true
-                          ? AppColors.fairway.withOpacity(0.2)
+                          ? AppColors.navy.withValues(alpha:0.2)
                           : Colors.transparent,
                       borderRadius: 30.0,
                       borderWidth:
                           widget.friendFilters?.hasActiveFilters == true ? 2.0 : 1.0,
                       buttonSize: 44.0,
                       fillColor: widget.friendFilters?.hasActiveFilters == true
-                          ? AppColors.fairway.withOpacity(0.1)
+                          ? AppColors.navy.withValues(alpha:0.1)
                           : Colors.transparent,
                       tooltip: 'Filters',
                       icon: Icon(
                         Icons.tune_rounded,
                         color: widget.friendFilters?.hasActiveFilters == true
-                            ? AppColors.fairway
+                            ? AppColors.navy
                             : AppTheme.of(context).primaryBtnText,
                         size: 24.0,
                       ),

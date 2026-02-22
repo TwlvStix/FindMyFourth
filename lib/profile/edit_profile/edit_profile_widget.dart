@@ -271,7 +271,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
+                          color: AppColors.overlayDark,
                           blurRadius: 30,
                           offset: Offset(0, -10),
                         ),
@@ -335,7 +335,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.sunsetGold.withOpacity(0.3),
+                    color: AppColors.gold.withValues(alpha:0.3),
                     blurRadius: 40,
                     spreadRadius: 5,
                   ),
@@ -356,11 +356,11 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                       shape: BoxShape.circle,
                       gradient: SweepGradient(
                         colors: [
-                          AppColors.sunsetGold,
-                          AppColors.sunsetPeach,
-                          AppColors.sunsetRose,
-                          AppColors.fairwayLight,
-                          AppColors.sunsetGold,
+                          AppColors.gold,
+                          AppColors.goldLight,
+                          AppColors.error,
+                          AppColors.navyLight,
+                          AppColors.gold,
                         ],
                       ),
                     ),
@@ -437,14 +437,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                     height: 48,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                        colors: [AppColors.gold, AppColors.goldLight],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.sunsetGold.withOpacity(0.4),
+                          color: AppColors.gold.withValues(alpha:0.4),
                           blurRadius: 12,
                           offset: Offset(0, 4),
                         ),
@@ -481,7 +481,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           child: Text(
             'Change Photo',
             style: AppTypography.labelMedium.copyWith(
-              color: AppColors.sunsetGold,
+              color: AppColors.gold,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -607,7 +607,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         ),
                         alignment: Alignment.center,
                         child: CircularProgressIndicator(
-                          color: AppColors.fairway,
+                          color: AppColors.navy,
                           strokeWidth: 2,
                         ),
                       );
@@ -641,7 +641,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         hintText: 'Select Home Course',
                         icon: Icon(
                           Icons.golf_course_rounded,
-                          color: AppColors.fairway,
+                          color: AppColors.navy,
                           size: 22,
                         ),
                         fillColor: AppColors.sand,
@@ -671,12 +671,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: AppColors.sunsetGold.withOpacity(0.15),
+                          color: AppColors.gold.withValues(alpha:0.15),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
                           FontAwesomeIcons.flagCheckered,
-                          color: AppColors.sunsetGold,
+                          color: AppColors.gold,
                           size: 18,
                         ),
                       ),
@@ -707,14 +707,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                           height: 32,
                           decoration: BoxDecoration(
                             color: enabled
-                                ? AppColors.fairway.withOpacity(0.1)
-                                : AppColors.cloud.withOpacity(0.5),
+                                ? AppColors.navy.withValues(alpha:0.1)
+                                : AppColors.cloud.withValues(alpha:0.5),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
                             Icons.remove_rounded,
                             color:
-                                enabled ? AppColors.fairway : AppColors.stone,
+                                enabled ? AppColors.navy : AppColors.stone,
                             size: 18,
                           ),
                         ),
@@ -723,14 +723,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                           height: 32,
                           decoration: BoxDecoration(
                             color: enabled
-                                ? AppColors.fairway.withOpacity(0.1)
-                                : AppColors.cloud.withOpacity(0.5),
+                                ? AppColors.navy.withValues(alpha:0.1)
+                                : AppColors.cloud.withValues(alpha:0.5),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
                             Icons.add_rounded,
                             color:
-                                enabled ? AppColors.fairway : AppColors.stone,
+                                enabled ? AppColors.navy : AppColors.stone,
                             size: 18,
                           ),
                         ),
@@ -792,12 +792,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppColors.fairwayLight, AppColors.fairway],
+              colors: [AppColors.navyLight, AppColors.navy],
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppColors.fairway.withOpacity(0.3),
+                color: AppColors.navy.withValues(alpha:0.3),
                 blurRadius: 12,
                 offset: Offset(0, 4),
               ),
@@ -908,9 +908,9 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           width: double.infinity,
           padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.error.withOpacity(0.1),
+            color: AppColors.error.withValues(alpha:0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.error.withOpacity(0.3)),
+            border: Border.all(color: AppColors.error.withValues(alpha:0.3)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,

@@ -175,7 +175,7 @@ class _EarlyState extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.success.withOpacity(0.10),
+            color: AppColors.success.withValues(alpha:0.10),
             borderRadius: BorderRadius.circular(AppBorderRadius.md),
           ),
           child: Row(
@@ -237,7 +237,7 @@ class _LateState extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.sunsetPeach.withOpacity(0.10),
+            color: AppColors.goldLight.withValues(alpha:0.10),
             borderRadius: BorderRadius.circular(AppBorderRadius.md),
           ),
           child: Column(
@@ -247,7 +247,7 @@ class _LateState extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.warning_amber_rounded,
-                      color: AppColors.sunsetPeach, size: 20),
+                      color: AppColors.goldLight, size: 20),
                   SizedBox(width: AppSpacing.xs),
                   Expanded(
                     child: Text(
@@ -316,7 +316,7 @@ class _DayOfState extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.error.withOpacity(0.08),
+            color: AppColors.error.withValues(alpha:0.08),
             borderRadius: BorderRadius.circular(AppBorderRadius.md),
           ),
           child: Column(
@@ -343,7 +343,7 @@ class _DayOfState extends StatelessWidget {
               Text(
                 'This will result in 1 strike on your account.',
                 style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.sunsetRose,
+                  color: AppColors.error,
                   fontWeight: FontWeight.w600,
                 ),
               ),

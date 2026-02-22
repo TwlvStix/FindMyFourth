@@ -34,10 +34,10 @@ class PlayerMatchChip extends StatelessWidget {
             vertical: AppSpacing.xxs,
           ),
           decoration: BoxDecoration(
-            color: AppColors.fairway.withValues(alpha: 0.12),
+            color: AppColors.navy.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: AppColors.fairway.withValues(alpha: 0.3),
+              color: AppColors.navy.withValues(alpha: 0.3),
             ),
           ),
           child: Text(

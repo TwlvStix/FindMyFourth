@@ -69,12 +69,12 @@ class _ChatWidgetState extends State<ChatWidget> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.fairway.withOpacity(0.3),
+          color: AppColors.navy.withValues(alpha:0.3),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: unreadCount > 0
-                ? AppColors.sunsetGold.withOpacity(0.4)
-                : Colors.white.withOpacity(0.1),
+                ? AppColors.gold.withValues(alpha:0.4)
+                : AppColors.glassSurface,
             width: unreadCount > 0 ? 2 : 1,
           ),
         ),
@@ -88,13 +88,13 @@ class _ChatWidgetState extends State<ChatWidget> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.fairwayLight,
-                    AppColors.fairway,
+                    AppColors.navyLight,
+                    AppColors.navy,
                   ],
                 ),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: AppColors.glassBorder,
                   width: 2,
                 ),
               ),
@@ -150,14 +150,14 @@ class _ChatWidgetState extends State<ChatWidget> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                AppColors.sunsetGold,
-                                AppColors.sunsetPeach,
+                                AppColors.gold,
+                                AppColors.goldLight,
                               ],
                             ),
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.sunsetGold.withOpacity(0.4),
+                                color: AppColors.gold.withValues(alpha:0.4),
                                 blurRadius: 4,
                                 offset: Offset(0, 2),
                               ),
@@ -181,7 +181,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.bodySmall.copyWith(
-                      color: Colors.white.withOpacity(0.7),
+                      color: AppColors.glassTextSecondary,
                     ),
                   ),
                   if (lastMessageAt != null) ...[
@@ -189,7 +189,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                     Text(
                       dateTimeFormat('relative', lastMessageAt),
                       style: AppTypography.labelSmall.copyWith(
-                        color: Colors.white.withOpacity(0.5),
+                        color: AppColors.glassTextTertiary,
                       ),
                     ),
                   ],
@@ -199,7 +199,7 @@ class _ChatWidgetState extends State<ChatWidget> {
             // Arrow
             Icon(
               Icons.chevron_right_rounded,
-              color: Colors.white.withOpacity(0.5),
+              color: AppColors.glassTextTertiary,
               size: 24,
             ),
           ],
@@ -254,7 +254,7 @@ class _ChatWidgetState extends State<ChatWidget> {
           child: Text(
             'Please sign in to view chats.',
             style: AppTypography.bodyMedium.copyWith(
-              color: Colors.white.withOpacity(0.7),
+              color: AppColors.glassTextSecondary,
             ),
           ),
         );
@@ -267,7 +267,7 @@ class _ChatWidgetState extends State<ChatWidget> {
           child: Text(
             'Please sign in to view chats.',
             style: AppTypography.bodyMedium.copyWith(
-              color: Colors.white.withOpacity(0.7),
+              color: AppColors.glassTextSecondary,
             ),
           ),
         ),
@@ -342,7 +342,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                 child: Text(
                   'Recent Chats',
                   style: AppTypography.labelLarge.copyWith(
-                    color: Colors.white.withOpacity(0.8),
+                    color: AppColors.glassTextSecondary,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.6,
                   ),
@@ -387,7 +387,7 @@ class _ChatWidgetState extends State<ChatWidget> {
               child: Text(
                 'Failed to load chats.',
                 style: AppTypography.bodyMedium.copyWith(
-                  color: Colors.white.withOpacity(0.7),
+                  color: AppColors.glassTextSecondary,
                 ),
               ),
             ),
@@ -403,13 +403,13 @@ class _ChatWidgetState extends State<ChatWidget> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CircularProgressIndicator(
-                    color: AppColors.sunsetGold,
+                    color: AppColors.gold,
                   ),
                   SizedBox(height: AppSpacing.md),
                   Text(
                     'Loading chats...',
                     style: AppTypography.bodySmall.copyWith(
-                      color: Colors.white.withOpacity(0.7),
+                      color: AppColors.glassTextSecondary,
                     ),
                   ),
                 ],
@@ -436,12 +436,12 @@ class _ChatWidgetState extends State<ChatWidget> {
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: AppColors.fairway.withOpacity(0.3),
+                      color: AppColors.navy.withValues(alpha:0.3),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.mark_chat_unread_outlined,
-                      color: Colors.white.withOpacity(0.5),
+                      color: AppColors.glassTextTertiary,
                       size: 40,
                     ),
                   ),
@@ -458,7 +458,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                     'Start a conversation with other golfers',
                     textAlign: TextAlign.center,
                     style: AppTypography.bodySmall.copyWith(
-                      color: Colors.white.withOpacity(0.6),
+                      color: AppColors.glassTextSecondary,
                     ),
                   ),
                 ],

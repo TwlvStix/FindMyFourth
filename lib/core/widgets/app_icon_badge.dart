@@ -150,13 +150,13 @@ class AppIconBadge extends StatelessWidget {
     switch (variant) {
       case AppIconBadgeVariant.primary:
         return (
-          background: AppColors.fairway,
+          background: AppColors.navy,
           iconColor: AppColors.pure,
           borderColor: null
         );
       case AppIconBadgeVariant.accent:
         return (
-          background: AppColors.sunsetGold,
+          background: AppColors.gold,
           iconColor: AppColors.onyx,
           borderColor: null
         );

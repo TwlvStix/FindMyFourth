@@ -414,8 +414,8 @@ class _RateeRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: rating == null
-              ? theme.secondaryText.withOpacity(0.2)
-              : (rating! ? theme.primary.withOpacity(0.4) : theme.error.withOpacity(0.4)),
+              ? theme.secondaryText.withValues(alpha:0.2)
+              : (rating! ? theme.primary.withValues(alpha:0.4) : theme.error.withValues(alpha:0.4)),
           width: 1,
         ),
       ),
@@ -507,7 +507,7 @@ class _ThumbButton extends StatelessWidget {
           color: selected ? activeColor : Colors.transparent,
           shape: BoxShape.circle,
           border: Border.all(
-            color: selected ? activeColor : AppTheme.of(context).secondaryText.withOpacity(0.3),
+            color: selected ? activeColor : AppTheme.of(context).secondaryText.withValues(alpha:0.3),
           ),
         ),
         child: Icon(

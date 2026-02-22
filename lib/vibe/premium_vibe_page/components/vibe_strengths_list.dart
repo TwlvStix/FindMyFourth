@@ -67,7 +67,7 @@ class VibeStrengthsList extends StatelessWidget {
           Text(
             label,
             style: AppTypography.labelSmall.copyWith(
-              color: AppColors.fairwayDark,
+              color: AppColors.navyDark,
             ),
           ),
         ],

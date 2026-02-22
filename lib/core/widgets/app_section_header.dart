@@ -67,14 +67,14 @@ class AppSectionHeader extends StatelessWidget {
           if (leadingSvgPath != null) ...[
             AppIcon(
               assetPath: leadingSvgPath!,
-              color: AppColors.fairway,
+              color: AppColors.navy,
               size: 20,
             ),
             SizedBox(width: AppSpacing.xs),
           ] else if (leadingIcon != null) ...[
             Icon(
               leadingIcon,
-              color: AppColors.fairway,
+              color: AppColors.navy,
               size: 20,
             ),
             SizedBox(width: AppSpacing.xs),
@@ -107,7 +107,7 @@ class AppSectionHeader extends StatelessWidget {
               child: Text(
                 actionText!,
                 style: AppTypography.labelMedium.copyWith(
-                  color: AppColors.fairway,
+                  color: AppColors.navy,
                 ),
               ),
             ),

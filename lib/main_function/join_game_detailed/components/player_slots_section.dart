@@ -25,7 +25,7 @@ class PlayerSlotsSectionHeader extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+              colors: [AppColors.gold, AppColors.goldLight],
             ),
             borderRadius: BorderRadius.circular(2),
           ),
@@ -45,13 +45,13 @@ class PlayerSlotsSectionHeader extends StatelessWidget {
             vertical: AppSpacing.xxs,
           ),
           decoration: BoxDecoration(
-            color: AppColors.sunsetGold.withValues(alpha: 0.2),
+            color: AppColors.gold.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
             '$currentCount/$maxCount',
             style: AppTypography.labelSmall.copyWith(
-              color: AppColors.sunsetGold,
+              color: AppColors.gold,
               fontWeight: FontWeight.w600,
             ),
           ),

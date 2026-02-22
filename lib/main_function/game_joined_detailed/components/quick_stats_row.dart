@@ -34,7 +34,7 @@ class QuickStatsRow extends StatelessWidget {
           child: Container(
             padding: EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: AppColors.fairway.withValues(alpha: 0.3),
+              color: AppColors.navy.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
@@ -45,7 +45,7 @@ class QuickStatsRow extends StatelessWidget {
                   height: 36,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [AppColors.sunsetPeach, AppColors.sunsetRose],
+                      colors: [AppColors.goldLight, AppColors.error],
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -85,12 +85,12 @@ class QuickStatsRow extends StatelessWidget {
                   AppIconButton(
                     icon: Icon(
                       Icons.edit_rounded,
-                      color: AppColors.sunsetGold,
+                      color: AppColors.gold,
                       size: 18,
                     ),
                     borderRadius: 8.0,
                     buttonSize: 32.0,
-                    fillColor: AppColors.sunsetGold.withValues(alpha: 0.15),
+                    fillColor: AppColors.gold.withValues(alpha: 0.15),
                     onPressed: onEditPressed,
                     tooltip: 'Edit game details',
                   ),
@@ -105,13 +105,13 @@ class QuickStatsRow extends StatelessWidget {
           padding: EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             color: isFull
-                ? AppColors.fairwayLight.withValues(alpha: 0.2)
-                : AppColors.sunsetGold.withValues(alpha: 0.2),
+                ? AppColors.navyLight.withValues(alpha: 0.2)
+                : AppColors.gold.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isFull
-                  ? AppColors.fairwayLight.withValues(alpha: 0.3)
-                  : AppColors.sunsetGold.withValues(alpha: 0.3),
+                  ? AppColors.navyLight.withValues(alpha: 0.3)
+                  : AppColors.gold.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -122,8 +122,8 @@ class QuickStatsRow extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: isFull
-                        ? [AppColors.fairwayLight, AppColors.fairway]
-                        : [AppColors.sunsetGold, AppColors.sunsetPeach],
+                        ? [AppColors.navyLight, AppColors.navy]
+                        : [AppColors.gold, AppColors.goldLight],
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -140,7 +140,7 @@ class QuickStatsRow extends StatelessWidget {
                   Text(
                     isFull ? 'Full' : '$spotsLeft Spots',
                     style: AppTypography.titleSmall.copyWith(
-                      color: isFull ? AppColors.fairwayLight : AppColors.sunsetGold,
+                      color: isFull ? AppColors.navyLight : AppColors.gold,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

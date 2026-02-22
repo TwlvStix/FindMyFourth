@@ -28,8 +28,8 @@ class GroupVibeSummary extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.fairway.withValues(alpha: 0.4),
-            AppColors.fairwayDark.withValues(alpha: 0.3),
+            AppColors.navy.withValues(alpha: 0.4),
+            AppColors.navyDark.withValues(alpha: 0.3),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
@@ -45,7 +45,7 @@ class GroupVibeSummary extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                    colors: [AppColors.gold, AppColors.goldLight],
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -82,10 +82,10 @@ class GroupVibeSummary extends StatelessWidget {
                   gradient: hasResult
                       ? LinearGradient(
                           colors: groupScore >= 70
-                              ? [AppColors.fairwayLight, AppColors.fairway]
+                              ? [AppColors.navyLight, AppColors.navy]
                               : groupScore >= 40
-                                  ? [AppColors.sunsetGold, AppColors.sunsetPeach]
-                                  : [AppColors.sunsetRose, AppColors.error],
+                                  ? [AppColors.gold, AppColors.goldLight]
+                                  : [AppColors.error, AppColors.error],
                         )
                       : null,
                   color: hasResult ? null : Colors.white.withValues(alpha: 0.1),
@@ -104,7 +104,7 @@ class GroupVibeSummary extends StatelessWidget {
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.sunsetGold,
+                          color: AppColors.gold,
                         ),
                       ),
               ),
@@ -117,10 +117,10 @@ class GroupVibeSummary extends StatelessWidget {
               Container(
                 padding: EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: AppColors.sunsetRose.withValues(alpha: 0.2),
+                  color: AppColors.error.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.sunsetRose.withValues(alpha: 0.4),
+                    color: AppColors.error.withValues(alpha: 0.4),
                   ),
                 ),
                 child: Row(
@@ -160,7 +160,7 @@ class GroupVibeSummary extends StatelessWidget {
                   children: [
                     const Icon(
                       Icons.insights_rounded,
-                      color: AppColors.sunsetGold,
+                      color: AppColors.gold,
                       size: 18,
                     ),
                     SizedBox(width: AppSpacing.xs),

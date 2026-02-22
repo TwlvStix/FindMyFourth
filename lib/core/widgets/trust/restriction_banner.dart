@@ -49,7 +49,7 @@ class RestrictionBanner extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.onyx.withOpacity(0.06),
+            color: AppColors.onyx.withValues(alpha:0.06),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -105,7 +105,7 @@ class RestrictionBanner extends StatelessWidget {
               child: Text(
                 'View your standing →',
                 style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.fairway,
+                  color: AppColors.navy,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -120,7 +120,7 @@ class RestrictionBanner extends StatelessWidget {
     switch (type) {
       case RestrictionType.cooldown24h:
         return _RestrictionConfig(
-          accentColor: AppColors.sunsetPeach,
+          accentColor: AppColors.goldLight,
           icon: Icons.hourglass_top_rounded,
           title: '24-Hour Cooldown',
           body: (r) => r.endsAt != null
@@ -129,7 +129,7 @@ class RestrictionBanner extends StatelessWidget {
         );
       case RestrictionType.restricted7d:
         return _RestrictionConfig(
-          accentColor: AppColors.sunsetRose,
+          accentColor: AppColors.error,
           icon: Icons.pause_circle_outline_rounded,
           title: '7-Day Restriction',
           body: (r) => r.endsAt != null

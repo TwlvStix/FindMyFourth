@@ -207,7 +207,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppColors.fairway.withValues(alpha: 0.3),
+                    color: AppColors.navy.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -269,7 +269,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: AppColors.fairway.withValues(alpha: 0.3),
+                        color: AppColors.navy.withValues(alpha: 0.3),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -312,7 +312,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SpinKitWanderingCubes(
-                      color: AppColors.sunsetGold,
+                      color: AppColors.gold,
                       size: 50.0,
                     ),
                     SizedBox(height: AppSpacing.md),
@@ -397,7 +397,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         CircularProgressIndicator(
-                                          color: AppColors.sunsetGold,
+                                          color: AppColors.gold,
                                         ),
                                         SizedBox(height: AppSpacing.md),
                                         Text(
@@ -544,12 +544,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             ),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                colors: [AppColors.gold, AppColors.goldLight],
                               ),
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.sunsetGold.withValues(alpha: 0.3),
+                                  color: AppColors.gold.withValues(alpha: 0.3),
                                   blurRadius: 12,
                                   offset: Offset(0, 4),
                                 ),
@@ -603,7 +603,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                   gradient: LinearGradient(
                                     begin: Alignment.topCenter,
                                     end: Alignment.bottomCenter,
-                                    colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                    colors: [AppColors.gold, AppColors.goldLight],
                                   ),
                                   borderRadius: BorderRadius.circular(2),
                                 ),
@@ -637,7 +637,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 _buildPremiumInfoCard(
                                   context,
                                   icon: Icons.attach_money_rounded,
-                                  iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                  iconColors: [AppColors.gold, AppColors.goldLight],
                                   label: 'Betting',
                                   value: funOr(gameJoinedDetailedGamesRecord.styleGame),
                                   isFunBadge: isFun && gameJoinedDetailedGamesRecord.styleGame.isEmpty,
@@ -645,7 +645,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 _buildPremiumInfoCard(
                                   context,
                                   icon: Icons.rule_rounded,
-                                  iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                  iconColors: [AppColors.navyLight, AppColors.navy],
                                   label: 'Rule Style',
                                   value: funOr(gameJoinedDetailedGamesRecord.rulesSetting),
                                   isFunBadge: isFun && gameJoinedDetailedGamesRecord.rulesSetting.isEmpty,
@@ -653,7 +653,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 _buildPremiumInfoCard(
                                   context,
                                   icon: Icons.sports_golf_rounded,
-                                  iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                  iconColors: [AppColors.navyLight, AppColors.navy],
                                   label: 'Game Type',
                                   value: funOr(gameJoinedDetailedGamesRecord.gameType),
                                   isFunBadge: isFun && gameJoinedDetailedGamesRecord.gameType.isEmpty,
@@ -661,7 +661,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 _buildPremiumInfoCard(
                                   context,
                                   icon: Icons.scoreboard_rounded,
-                                  iconColors: [AppColors.sunsetPeach, AppColors.sunsetRose],
+                                  iconColors: [AppColors.goldLight, AppColors.error],
                                   label: 'Scoring',
                                   value: funOr(gameJoinedDetailedGamesRecord.scoring),
                                   isFunBadge: isFun && gameJoinedDetailedGamesRecord.scoring.isEmpty,
@@ -669,7 +669,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 _buildPremiumInfoCard(
                                   context,
                                   icon: Icons.discount_rounded,
-                                  iconColors: [AppColors.fairwayLight, AppColors.fairway],
+                                  iconColors: [AppColors.navyLight, AppColors.navy],
                                   label: 'Member Discount',
                                   value: funOr(gameJoinedDetailedGamesRecord.memberDiscount),
                                   isFunBadge: isFun && gameJoinedDetailedGamesRecord.memberDiscount.isEmpty,
@@ -677,7 +677,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 _buildPremiumInfoCard(
                                   context,
                                   icon: Icons.group_rounded,
-                                  iconColors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                  iconColors: [AppColors.gold, AppColors.goldLight],
                                   label: 'Friends Only',
                                   value: gameJoinedDetailedGamesRecord.friendGame,
                                 ),
@@ -696,7 +696,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                   gradient: LinearGradient(
                                     begin: Alignment.topCenter,
                                     end: Alignment.bottomCenter,
-                                    colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                                    colors: [AppColors.gold, AppColors.goldLight],
                                   ),
                                   borderRadius: BorderRadius.circular(2),
                                 ),
@@ -716,13 +716,13 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                   vertical: AppSpacing.xxs,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.sunsetGold.withValues(alpha: 0.2),
+                                  color: AppColors.gold.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
                                   '${_getPlayerCount(gameJoinedDetailedGamesRecord)}/4',
                                   style: AppTypography.labelSmall.copyWith(
-                                    color: AppColors.sunsetGold,
+                                    color: AppColors.gold,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -872,11 +872,11 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 child: Container(
                                   padding: EdgeInsets.all(AppSpacing.sm),
                                   decoration: BoxDecoration(
-                                    color: AppColors.fairway
+                                    color: AppColors.navy
                                         .withValues(alpha: 0.3),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: AppColors.fairwayLight
+                                      color: AppColors.navyLight
                                           .withValues(alpha: 0.3),
                                       width: 1,
                                     ),
@@ -888,7 +888,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         width: 48.0,
                                         height: 48.0,
                                         decoration: BoxDecoration(
-                                          color: AppColors.fairwayLight
+                                          color: AppColors.navyLight
                                               .withValues(alpha: 0.5),
                                           shape: BoxShape.circle,
                                           border: Border.all(
@@ -1398,7 +1398,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                   Text(
                     '${result.groupFitScore.round()}%',
                     style: AppTypography.displayMedium.copyWith(
-                      color: AppColors.fairwayDark,
+                      color: AppColors.navyDark,
                     ),
                   ),
                   SizedBox(height: AppSpacing.lg),
@@ -1577,7 +1577,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
           Text(
             '$matchScore%',
             style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.fairwayDark,
+              color: AppColors.navyDark,
               fontWeight: AppTypography.semiBold,
             ),
           ),
@@ -1834,12 +1834,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
       padding: EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: isFunBadge
-            ? AppColors.fairway.withValues(alpha: 0.4)
-            : AppColors.fairway.withValues(alpha: 0.3),
+            ? AppColors.navy.withValues(alpha: 0.4)
+            : AppColors.navy.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isFunBadge
-              ? AppColors.sunsetGold.withValues(alpha: 0.4)
+              ? AppColors.gold.withValues(alpha: 0.4)
               : Colors.white.withValues(alpha: 0.1),
         ),
       ),
@@ -1881,7 +1881,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                 Text(
                   value.isNotEmpty ? value : '--',
                   style: AppTypography.bodySmall.copyWith(
-                    color: isFunBadge ? AppColors.sunsetGold : Colors.white,
+                    color: isFunBadge ? AppColors.gold : Colors.white,
                     fontWeight: FontWeight.w600,
                     height: 1.0,
                   ),
@@ -1971,7 +1971,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(color: AppColors.sunsetGold),
+                CircularProgressIndicator(color: AppColors.gold),
                 SizedBox(height: AppSpacing.md),
                 Text(
                   'Updating game details...',

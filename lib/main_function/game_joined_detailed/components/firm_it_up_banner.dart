@@ -19,13 +19,13 @@ class FirmItUpBanner extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.sunsetGold.withValues(alpha: 0.2),
-            AppColors.sunsetPeach.withValues(alpha: 0.2),
+            AppColors.gold.withValues(alpha: 0.2),
+            AppColors.goldLight.withValues(alpha: 0.2),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.sunsetGold.withValues(alpha: 0.4),
+          color: AppColors.gold.withValues(alpha: 0.4),
           width: 2,
         ),
       ),
@@ -37,12 +37,12 @@ class FirmItUpBanner extends StatelessWidget {
               Container(
                 padding: EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: AppColors.sunsetGold.withValues(alpha: 0.3),
+                  color: AppColors.gold.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   Icons.event_available_rounded,
-                  color: AppColors.sunsetGold,
+                  color: AppColors.gold,
                   size: 24,
                 ),
               ),

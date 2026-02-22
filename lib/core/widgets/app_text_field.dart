@@ -158,7 +158,7 @@ class _AppTextFieldState extends State<AppTextField> {
     final borderColor = hasError
         ? AppColors.error
         : _isFocused
-            ? AppColors.fairway
+            ? AppColors.navy
             : AppColors.cloud;
 
     switch (widget.variant) {

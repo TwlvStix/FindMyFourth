@@ -60,7 +60,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionHeader('RECOMMENDED FOR YOU', 0, AppColors.sunsetGold),
+              _buildSectionHeader('RECOMMENDED FOR YOU', 0, AppColors.gold),
               _buildSectionEmpty(
                 'Complete your VIBE profile to see personalized matches.',
               ),
@@ -81,7 +81,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionHeader('RECOMMENDED FOR YOU', 0, AppColors.sunsetGold),
+                  _buildSectionHeader('RECOMMENDED FOR YOU', 0, AppColors.gold),
                   _buildSectionLoading(),
                   SizedBox(height: AppSpacing.lg),
                   _buildRecentlyJoinedSection(const <String>{}, 0),
@@ -117,7 +117,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
         _buildSectionHeader(
           'RECOMMENDED FOR YOU',
           recommendations.length,
-          AppColors.sunsetGold,
+          AppColors.gold,
         ),
         if (recommendations.isEmpty)
           _buildSectionEmpty(
@@ -206,7 +206,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionHeader('RECENTLY JOINED', count, AppColors.sunsetGold),
+            _buildSectionHeader('RECENTLY JOINED', count, AppColors.gold),
             if (!snapshot.hasData)
               _buildSectionLoading()
             else if (recentlyJoined.isEmpty)

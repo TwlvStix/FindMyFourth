@@ -26,42 +26,42 @@ import '/core/design_tokens/spacing.dart';
 class AppGradients {
   AppGradients._();
 
-  /// Primary gold-peach gradient for CTAs and highlights
-  static const sunsetGold = LinearGradient(
-    colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+  /// Primary gold gradient for CTAs and highlights
+  static const gold = LinearGradient(
+    colors: [AppColors.gold, AppColors.goldLight],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// Warm rose gradient for social/friends elements
-  static const sunsetRose = LinearGradient(
-    colors: [AppColors.sunsetPeach, AppColors.sunsetRose],
+  /// Warm accent gradient for social/friends elements
+  static const warmAccent = LinearGradient(
+    colors: [AppColors.goldLight, AppColors.error],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   /// Green gradient for golf/nature elements
-  static const fairway = LinearGradient(
-    colors: [AppColors.fairwayLight, AppColors.fairway],
+  static const green = LinearGradient(
+    colors: [AppColors.greenLight, AppColors.green],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// Dark green gradient for backgrounds
-  static const fairwayDark = LinearGradient(
-    colors: [AppColors.fairway, AppColors.fairwayDark],
+  /// Navy gradient for backgrounds
+  static const navy = LinearGradient(
+    colors: [AppColors.navy, AppColors.navyDark],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
   /// Full spectrum sweep for animated rings
-  static const sunsetSweep = SweepGradient(
+  static const accentSweep = SweepGradient(
     colors: [
-      AppColors.sunsetGold,
-      AppColors.sunsetPeach,
-      AppColors.sunsetRose,
-      AppColors.fairwayLight,
-      AppColors.sunsetGold,
+      AppColors.gold,
+      AppColors.goldLight,
+      AppColors.error,
+      AppColors.greenLight,
+      AppColors.gold,
     ],
   );
 }
@@ -98,10 +98,10 @@ class GlassCard extends StatelessWidget {
       child: Container(
         padding: padding ?? EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.fairway.withOpacity(opacity),
+          color: AppColors.navy.withValues(alpha:opacity),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: AppColors.glassSurface,
           ),
         ),
         child: child,
@@ -147,7 +147,7 @@ class GradientIconBox extends StatelessWidget {
         boxShadow: withShadow
             ? [
                 BoxShadow(
-                  color: gradientColors[0].withOpacity(0.3),
+                  color: gradientColors[0].withValues(alpha:0.3),
                   blurRadius: 12,
                   offset: Offset(0, 4),
                 ),
@@ -231,7 +231,7 @@ class _AnimatedAvatarRingState extends State<AnimatedAvatarRing>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppColors.sunsetGold.withOpacity(0.3),
+                color: AppColors.gold.withValues(alpha:0.3),
                 blurRadius: 40,
                 spreadRadius: 5,
               ),
@@ -250,7 +250,7 @@ class _AnimatedAvatarRingState extends State<AnimatedAvatarRing>
                 height: ringSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: AppGradients.sunsetSweep,
+                  gradient: AppGradients.accentSweep,
                 ),
               ),
             );
@@ -296,11 +296,11 @@ class _AnimatedAvatarRingState extends State<AnimatedAvatarRing>
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  gradient: AppGradients.sunsetGold,
+                  gradient: AppGradients.gold,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.sunsetGold.withOpacity(0.4),
+                      color: AppColors.gold.withValues(alpha:0.4),
                       blurRadius: 12,
                       offset: Offset(0, 4),
                     ),
@@ -392,7 +392,7 @@ class StatCard extends StatelessWidget {
           Text(
             label,
             style: AppTypography.labelSmall.copyWith(
-              color: Colors.white.withOpacity(0.6),
+              color: AppColors.glassTextSecondary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -496,7 +496,7 @@ class InfoRow extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.15),
+                color: iconColor.withValues(alpha:0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: iconColor, size: 20),
@@ -555,11 +555,11 @@ class NotificationBadge extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        gradient: AppGradients.sunsetRose,
+        gradient: AppGradients.warmAccent,
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: AppColors.sunsetRose.withOpacity(0.4),
+            color: AppColors.error.withValues(alpha:0.4),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -604,7 +604,7 @@ class BottomSheetCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: AppColors.overlayDark,
             blurRadius: 30,
             offset: Offset(0, -10),
           ),
@@ -650,16 +650,16 @@ class UsernamePill extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.fairway.withOpacity(0.4),
+        color: AppColors.navy.withValues(alpha:0.4),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: AppColors.glassSurface,
         ),
       ),
       child: Text(
         showAtSymbol ? '@$username' : username,
         style: AppTypography.bodySmall.copyWith(
-          color: AppColors.sunsetGold,
+          color: AppColors.gold,
           fontWeight: FontWeight.w500,
         ),
       ),

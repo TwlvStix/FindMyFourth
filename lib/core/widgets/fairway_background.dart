@@ -124,7 +124,7 @@ class _BaseGradient extends StatelessWidget {
           colors: [
             AppColors.sand,
             AppColors.pure,
-            AppColors.cloud.withOpacity(0.3),
+            AppColors.cloud.withValues(alpha:0.3),
           ],
           stops: const [0.0, 0.5, 1.0],
         );
@@ -134,9 +134,9 @@ class _BaseGradient extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.fairwayDark,
-            AppColors.fairway,
-            AppColors.fairwayLight.withOpacity(0.3),
+            AppColors.navyDark,
+            AppColors.navy,
+            AppColors.navyLight.withValues(alpha:0.3),
           ],
           stops: const [0.0, 0.6, 1.0],
         );
@@ -146,9 +146,9 @@ class _BaseGradient extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.sunsetRose.withOpacity(0.2),
-            AppColors.sunsetPeach.withOpacity(0.15),
-            AppColors.sunsetGold.withOpacity(0.1),
+            AppColors.error.withValues(alpha:0.2),
+            AppColors.goldLight.withValues(alpha:0.15),
+            AppColors.gold.withValues(alpha:0.1),
             AppColors.sand,
           ],
           stops: const [0.0, 0.3, 0.6, 1.0],
@@ -160,7 +160,7 @@ class _BaseGradient extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: [
             AppColors.pure,
-            AppColors.sand.withOpacity(0.5),
+            AppColors.sand.withValues(alpha:0.5),
           ],
         );
     }
@@ -201,7 +201,7 @@ class _OrganicOverlays extends StatelessWidget {
                 gradient: RadialGradient(
                   colors: [
                     config.color,
-                    config.color.withOpacity(0.0),
+                    config.color.withValues(alpha:0.0),
                   ],
                   stops: const [0.0, 1.0],
                 ),
@@ -222,7 +222,7 @@ class _OrganicOverlays extends StatelessWidget {
             top: -150,
             left: -100,
             size: 400,
-            color: AppColors.fairwayLight.withOpacity(0.08),
+            color: AppColors.navyLight.withValues(alpha:0.08),
             opacity: 1.0,
           ),
           // Mid-right warm accent
@@ -230,7 +230,7 @@ class _OrganicOverlays extends StatelessWidget {
             top: 200,
             right: -150,
             size: 500,
-            color: AppColors.sunsetGold.withOpacity(0.05),
+            color: AppColors.gold.withValues(alpha:0.05),
             opacity: 0.8,
           ),
           // Bottom-left subtle green
@@ -238,7 +238,7 @@ class _OrganicOverlays extends StatelessWidget {
             bottom: -100,
             left: 50,
             size: 350,
-            color: AppColors.fairway.withOpacity(0.06),
+            color: AppColors.navy.withValues(alpha:0.06),
             opacity: 0.6,
           ),
         ];
@@ -250,7 +250,7 @@ class _OrganicOverlays extends StatelessWidget {
             top: -120,
             right: -80,
             size: 450,
-            color: AppColors.fairwayLight.withOpacity(0.15),
+            color: AppColors.navyLight.withValues(alpha:0.15),
             opacity: 1.0,
           ),
           // Mid-left deep accent
@@ -258,7 +258,7 @@ class _OrganicOverlays extends StatelessWidget {
             top: 250,
             left: -120,
             size: 400,
-            color: AppColors.fairway.withOpacity(0.2),
+            color: AppColors.navy.withValues(alpha:0.2),
             opacity: 0.7,
           ),
           // Bottom-center glow
@@ -267,7 +267,7 @@ class _OrganicOverlays extends StatelessWidget {
             left: null,
             right: null,
             size: 500,
-            color: AppColors.sunsetGold.withOpacity(0.08),
+            color: AppColors.gold.withValues(alpha:0.08),
             opacity: 0.5,
           ),
         ];
@@ -280,7 +280,7 @@ class _OrganicOverlays extends StatelessWidget {
             left: null,
             right: null,
             size: 600,
-            color: AppColors.sunsetPeach.withOpacity(0.2),
+            color: AppColors.goldLight.withValues(alpha:0.2),
             opacity: 1.0,
           ),
           // Right side golden
@@ -288,7 +288,7 @@ class _OrganicOverlays extends StatelessWidget {
             top: 150,
             right: -200,
             size: 550,
-            color: AppColors.sunsetGold.withOpacity(0.15),
+            color: AppColors.gold.withValues(alpha:0.15),
             opacity: 0.8,
           ),
           // Bottom rose accent
@@ -296,7 +296,7 @@ class _OrganicOverlays extends StatelessWidget {
             bottom: -100,
             left: -150,
             size: 450,
-            color: AppColors.sunsetRose.withOpacity(0.12),
+            color: AppColors.error.withValues(alpha:0.12),
             opacity: 0.6,
           ),
         ];
@@ -308,7 +308,7 @@ class _OrganicOverlays extends StatelessWidget {
             top: -100,
             right: -50,
             size: 300,
-            color: AppColors.cloud.withOpacity(0.05),
+            color: AppColors.cloud.withValues(alpha:0.05),
             opacity: 0.5,
           ),
         ];
@@ -376,7 +376,7 @@ class _NoisePainter extends CustomPainter {
       canvas.drawCircle(
         Offset(x, y),
         radius,
-        paint..color = AppColors.onyx.withOpacity(random.nextDouble() * 0.3),
+        paint..color = AppColors.onyx.withValues(alpha:random.nextDouble() * 0.3),
       );
     }
   }

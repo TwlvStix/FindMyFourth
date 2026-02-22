@@ -55,7 +55,7 @@ class ProfileCardSection extends StatelessWidget {
           Text(
             title,
             style: AppTypography.cardTitle.copyWith(
-              color: AppColors.fairwayDark,
+              color: AppColors.navyDark,
               letterSpacing: -0.2,
             ),
           ),
@@ -85,7 +85,7 @@ class ProfilePreferenceItem extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.valueWidget,
-    this.iconColor = AppColors.fairway,
+    this.iconColor = AppColors.navy,
   }) : super(key: key);
 
   @override

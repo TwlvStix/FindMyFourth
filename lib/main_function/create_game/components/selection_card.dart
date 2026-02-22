@@ -49,25 +49,25 @@ class SelectionCard extends StatelessWidget {
           gradient: isSelected
               ? LinearGradient(
                   colors: [
-                    AppColors.fairway.withValues(alpha: 0.5),
-                    AppColors.fairwayDark.withValues(alpha: 0.7),
+                    AppColors.navy.withValues(alpha: 0.5),
+                    AppColors.navyDark.withValues(alpha: 0.7),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
               : null,
-          color: isSelected ? null : AppColors.fairway.withValues(alpha: 0.2),
+          color: isSelected ? null : AppColors.navy.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
-                ? AppColors.sunsetGold
+                ? AppColors.gold
                 : Colors.white.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.sunsetGold.withValues(alpha: 0.3),
+                    color: AppColors.gold.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: Offset(0, 4),
                   ),
@@ -84,7 +84,7 @@ class SelectionCard extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: isSelected
                     ? LinearGradient(
-                        colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                        colors: [AppColors.gold, AppColors.goldLight],
                       )
                     : null,
                 color: isSelected ? null : Colors.white.withValues(alpha: 0.1),

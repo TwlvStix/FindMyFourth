@@ -230,16 +230,16 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
                             label: 'Top',
                             count: _topCount,
                             max: 2,
-                            color: AppColors.fairway,
-                            background: AppColors.fairwayLight.withOpacity(0.15),
+                            color: AppColors.navy,
+                            background: AppColors.navyLight.withValues(alpha:0.15),
                           ),
                           const SizedBox(width: AppSpacing.sm),
                           _buildCountPill(
                             label: 'Bottom',
                             count: _bottomCount,
                             max: 1,
-                            color: AppColors.sunsetGold,
-                            background: AppColors.sunsetGold.withOpacity(0.15),
+                            color: AppColors.gold,
+                            background: AppColors.gold.withValues(alpha:0.15),
                           ),
                         ],
                       ),
@@ -301,7 +301,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha:0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -334,14 +334,14 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
     final isTop = importance == VibeImportance.top;
     final isBottom = importance == VibeImportance.bottom;
     final background = isTop
-        ? AppColors.fairwayDark.withOpacity(0.3)
+        ? AppColors.navyDark.withValues(alpha:0.3)
         : isBottom
-            ? AppColors.sunsetGold.withOpacity(0.2)
-            : AppColors.slate.withOpacity(0.15);
+            ? AppColors.gold.withValues(alpha:0.2)
+            : AppColors.slate.withValues(alpha:0.15);
     final borderColor = isTop
-        ? AppColors.fairway
+        ? AppColors.navy
         : isBottom
-            ? AppColors.sunsetGold
+            ? AppColors.gold
             : AppColors.cloud;
     final label = isTop
         ? 'Top priority'
@@ -355,7 +355,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor.withOpacity(0.5)),
+        border: Border.all(color: borderColor.withValues(alpha:0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -403,7 +403,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
               _buildSelectorChip(
                 label: 'Matters most',
                 selected: isTop,
-                color: AppColors.fairway,
+                color: AppColors.navy,
                 onTap: () {
                   HapticFeedback.lightImpact();
                   _setImportance(category, VibeImportance.top);
@@ -412,7 +412,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
               _buildSelectorChip(
                 label: 'Does not matter',
                 selected: isBottom,
-                color: AppColors.sunsetGold,
+                color: AppColors.gold,
                 onTap: () {
                   HapticFeedback.lightImpact();
                   _setImportance(category, VibeImportance.bottom);
@@ -435,7 +435,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
     final textColor = selected
         ? AppColors.pure
         : (onTap == null ? AppColors.slate : AppColors.onyx);
-    final bgColor = selected ? color : AppColors.sand.withOpacity(0.5);
+    final bgColor = selected ? color : AppColors.sand.withValues(alpha:0.5);
 
     return InkWell(
       onTap: onTap,

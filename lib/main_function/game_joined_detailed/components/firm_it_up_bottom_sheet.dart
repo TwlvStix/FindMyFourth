@@ -180,7 +180,7 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                   if (!snapshot.hasData) {
                     return Center(
                       child: SpinKitWanderingCubes(
-                        color: AppColors.sunsetGold,
+                        color: AppColors.gold,
                         size: 30.0,
                       ),
                     );

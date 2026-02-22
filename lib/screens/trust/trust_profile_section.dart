@@ -61,14 +61,14 @@ class TrustProfileSection extends StatelessWidget {
           height: 32,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppColors.fairway, AppColors.fairwayDark],
+              colors: [AppColors.navy, AppColors.navyDark],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(9),
             boxShadow: [
               BoxShadow(
-                color: AppColors.fairway.withOpacity(0.3),
+                color: AppColors.navy.withValues(alpha:0.3),
                 blurRadius: 8,
                 offset: Offset(0, 3),
               ),
@@ -123,7 +123,7 @@ class TrustProfileSection extends StatelessWidget {
                 ),
                 gradient: LinearGradient(
                   colors: [
-                    Colors.white.withOpacity(0.12),
+                    AppColors.glassSurface,
                     Colors.transparent,
                   ],
                   begin: Alignment.topLeft,
@@ -138,10 +138,10 @@ class TrustProfileSection extends StatelessWidget {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: AppColors.glassBorder,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.35),
+                    color: AppColors.glassTextTertiary,
                     width: 1.5,
                   ),
                 ),
@@ -164,7 +164,7 @@ class TrustProfileSection extends StatelessWidget {
                     Text(
                       info.description,
                       style: AppTypography.labelSmall.copyWith(
-                        color: Colors.white.withOpacity(0.85),
+                        color: AppColors.glassTextSecondary,
                       ),
                     ),
                   ],
@@ -177,10 +177,10 @@ class TrustProfileSection extends StatelessWidget {
                   vertical: AppSpacing.sm,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: AppColors.glassSurface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.2),
+                    color: AppColors.glassBorder,
                   ),
                 ),
                 child: Column(
@@ -195,7 +195,7 @@ class TrustProfileSection extends StatelessWidget {
                     Text(
                       'JOINED',
                       style: AppTypography.labelSmall.copyWith(
-                        color: Colors.white.withOpacity(0.7),
+                        color: AppColors.glassTextSecondary,
                         fontSize: 9,
                         fontWeight: FontWeight.w500,
                         letterSpacing: 0.5,
@@ -223,7 +223,7 @@ class TrustProfileSection extends StatelessWidget {
         border: Border.all(color: AppColors.cloud),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: AppColors.overlayDark,
             blurRadius: 12,
             offset: Offset(0, 2),
           ),
@@ -243,7 +243,7 @@ class TrustProfileSection extends StatelessWidget {
                 Expanded(
                   child: _buildStatTileCompact(
                     icon: Icons.check_circle_outline_rounded,
-                    iconGradient: [AppColors.success, AppColors.fairwayLight],
+                    iconGradient: [AppColors.success, AppColors.navyLight],
                     value: '${user.verifiedRoundCount}',
                     label: 'ROUNDS',
                   ),
@@ -252,7 +252,7 @@ class TrustProfileSection extends StatelessWidget {
                 Expanded(
                   child: _buildStatTileCompact(
                     icon: Icons.group_outlined,
-                    iconGradient: [AppColors.fairwayLight, AppColors.fairway],
+                    iconGradient: [AppColors.navyLight, AppColors.navy],
                     value: '${user.uniqueCoPlayers.length}',
                     label: 'CO-PLAYERS',
                   ),
@@ -261,7 +261,7 @@ class TrustProfileSection extends StatelessWidget {
                 Expanded(
                   child: _buildStatTileCompact(
                     icon: Icons.sports_golf_outlined,
-                    iconGradient: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                    iconGradient: [AppColors.gold, AppColors.goldLight],
                     value: '${user.gamesHosted}',
                     label: 'HOSTED',
                   ),
@@ -307,7 +307,7 @@ class TrustProfileSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                  color: iconGradient[0].withOpacity(0.25),
+                  color: iconGradient[0].withValues(alpha:0.25),
                   blurRadius: 6,
                   offset: Offset(0, 2),
                 ),
@@ -364,10 +364,10 @@ class TrustProfileSection extends StatelessWidget {
             ? AppColors.warning
             : AppColors.error;
     final gradientColors = rate >= 0.9
-        ? [AppColors.success, AppColors.fairwayLight]
+        ? [AppColors.success, AppColors.navyLight]
         : rate >= 0.75
-            ? [AppColors.warning, AppColors.sunsetPeach]
-            : [AppColors.error, AppColors.sunsetRose];
+            ? [AppColors.warning, AppColors.goldLight]
+            : [AppColors.error, AppColors.error];
 
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
@@ -377,7 +377,7 @@ class TrustProfileSection extends StatelessWidget {
         border: Border.all(color: AppColors.cloud),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: AppColors.overlayDark,
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -400,7 +400,7 @@ class TrustProfileSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(11),
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(0.25),
+                      color: color.withValues(alpha:0.25),
                       blurRadius: 8,
                       offset: Offset(0, 3),
                     ),
@@ -465,12 +465,12 @@ class TrustProfileSection extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.warning.withOpacity(0.08),
+          color: AppColors.warning.withValues(alpha:0.08),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.warning.withOpacity(0.4)),
+          border: Border.all(color: AppColors.warning.withValues(alpha:0.4)),
           boxShadow: [
             BoxShadow(
-              color: AppColors.warning.withOpacity(0.08),
+              color: AppColors.warning.withValues(alpha:0.08),
               blurRadius: 8,
               offset: Offset(0, 2),
             ),
@@ -483,14 +483,14 @@ class TrustProfileSection extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.warning, AppColors.sunsetPeach],
+                  colors: [AppColors.warning, AppColors.goldLight],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(11),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.warning.withOpacity(0.25),
+                    color: AppColors.warning.withValues(alpha:0.25),
                     blurRadius: 8,
                     offset: Offset(0, 3),
                   ),
@@ -594,7 +594,7 @@ class TrustProfileSection extends StatelessWidget {
                           height: 4,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [AppColors.fairway, AppColors.fairwayLight],
+                              colors: [AppColors.navy, AppColors.navyLight],
                             ),
                             borderRadius: BorderRadius.circular(2),
                           ),
@@ -626,21 +626,21 @@ class TrustProfileSection extends StatelessWidget {
               Text(
                 'First Tee',
                 style: AppTypography.labelSmall.copyWith(
-                  color: AppColors.fairway,
+                  color: AppColors.navy,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
                 '5 Rounds',
                 style: AppTypography.labelSmall.copyWith(
-                  color: rounds >= 5 ? AppColors.fairway : AppColors.stone,
+                  color: rounds >= 5 ? AppColors.navy : AppColors.stone,
                   fontWeight: rounds >= 5 ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
               Text(
                 'Trusted',
                 style: AppTypography.labelSmall.copyWith(
-                  color: rounds >= 10 ? AppColors.fairway : AppColors.stone,
+                  color: rounds >= 10 ? AppColors.navy : AppColors.stone,
                   fontWeight: rounds >= 10 ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
@@ -657,7 +657,7 @@ class TrustProfileSection extends StatelessWidget {
       height: isActive ? 12 : 10,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isActive ? AppColors.fairway : AppColors.cloud,
+        color: isActive ? AppColors.navy : AppColors.cloud,
         border: Border.all(
           color: isActive ? Colors.white : AppColors.cloud,
           width: isActive ? 2 : 1,
@@ -665,7 +665,7 @@ class TrustProfileSection extends StatelessWidget {
         boxShadow: isActive
             ? [
                 BoxShadow(
-                  color: AppColors.fairway.withOpacity(0.4),
+                  color: AppColors.navy.withValues(alpha:0.4),
                   blurRadius: 6,
                   offset: Offset(0, 2),
                 ),
@@ -690,32 +690,32 @@ class TrustProfileSection extends StatelessWidget {
           label: 'Anchor',
           description: 'Cornerstone of the community',
           icon: Icons.anchor_rounded,
-          gradientStart: AppColors.fairwayDark,
-          gradientEnd: AppColors.fairway,
+          gradientStart: AppColors.navyDark,
+          gradientEnd: AppColors.navy,
         );
       case 'starter':
         return (
           label: 'Starter',
           description: 'Trusted regular golfer',
           icon: Icons.flag_rounded,
-          gradientStart: AppColors.fairway,
-          gradientEnd: AppColors.fairwayLight,
+          gradientStart: AppColors.navy,
+          gradientEnd: AppColors.navyLight,
         );
       case 'regular':
         return (
           label: 'Regular',
           description: 'Established member',
           icon: Icons.sports_golf_rounded,
-          gradientStart: AppColors.fairwayLight,
-          gradientEnd: AppColors.sunsetGold,
+          gradientStart: AppColors.navyLight,
+          gradientEnd: AppColors.gold,
         );
       case 'confirmed':
         return (
           label: 'Confirmed',
           description: 'Verified by the community',
           icon: Icons.verified_rounded,
-          gradientStart: AppColors.sunsetGold,
-          gradientEnd: AppColors.sunsetPeach,
+          gradientStart: AppColors.gold,
+          gradientEnd: AppColors.goldLight,
         );
       case 'new':
       default:
@@ -723,8 +723,8 @@ class TrustProfileSection extends StatelessWidget {
           label: 'First Tee',
           description: 'Your story begins here',
           icon: Icons.golf_course_rounded,
-          gradientStart: AppColors.sunsetPeach,
-          gradientEnd: AppColors.sunsetRose,
+          gradientStart: AppColors.goldLight,
+          gradientEnd: AppColors.error,
         );
     }
   }

@@ -114,7 +114,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.12),
+                color: AppColors.glassSurface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(Icons.arrow_back_ios_new_rounded,
@@ -139,7 +139,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
   Widget _buildLoader() {
     return const Center(
       child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(AppColors.sunsetGold),
+        valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold),
       ),
     );
   }
@@ -152,12 +152,12 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.error_outline_rounded,
-                color: Colors.white.withOpacity(0.5), size: 48),
+                color: AppColors.glassTextTertiary, size: 48),
             SizedBox(height: AppSpacing.md),
             Text(
               _error!,
               style: AppTypography.bodyMedium.copyWith(
-                  color: Colors.white.withOpacity(0.7)),
+                  color: AppColors.glassTextSecondary),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),
@@ -183,7 +183,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.12),
+                color: AppColors.glassSurface,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Icon(
@@ -205,7 +205,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
             Text(
               'Once you play your first verified round, your standing details will appear here — including your show-up rate, badge progress, and strike history.',
               style: AppTypography.bodyMedium.copyWith(
-                color: Colors.white.withOpacity(0.7),
+                color: AppColors.glassTextSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -265,7 +265,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: info.gradientStart.withOpacity(0.3),
+            color: info.gradientStart.withValues(alpha:0.3),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -280,7 +280,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: AppColors.glassBorder,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(info.icon, color: Colors.white, size: 24),
@@ -300,7 +300,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
                     Text(
                       'Current badge',
                       style: AppTypography.labelSmall.copyWith(
-                        color: Colors.white.withOpacity(0.7),
+                        color: AppColors.glassTextSecondary,
                       ),
                     ),
                   ],
@@ -323,7 +323,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
                 Text(
                   'Progress to ${nextInfo.label}',
                   style: AppTypography.labelSmall.copyWith(
-                    color: Colors.white.withOpacity(0.8),
+                    color: AppColors.glassTextSecondary,
                   ),
                 ),
                 Text(
@@ -340,7 +340,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: Colors.white.withOpacity(0.2),
+                backgroundColor: AppColors.glassBorder,
                 valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 minHeight: 6,
               ),
@@ -354,7 +354,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
             Text(
               'Top tier — you\'re an Anchor.',
               style: AppTypography.bodySmall.copyWith(
-                color: Colors.white.withOpacity(0.85),
+                color: AppColors.glassTextSecondary,
               ),
             ),
           ],
@@ -376,7 +376,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
     return Text(
       parts.join(' · '),
       style: AppTypography.labelSmall.copyWith(
-        color: Colors.white.withOpacity(0.75),
+        color: AppColors.glassTextSecondary,
       ),
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
@@ -413,8 +413,8 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
                     horizontal: AppSpacing.sm, vertical: AppSpacing.xxs),
                 decoration: BoxDecoration(
                   color: activeCount > 0
-                      ? AppColors.warning.withOpacity(0.15)
-                      : AppColors.success.withOpacity(0.12),
+                      ? AppColors.warning.withValues(alpha:0.15)
+                      : AppColors.success.withValues(alpha:0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -599,7 +599,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
         children: [
           Row(
             children: [
-              Icon(nextInfo.icon, color: AppColors.sunsetGold, size: 20),
+              Icon(nextInfo.icon, color: AppColors.gold, size: 20),
               SizedBox(width: AppSpacing.sm),
               Text(
                 'Next: ${nextInfo.label}',
@@ -727,29 +727,29 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
         return (
           label: 'Anchor',
           icon: Icons.anchor_rounded,
-          gradientStart: AppColors.fairwayDark,
-          gradientEnd: AppColors.fairway,
+          gradientStart: AppColors.navyDark,
+          gradientEnd: AppColors.navy,
         );
       case 'starter':
         return (
           label: 'Starter',
           icon: Icons.flag_rounded,
-          gradientStart: AppColors.fairway,
-          gradientEnd: AppColors.fairwayLight,
+          gradientStart: AppColors.navy,
+          gradientEnd: AppColors.navyLight,
         );
       case 'regular':
         return (
           label: 'Regular',
           icon: Icons.sports_golf_rounded,
-          gradientStart: AppColors.fairwayLight,
-          gradientEnd: AppColors.sunsetGold,
+          gradientStart: AppColors.navyLight,
+          gradientEnd: AppColors.gold,
         );
       case 'confirmed':
         return (
           label: 'Confirmed',
           icon: Icons.verified_rounded,
-          gradientStart: AppColors.sunsetGold,
-          gradientEnd: AppColors.sunsetPeach,
+          gradientStart: AppColors.gold,
+          gradientEnd: AppColors.goldLight,
         );
       case 'new':
       default:
@@ -863,7 +863,7 @@ class _SectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.onyx.withOpacity(0.06),
+            color: AppColors.onyx.withValues(alpha:0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -891,7 +891,7 @@ class _RetryButton extends StatelessWidget {
         padding: EdgeInsets.symmetric(
             horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
         decoration: BoxDecoration(
-          color: AppColors.sunsetGold,
+          color: AppColors.gold,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(

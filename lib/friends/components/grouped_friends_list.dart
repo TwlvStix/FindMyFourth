@@ -97,7 +97,7 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
         if (allFriends.isEmpty && widget.friendRefs.isNotEmpty) {
           return Center(
             child: SpinKitWanderingCubes(
-              color: AppColors.fairway,
+              color: AppColors.navy,
               size: 50.0,
             ),
           );
@@ -137,7 +137,7 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
                     icon: Icons.star_rounded,
                     title: 'Favorites',
                     count: favorites.length,
-                    color: AppColors.sunsetGold,
+                    color: AppColors.gold,
                     isCollapsed: favoritesCollapsed,
                     onTap: () {
                       setState(() => favoritesCollapsed = !favoritesCollapsed);
@@ -171,7 +171,7 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
       swipeLeftLabel: 'Remove',
       swipeRightIcon: Icons.message_rounded,
       swipeLeftIcon: Icons.person_remove_rounded,
-      swipeRightColor: AppColors.fairway,
+      swipeRightColor: AppColors.navy,
       swipeLeftColor: AppColors.stone,
       child: PremiumFriendCard(
         user: friend,

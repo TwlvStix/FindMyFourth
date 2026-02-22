@@ -28,7 +28,7 @@ class SwipeableFriendCard extends StatefulWidget {
     this.swipeLeftLabel,
     this.swipeRightIcon,
     this.swipeLeftIcon,
-    this.swipeRightColor = AppColors.fairway,
+    this.swipeRightColor = AppColors.navy,
     this.swipeLeftColor = AppColors.stone,
   });
 
@@ -153,10 +153,10 @@ class _SwipeableFriendCardState extends State<SwipeableFriendCard>
           vertical: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
-          color: color.withOpacity(opacity * 0.15),
+          color: color.withValues(alpha:opacity * 0.15),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: color.withOpacity(opacity * 0.3),
+            color: color.withValues(alpha:opacity * 0.3),
             width: 1.5,
           ),
         ),
@@ -170,7 +170,7 @@ class _SwipeableFriendCardState extends State<SwipeableFriendCard>
                 if (icon != null)
                   Icon(
                     icon,
-                    color: color.withOpacity(opacity),
+                    color: color.withValues(alpha:opacity),
                     size: 24,
                   ),
                 if (icon != null && label != null) SizedBox(width: AppSpacing.xs),
@@ -178,7 +178,7 @@ class _SwipeableFriendCardState extends State<SwipeableFriendCard>
                   Text(
                     label,
                     style: TextStyle(
-                      color: color.withOpacity(opacity),
+                      color: color.withValues(alpha:opacity),
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),

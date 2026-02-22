@@ -54,7 +54,7 @@ class AppAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final dimension = _getDimension();
     final borderRadius = _getBorderRadius();
-    final bgColor = backgroundColor ?? AppColors.fairway;
+    final bgColor = backgroundColor ?? AppColors.navy;
 
     return Container(
       width: dimension,

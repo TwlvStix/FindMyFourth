@@ -168,17 +168,17 @@ class _VibeSliderCardState extends State<VibeSliderCard> {
           Text(
             meaning,
             style: AppTypography.labelLarge.copyWith(
-              color: AppColors.fairwayDark,
+              color: AppColors.navyDark,
               letterSpacing: AppTypography.letterSpacingNormal,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: AppColors.fairway,
+              activeTrackColor: AppColors.navy,
               inactiveTrackColor: AppColors.cloud,
-              thumbColor: AppColors.sunsetGold,
-              overlayColor: AppColors.sunsetGold.withValues(alpha: 0.2),
+              thumbColor: AppColors.gold,
+              overlayColor: AppColors.gold.withValues(alpha: 0.2),
               trackHeight: 4,
               showValueIndicator: ShowValueIndicator.never,
               thumbShape: const RoundSliderThumbShape(
@@ -232,7 +232,7 @@ class _VibeSliderCardState extends State<VibeSliderCard> {
               Switch.adaptive(
                 value: _currentDealbreaker,
                 onChanged: _handleDealbreakerChanged,
-                activeColor: AppColors.fairway,
+                activeColor: AppColors.navy,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ],

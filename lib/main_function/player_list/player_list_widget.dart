@@ -550,10 +550,10 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
           margin: EdgeInsets.only(bottom: AppSpacing.xs),
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
           decoration: BoxDecoration(
-            color: AppColors.fairway,
+            color: AppColors.navy,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppColors.fairwayLight.withValues(alpha: 0.4),
+              color: AppColors.navyLight.withValues(alpha: 0.4),
               width: 1,
             ),
           ),
@@ -583,7 +583,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.fairwayLight,
+                    color: AppColors.navyLight,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.3),
@@ -687,10 +687,10 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
           decoration: BoxDecoration(
-            color: AppColors.fairway.withValues(alpha: 0.15),
+            color: AppColors.navy.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppColors.fairway.withValues(alpha: 0.3),
+              color: AppColors.navy.withValues(alpha: 0.3),
               width: 1.5,
               strokeAlign: BorderSide.strokeAlignInside,
             ),
@@ -701,16 +701,16 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.fairway.withValues(alpha: 0.2),
+                  color: AppColors.navy.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.fairway.withValues(alpha: 0.3),
+                    color: AppColors.navy.withValues(alpha: 0.3),
                     width: 1.5,
                   ),
                 ),
                 child: AppIcon(
                   assetPath: AppIcons.addPlayer,
-                  color: AppColors.fairway.withValues(alpha: 0.6),
+                  color: AppColors.navy.withValues(alpha: 0.6),
                   size: 24,
                 ),
               ),
@@ -722,7 +722,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                     fontFamily: 'Manrope',
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.fairway.withValues(alpha: 0.6),
+                    color: AppColors.navy.withValues(alpha: 0.6),
                     letterSpacing: 0.2,
                   ),
                 ),
@@ -733,7 +733,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.fairway,
+                  color: AppColors.navy,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Text(
@@ -761,10 +761,10 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
-        color: AppColors.fairway,
+        color: AppColors.navy,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.fairwayLight.withValues(alpha: 0.4),
+          color: AppColors.navyLight.withValues(alpha: 0.4),
           width: 1,
         ),
       ),
@@ -794,7 +794,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.fairwayLight,
+                color: AppColors.navyLight,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.3),

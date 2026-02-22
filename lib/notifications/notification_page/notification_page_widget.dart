@@ -192,7 +192,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               'Settings saved successfully',
               style: TextStyle(fontFamily: 'Manrope',color: Colors.white),
             ),
-            backgroundColor: AppColors.fairway,
+            backgroundColor: AppColors.navy,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -209,7 +209,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.fairwayDark,
+        backgroundColor: AppColors.navyDark,
         title: Text(
           'Reset to Defaults?',
           style: AppTypography.titleMedium.copyWith(color: Colors.white),
@@ -483,7 +483,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
           decoration: BoxDecoration(
             color: isDisabled
                 ? AppColors.stone.withValues(alpha: 0.3)
-                : AppColors.fairway,
+                : AppColors.navy,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isDisabled
@@ -495,7 +495,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 ? []
                 : [
                     BoxShadow(
-                      color: AppColors.fairway.withValues(alpha: 0.3),
+                      color: AppColors.navy.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -552,7 +552,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
         child: Container(
           margin: EdgeInsets.only(bottom: AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.fairway.withValues(alpha: 0.2),
+            color: AppColors.navy.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: disabled
@@ -670,7 +670,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
             }),
             trackColor: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.selected)) {
-                return AppColors.sunsetGold;
+                return AppColors.gold;
               }
               return Colors.white.withValues(alpha: 0.2);
             }),
@@ -794,12 +794,12 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               ),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.sunsetGold
+                    ? AppColors.gold
                     : Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: isSelected
-                      ? AppColors.sunsetGold
+                      ? AppColors.gold
                       : Colors.white.withValues(alpha: 0.2),
                   width: 1.5,
                 ),
@@ -812,7 +812,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                       assetPath: option.svgPath!,
                       size: 18,
                       color: isSelected
-                          ? AppColors.fairwayDark
+                          ? AppColors.navyDark
                           : Colors.white.withValues(alpha: 0.7),
                     )
                   else
@@ -820,7 +820,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                       option.icon,
                       size: 18,
                       color: isSelected
-                          ? AppColors.fairwayDark
+                          ? AppColors.navyDark
                           : Colors.white.withValues(alpha: 0.7),
                     ),
                   SizedBox(width: AppSpacing.xs),
@@ -828,7 +828,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                     option.label,
                     style: AppTypography.labelMedium.copyWith(
                       color: isSelected
-                          ? AppColors.fairwayDark
+                          ? AppColors.navyDark
                           : Colors.white.withValues(alpha: 0.9),
                       fontWeight: FontWeight.w600,
                     ),
@@ -872,7 +872,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CircularProgressIndicator(
-                        color: AppColors.sunsetGold,
+                        color: AppColors.gold,
                       ),
                       SizedBox(height: AppSpacing.md),
                       Text(
@@ -1114,7 +1114,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                           children: [
                                             Icon(
                                               Icons.info_outline,
-                                              color: AppColors.sunsetGold,
+                                              color: AppColors.gold,
                                               size: 16,
                                             ),
                                             SizedBox(width: AppSpacing.xs),
@@ -1293,8 +1293,8 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                               gradient: LinearGradient(
                                 colors: [
                                   Colors.transparent,
-                                  AppColors.fairwayDark.withValues(alpha: 0.95),
-                                  AppColors.fairwayDark,
+                                  AppColors.navyDark.withValues(alpha: 0.95),
+                                  AppColors.navyDark,
                                 ],
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,

@@ -617,19 +617,19 @@ class _GamesListWidgetState extends State<GamesListWidget> {
               padding: EdgeInsets.only(right: AppSpacing.sm),
               child: AppIconButton(
                 borderColor: _filters.hasActiveFilters
-                    ? AppColors.fairway.withOpacity(0.2)
+                    ? AppColors.navy.withValues(alpha:0.2)
                     : Colors.transparent,
                 borderRadius: 30.0,
                 borderWidth: _filters.hasActiveFilters ? 2.0 : 1.0,
                 buttonSize: 44.0,
                 fillColor: _filters.hasActiveFilters
-                    ? AppColors.fairway.withOpacity(0.12)
+                    ? AppColors.navy.withValues(alpha:0.12)
                     : Colors.transparent,
                 tooltip: 'Filter games',
                 icon: Icon(
                   Icons.tune_rounded,
                   color: _filters.hasActiveFilters
-                      ? AppColors.fairway
+                      ? AppColors.navy
                       : Colors.white,
                   size: 24.0,
                 ),
@@ -808,8 +808,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                               width: 120,
                                               height: 120,
                                               decoration: BoxDecoration(
-                                                color: AppColors.fairway
-                                                    .withOpacity(0.3),
+                                                color: AppColors.navy
+                                                    .withValues(alpha:0.3),
                                                 shape: BoxShape.circle,
                                               ),
                                               child: Center(
@@ -817,7 +817,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                   assetPath: AppIcons.games,
                                                   size: 64,
                                                   color: Colors.white
-                                                      .withOpacity(0.5),
+                                                      .withValues(alpha:0.5),
                                                 ),
                                               ),
                                             ),
@@ -838,7 +838,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 style: AppTypography.bodyMedium
                                                     .copyWith(
                                                   color: Colors.white
-                                                      .withOpacity(0.7),
+                                                      .withValues(alpha:0.7),
                                                 ),
                                                 textAlign: TextAlign.center,
                                               ),
@@ -877,7 +877,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 style: AppTypography.bodyMedium
                                                     .copyWith(
                                                   color: Colors.white
-                                                      .withOpacity(0.7),
+                                                      .withValues(alpha:0.7),
                                                 ),
                                                 textAlign: TextAlign.center,
                                               ),
@@ -917,7 +917,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 style: AppTypography.bodyMedium
                                                     .copyWith(
                                                   color: Colors.white
-                                                      .withOpacity(0.7),
+                                                      .withValues(alpha:0.7),
                                                 ),
                                                 textAlign: TextAlign.center,
                                               ),
@@ -982,10 +982,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   child: Container(
                                     padding: EdgeInsets.all(AppSpacing.md),
                                     decoration: BoxDecoration(
-                                      color: AppColors.fairway.withOpacity(0.2),
+                                      color: AppColors.navy.withValues(alpha:0.2),
                                       borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
-                                        color: Colors.white.withOpacity(0.08),
+                                        color: Colors.white.withValues(alpha:0.08),
                                       ),
                                     ),
                                     child: Column(
@@ -999,14 +999,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                               height: 32,
                                               decoration: BoxDecoration(
                                                 color: Colors.white
-                                                    .withOpacity(0.12),
+                                                    .withValues(alpha:0.12),
                                                 borderRadius:
                                                     BorderRadius.circular(10),
                                               ),
                                               child: AppIcon(
                                                 assetPath: AppIcons.lock,
                                                 color: Colors.white
-                                                    .withOpacity(0.8),
+                                                    .withValues(alpha:0.8),
                                                 size: 18,
                                               ),
                                             ),
@@ -1036,7 +1036,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                     : 'Show',
                                                 style: AppTypography.labelMedium
                                                     .copyWith(
-                                                  color: AppColors.sunsetGold,
+                                                  color: AppColors.gold,
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
@@ -1049,7 +1049,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                           style:
                                               AppTypography.bodySmall.copyWith(
                                             color:
-                                                Colors.white.withOpacity(0.7),
+                                                AppColors.glassTextSecondary,
                                           ),
                                         ),
                                       ],
@@ -1150,17 +1150,17 @@ class _GamesListWidgetState extends State<GamesListWidget> {
           width: double.infinity,
           decoration: BoxDecoration(
             color: isUserGame
-                ? AppColors.fairway.withOpacity(
+                ? AppColors.navy.withValues(alpha:
                     0.15) // Much darker for joined games - faded background
-                : AppColors.fairway
-                    .withOpacity(0.3), // Normal background for un-joined games
+                : AppColors.navy
+                    .withValues(alpha:0.3), // Normal background for un-joined games
             borderRadius: BorderRadius.circular(20.0),
             border: Border.all(
               color: isUserGame
                   ? Colors.white
-                      .withOpacity(0.12) // Subtle muted border for joined games
+                      .withValues(alpha:0.12) // Subtle muted border for joined games
                   : Colors.white
-                      .withOpacity(0.1), // Normal border for un-joined games
+                      .withValues(alpha:0.1), // Normal border for un-joined games
               width: 1.0,
             ),
             boxShadow: null, // No shadow for any games
@@ -1185,7 +1185,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 vertical: AppSpacing.xxs,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.12),
+                                color: Colors.white.withValues(alpha:0.12),
                                 borderRadius: BorderRadius.circular(20.0),
                               ),
                               child: Row(
@@ -1194,13 +1194,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   AppIcon(
                                     assetPath: AppIcons.lock,
                                     size: 12,
-                                    color: Colors.white.withOpacity(0.85),
+                                    color: Colors.white.withValues(alpha:0.85),
                                   ),
                                   SizedBox(width: 4),
                                   Text(
                                     'Friends Only',
                                     style: AppTypography.labelSmall.copyWith(
-                                      color: Colors.white.withOpacity(0.85),
+                                      color: Colors.white.withValues(alpha:0.85),
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -1221,14 +1221,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    AppColors.fairwayLight,
-                                    AppColors.fairway,
+                                    AppColors.navyLight,
+                                    AppColors.navy,
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(20.0),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.fairway.withOpacity(0.3),
+                                    color: AppColors.navy.withValues(alpha:0.3),
                                     blurRadius: 8,
                                     offset: Offset(0, 2),
                                   ),
@@ -1267,21 +1267,21 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               gradient: LinearGradient(
                                 colors: game.styleGame == 'Money Game'
                                     ? [
-                                        AppColors.sunsetGold,
-                                        AppColors.sunsetPeach
+                                        AppColors.gold,
+                                        AppColors.goldLight
                                       ]
                                     : [
-                                        AppColors.fairwayLight,
-                                        AppColors.fairway
+                                        AppColors.navyLight,
+                                        AppColors.navy
                                       ],
                               ),
                               borderRadius: BorderRadius.circular(20.0),
                               boxShadow: [
                                 BoxShadow(
                                   color: (game.styleGame == 'Money Game'
-                                          ? AppColors.sunsetGold
-                                          : AppColors.fairway)
-                                      .withOpacity(0.3),
+                                          ? AppColors.gold
+                                          : AppColors.navy)
+                                      .withValues(alpha:0.3),
                                   blurRadius: 8,
                                   offset: Offset(0, 2),
                                 ),
@@ -1306,13 +1306,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 vertical: AppSpacing.xxs,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.sunsetGold.withOpacity(0.2),
+                                color: AppColors.gold.withValues(alpha:0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 '\$\$\$',
                                 style: AppTypography.labelSmall.copyWith(
-                                  color: AppColors.sunsetGold,
+                                  color: AppColors.gold,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -1328,10 +1328,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.error.withOpacity(0.2),
+                              color: AppColors.error.withValues(alpha:0.2),
                               borderRadius: BorderRadius.circular(12.0),
                               border: Border.all(
-                                color: AppColors.error.withOpacity(0.3),
+                                color: AppColors.error.withValues(alpha:0.3),
                               ),
                             ),
                             child: Text(
@@ -1349,7 +1349,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.warning.withOpacity(0.2),
+                              color: AppColors.warning.withValues(alpha:0.2),
                               borderRadius: BorderRadius.circular(12.0),
                             ),
                             child: Text(
@@ -1367,7 +1367,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
-                              color: Color(0xFF4A7C59).withOpacity(0.9),
+                              color: Color(0xFF4A7C59).withValues(alpha:0.9),
                               borderRadius: BorderRadius.circular(12.0),
                             ),
                             child: Row(
@@ -1394,7 +1394,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
-                              color: Color(0xFF6B7C6E).withOpacity(0.85),
+                              color: Color(0xFF6B7C6E).withValues(alpha:0.85),
                               borderRadius: BorderRadius.circular(12.0),
                             ),
                             child: Row(
@@ -1430,8 +1430,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  AppColors.fairwayLight,
-                                  AppColors.fairway
+                                  AppColors.navyLight,
+                                  AppColors.navy
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(10),
@@ -1467,7 +1467,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   valueOrDefault<String>(
                                       game.nameGame, 'Game Name'),
                                   style: AppTypography.bodySmall.copyWith(
-                                    color: AppColors.sunsetGold,
+                                    color: AppColors.gold,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -1488,7 +1488,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       child: Container(
                         padding: EdgeInsets.all(AppSpacing.sm),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
+                          color: AppColors.glassSurface,
                           borderRadius: BorderRadius.circular(12),
                         ),
                       child: Row(
@@ -1497,13 +1497,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             width: 32,
                             height: 32,
                             decoration: BoxDecoration(
-                              color: AppColors.sunsetPeach.withOpacity(0.2),
+                              color: AppColors.goldLight.withValues(alpha:0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Center(
                               child: AppIcon(
                                 assetPath: AppIcons.calendarCheck,
-                                color: AppColors.sunsetPeach,
+                                color: AppColors.goldLight,
                                 size: 16,
                               ),
                             ),
@@ -1534,7 +1534,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   Text(
                                     dateTimeFormat("jm", game.date),
                                     style: AppTypography.labelSmall.copyWith(
-                                      color: Colors.white.withOpacity(0.6),
+                                      color: AppColors.glassTextSecondary,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -1551,13 +1551,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             ),
                             decoration: BoxDecoration(
                               color: isFull
-                                  ? AppColors.sunsetRose.withOpacity(0.2)
-                                  : AppColors.fairwayLight.withOpacity(0.2),
+                                  ? AppColors.error.withValues(alpha:0.2)
+                                  : AppColors.navyLight.withValues(alpha:0.2),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: isFull
-                                    ? AppColors.sunsetRose.withOpacity(0.3)
-                                    : Colors.white.withOpacity(0.1),
+                                    ? AppColors.error.withValues(alpha:0.3)
+                                    : AppColors.glassSurface,
                               ),
                             ),
                             child: Row(
@@ -1566,7 +1566,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 AppIcon(
                                   assetPath: AppIcons.golfers,
                                   color: isFull
-                                      ? AppColors.sunsetRose
+                                      ? AppColors.error
                                       : Colors.white,
                                   size: 16,
                                 ),
@@ -1575,7 +1575,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   '${game.joinedPlayers.length + game.guestPlayers.length}/${game.maxPlayers}',
                                   style: AppTypography.labelSmall.copyWith(
                                     color: isFull
-                                        ? AppColors.sunsetRose
+                                        ? AppColors.error
                                         : Colors.white,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -1599,7 +1599,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                     vertical: AppSpacing.sm,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
+                    color: AppColors.glassSurface,
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(20),
                       bottomRight: Radius.circular(20),
@@ -1617,7 +1617,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.fairwayLight.withOpacity(0.2),
+                              color: AppColors.navyLight.withValues(alpha:0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Row(
@@ -1625,7 +1625,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               children: [
                                 AppIcon(
                                   assetPath: AppIcons.memberDiscount,
-                                  color: AppColors.fairwayLight,
+                                  color: AppColors.navyLight,
                                   size: 12,
                                 ),
                                 SizedBox(width: 4),
@@ -1656,15 +1656,15 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
-                                      AppColors.sunsetGold,
-                                      AppColors.sunsetPeach
+                                      AppColors.gold,
+                                      AppColors.goldLight
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
                                       color:
-                                          AppColors.sunsetGold.withOpacity(0.3),
+                                          AppColors.gold.withValues(alpha:0.3),
                                       blurRadius: 8,
                                       offset: Offset(0, 2),
                                     ),
@@ -1701,14 +1701,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                     ? null // No gradient for joined game button
                                     : LinearGradient(
                                         colors: [
-                                          AppColors.sunsetGold,
-                                          AppColors.sunsetPeach
+                                          AppColors.gold,
+                                          AppColors.goldLight
                                         ],
                                       ),
                                 // Outline border for joined games
                                 border: isUserGame
                                     ? Border.all(
-                                        color: Colors.white.withOpacity(0.25),
+                                        color: Colors.white.withValues(alpha:0.25),
                                         width: 1.5,
                                       )
                                     : null,
@@ -1717,8 +1717,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                     ? null // No shadow for joined game button
                                     : [
                                         BoxShadow(
-                                          color: AppColors.sunsetGold
-                                              .withOpacity(0.3),
+                                          color: AppColors.gold
+                                              .withValues(alpha:0.3),
                                           blurRadius: 8,
                                           offset: Offset(0, 2),
                                         ),
@@ -1776,7 +1776,7 @@ class _LockedGameHostLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = AppTypography.labelSmall.copyWith(
-      color: Colors.white.withOpacity(0.7),
+      color: AppColors.glassTextSecondary,
       fontWeight: FontWeight.w500,
     );
 

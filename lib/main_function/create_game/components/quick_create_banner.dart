@@ -23,13 +23,13 @@ class QuickCreateBanner extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.fairwayLight.withValues(alpha: 0.2),
-            AppColors.fairway.withValues(alpha: 0.15),
+            AppColors.navyLight.withValues(alpha: 0.2),
+            AppColors.navy.withValues(alpha: 0.15),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.fairwayLight.withValues(alpha: 0.4),
+          color: AppColors.navyLight.withValues(alpha: 0.4),
           width: 2,
         ),
       ),
@@ -40,7 +40,7 @@ class QuickCreateBanner extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                colors: [AppColors.gold, AppColors.goldLight],
               ),
               borderRadius: BorderRadius.circular(12),
             ),

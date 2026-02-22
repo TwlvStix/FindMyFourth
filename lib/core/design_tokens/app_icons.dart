@@ -10,7 +10,7 @@
 /// AppIcon(
 ///   assetPath: AppIcons.games,
 ///   size: AppIconSize.md,
-///   color: AppColors.fairway,
+///   color: AppColors.navy,
 /// )
 /// ```
 class AppIcons {

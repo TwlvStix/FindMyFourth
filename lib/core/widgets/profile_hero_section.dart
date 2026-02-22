@@ -53,8 +53,8 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.fairwayDark,
-            AppColors.fairwayDark.withValues(alpha: 0.8),
+            AppColors.navyDark,
+            AppColors.navyDark.withValues(alpha: 0.8),
             Colors.transparent,
           ],
           stops: [0.0, 0.5, 1.0],
@@ -70,7 +70,7 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                   center: Alignment.topCenter,
                   radius: 1.0,
                   colors: [
-                    AppColors.sunsetGold.withValues(alpha: 0.08),
+                    AppColors.gold.withValues(alpha: 0.08),
                     Colors.transparent,
                   ],
                 ),
@@ -97,10 +97,10 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                         shape: BoxShape.circle,
                         gradient: SweepGradient(
                           colors: [
-                            AppColors.fairway,
-                            AppColors.sunsetGold,
-                            AppColors.sunsetPeach,
-                            AppColors.fairway,
+                            AppColors.navy,
+                            AppColors.gold,
+                            AppColors.goldLight,
+                            AppColors.navy,
                           ],
                           stops: [0.0, 0.33, 0.66, 1.0],
                         ),
@@ -162,14 +162,14 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                           height: 48,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [AppColors.sunsetGold, AppColors.sunsetPeach],
+                              colors: [AppColors.gold, AppColors.goldLight],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.sunsetGold.withOpacity(0.4),
+                                color: AppColors.gold.withValues(alpha:0.4),
                                 blurRadius: 12,
                                 offset: Offset(0, 4),
                               ),
