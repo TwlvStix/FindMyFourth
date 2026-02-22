@@ -1,4 +1,3 @@
-import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
@@ -34,7 +33,7 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: AppTheme.of(context).secondaryBackground,
+      backgroundColor: AppColors.navyBackground,
       body: FairwayBackgroundSunset(
         showOrganic: true,
         child: SafeArea(
@@ -52,10 +51,10 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                       width: 140.0,
                       height: 140.0,
                       decoration: BoxDecoration(
-                        color: AppTheme.of(context).primary,
+                        color: AppColors.navyDark,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: AppTheme.of(context).primaryBtnText,
+                          color: AppColors.navyDarkBtnText,
                           width: 2.0,
                         ),
                       ),
@@ -64,7 +63,7 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                         padding: AppSpacing.only(left: 30.0, top: 30.0, right: 30.0, bottom: 30.0),
                         child: Icon(
                           Icons.check_rounded,
-                          color: AppTheme.of(context).primaryBtnText,
+                          color: AppColors.navyDarkBtnText,
                           size: 60.0,
                         ),
                       ),
@@ -74,21 +73,17 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                     padding: AppSpacing.only(top: AppSpacing.xl),
                     child: Text(
                       'Enjoy Your Boring Existence',
-                      style: AppTheme.of(context).titleLarge.override(
+                      style: AppTypography.titleLarge.override(
                             font: TextStyle(fontFamily: 'Manrope',
-                              fontWeight: AppTheme.of(context)
-                                  .titleLarge
+                              fontWeight: AppTypography.titleLarge
                                   .fontWeight,
-                              fontStyle: AppTheme.of(context)
-                                  .titleLarge
+                              fontStyle: AppTypography.titleLarge
                                   .fontStyle,
                             ),
                             letterSpacing: 0.0,
-                            fontWeight: AppTheme.of(context)
-                                .titleLarge
+                            fontWeight: AppTypography.titleLarge
                                 .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .titleLarge
+                            fontStyle: AppTypography.titleLarge
                                 .fontStyle,
                           ),
                     ),
@@ -97,21 +92,17 @@ class _SuccessLeaveWidgetState extends State<SuccessLeaveWidget> {
                     padding: AppSpacing.only(top: AppSpacing.md),
                     child: Text(
                       'We will have fun without you!',
-                      style: AppTheme.of(context).titleLarge.override(
+                      style: AppTypography.titleLarge.override(
                             font: TextStyle(fontFamily: 'Manrope',
-                              fontWeight: AppTheme.of(context)
-                                  .titleLarge
+                              fontWeight: AppTypography.titleLarge
                                   .fontWeight,
-                              fontStyle: AppTheme.of(context)
-                                  .titleLarge
+                              fontStyle: AppTypography.titleLarge
                                   .fontStyle,
                             ),
                             letterSpacing: 0.0,
-                            fontWeight: AppTheme.of(context)
-                                .titleLarge
+                            fontWeight: AppTypography.titleLarge
                                 .fontWeight,
-                            fontStyle: AppTheme.of(context)
-                                .titleLarge
+                            fontStyle: AppTypography.titleLarge
                                 .fontStyle,
                           ),
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/colors.dart';
 import 'package:find_my_fourth/core/utils/error_messages.dart';
 import 'package:find_my_fourth/core/exceptions/app_exceptions.dart';
 
@@ -73,7 +74,7 @@ class AppStreamBuilder<T> extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 48, color: Colors.red),
+            Icon(Icons.error_outline, size: 48, color: AppColors.error),
             SizedBox(height: 16),
             Text(
               message,

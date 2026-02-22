@@ -1,8 +1,8 @@
-import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
 import 'dart:ui';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/models/game.dart';
@@ -50,7 +50,7 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
             width: double.infinity,
             height: double.infinity,
             decoration: BoxDecoration(
-              color: AppTheme.of(context).accent4,
+              color: AppColors.greenLight,
             ),
             alignment: AlignmentDirectional(0.0, 1.0),
             child: Column(
@@ -60,11 +60,11 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: AppTheme.of(context).secondaryBackground,
+                    color: AppColors.navyBackground,
                     boxShadow: [
                       BoxShadow(
                         blurRadius: 7.0,
-                        color: Color(0x33000000),
+                        color: AppColors.overlayDark,
                         offset: Offset(
                           0.0,
                           -2.0,
@@ -92,7 +92,7 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                               width: 60.0,
                               height: 3.0,
                               decoration: BoxDecoration(
-                                color: AppTheme.of(context).alternate,
+                                color: AppColors.cloud,
                                 borderRadius: BorderRadius.circular(AppSpacing.xxs),
                               ),
                             ),
@@ -119,23 +119,18 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                   style: TextStyle(),
                                 )
                               ],
-                              style: AppTheme.of(context)
-                                  .headlineMedium
+                              style: AppTypography.headlineMedium
                                   .override(
                                     font: TextStyle(fontFamily: 'Manrope',
-                                      fontWeight: AppTheme.of(context)
-                                          .headlineMedium
+                                      fontWeight: AppTypography.headlineMedium
                                           .fontWeight,
-                                      fontStyle: AppTheme.of(context)
-                                          .headlineMedium
+                                      fontStyle: AppTypography.headlineMedium
                                           .fontStyle,
                                     ),
                                     letterSpacing: 0.0,
-                                    fontWeight: AppTheme.of(context)
-                                        .headlineMedium
+                                    fontWeight: AppTypography.headlineMedium
                                         .fontWeight,
-                                    fontStyle: AppTheme.of(context)
-                                        .headlineMedium
+                                    fontStyle: AppTypography.headlineMedium
                                         .fontStyle,
                                   ),
                             ),

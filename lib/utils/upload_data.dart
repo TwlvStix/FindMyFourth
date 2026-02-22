@@ -8,7 +8,7 @@ import 'package:mime_type/mime_type.dart';
 import 'package:video_player/video_player.dart';
 
 import '../auth/firebase_auth/auth_util.dart';
-import '/core/app_theme.dart';
+import '/core/design_tokens/colors.dart';
 import 'app_util.dart';
 
 const allowedFormats = {'image/png', 'image/jpeg', 'video/mp4', 'image/gif'};
@@ -54,11 +54,13 @@ Future<List<SelectedFile>?> selectMediaWithSourceBottomSheet({
   required bool allowPhoto,
   bool allowVideo = false,
   String pickerFontFamily = 'Roboto',
-  Color textColor = const Color(0xFF111417),
-  Color backgroundColor = const Color(0xFFF5F5F5),
+  Color? textColor,
+  Color? backgroundColor,
   bool includeDimensions = false,
   bool includeBlurHash = false,
 }) async {
+  final effectiveTextColor = textColor ?? AppColors.onyx;
+  final effectiveBgColor = backgroundColor ?? AppColors.cloud;
   final createUploadMediaListTile =
       (String label, MediaSource mediaSource) => ListTile(
             title: Text(
@@ -66,12 +68,12 @@ Future<List<SelectedFile>?> selectMediaWithSourceBottomSheet({
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: pickerFontFamily,
-                color: textColor,
+                color: effectiveTextColor,
                 fontWeight: FontWeight.w600,
                 fontSize: 20,
               ),
             ),
-            tileColor: backgroundColor,
+            tileColor: effectiveBgColor,
             dense: false,
             onTap: () => Navigator.pop(
               context,
@@ -80,7 +82,7 @@ Future<List<SelectedFile>?> selectMediaWithSourceBottomSheet({
           );
   final mediaSource = await showModalBottomSheet<MediaSource>(
       context: context,
-      backgroundColor: backgroundColor,
+      backgroundColor: effectiveBgColor,
       builder: (context) {
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -94,12 +96,12 @@ Future<List<SelectedFile>?> selectMediaWithSourceBottomSheet({
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: pickerFontFamily,
-                      color: textColor.applyAlpha(0.65),
+                      color: effectiveTextColor.applyAlpha(0.65),
                       fontWeight: FontWeight.w500,
                       fontSize: 20,
                     ),
                   ),
-                  tileColor: backgroundColor,
+                  tileColor: effectiveBgColor,
                   dense: false,
                 ),
               ),
@@ -370,7 +372,7 @@ void showUploadMessage(
                 child: CircularProgressIndicator(
                   valueColor: Theme.of(context).brightness == Brightness.dark
                       ? AlwaysStoppedAnimation<Color>(
-                          AppTheme.of(context).accent4)
+                          AppColors.greenLight)
                       : null,
                 ),
               ),

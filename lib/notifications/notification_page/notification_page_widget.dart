@@ -227,7 +227,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel', style: TextStyle(color: Colors.white70)),
+            child: Text('Cancel', style: TextStyle(color: AppColors.glassTextSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
@@ -1030,11 +1030,11 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                         EdgeInsets.only(bottom: AppSpacing.md),
                                     padding: EdgeInsets.all(AppSpacing.md),
                                     decoration: BoxDecoration(
-                                      color: Colors.orange
+                                      color: AppColors.warning
                                           .withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: Colors.orange
+                                        color: AppColors.warning
                                             .withValues(alpha: 0.5),
                                         width: 1.0,
                                       ),
@@ -1042,7 +1042,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                     child: Column(
                                       children: [
                                         Icon(Icons.settings,
-                                            size: 40, color: Colors.orange),
+                                            size: 40, color: AppColors.warning),
                                         SizedBox(height: AppSpacing.sm),
                                         Text(
                                           'Notification permission required',

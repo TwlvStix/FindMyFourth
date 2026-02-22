@@ -5,7 +5,6 @@ import '/backend/backend.dart';
 import '/utils/app_util.dart';
 import '/profile/create_profile/create_profile_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
-import '../core/app_theme.dart';
 import '../core/design_tokens/colors.dart';
 import '../core/design_tokens/spacing.dart';
 import '../core/design_tokens/border_radius.dart';
@@ -137,7 +136,7 @@ class _CinematicOnboardingWidgetState extends State<CinematicOnboardingWidget>
             content: const Text(
               'Finishing setup. Please wait a moment before continuing.',
             ),
-            backgroundColor: AppTheme.of(context).error,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -293,7 +292,7 @@ class _Slide1FindYourGame extends StatelessWidget {
           SizedBox(height: AppSpacing.xl),
           Text(
             'Find the Game You Actually Want to Play',
-            style: AppTheme.of(context).headlineMedium?.copyWith(
+            style: AppTypography.headlineMedium?.copyWith(
                   fontFamily: 'Fraunces',
                   fontWeight: FontWeight.bold,
                 ),
@@ -302,7 +301,7 @@ class _Slide1FindYourGame extends StatelessWidget {
           SizedBox(height: AppSpacing.md),
           Text(
             'Choose your format, stakes, and vibe - before you show up.',
-            style: AppTheme.of(context).bodyLarge,
+            style: AppTypography.bodyLarge,
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.xl),
@@ -332,10 +331,10 @@ class _GameDetailCard extends StatelessWidget {
     return Container(
       constraints: const BoxConstraints(maxWidth: 320, maxHeight: 520),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1a3a2a), Color(0xFF2d5a3f)],
+          colors: [AppColors.navyDark, AppColors.navy],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
@@ -377,16 +376,16 @@ class _GameDetailCard extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFfdf6ee),
+                    color: AppColors.sand,
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Join Game',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1a3a2a),
+                      color: AppColors.navyDark,
                     ),
                   ),
                 ),
@@ -417,7 +416,7 @@ class _VibeMatchSection extends StatelessWidget {
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8B44C),
+                  color: AppColors.gold,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -455,15 +454,15 @@ class _VibeMatchSection extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8B44C),
+                  color: AppColors.gold,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
+                child: Text(
                   '85%',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1a3a2a),
+                    color: AppColors.navyDark,
                   ),
                 ),
               ),
@@ -508,7 +507,7 @@ class _SectionHeader extends StatelessWidget {
           width: 3,
           height: 20,
           decoration: BoxDecoration(
-            color: const Color(0xFFE8B44C),
+            color: AppColors.gold,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -624,13 +623,13 @@ class _DetailCell extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: const Color(0xFFE8B44C),
+              color: AppColors.gold,
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
               size: 16,
-              color: const Color(0xFF1a3a2a),
+              color: AppColors.navyDark,
             ),
           ),
           const SizedBox(height: 8),
@@ -677,15 +676,15 @@ class _PlayersSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFE8B44C).withValues(alpha:0.2),
+                color: AppColors.gold.withValues(alpha:0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Text(
+              child: Text(
                 '3/4',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFE8B44C),
+                  color: AppColors.gold,
                 ),
               ),
             ),
@@ -697,21 +696,21 @@ class _PlayersSection extends StatelessWidget {
           name: 'Ryan M.',
           initial: 'R',
           vibeMatch: '85%',
-          color: const Color(0xFF2d5a3f),
+          color: AppColors.navy,
         ),
         const SizedBox(height: 8),
         _PlayerRow(
           name: 'Jake T.',
           initial: 'J',
           vibeMatch: '82%',
-          color: const Color(0xFF4a8b6f),
+          color: AppColors.greenLight,
         ),
         const SizedBox(height: 8),
         _PlayerRow(
           name: 'Dan K.',
           initial: 'D',
           vibeMatch: '78%',
-          color: const Color(0xFF5aa082),
+          color: AppColors.greenLight,
         ),
         const SizedBox(height: 8),
         // Open spot indicator
@@ -801,24 +800,24 @@ class _PlayerRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
-            color: const Color(0xFFE8B44C).withValues(alpha:0.15),
+            color: AppColors.gold.withValues(alpha:0.15),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             vibeMatch,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              color: Color(0xFFE8B44C),
+              color: AppColors.gold,
             ),
           ),
         ),
         const SizedBox(width: 6),
         // Checkmark
-        const Icon(
+        Icon(
           Icons.check_circle,
           size: 16,
-          color: Color(0xFF3FA876),
+          color: AppColors.success,
         ),
       ],
     );
@@ -934,7 +933,7 @@ class _Slide2RightGroup extends StatelessWidget {
           SizedBox(height: AppSpacing.xl),
           Text(
             'Golf Is Better When the Group Is Right',
-            style: AppTheme.of(context).headlineMedium?.copyWith(
+            style: AppTypography.headlineMedium?.copyWith(
                   fontFamily: 'Fraunces',
                   fontWeight: FontWeight.bold,
                 ),
@@ -943,7 +942,7 @@ class _Slide2RightGroup extends StatelessWidget {
           SizedBox(height: AppSpacing.md),
           Text(
             'Match with players who value the same kind of round you do.',
-            style: AppTheme.of(context).bodyLarge,
+            style: AppTypography.bodyLarge,
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.xl),
@@ -1077,7 +1076,7 @@ class _Slide3GetAlerted extends StatelessWidget {
           SizedBox(height: AppSpacing.xl),
           Text(
             'The Right Game Finds You',
-            style: AppTheme.of(context).headlineMedium?.copyWith(
+            style: AppTypography.headlineMedium?.copyWith(
                   fontFamily: 'Fraunces',
                   fontWeight: FontWeight.bold,
                 ),
@@ -1086,7 +1085,7 @@ class _Slide3GetAlerted extends StatelessWidget {
           SizedBox(height: AppSpacing.md),
           Text(
             'Set your format, stakes, and vibe. When your game drops, you\'ll be the first to know — not the last to see it already full.',
-            style: AppTheme.of(context).bodyLarge,
+            style: AppTypography.bodyLarge,
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.xl),
@@ -1234,7 +1233,7 @@ class _Slide4FillFoursome extends StatelessWidget {
           SizedBox(height: AppSpacing.xl),
           Text(
             'Buddy Bailed? You are Covered.',
-            style: AppTheme.of(context).headlineMedium?.copyWith(
+            style: AppTypography.headlineMedium?.copyWith(
                   fontFamily: 'Fraunces',
                   fontWeight: FontWeight.bold,
                 ),
@@ -1243,7 +1242,7 @@ class _Slide4FillFoursome extends StatelessWidget {
           SizedBox(height: AppSpacing.md),
           Text(
             'Post your open spot and fill it fast with someone who actually fits your game.',
-            style: AppTheme.of(context).bodyLarge,
+            style: AppTypography.bodyLarge,
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.xl),
@@ -1299,10 +1298,10 @@ class _AppNotificationBanner extends StatelessWidget {
               width: 34,
               height: 34,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF1a3a2a), Color(0xFF3d7a55)],
+                  colors: [AppColors.navyDark, AppColors.green],
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -1326,17 +1325,17 @@ class _AppNotificationBanner extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey[600],
+                      color: AppColors.slate,
                       letterSpacing: 0.4,
                     ),
                   ),
                   const SizedBox(height: 2),
-                  const Text(
+                  Text(
                     'New Game Match',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF1a1a1a),
+                      color: AppColors.onyx,
                       height: 1.2,
                     ),
                     maxLines: 1,
@@ -1348,7 +1347,7 @@ class _AppNotificationBanner extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w400,
-                      color: Colors.grey[700],
+                      color: AppColors.slate,
                       height: 1.3,
                     ),
                     maxLines: 1,
@@ -1374,11 +1373,11 @@ class _FoursomeCompleteToast extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 280),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFF2d5a3f),
+          color: AppColors.navy,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1a3a2a).withValues(alpha:0.3),
+              color: AppColors.navyDark.withValues(alpha:0.3),
               blurRadius: 20,
               offset: const Offset(0, 6),
             ),
@@ -1395,10 +1394,10 @@ class _FoursomeCompleteToast extends StatelessWidget {
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.check,
                 size: 18,
-                color: Color(0xFF2d5a3f),
+                color: AppColors.navy,
               ),
             ),
             const SizedBox(width: 10),
@@ -1420,7 +1419,7 @@ class _FoursomeCompleteToast extends StatelessWidget {
                   'Ryan\'s group is ready to go',
                   style: TextStyle(
                     fontSize: 10,
-                    color: Colors.white70,
+                    color: AppColors.glassTextSecondary,
                   ),
                 ),
               ],
@@ -1463,8 +1462,8 @@ class _ProgressDots extends StatelessWidget {
             height: 8,
             decoration: BoxDecoration(
               color: isActive
-                  ? AppTheme.of(context).primary
-                  : AppTheme.of(context).alternate,
+                  ? AppColors.navyDark
+                  : AppColors.cloud,
               borderRadius: BorderRadius.circular(AppBorderRadius.full),
             ),
           ),

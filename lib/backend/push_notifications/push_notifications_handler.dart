@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'serialization_util.dart';
 import '/backend/backend.dart';
-import '/core/app_theme.dart';
 import '/core/utils/app_log.dart';
 import '../../utils/app_util.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -291,7 +290,7 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   @override
   Widget build(BuildContext context) => _loading
       ? Container(
-          color: AppTheme.of(context).primaryBackground,
+          color: AppColors.navyDarkBackground,
           child: Image.asset(
             'assets/images/Blackfixed.png',
             fit: BoxFit.contain,

@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 import 'design_tokens/colors.dart';
 
+/// ThemeExtension for Flutter's theme system.
+///
+/// This class maps design tokens to Flutter's ThemeData via the extensions API.
+/// Used only in main.dart to register colors with MaterialApp's theme.
+///
+/// For direct color usage in widgets, import and use AppColors directly:
+/// ```dart
+/// import '/core/design_tokens/colors.dart';
+/// Container(color: AppColors.navyDark)
+/// ```
 @immutable
 class AppThemeColors extends ThemeExtension<AppThemeColors> {
   const AppThemeColors({
@@ -46,47 +56,47 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color noColor;
 
   static const light = AppThemeColors(
-    primary: AppColors.navyDark,          // Deep forest green for headers
-    secondary: AppColors.navy,            // Rich green for secondary elements
-    tertiary: AppColors.stone,               // Mid grey for tertiary elements
-    alternate: AppColors.cloud,              // Light grey for alternates
-    primaryText: AppColors.onyx,             // Near black for primary text
-    secondaryText: AppColors.slate,          // Dark grey for secondary text
-    primaryBackground: AppColors.sand,       // Warm neutral background
-    secondaryBackground: AppColors.pure,     // Off-white for cards/surfaces
-    accent1: AppColors.gold,           // Warm gold accent
-    accent2: AppColors.goldLight,          // Soft peach accent
-    accent3: AppColors.error,           // Muted coral accent
-    accent4: AppColors.greenLight,        // Light green accent
-    success: AppColors.success,              // Birdie green
-    warning: AppColors.warning,              // Gold warning
-    error: AppColors.error,                  // Hazard red
-    info: AppColors.info,                    // Water blue
-    primaryBtnText: AppColors.pure,          // Off-white for button text
-    lineColor: AppColors.cloud,              // Light grey for dividers
-    noColor: Color(0x00FFFFFF),              // Transparent
+    primary: AppColors.navyDark,
+    secondary: AppColors.navy,
+    tertiary: AppColors.stone,
+    alternate: AppColors.cloud,
+    primaryText: AppColors.onyx,
+    secondaryText: AppColors.slate,
+    primaryBackground: AppColors.sand,
+    secondaryBackground: AppColors.pure,
+    accent1: AppColors.gold,
+    accent2: AppColors.goldLight,
+    accent3: AppColors.error,
+    accent4: AppColors.greenLight,
+    success: AppColors.success,
+    warning: AppColors.warning,
+    error: AppColors.error,
+    info: AppColors.info,
+    primaryBtnText: AppColors.pure,
+    lineColor: AppColors.cloud,
+    noColor: Color(0x00FFFFFF),
   );
 
   static const dark = AppThemeColors(
-    primary: AppColorsDark.greenLight,    // Lighter green for dark mode headers
-    secondary: AppColorsDark.navy,        // Mid green for secondary elements
-    tertiary: AppColorsDark.stone,           // Grey for tertiary elements
-    alternate: AppColorsDark.cloud,          // Darker grey for alternates
-    primaryText: AppColorsDark.onyx,         // Off-white for primary text
-    secondaryText: AppColorsDark.slate,      // Light grey for secondary text
-    primaryBackground: AppColorsDark.sand,   // Dark background
-    secondaryBackground: AppColorsDark.pure, // Darker surface for cards
-    accent1: AppColorsDark.gold,       // Muted gold accent
-    accent2: AppColorsDark.goldLight,      // Muted peach accent
-    accent3: AppColorsDark.error,       // Muted coral accent
-    accent4: AppColorsDark.greenLight,    // Light green accent
-    success: AppColorsDark.success,          // Brighter success green
-    warning: AppColorsDark.warning,          // Muted warning gold
-    error: AppColorsDark.error,              // Brighter error red
-    info: AppColorsDark.info,                // Brighter info blue
-    primaryBtnText: AppColorsDark.pure,      // Dark background for button text
-    lineColor: AppColorsDark.cloud,          // Darker grey for dividers
-    noColor: Color(0x00FFFFFF),              // Transparent
+    primary: AppColorsDark.greenLight,
+    secondary: AppColorsDark.navy,
+    tertiary: AppColorsDark.stone,
+    alternate: AppColorsDark.cloud,
+    primaryText: AppColorsDark.onyx,
+    secondaryText: AppColorsDark.slate,
+    primaryBackground: AppColorsDark.sand,
+    secondaryBackground: AppColorsDark.pure,
+    accent1: AppColorsDark.gold,
+    accent2: AppColorsDark.goldLight,
+    accent3: AppColorsDark.error,
+    accent4: AppColorsDark.greenLight,
+    success: AppColorsDark.success,
+    warning: AppColorsDark.warning,
+    error: AppColorsDark.error,
+    info: AppColorsDark.info,
+    primaryBtnText: AppColorsDark.pure,
+    lineColor: AppColorsDark.cloud,
+    noColor: Color(0x00FFFFFF),
   );
 
   @override
@@ -162,169 +172,5 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       lineColor: Color.lerp(lineColor, other.lineColor, t)!,
       noColor: Color.lerp(noColor, other.noColor, t)!,
     );
-  }
-}
-
-class AppTheme {
-  AppTheme(this.theme)
-      : colors =
-            theme.extension<AppThemeColors>() ?? AppThemeColors.light;
-
-  final ThemeData theme;
-  final AppThemeColors colors;
-
-  static AppTheme of(BuildContext context) {
-    return AppTheme(Theme.of(context));
-  }
-
-  @Deprecated('Use primary instead')
-  Color get primaryColor => primary;
-  @Deprecated('Use secondary instead')
-  Color get secondaryColor => secondary;
-  @Deprecated('Use tertiary instead')
-  Color get tertiaryColor => tertiary;
-
-  Color get primary => colors.primary;
-  Color get secondary => colors.secondary;
-  Color get tertiary => colors.tertiary;
-  Color get alternate => colors.alternate;
-  Color get primaryText => colors.primaryText;
-  Color get secondaryText => colors.secondaryText;
-  Color get primaryBackground => colors.primaryBackground;
-  Color get secondaryBackground => colors.secondaryBackground;
-  Color get accent1 => colors.accent1;
-  Color get accent2 => colors.accent2;
-  Color get accent3 => colors.accent3;
-  Color get accent4 => colors.accent4;
-  Color get success => colors.success;
-  Color get warning => colors.warning;
-  Color get error => colors.error;
-  Color get info => colors.info;
-  Color get primaryBtnText => colors.primaryBtnText;
-  Color get lineColor => colors.lineColor;
-  Color get noColor => colors.noColor;
-
-  @Deprecated('Use displaySmallFamily instead')
-  String get title1Family => displaySmallFamily;
-  @Deprecated('Use displaySmall instead')
-  TextStyle get title1 => displaySmall;
-  @Deprecated('Use headlineMediumFamily instead')
-  String get title2Family => headlineMediumFamily;
-  @Deprecated('Use headlineMedium instead')
-  TextStyle get title2 => headlineMedium;
-  @Deprecated('Use headlineSmallFamily instead')
-  String get title3Family => headlineSmallFamily;
-  @Deprecated('Use headlineSmall instead')
-  TextStyle get title3 => headlineSmall;
-  @Deprecated('Use titleMediumFamily instead')
-  String get subtitle1Family => titleMediumFamily;
-  @Deprecated('Use titleMedium instead')
-  TextStyle get subtitle1 => titleMedium;
-  @Deprecated('Use titleSmallFamily instead')
-  String get subtitle2Family => titleSmallFamily;
-  @Deprecated('Use titleSmall instead')
-  TextStyle get subtitle2 => titleSmall;
-  @Deprecated('Use bodyMediumFamily instead')
-  String get bodyText1Family => bodyMediumFamily;
-  @Deprecated('Use bodyMedium instead')
-  TextStyle get bodyText1 => bodyMedium;
-  @Deprecated('Use bodySmallFamily instead')
-  String get bodyText2Family => bodySmallFamily;
-  @Deprecated('Use bodySmall instead')
-  TextStyle get bodyText2 => bodySmall;
-
-  String get displayLargeFamily => displayLarge.fontFamily ?? '';
-  bool get displayLargeIsCustom => displayLarge.fontFamily != null;
-  TextStyle get displayLarge =>
-      theme.textTheme.displayLarge ?? const TextStyle();
-  String get displayMediumFamily => displayMedium.fontFamily ?? '';
-  bool get displayMediumIsCustom => displayMedium.fontFamily != null;
-  TextStyle get displayMedium =>
-      theme.textTheme.displayMedium ?? const TextStyle();
-  String get displaySmallFamily => displaySmall.fontFamily ?? '';
-  bool get displaySmallIsCustom => displaySmall.fontFamily != null;
-  TextStyle get displaySmall =>
-      theme.textTheme.displaySmall ?? const TextStyle();
-  String get headlineLargeFamily => headlineLarge.fontFamily ?? '';
-  bool get headlineLargeIsCustom => headlineLarge.fontFamily != null;
-  TextStyle get headlineLarge =>
-      theme.textTheme.headlineLarge ?? const TextStyle();
-  String get headlineMediumFamily => headlineMedium.fontFamily ?? '';
-  bool get headlineMediumIsCustom => headlineMedium.fontFamily != null;
-  TextStyle get headlineMedium =>
-      theme.textTheme.headlineMedium ?? const TextStyle();
-  String get headlineSmallFamily => headlineSmall.fontFamily ?? '';
-  bool get headlineSmallIsCustom => headlineSmall.fontFamily != null;
-  TextStyle get headlineSmall =>
-      theme.textTheme.headlineSmall ?? const TextStyle();
-  String get titleLargeFamily => titleLarge.fontFamily ?? '';
-  bool get titleLargeIsCustom => titleLarge.fontFamily != null;
-  TextStyle get titleLarge => theme.textTheme.titleLarge ?? const TextStyle();
-  String get titleMediumFamily => titleMedium.fontFamily ?? '';
-  bool get titleMediumIsCustom => titleMedium.fontFamily != null;
-  TextStyle get titleMedium => theme.textTheme.titleMedium ?? const TextStyle();
-  String get titleSmallFamily => titleSmall.fontFamily ?? '';
-  bool get titleSmallIsCustom => titleSmall.fontFamily != null;
-  TextStyle get titleSmall => theme.textTheme.titleSmall ?? const TextStyle();
-  String get labelLargeFamily => labelLarge.fontFamily ?? '';
-  bool get labelLargeIsCustom => labelLarge.fontFamily != null;
-  TextStyle get labelLarge => theme.textTheme.labelLarge ?? const TextStyle();
-  String get labelMediumFamily => labelMedium.fontFamily ?? '';
-  bool get labelMediumIsCustom => labelMedium.fontFamily != null;
-  TextStyle get labelMedium => theme.textTheme.labelMedium ?? const TextStyle();
-  String get labelSmallFamily => labelSmall.fontFamily ?? '';
-  bool get labelSmallIsCustom => labelSmall.fontFamily != null;
-  TextStyle get labelSmall => theme.textTheme.labelSmall ?? const TextStyle();
-  String get bodyLargeFamily => bodyLarge.fontFamily ?? '';
-  bool get bodyLargeIsCustom => bodyLarge.fontFamily != null;
-  TextStyle get bodyLarge => theme.textTheme.bodyLarge ?? const TextStyle();
-  String get bodyMediumFamily => bodyMedium.fontFamily ?? '';
-  bool get bodyMediumIsCustom => bodyMedium.fontFamily != null;
-  TextStyle get bodyMedium => theme.textTheme.bodyMedium ?? const TextStyle();
-  String get bodySmallFamily => bodySmall.fontFamily ?? '';
-  bool get bodySmallIsCustom => bodySmall.fontFamily != null;
-  TextStyle get bodySmall => theme.textTheme.bodySmall ?? const TextStyle();
-}
-
-extension TextStyleHelper on TextStyle {
-  TextStyle override({
-    TextStyle? font,
-    String? fontFamily,
-    Color? color,
-    double? fontSize,
-    FontWeight? fontWeight,
-    double? letterSpacing,
-    FontStyle? fontStyle,
-    bool useGoogleFonts = false,  // Kept for backwards compatibility, ignored now
-    TextDecoration? decoration,
-    double? lineHeight,
-    List<Shadow>? shadows,
-    String? package,
-  }) {
-    // Note: useGoogleFonts parameter is ignored now that fonts are bundled
-
-    return font != null
-        ? font.copyWith(
-            color: color ?? this.color,
-            fontSize: fontSize ?? this.fontSize,
-            letterSpacing: letterSpacing ?? this.letterSpacing,
-            fontWeight: fontWeight ?? this.fontWeight,
-            fontStyle: fontStyle ?? this.fontStyle,
-            decoration: decoration,
-            height: lineHeight,
-            shadows: shadows,
-          )
-        : copyWith(
-            fontFamily: fontFamily,
-            package: package,
-            color: color,
-            fontSize: fontSize,
-            letterSpacing: letterSpacing,
-            fontWeight: fontWeight,
-            fontStyle: fontStyle,
-            decoration: decoration,
-            height: lineHeight,
-            shadows: shadows,
-          );
   }
 }

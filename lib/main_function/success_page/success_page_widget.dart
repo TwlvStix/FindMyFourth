@@ -1,4 +1,3 @@
-import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
@@ -34,7 +33,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: AppTheme.of(context).secondaryBackground,
+      backgroundColor: AppColors.navyBackground,
       body: FairwayBackgroundSunset(
         child: SafeArea(
           top: true,
@@ -51,10 +50,10 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                         width: 140.0,
                         height: 140.0,
                         decoration: BoxDecoration(
-                          color: AppTheme.of(context).primary,
+                          color: AppColors.navyDark,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: AppTheme.of(context).primaryBtnText,
+                            color: AppColors.navyDarkBtnText,
                             width: 2.0,
                           ),
                         ),
@@ -63,7 +62,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                           padding: EdgeInsets.all(AppSpacing.xl + 6.0),
                           child: Icon(
                             Icons.check_rounded,
-                            color: AppTheme.of(context).primaryBtnText,
+                            color: AppColors.navyDarkBtnText,
                             size: 60.0,
                           ),
                         ),
@@ -73,21 +72,17 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                       padding: AppSpacing.only(top: AppSpacing.xl),
                       child: Text(
                         'You are in!',
-                        style: AppTheme.of(context).titleLarge.override(
+                        style: AppTypography.titleLarge.override(
                               font: TextStyle(fontFamily: 'Manrope',
-                                fontWeight: AppTheme.of(context)
-                                    .titleLarge
+                                fontWeight: AppTypography.titleLarge
                                     .fontWeight,
-                                fontStyle: AppTheme.of(context)
-                                    .titleLarge
+                                fontStyle: AppTypography.titleLarge
                                     .fontStyle,
                               ),
                               letterSpacing: 0.0,
-                              fontWeight: AppTheme.of(context)
-                                  .titleLarge
+                              fontWeight: AppTypography.titleLarge
                                   .fontWeight,
-                              fontStyle: AppTheme.of(context)
-                                  .titleLarge
+                              fontStyle: AppTypography.titleLarge
                                   .fontStyle,
                             ),
                       ),
@@ -96,21 +91,17 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                       padding: AppSpacing.only(top: AppSpacing.md),
                       child: Text(
                         'Enjoy the Game',
-                        style: AppTheme.of(context).titleLarge.override(
+                        style: AppTypography.titleLarge.override(
                               font: TextStyle(fontFamily: 'Manrope',
-                                fontWeight: AppTheme.of(context)
-                                    .titleLarge
+                                fontWeight: AppTypography.titleLarge
                                     .fontWeight,
-                                fontStyle: AppTheme.of(context)
-                                    .titleLarge
+                                fontStyle: AppTypography.titleLarge
                                     .fontStyle,
                               ),
                               letterSpacing: 0.0,
-                              fontWeight: AppTheme.of(context)
-                                  .titleLarge
+                              fontWeight: AppTypography.titleLarge
                                   .fontWeight,
-                              fontStyle: AppTheme.of(context)
-                                  .titleLarge
+                              fontStyle: AppTypography.titleLarge
                                   .fontStyle,
                             ),
                       ),
@@ -119,21 +110,17 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                       padding: AppSpacing.only(top: AppSpacing.md),
                       child: Text(
                         'Enjoy the Group',
-                        style: AppTheme.of(context).titleLarge.override(
+                        style: AppTypography.titleLarge.override(
                               font: TextStyle(fontFamily: 'Manrope',
-                                fontWeight: AppTheme.of(context)
-                                    .titleLarge
+                                fontWeight: AppTypography.titleLarge
                                     .fontWeight,
-                                fontStyle: AppTheme.of(context)
-                                    .titleLarge
+                                fontStyle: AppTypography.titleLarge
                                     .fontStyle,
                               ),
                               letterSpacing: 0.0,
-                              fontWeight: AppTheme.of(context)
-                                  .titleLarge
+                              fontWeight: AppTypography.titleLarge
                                   .fontWeight,
-                              fontStyle: AppTheme.of(context)
-                                  .titleLarge
+                              fontStyle: AppTypography.titleLarge
                                   .fontStyle,
                             ),
                       ),

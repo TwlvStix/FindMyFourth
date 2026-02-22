@@ -10,7 +10,6 @@ import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_stream_builder.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
-import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
@@ -1367,7 +1366,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
-                              color: Color(0xFF4A7C59).withValues(alpha:0.9),
+                              color: AppColors.green.withValues(alpha:0.9),
                               borderRadius: BorderRadius.circular(12.0),
                             ),
                             child: Row(
@@ -1394,7 +1393,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
-                              color: Color(0xFF6B7C6E).withValues(alpha:0.85),
+                              color: AppColors.stone.withValues(alpha:0.85),
                               borderRadius: BorderRadius.circular(12.0),
                             ),
                             child: Row(
@@ -1632,7 +1631,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 Text(
                                   'Discount',
                                   style: AppTypography.text10.copyWith(
-                                    color: AppTheme.of(context).primaryBtnText,
+                                    color: AppColors.navyDarkBtnText,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),

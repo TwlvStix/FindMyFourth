@@ -2,8 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '/backend/cloud_functions/cloud_functions.dart';
-import '/core/app_theme.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_button_enhanced.dart';
 
@@ -80,11 +81,9 @@ class _FallbackConfirmationScreenState
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-
     if (_loading) {
       return Scaffold(
-        backgroundColor: theme.primaryBackground,
+        backgroundColor: AppColors.navyDarkBackground,
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -92,7 +91,7 @@ class _FallbackConfirmationScreenState
     // Post-answer confirmation view
     if (_answered != null) {
       return Scaffold(
-        backgroundColor: theme.primaryBackground,
+        backgroundColor: AppColors.navyDarkBackground,
         body: SafeArea(
           child: Center(
             child: Padding(
@@ -102,7 +101,7 @@ class _FallbackConfirmationScreenState
                 children: [
                   Icon(
                     _answered! ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                    color: _answered! ? theme.primary : theme.secondaryText,
+                    color: _answered! ? AppColors.navyDark : AppColors.navyText,
                     size: 64,
                   ),
                   SizedBox(height: AppSpacing.lg),
@@ -110,7 +109,7 @@ class _FallbackConfirmationScreenState
                     _answered!
                         ? 'Got it — glad you played!'
                         : 'Thanks for letting us know.',
-                    style: theme.titleMedium,
+                    style: AppTypography.titleMedium,
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: AppSpacing.xxl),
@@ -129,14 +128,14 @@ class _FallbackConfirmationScreenState
     }
 
     return Scaffold(
-      backgroundColor: theme.primaryBackground,
+      backgroundColor: AppColors.navyDarkBackground,
       appBar: AppBar(
-        backgroundColor: theme.primaryBackground,
+        backgroundColor: AppColors.navyDarkBackground,
         elevation: 0,
-        title: Text('Round Check-in', style: theme.titleMedium),
+        title: Text('Round Check-in', style: AppTypography.titleMedium),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_rounded, color: theme.primaryText),
+          icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.navyDarkText),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -149,21 +148,21 @@ class _FallbackConfirmationScreenState
             children: [
               Icon(
                 Icons.golf_course_rounded,
-                color: theme.primary,
+                color: AppColors.navyDark,
                 size: 56,
               ),
               SizedBox(height: AppSpacing.xl),
               Text(
                 'Did you play at $_courseName today?',
-                style: theme.headlineMedium ?? theme.titleLarge,
+                style: AppTypography.headlineMedium ?? AppTypography.titleLarge,
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: AppSpacing.sm),
               Text(
                 "The host hasn't confirmed the round yet. Let us know if it happened.",
-                style: theme.bodyMedium.override(
+                style: AppTypography.bodyMedium.override(
                   font: const TextStyle(fontFamily: 'Manrope'),
-                  color: theme.secondaryText,
+                  color: AppColors.navyText,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -171,9 +170,9 @@ class _FallbackConfirmationScreenState
                 SizedBox(height: AppSpacing.md),
                 Text(
                   _error!,
-                  style: theme.bodySmall.override(
+                  style: AppTypography.bodySmall.override(
                     font: const TextStyle(fontFamily: 'Manrope'),
-                    color: theme.error,
+                    color: AppColors.error,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -185,7 +184,7 @@ class _FallbackConfirmationScreenState
                     child: _YesNoButton(
                       label: 'Yes',
                       icon: Icons.check_rounded,
-                      color: theme.primary,
+                      color: AppColors.navyDark,
                       onTap: _submitting ? null : () => _submit(true),
                     ),
                   ),
@@ -194,7 +193,7 @@ class _FallbackConfirmationScreenState
                     child: _YesNoButton(
                       label: 'No',
                       icon: Icons.close_rounded,
-                      color: theme.secondaryText,
+                      color: AppColors.navyText,
                       onTap: _submitting ? null : () => _submit(false),
                     ),
                   ),
@@ -223,7 +222,6 @@ class _YesNoButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
     return GestureDetector(
       onTap: onTap,
       child: AnimatedOpacity(
@@ -243,7 +241,7 @@ class _YesNoButton extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 label,
-                style: theme.titleMedium.override(
+                style: AppTypography.titleMedium.override(
                   font: const TextStyle(fontFamily: 'Manrope'),
                   color: color,
                   fontWeight: FontWeight.w700,

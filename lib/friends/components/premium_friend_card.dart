@@ -16,10 +16,10 @@ import '/models/vibe_profile.dart';
 /// - Manrope typography with cream/gold color tokens
 /// - 20px border radius, consistent padding (20h × 18v)
 class PremiumFriendCard extends StatefulWidget {
-  // LuxuryPlayerCard design tokens
-  static const Color textPrimary = Color(0xFFF0ECE4);
-  static const Color textMuted = Color(0x80F0ECE4);
-  static const Color goldAccent = Color(0xFFD4A843);
+  // LuxuryPlayerCard design tokens — using AppColors
+  static final Color textPrimary = AppColors.sand;
+  static final Color textMuted = AppColors.glassTextTertiary;
+  static final Color goldAccent = AppColors.goldLight;
   final UsersRecord user;
   final VoidCallback? onViewProfile;
   final VoidCallback? onMessage;
@@ -214,7 +214,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   Widget _buildAvatarFallback() {
     return Container(
       color: Colors.white.withValues(alpha: 0.04),
-      child: const Icon(
+      child: Icon(
         Icons.person_rounded,
         color: PremiumFriendCard.textMuted,
         size: 26,
@@ -234,7 +234,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
         // NAME - Hero element with cream color
         Text(
           displayName,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Manrope',
             fontSize: 15,
             fontWeight: FontWeight.w600,
@@ -287,7 +287,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
           const SizedBox(width: 4),
           Text(
             '$score%',
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Manrope',
               fontSize: 11,
               fontWeight: FontWeight.w600,
@@ -313,7 +313,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
           fontFamily: 'Manrope',
           fontSize: 11,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF1A2B1A),
+          color: AppColors.navyDark,
           letterSpacing: 0.2,
         ),
       ),

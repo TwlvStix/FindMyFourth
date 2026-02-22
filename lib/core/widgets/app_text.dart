@@ -3,7 +3,7 @@ import 'package:find_my_fourth/core/design_tokens/typography.dart';
 
 /// Convenience widget for common text patterns using AppTypography
 ///
-/// Eliminates the need for manual GoogleFonts calls and AppTheme.override patterns.
+/// Eliminates the need for manual GoogleFonts calls and TextStyle.override patterns.
 ///
 /// Examples:
 /// ```dart

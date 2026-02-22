@@ -1065,7 +1065,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.error_outline, color: Colors.white54, size: 48),
+                              Icon(Icons.error_outline, color: AppColors.glassTextTertiary, size: 48),
                               SizedBox(height: AppSpacing.md),
                               Text(
                                 'Unable to load profile',
@@ -1075,7 +1075,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                               SizedBox(height: AppSpacing.xs),
                               Text(
                                 'Please try again later',
-                                style: AppTypography.bodySmall.copyWith(color: Colors.white54),
+                                style: AppTypography.bodySmall.copyWith(color: AppColors.glassTextTertiary),
                                 textAlign: TextAlign.center,
                               ),
                             ],

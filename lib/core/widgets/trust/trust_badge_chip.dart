@@ -37,34 +37,34 @@ class BadgeTierStyle {
   static BadgeTierStyle fromTier(BadgeTier tier) {
     switch (tier) {
       case BadgeTier.newPlayer:
-        return const BadgeTierStyle(
+        return BadgeTierStyle(
           label: 'NEW',
-          accent: Color(0xFFD4A843),
-          borderColor: Color(0x33D4A843),
+          accent: AppColors.trustGoldFg,
+          borderColor: AppColors.trustGoldBg,
         );
       case BadgeTier.confirmed:
-        return const BadgeTierStyle(
+        return BadgeTierStyle(
           label: 'CONFIRMED',
-          accent: Color(0xFFA8B4C0),
-          borderColor: Color(0x33A8B4C0),
+          accent: AppColors.trustSilverFg,
+          borderColor: AppColors.trustSilverBg,
         );
       case BadgeTier.regular:
-        return const BadgeTierStyle(
+        return BadgeTierStyle(
           label: 'REGULAR',
-          accent: Color(0xFF6BAF8D),
-          borderColor: Color(0x336BAF8D),
+          accent: AppColors.trustPlatinumFg,
+          borderColor: AppColors.trustPlatinumBg,
         );
       case BadgeTier.starter:
-        return const BadgeTierStyle(
+        return BadgeTierStyle(
           label: 'STARTER',
-          accent: Color(0xFFC9895A),
-          borderColor: Color(0x33C9895A),
+          accent: AppColors.trustBronzeFg,
+          borderColor: AppColors.trustBronzeBg,
         );
       case BadgeTier.anchor:
-        return const BadgeTierStyle(
+        return BadgeTierStyle(
           label: 'ANCHOR',
-          accent: Color(0xFFB8A0D4),
-          borderColor: Color(0x33B8A0D4),
+          accent: AppColors.trustCopperFg,
+          borderColor: AppColors.trustCopperBg,
         );
     }
   }
@@ -112,8 +112,8 @@ class TrustBadgeChip extends StatelessWidget {
           backgroundColor: AppColors.goldLight.withValues(alpha:0.15),
           borderColor: AppColors.goldLight.withValues(alpha:0.55),
           textColor: AppColors.goldLight,
-          boxShadow: const BoxShadow(
-            color: Color(0x40E89E71), // sunsetPeach ~25% opacity
+          boxShadow: BoxShadow(
+            color: AppColors.goldLight.withValues(alpha: 0.25),
             blurRadius: 10,
             offset: Offset(0, 3),
           ),

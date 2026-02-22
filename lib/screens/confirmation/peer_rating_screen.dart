@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '/backend/cloud_functions/cloud_functions.dart';
-import '/core/app_theme.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
@@ -192,18 +191,16 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-
     if (_loading) {
       return Scaffold(
-        backgroundColor: theme.primaryBackground,
+        backgroundColor: AppColors.navyDarkBackground,
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_submitted) {
       return Scaffold(
-        backgroundColor: theme.primaryBackground,
+        backgroundColor: AppColors.navyDarkBackground,
         body: SafeArea(
           child: Center(
             child: Padding(
@@ -211,17 +208,17 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.thumb_up_rounded, color: theme.primary, size: 64),
+                  Icon(Icons.thumb_up_rounded, color: AppColors.navyDark, size: 64),
                   SizedBox(height: AppSpacing.lg),
                   Text(
                     'Ratings submitted!',
-                    style: theme.titleMedium,
+                    style: AppTypography.titleMedium,
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: AppSpacing.sm),
                   Text(
                     'Your feedback helps build better groups.',
-                    style: theme.bodyMedium,
+                    style: AppTypography.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: AppSpacing.xxl),
@@ -241,14 +238,14 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
 
     if (_ratees.isEmpty) {
       return Scaffold(
-        backgroundColor: theme.primaryBackground,
+        backgroundColor: AppColors.navyDarkBackground,
         appBar: AppBar(
-          backgroundColor: theme.primaryBackground,
+          backgroundColor: AppColors.navyDarkBackground,
           elevation: 0,
-          title: Text('Rate Your Group', style: theme.titleMedium),
+          title: Text('Rate Your Group', style: AppTypography.titleMedium),
           centerTitle: true,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_rounded, color: theme.primaryText),
+            icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.navyDarkText),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
@@ -258,7 +255,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
               padding: AppSpacing.symmetric(horizontal: AppSpacing.xl),
               child: Text(
                 'No players to rate for this round.',
-                style: theme.bodyMedium,
+                style: AppTypography.bodyMedium,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -268,14 +265,14 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
     }
 
     return Scaffold(
-      backgroundColor: theme.primaryBackground,
+      backgroundColor: AppColors.navyDarkBackground,
       appBar: AppBar(
-        backgroundColor: theme.primaryBackground,
+        backgroundColor: AppColors.navyDarkBackground,
         elevation: 0,
-        title: Text('Rate Your Group', style: theme.titleMedium),
+        title: Text('Rate Your Group', style: AppTypography.titleMedium),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_rounded, color: theme.primaryText),
+          icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.navyDarkText),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -290,7 +287,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
                   bottom: AppSpacing.sm),
               child: Text(
                 'Would you play again with these players from $_courseName?',
-                style: theme.bodyLarge,
+                style: AppTypography.bodyLarge,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -336,9 +333,9 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
                 padding: AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 child: Text(
                   _error!,
-                  style: theme.bodySmall.override(
+                  style: AppTypography.bodySmall.override(
                     font: const TextStyle(fontFamily: 'Manrope'),
-                    color: theme.error,
+                    color: AppColors.error,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -404,29 +401,27 @@ class _RateeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-
     return Container(
       margin: AppSpacing.only(bottom: AppSpacing.sm),
       padding: AppSpacing.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
       decoration: BoxDecoration(
-        color: theme.secondaryBackground,
+        color: AppColors.navyBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: rating == null
-              ? theme.secondaryText.withValues(alpha:0.2)
-              : (rating! ? theme.primary.withValues(alpha:0.4) : theme.error.withValues(alpha:0.4)),
+              ? AppColors.navyText.withValues(alpha:0.2)
+              : (rating! ? AppColors.navyDark.withValues(alpha:0.4) : AppColors.error.withValues(alpha:0.4)),
           width: 1,
         ),
       ),
       child: Row(
         children: [
           // Avatar
-          _buildAvatar(theme),
+          _buildAvatar(),
           SizedBox(width: AppSpacing.md),
           // Name
           Expanded(
-            child: Text(ratee.displayName, style: theme.bodyLarge),
+            child: Text(ratee.displayName, style: AppTypography.bodyLarge),
           ),
           // Thumbs up / down
           _ThumbsRating(
@@ -438,7 +433,7 @@ class _RateeRow extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar(AppTheme theme) {
+  Widget _buildAvatar() {
     final initials = ratee.displayName.trim().split(' ')
         .where((p) => p.isNotEmpty)
         .map((p) => p[0].toUpperCase())
@@ -460,21 +455,20 @@ class _ThumbsRating extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         _ThumbButton(
           icon: Icons.thumb_up_rounded,
           selected: rating == true,
-          activeColor: theme.primary,
+          activeColor: AppColors.navyDark,
           onTap: () => onRate(true),
         ),
         SizedBox(width: AppSpacing.sm),
         _ThumbButton(
           icon: Icons.thumb_down_rounded,
           selected: rating == false,
-          activeColor: theme.error,
+          activeColor: AppColors.error,
           onTap: () => onRate(false),
         ),
       ],
@@ -507,13 +501,13 @@ class _ThumbButton extends StatelessWidget {
           color: selected ? activeColor : Colors.transparent,
           shape: BoxShape.circle,
           border: Border.all(
-            color: selected ? activeColor : AppTheme.of(context).secondaryText.withValues(alpha:0.3),
+            color: selected ? activeColor : AppColors.navyText.withValues(alpha:0.3),
           ),
         ),
         child: Icon(
           icon,
           size: 22,
-          color: selected ? Colors.white : AppTheme.of(context).secondaryText,
+          color: selected ? Colors.white : AppColors.navyText,
         ),
       ),
     );

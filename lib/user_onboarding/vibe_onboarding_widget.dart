@@ -1,4 +1,3 @@
-import '/core/app_theme.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -581,7 +580,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: AppTheme.of(context).primaryBackground,
+      backgroundColor: AppColors.navyDarkBackground,
       body: FairwayBackgroundDark(
         showOrganic: true,
         showTexture: true,

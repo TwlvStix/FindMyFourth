@@ -2,7 +2,6 @@ import '/backend/backend.dart';
 import '/backend/schema/trust_profile.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/trust/luxury_player_card.dart';
-import '/core/app_theme.dart';
 import '/core/motion/motion_helpers.dart';
 import '/utils/app_util.dart';
 import '/providers/provider_extensions.dart';
@@ -461,7 +460,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text('Failed to confirm tee time: $e'),
-                                    backgroundColor: Colors.red,
+                                    backgroundColor: AppColors.error,
                                   ),
                                 );
                               }
@@ -826,8 +825,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                               ? AppIconButton(
                                                   icon: Icon(
                                                     Icons.remove_circle_outline,
-                                                    color: AppTheme.of(context)
-                                                        .error,
+                                                    color: AppColors.error,
                                                     size: 24.0,
                                                   ),
                                                   borderRadius: 20.0,
@@ -844,9 +842,9 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                         gameJoinedDetailedGamesRecord,
                                                   ),
                                                 )
-                                              : const AppIcon(
+                                              : AppIcon(
                                                   assetPath: AppIcons.joined,
-                                                  color: Color(0xFFD4A843),
+                                                  color: AppColors.goldLight,
                                                   size: 24.0,
                                                 ),
                                       onTap: () {
@@ -900,22 +898,19 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         child: Center(
                                           child: Text(
                                             'G',
-                                            style: AppTheme.of(context)
-                                                .titleMedium
+                                            style: AppTypography.titleMedium
                                                 .override(
                                                   font: TextStyle(fontFamily: 'Manrope',
                                                     fontWeight: FontWeight.w600,
                                                     fontStyle:
-                                                        AppTheme.of(context)
-                                                            .titleMedium
+                                                        AppTypography.titleMedium
                                                             .fontStyle,
                                                   ),
                                                   color: Colors.white,
                                                   letterSpacing: 0.0,
                                                   fontWeight: FontWeight.w600,
                                                   fontStyle:
-                                                      AppTheme.of(context)
-                                                          .titleMedium
+                                                      AppTypography.titleMedium
                                                           .fontStyle,
                                                 ),
                                           ),
@@ -931,23 +926,20 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                           children: [
                                             Text(
                                               guestName,
-                                              style: AppTheme.of(context)
-                                                  .bodyLarge
+                                              style: AppTypography.bodyLarge
                                                   .override(
                                                     font: TextStyle(fontFamily: 'Manrope',
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       fontStyle:
-                                                          AppTheme.of(context)
-                                                              .bodyLarge
+                                                          AppTypography.bodyLarge
                                                               .fontStyle,
                                                     ),
                                                     color: Colors.white,
                                                     letterSpacing: 0.0,
                                                     fontWeight: FontWeight.w500,
                                                     fontStyle:
-                                                        AppTheme.of(context)
-                                                            .bodyLarge
+                                                        AppTypography.bodyLarge
                                                             .fontStyle,
                                                   ),
                                               maxLines: 1,
@@ -956,15 +948,13 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                             SizedBox(height: AppSpacing.xxs),
                                             Text(
                                               'Guest',
-                                              style: AppTheme.of(context)
-                                                  .bodySmall
+                                              style: AppTypography.bodySmall
                                                   .override(
                                                     font: TextStyle(fontFamily: 'Manrope',
                                                       fontWeight:
                                                           FontWeight.normal,
                                                       fontStyle:
-                                                          AppTheme.of(context)
-                                                              .bodySmall
+                                                          AppTypography.bodySmall
                                                               .fontStyle,
                                                     ),
                                                     color: Colors.white
@@ -973,8 +963,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
-                                                        AppTheme.of(context)
-                                                            .bodySmall
+                                                        AppTypography.bodySmall
                                                             .fontStyle,
                                                   ),
                                             ),
@@ -986,7 +975,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         AppIconButton(
                                           icon: Icon(
                                             Icons.remove_circle_outline,
-                                            color: AppTheme.of(context).error,
+                                            color: AppColors.error,
                                             size: 24.0,
                                           ),
                                           borderRadius: 20.0,
@@ -1058,7 +1047,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                       Navigator.of(dialogContext).pop(true),
                                   style: TextButton.styleFrom(
                                     foregroundColor:
-                                        AppTheme.of(context).error,
+                                        AppColors.error,
                                   ),
                                   child: Text('Leave Game'),
                                 ),
@@ -1071,7 +1060,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                               SnackBar(
                                 content:
                                     Text('Please sign in to leave the game.'),
-                                backgroundColor: AppTheme.of(context).error,
+                                backgroundColor: AppColors.error,
                               ),
                             );
                             return;
@@ -1106,7 +1095,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(message),
-                                backgroundColor: AppTheme.of(context).error,
+                                backgroundColor: AppColors.error,
                               ),
                             );
                             return;
@@ -1119,7 +1108,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 content: Text(
                                   'Unable to leave the game right now. Please try again.',
                                 ),
-                                backgroundColor: AppTheme.of(context).error,
+                                backgroundColor: AppColors.error,
                               ),
                             );
                             return;
@@ -1131,7 +1120,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('You left the game'),
-                              backgroundColor: AppTheme.of(context).success,
+                              backgroundColor: AppColors.success,
                               duration: Duration(seconds: 2),
                             ),
                           );
@@ -1154,7 +1143,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                               SnackBar(
                                 content:
                                     Text('Please sign in to cancel the game.'),
-                                backgroundColor: AppTheme.of(context).error,
+                                backgroundColor: AppColors.error,
                               ),
                             );
                             return;
@@ -1270,7 +1259,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                   content: Text(
                                     'Unable to cancel the game. Please try again.',
                                   ),
-                                  backgroundColor: AppTheme.of(context).error,
+                                  backgroundColor: AppColors.error,
                                 ),
                               );
                               return;
@@ -1314,7 +1303,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Game cancelled successfully'),
-                                backgroundColor: AppTheme.of(context).success,
+                                backgroundColor: AppColors.success,
                                 duration: Duration(seconds: 2),
                               ),
                             );
@@ -1649,7 +1638,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('You cannot remove yourself. Use "Cancel game" instead.'),
-          backgroundColor: AppTheme.of(context).error,
+          backgroundColor: AppColors.error,
         ),
       );
       return;
@@ -1670,7 +1659,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
               onPressed: () => Navigator.pop(alertDialogContext, true),
               child: Text(
                 'Remove',
-                style: TextStyle(color: AppTheme.of(context).error),
+                style: TextStyle(color: AppColors.error),
               ),
             ),
           ],
@@ -1741,7 +1730,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('$playerName removed from game'),
-          backgroundColor: AppTheme.of(context).success,
+          backgroundColor: AppColors.success,
           duration: Duration(seconds: 2),
         ),
       );
@@ -1752,7 +1741,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to remove player. Please try again.'),
-          backgroundColor: AppTheme.of(context).error,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -1801,15 +1790,15 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
           child: Center(
             child: Text(
               text,
-              style: AppTheme.of(context).bodyLarge.override(
+              style: AppTypography.bodyLarge.override(
                     font: TextStyle(fontFamily: 'Manrope',
                       fontWeight: FontWeight.w600,
-                      fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
+                      fontStyle: AppTypography.bodyLarge.fontStyle,
                     ),
                     color: AppColors.error,
                     letterSpacing: 0.0,
                     fontWeight: FontWeight.w600,
-                    fontStyle: AppTheme.of(context).bodyLarge.fontStyle,
+                    fontStyle: AppTypography.bodyLarge.fontStyle,
                   ),
             ),
           ),

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
@@ -36,7 +35,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   static const String guestOptionValue = 'guest';
 
   // Design token for gold accent
-  static const Color _goldAccent = Color(0xFFD4A843);
+  static final Color _goldAccent = AppColors.goldLight;
 
   List<DocumentReference> playersJoined = [];
   void addToPlayersJoined(DocumentReference item) => playersJoined.add(item);
@@ -252,7 +251,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error searching players: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -303,7 +302,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                         width: 40.0,
                         height: 4.0,
                         decoration: BoxDecoration(
-                          color: Color(0xFFE0E0E0),
+                          color: AppColors.mist,
                           borderRadius: BorderRadius.circular(2.0),
                         ),
                       ),
@@ -316,11 +315,11 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                             Text(
                               'Add Player',
                               style: AppTypography.sectionHeader.copyWith(
-                                color: Color(0xFF1A4D2E),
+                                color: AppColors.greenDark,
                               ),
                             ),
                             IconButton(
-                              icon: Icon(Icons.close, color: Color(0xFF718096)),
+                              icon: Icon(Icons.close, color: AppColors.stone),
                               onPressed: () => Navigator.pop(context),
                             ),
                           ],
@@ -337,15 +336,15 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                             _onSearchChanged(value);
                             setModalState(() {});
                           },
-                          style: AppTheme.of(context).bodyMedium,
+                          style: AppTypography.bodyMedium,
                           decoration: InputDecoration(
                             hintText: 'Search members or add Guest',
                             hintStyle: AppTypography.bodyMedium.copyWith(
-                              color: Color(0xFF718096),
+                              color: AppColors.stone,
                             ),
                             prefixIcon: Icon(Icons.search, size: 20.0),
                             filled: true,
-                            fillColor: AppTheme.of(context).secondaryBackground,
+                            fillColor: AppColors.navyBackground,
                             contentPadding: EdgeInsets.symmetric(
                               horizontal: 12.0,
                               vertical: 12.0,
@@ -353,21 +352,21 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.0),
                               borderSide: BorderSide(
-                                color: AppTheme.of(context).alternate,
+                                color: AppColors.cloud,
                                 width: 1.0,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.0),
                               borderSide: BorderSide(
-                                color: AppTheme.of(context).alternate,
+                                color: AppColors.cloud,
                                 width: 1.0,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.0),
                               borderSide: BorderSide(
-                                color: AppTheme.of(context).primary,
+                                color: AppColors.navyDark,
                                 width: 2.0,
                               ),
                             ),
@@ -382,7 +381,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                           child: Text(
                             'Tap a player to add them to this slot',
                             style: AppTypography.text13.copyWith(
-                              color: Color(0xFF718096),
+                              color: AppColors.stone,
                             ),
                           ),
                         ),
@@ -464,7 +463,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         child: Text(
           'Type at least $_minSearchChars characters to search members.',
           style: AppTypography.text13.copyWith(
-            color: Color(0xFF718096),
+            color: AppColors.stone,
           ),
           textAlign: TextAlign.center,
         ),
@@ -474,7 +473,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.lg),
           child: CircularProgressIndicator(
-            color: AppTheme.of(context).primary,
+            color: AppColors.navyDark,
           ),
         ),
       );
@@ -484,7 +483,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         child: Text(
           'No members found.',
           style: AppTypography.text13.copyWith(
-            color: Color(0xFF718096),
+            color: AppColors.stone,
           ),
           textAlign: TextAlign.center,
         ),
@@ -572,7 +571,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                       width: 1.5,
                     ),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.person_outline_rounded,
                     color: _goldAccent,
                     size: 24,
@@ -602,13 +601,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => const Icon(
                               Icons.person_rounded,
-                              color: Colors.white70,
+                              color: AppColors.glassTextSecondary,
                               size: 24,
                             ),
                           )
                         : const Icon(
                             Icons.person_rounded,
-                            color: Colors.white70,
+                            color: AppColors.glassTextSecondary,
                             size: 24,
                           ),
                   ),
@@ -637,7 +636,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -661,7 +660,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   ),
                   child: const Icon(
                     Icons.add_rounded,
-                    color: Color(0xFF1A2B1A),
+                    color: AppColors.navyDark,
                     size: 20,
                   ),
                 ),
@@ -783,7 +782,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   width: 1.5,
                 ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.person_outline_rounded,
                 color: _goldAccent,
                 size: 24,
@@ -813,13 +812,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => const Icon(
                           Icons.person_rounded,
-                          color: Colors.white70,
+                          color: AppColors.glassTextSecondary,
                           size: 24,
                         ),
                       )
                     : const Icon(
                         Icons.person_rounded,
-                        color: Colors.white70,
+                        color: AppColors.glassTextSecondary,
                         size: 24,
                       ),
               ),
@@ -847,7 +846,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 const SizedBox(height: 2),
                 Text(
                   isGuest ? 'Guest' : 'Member',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -906,13 +905,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         if (!snapshot.hasData) {
           return Scaffold(
             key: scaffoldKey,
-            backgroundColor: AppTheme.of(context).primaryBtnText,
+            backgroundColor: AppColors.navyDarkBtnText,
             body: Center(
               child: SizedBox(
                 width: 50.0,
                 height: 50.0,
                 child: SpinKitWanderingCubes(
-                  color: AppTheme.of(context).secondary,
+                  color: AppColors.navy,
                   size: 50.0,
                 ),
               ),
@@ -1017,7 +1016,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         Text(
                                           'Your Group',
                                           style: AppTypography.titleSmall.copyWith(
-                                            color: Color(0xFF1A4D2E),
+                                            color: AppColors.greenDark,
                                           ),
                                         ),
                                         SizedBox(height: AppSpacing.md),
@@ -1033,11 +1032,11 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                             return Container(
                                               padding: EdgeInsets.all(16.0),
                                               decoration: BoxDecoration(
-                                                color: Color(0xFFE8F5E9),
+                                                color: AppColors.cloud,
                                                 borderRadius:
                                                     BorderRadius.circular(12.0),
                                                 border: Border.all(
-                                                  color: Color(0xFF1A4D2E)
+                                                  color: AppColors.greenDark
                                                       .withValues(alpha: 0.2),
                                                   width: 1.0,
                                                 ),
@@ -1098,7 +1097,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                       vertical: 6.0,
                                                     ),
                                                     decoration: BoxDecoration(
-                                                      color: Color(0xFF1A4D2E),
+                                                      color: AppColors.greenDark,
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               20.0),
@@ -1126,13 +1125,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                               Text(
                                                 'Add Friends',
                                                 style: AppTypography.titleSmall.copyWith(
-                                                  color: Color(0xFF1A4D2E),
+                                                  color: AppColors.greenDark,
                                                 ),
                                               ),
                                               Text(
                                                 'Tap a slot to add',
                                                 style: AppTypography.text13.copyWith(
-                                                  color: Color(0xFF718096),
+                                                  color: AppColors.stone,
                                                 ),
                                               ),
                                             ],
@@ -1153,7 +1152,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                           Text(
                                             'This game is already full.',
                                             style: AppTypography.text13.copyWith(
-                                              color: Color(0xFF718096),
+                                              color: AppColors.stone,
                                             ),
                                           ),
                                           SizedBox(height: AppSpacing.md),
@@ -1189,7 +1188,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                 ScaffoldMessenger.of(context).showSnackBar(
                                                   SnackBar(
                                                     content: Text('Game is already full (${game.maxPlayers} players)'),
-                                                    backgroundColor: Colors.red,
+                                                    backgroundColor: AppColors.error,
                                                   ),
                                                 );
                                                 setState(() {
@@ -1231,7 +1230,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                 ScaffoldMessenger.of(context).showSnackBar(
                                                   SnackBar(
                                                     content: Text('Cannot add ${joinedPlayersToAdd.length + guestPlayersToAdd.length} players - would exceed max (${game.maxPlayers})'),
-                                                    backgroundColor: Colors.red,
+                                                    backgroundColor: AppColors.error,
                                                   ),
                                                 );
                                                 setState(() {
@@ -1276,7 +1275,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                 ScaffoldMessenger.of(context).showSnackBar(
                                                   SnackBar(
                                                     content: Text('Error adding players: $e'),
-                                                    backgroundColor: Colors.red,
+                                                    backgroundColor: AppColors.error,
                                                   ),
                                                 );
                                                 setState(() {
@@ -1304,7 +1303,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(12.0),
                                   border: Border.all(
-                                    color: Color(0xFF1A4D2E)
+                                    color: AppColors.greenDark
                                         .withValues(alpha: 0.2),
                                     width: 1.0,
                                   ),
@@ -1317,13 +1316,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         Icon(
                                           Icons.info_outline,
                                           size: 20.0,
-                                          color: Color(0xFF1A4D2E),
+                                          color: AppColors.greenDark,
                                         ),
                                         SizedBox(width: 8.0),
                                         Text(
                                           'Game Summary',
                                           style: AppTypography.titleSmall.copyWith(
-                                            color: Color(0xFF1A4D2E),
+                                            color: AppColors.greenDark,
                                           ),
                                         ),
                                       ],
@@ -1375,20 +1374,20 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
           AppIcon(
             assetPath: svgPath,
             size: 16.0,
-            color: Color(0xFF718096),
+            color: AppColors.stone,
           )
         else if (icon != null)
           Icon(
             icon,
             size: 16.0,
-            color: Color(0xFF718096),
+            color: AppColors.stone,
           ),
         SizedBox(width: 8.0),
         Expanded(
           child: Text(
             text,
             style: AppTypography.bodySmall.copyWith(
-              color: Color(0xFF4A5568),
+              color: AppColors.slate,
             ),
           ),
         ),

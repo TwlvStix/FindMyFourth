@@ -535,4 +535,48 @@ extension TextStyleExtensions on TextStyle {
   /// Uppercase with proper spacing
   TextStyle get uppercase =>
       copyWith(letterSpacing: AppTypography.letterSpacingWidest);
+
+  /// Override method for backwards compatibility with FlutterFlow-style code.
+  ///
+  /// Allows setting multiple properties at once with an optional base font.
+  /// If [font] is provided, its properties are used as the base and this
+  /// style's properties are applied on top.
+  TextStyle override({
+    TextStyle? font,
+    String? fontFamily,
+    Color? color,
+    double? fontSize,
+    FontWeight? fontWeight,
+    double? letterSpacing,
+    FontStyle? fontStyle,
+    bool useGoogleFonts = false, // Kept for backwards compatibility, ignored
+    TextDecoration? decoration,
+    double? lineHeight,
+    List<Shadow>? shadows,
+    String? package,
+  }) {
+    return font != null
+        ? font.copyWith(
+            color: color ?? this.color,
+            fontSize: fontSize ?? this.fontSize,
+            letterSpacing: letterSpacing ?? this.letterSpacing,
+            fontWeight: fontWeight ?? this.fontWeight,
+            fontStyle: fontStyle ?? this.fontStyle,
+            decoration: decoration,
+            height: lineHeight,
+            shadows: shadows,
+          )
+        : copyWith(
+            fontFamily: fontFamily,
+            package: package,
+            color: color,
+            fontSize: fontSize,
+            letterSpacing: letterSpacing,
+            fontWeight: fontWeight,
+            fontStyle: fontStyle,
+            decoration: decoration,
+            height: lineHeight,
+            shadows: shadows,
+          );
+  }
 }

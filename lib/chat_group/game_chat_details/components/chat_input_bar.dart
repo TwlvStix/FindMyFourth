@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '/models/chat_message.dart';
-import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
 
 /// Chat input bar component with message field and send button.
 ///
@@ -52,11 +52,11 @@ class ChatInputBar extends StatelessWidget {
         AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: AppTheme.of(context).primaryBackground,
-        boxShadow: const [
+        color: AppColors.navyDarkBackground,
+        boxShadow: [
           BoxShadow(
             blurRadius: 6.0,
-            color: Color(0x22000000),
+            color: AppColors.overlayDark,
             offset: Offset(0.0, -2.0),
           ),
         ],
@@ -70,11 +70,11 @@ class ChatInputBar extends StatelessWidget {
               margin: EdgeInsets.only(bottom: AppSpacing.sm),
               padding: EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: AppTheme.of(context).secondaryBackground,
+                color: AppColors.navyBackground,
                 borderRadius: BorderRadius.circular(8),
                 border: Border(
                   left: BorderSide(
-                    color: AppTheme.of(context).primary,
+                    color: AppColors.navyDark,
                     width: 3,
                   ),
                 ),
@@ -87,8 +87,8 @@ class ChatInputBar extends StatelessWidget {
                       children: [
                         Text(
                           'Replying to',
-                          style: AppTheme.of(context).labelSmall.override(
-                                color: AppTheme.of(context).primary,
+                          style: AppTypography.labelSmall.override(
+                                color: AppColors.navyDark,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0.0,
                               ),
@@ -100,7 +100,7 @@ class ChatInputBar extends StatelessWidget {
                               : 'Image',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTheme.of(context).bodySmall.override(
+                          style: AppTypography.bodySmall.override(
                                 color: Colors.white.withValues(alpha: 0.7),
                                 letterSpacing: 0.0,
                               ),
@@ -131,8 +131,8 @@ class ChatInputBar extends StatelessWidget {
                     Icons.image_rounded,
                     size: 26,
                     color: (enabled && onAttachImage != null)
-                        ? AppTheme.of(context).primary
-                        : AppTheme.of(context).secondaryText.withValues(alpha: 0.4),
+                        ? AppColors.navyDark
+                        : AppColors.navyText.withValues(alpha: 0.4),
                   ),
                 ),
               ),
@@ -152,19 +152,18 @@ class ChatInputBar extends StatelessWidget {
                       );
                     }
                   },
-                  style: AppTheme.of(context).bodyMedium.override(
+                  style: AppTypography.bodyMedium.override(
                         letterSpacing: 0.0,
                       ),
                   decoration: InputDecoration(
                     hintText: enabled ? placeholder : 'Chat closed',
-                    hintStyle: AppTheme.of(context).bodyMedium.override(
-                          color: AppTheme.of(context)
-                              .secondaryText
+                    hintStyle: AppTypography.bodyMedium.override(
+                          color: AppColors.slate
                               .withValues(alpha: 0.6),
                           letterSpacing: 0.0,
                         ),
                     filled: true,
-                    fillColor: AppTheme.of(context).secondaryBackground,
+                    fillColor: AppColors.navyBackground,
                     contentPadding: EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,
                       vertical: AppSpacing.sm,
@@ -180,7 +179,7 @@ class ChatInputBar extends StatelessWidget {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20.0),
                       borderSide: BorderSide(
-                        color: AppTheme.of(context).primary.withValues(alpha: 0.3),
+                        color: AppColors.navyDark.withValues(alpha: 0.3),
                         width: 1.5,
                       ),
                     ),
@@ -195,8 +194,8 @@ class ChatInputBar extends StatelessWidget {
                   return Container(
                     decoration: BoxDecoration(
                       color: enabled && hasText
-                          ? AppTheme.of(context).primary
-                          : AppTheme.of(context).secondaryBackground,
+                          ? AppColors.navyDark
+                          : AppColors.navyBackground,
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
@@ -204,7 +203,7 @@ class ChatInputBar extends StatelessWidget {
                         Icons.send_rounded,
                         color: enabled && hasText
                             ? Colors.white
-                            : AppTheme.of(context).secondaryText,
+                            : AppColors.navyText,
                       ),
                       onPressed: enabled && hasText ? onSendMessage : null,
                     ),

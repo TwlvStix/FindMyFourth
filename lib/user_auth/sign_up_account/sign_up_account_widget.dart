@@ -1,9 +1,9 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/fairway_background.dart';
-import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_text.dart';
 import '/profile/create_profile/create_profile_widget.dart';
@@ -105,7 +105,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                           maxWidth: 430.0,
                         ),
                         decoration: BoxDecoration(
-                          color: Color(0x00FFFFFF),
+                          color: Colors.transparent,
                         ),
                         child: Align(
                           alignment: AlignmentDirectional(0.0, 0.0),
@@ -127,7 +127,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                   ),
                                   child: AppText.bodySmall(
                                     'Let\'s get started by filling out the form below.',
-                                    color: AppTheme.of(context).secondaryText,
+                                    color: AppColors.navyText,
                                   ),
                                 ),
                                 Padding(
@@ -158,8 +158,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         alignLabelWithHint: false,
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: AppTheme.of(context)
-                                                .primaryBackground,
+                                            color: AppColors.sand,
                                             width: 2.0,
                                           ),
                                           borderRadius:
@@ -167,8 +166,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: AppTheme.of(context)
-                                                .primary,
+                                            color: AppColors.navyDark,
                                             width: 2.0,
                                           ),
                                           borderRadius:
@@ -176,8 +174,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         errorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: AppTheme.of(context)
-                                                .error,
+                                            color: AppColors.error,
                                             width: 2.0,
                                           ),
                                           borderRadius:
@@ -185,16 +182,14 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         focusedErrorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: AppTheme.of(context)
-                                                .error,
+                                            color: AppColors.error,
                                             width: 2.0,
                                           ),
                                           borderRadius:
                                               BorderRadius.circular(12.0),
                                         ),
                                         filled: true,
-                                        fillColor: AppTheme.of(context)
-                                            .primaryBackground,
+                                        fillColor: AppColors.sand,
                                         suffixIcon: emailAddressTextController!
                                                 .text
                                                 .isNotEmpty
@@ -206,7 +201,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                 },
                                                 child: Icon(
                                                   Icons.clear,
-                                                  color: Color(0xFF757575),
+                                                  color: AppColors.stone,
                                                   size: 22.0,
                                                 ),
                                               )
@@ -214,8 +209,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                       ),
                                       style: AppTypography.bodyMedium,
                                       keyboardType: TextInputType.emailAddress,
-                                      cursorColor: AppTheme.of(context)
-                                          .primaryText,
+                                      cursorColor: AppColors.onyx,
                                       validator: emailAddressTextControllerValidator
                                           .asValidator(context),
                                     ),
@@ -239,8 +233,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         labelStyle: AppTypography.labelMedium,
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: AppTheme.of(context)
-                                                .primaryBackground,
+                                            color: AppColors.sand,
                                             width: 2.0,
                                           ),
                                           borderRadius:
@@ -248,8 +241,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: AppTheme.of(context)
-                                                .primary,
+                                            color: AppColors.navyDark,
                                             width: 2.0,
                                           ),
                                           borderRadius:
@@ -257,8 +249,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         errorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: AppTheme.of(context)
-                                                .error,
+                                            color: AppColors.error,
                                             width: 2.0,
                                           ),
                                           borderRadius:
@@ -266,16 +257,14 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         focusedErrorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: AppTheme.of(context)
-                                                .error,
+                                            color: AppColors.error,
                                             width: 2.0,
                                           ),
                                           borderRadius:
                                               BorderRadius.circular(12.0),
                                         ),
                                         filled: true,
-                                        fillColor: AppTheme.of(context)
-                                            .primaryBackground,
+                                        fillColor: AppColors.sand,
                                         suffixIcon: InkWell(
                                           onTap: () {
                                             if (mounted) {
@@ -290,15 +279,13 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             passwordVisibility
                                                 ? Icons.visibility_outlined
                                                 : Icons.visibility_off_outlined,
-                                            color: AppTheme.of(context)
-                                                .secondaryText,
+                                            color: AppColors.slate,
                                             size: 24.0,
                                           ),
                                         ),
                                       ),
                                       style: AppTypography.bodyMedium,
-                                      cursorColor: AppTheme.of(context)
-                                          .primaryText,
+                                      cursorColor: AppColors.onyx,
                                       validator: passwordTextControllerValidator
                                           .asValidator(context),
                                     ),
@@ -322,8 +309,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         labelStyle: AppTypography.labelMedium,
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: AppTheme.of(context)
-                                                .primaryBackground,
+                                            color: AppColors.sand,
                                             width: 2.0,
                                           ),
                                           borderRadius:
@@ -331,8 +317,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: AppTheme.of(context)
-                                                .primary,
+                                            color: AppColors.navyDark,
                                             width: 2.0,
                                           ),
                                           borderRadius:
@@ -340,8 +325,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         errorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: AppTheme.of(context)
-                                                .error,
+                                            color: AppColors.error,
                                             width: 2.0,
                                           ),
                                           borderRadius:
@@ -349,16 +333,14 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                         ),
                                         focusedErrorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: AppTheme.of(context)
-                                                .error,
+                                            color: AppColors.error,
                                             width: 2.0,
                                           ),
                                           borderRadius:
                                               BorderRadius.circular(12.0),
                                         ),
                                         filled: true,
-                                        fillColor: AppTheme.of(context)
-                                            .primaryBackground,
+                                        fillColor: AppColors.sand,
                                         suffixIcon: InkWell(
                                           onTap: () {
                                             if (mounted) {
@@ -373,16 +355,14 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             passwordConfirmVisibility
                                                 ? Icons.visibility_outlined
                                                 : Icons.visibility_off_outlined,
-                                            color: AppTheme.of(context)
-                                                .secondaryText,
+                                            color: AppColors.slate,
                                             size: 24.0,
                                           ),
                                         ),
                                       ),
                                       style: AppTypography.bodyMedium,
                                       minLines: 1,
-                                      cursorColor: AppTheme.of(context)
-                                          .primaryText,
+                                      cursorColor: AppColors.onyx,
                                       validator:
                                           passwordConfirmTextControllerValidator
                                           .asValidator(context),
@@ -468,8 +448,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                               height: 2.0,
                                               decoration: BoxDecoration(
                                                 color:
-                                                    AppTheme.of(context)
-                                                        .alternate,
+                                                    AppColors.cloud,
                                               ),
                                             ),
                                           ),
@@ -482,8 +461,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             height: 32.0,
                                             decoration: BoxDecoration(
                                               color:
-                                                  AppTheme.of(context)
-                                                      .secondaryBackground,
+                                                  AppColors.pure,
                                             ),
                                             alignment:
                                                 AlignmentDirectional(0.0, 0.0),
@@ -615,19 +593,19 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                             TextSpan(
                                               text: 'Already have an account? ',
                                               style: AppTypography.bodyMedium.copyWith(
-                                                color: AppTheme.of(context).secondaryText,
+                                                color: AppColors.navyText,
                                               ),
                                             ),
                                             TextSpan(
                                               text: ' Sign In here',
                                               style: AppTypography.bodyMedium.copyWith(
-                                                color: AppTheme.of(context).primary,
+                                                color: AppColors.navyDark,
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             )
                                           ],
                                           style: AppTypography.bodyMedium.copyWith(
-                                            color: AppTheme.of(context).secondaryText,
+                                            color: AppColors.navyText,
                                           ),
                                         ),
                                       ),
@@ -659,8 +637,8 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppTheme.of(context).primary,
-                          AppTheme.of(context).secondary
+                          AppColors.navyDark,
+                          AppColors.navy
                         ],
                         stops: [0.0, 1.0],
                         begin: AlignmentDirectional(1.0, -1.0),
@@ -680,12 +658,11 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                               maxWidth: 400.0,
                             ),
                             decoration: BoxDecoration(
-                              color: AppTheme.of(context)
-                                  .secondaryBackground,
+                              color: AppColors.pure,
                               boxShadow: [
                                 BoxShadow(
                                   blurRadius: 3.0,
-                                  color: Color(0x2E000000),
+                                  color: AppColors.overlayDark,
                                   offset: Offset(
                                     0.0,
                                     2.0,
@@ -694,8 +671,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                               ],
                               borderRadius: BorderRadius.circular(8.0),
                               border: Border.all(
-                                color: AppTheme.of(context)
-                                    .primaryBackground,
+                                color: AppColors.sand,
                                 width: 2.0,
                               ),
                             ),
@@ -729,14 +705,12 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                 width: 40.0,
                                                 height: 40.0,
                                                 decoration: BoxDecoration(
-                                                  color: Color(0xFFEEEEEE),
+                                                  color: AppColors.cloud,
                                                   shape: BoxShape.circle,
                                                 ),
                                                 child: Icon(
                                                   Icons.person,
-                                                  color: AppTheme.of(
-                                                          context)
-                                                      .primary,
+                                                  color: AppColors.navyDark,
                                                   size: 24.0,
                                                 ),
                                               ),
@@ -761,9 +735,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                 ),
                                                 Icon(
                                                   Icons.star_rounded,
-                                                  color: AppTheme.of(
-                                                          context)
-                                                      .primary,
+                                                  color: AppColors.navyDark,
                                                   size: 20.0,
                                                 ),
                                               ],

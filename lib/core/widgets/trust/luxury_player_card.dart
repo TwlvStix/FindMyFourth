@@ -6,12 +6,12 @@ import '/core/design_tokens/colors.dart';
 import '/core/widgets/trust/trust_badge_chip.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Color tokens (card-local)
+// Color tokens (card-local) — using design tokens
 // ─────────────────────────────────────────────────────────────────────────────
 
-const Color _textPrimary = Color(0xFFF0ECE4);
-const Color _textMuted = Color(0x80F0ECE4); // 50% opacity
-const Color _goldAccent = Color(0xFFD4A843);
+final Color _textPrimary = AppColors.sand;
+final Color _textMuted = AppColors.glassTextTertiary;
+final Color _goldAccent = AppColors.goldLight;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LuxuryPlayerCard
@@ -150,7 +150,7 @@ class _CardBody extends StatelessWidget {
                         Flexible(
                           child: Text(
                             name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Manrope',
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -163,7 +163,7 @@ class _CardBody extends StatelessWidget {
                         ),
                         if (isFavorite) ...[
                           const SizedBox(width: 5),
-                          const Icon(
+                          Icon(
                             Icons.star_rounded,
                             color: _goldAccent,
                             size: 15,
@@ -248,7 +248,7 @@ class _AvatarPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white.withValues(alpha: 0.04),
-      child: const Icon(Icons.person_rounded, color: _textMuted, size: 26),
+      child: Icon(Icons.person_rounded, color: _textMuted, size: 26),
     );
   }
 }
@@ -277,9 +277,9 @@ class _PendantBadge extends StatelessWidget {
           right: BorderSide(color: tierStyle.borderColor, width: 1),
           bottom: BorderSide(color: tierStyle.borderColor, width: 1),
         ),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x33000000),
+            color: AppColors.overlayDark,
             blurRadius: 12,
             offset: Offset(0, 4),
           ),

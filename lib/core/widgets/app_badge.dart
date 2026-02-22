@@ -149,7 +149,7 @@ class AppBadge extends StatelessWidget {
       case AppBadgeVariant.warning:
         return (
           background: AppColors.warning.withValues(alpha: 0.1),
-          textColor: Color(0xFFB8860B), // Darker gold for contrast
+          textColor: AppColors.goldDark, // Darker gold for contrast
           borderColor: AppColors.warning.withValues(alpha: 0.2),
         );
       case AppBadgeVariant.error:

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
 import '/utils/app_util.dart';
 
@@ -36,7 +35,7 @@ class PremiumDatePicker extends StatelessWidget {
       isScrollControlled: true,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: AppTheme.of(context).primaryBackground,
+          color: AppColors.navyDarkBackground,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: SafeArea(
@@ -50,7 +49,7 @@ class PremiumDatePicker extends StatelessWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppTheme.of(context).accent4,
+                    color: AppColors.greenLight,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -65,11 +64,11 @@ class PremiumDatePicker extends StatelessWidget {
                       style: TextStyle(fontFamily: 'Manrope',
                         fontSize: 22,
                         fontWeight: FontWeight.w600,
-                        color: AppTheme.of(context).primaryText,
+                        color: AppColors.navyDarkText,
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.close, color: AppTheme.of(context).secondaryText),
+                      icon: Icon(Icons.close, color: AppColors.navyText),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -80,10 +79,10 @@ class PremiumDatePicker extends StatelessWidget {
                 Theme(
                   data: Theme.of(context).copyWith(
                     colorScheme: ColorScheme.light(
-                      primary: AppTheme.of(context).primary,
-                      onPrimary: AppTheme.of(context).primaryBtnText,
-                      surface: AppTheme.of(context).primaryBackground,
-                      onSurface: AppTheme.of(context).primaryText,
+                      primary: AppColors.navyDark,
+                      onPrimary: AppColors.navyDarkBtnText,
+                      surface: AppColors.navyDarkBackground,
+                      onSurface: AppColors.navyDarkText,
                     ),
                   ),
                   child: CalendarDatePicker(
@@ -157,13 +156,13 @@ class PremiumDatePicker extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppTheme.of(context).primary
-                : AppTheme.of(context).secondaryBackground,
+                ? AppColors.navyDark
+                : AppColors.navyBackground,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected
-                  ? AppTheme.of(context).primary
-                  : AppTheme.of(context).accent4.withValues(alpha: 0.3),
+                  ? AppColors.navyDark
+                  : AppColors.greenLight.withValues(alpha: 0.3),
               width: 1.5,
             ),
           ),
@@ -176,8 +175,8 @@ class PremiumDatePicker extends StatelessWidget {
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: isSelected
-                      ? AppTheme.of(context).primaryBtnText
-                      : AppTheme.of(context).primaryText,
+                      ? AppColors.navyDarkBtnText
+                      : AppColors.navyDarkText,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -188,8 +187,8 @@ class PremiumDatePicker extends StatelessWidget {
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
                   color: isSelected
-                      ? AppTheme.of(context).primaryBtnText.withValues(alpha: 0.8)
-                      : AppTheme.of(context).secondaryText,
+                      ? AppColors.navyDarkBtnText.withValues(alpha: 0.8)
+                      : AppColors.navyText,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -248,10 +247,10 @@ class PremiumDatePicker extends StatelessWidget {
               horizontal: AppSpacing.md,
             ),
             decoration: BoxDecoration(
-              color: AppTheme.of(context).secondaryBackground,
+              color: AppColors.navyBackground,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppTheme.of(context).accent4.withValues(alpha: 0.3),
+                color: AppColors.greenLight.withValues(alpha: 0.3),
                 width: 1.5,
               ),
             ),
@@ -260,7 +259,7 @@ class PremiumDatePicker extends StatelessWidget {
               children: [
                 Icon(
                   Icons.calendar_month_rounded,
-                  color: AppTheme.of(context).primary,
+                  color: AppColors.navyDark,
                   size: 20,
                 ),
                 SizedBox(width: AppSpacing.xs),
@@ -269,7 +268,7 @@ class PremiumDatePicker extends StatelessWidget {
                   style: TextStyle(fontFamily: 'Manrope',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.of(context).primaryText,
+                    color: AppColors.navyDarkText,
                   ),
                 ),
               ],

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/app_icons.dart';
@@ -71,7 +70,7 @@ class GamesMultiSelect extends StatelessWidget {
                     SnackBar(
                       content: Text('Max $maxGames games'),
                       duration: const Duration(milliseconds: 2000),
-                      backgroundColor: AppTheme.of(context).primary,
+                      backgroundColor: AppColors.navyDark,
                     ),
                   );
                 }

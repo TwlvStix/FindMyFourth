@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/colors.dart';
 
 /// Custom clipper for elegant curved bottom edge on branded header.
 ///
@@ -248,9 +249,9 @@ class BrandedGolfHeader extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF1B3A2F), // Deep forest green
-              Color(0xFF2D5F4C), // Rich medium green
-              Color(0xFF1E4438), // Accent darker tone
+              AppColors.navyDark, // Deep forest green
+              AppColors.navy, // Rich medium green
+              AppColors.navyDark, // Accent darker tone
             ],
             stops: [0.0, 0.6, 1.0],
           ),

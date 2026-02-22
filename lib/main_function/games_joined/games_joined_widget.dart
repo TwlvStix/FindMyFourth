@@ -372,7 +372,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             vertical: AppSpacing.xxs,
                           ),
                           decoration: BoxDecoration(
-                            color: Color(0xFF4A7C59).withValues(alpha:0.9),
+                            color: AppColors.green.withValues(alpha:0.9),
                             borderRadius: BorderRadius.circular(12.0),
                           ),
                           child: Row(

@@ -1,9 +1,9 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/fairway_background.dart';
-import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_text.dart';
 import '/main_function/games_list/games_list_widget.dart';
@@ -91,7 +91,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                           maxWidth: 430.0,
                         ),
                         decoration: BoxDecoration(
-                          color: Color(0x00FFFFFF),
+                          color: Colors.transparent,
                         ),
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(
@@ -108,7 +108,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                 ),
                                 child: AppText.bodySmall(
                                   'Welcome Back. Ready to Play a game?',
-                                  color: AppTheme.of(context).secondaryText,
+                                  color: AppColors.navyText,
                                 ),
                               ),
                               Padding(
@@ -124,33 +124,27 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     obscureText: false,
                                     decoration: InputDecoration(
                                       labelText: 'Email',
-                                      labelStyle: AppTheme.of(context)
-                                          .labelLarge
+                                      labelStyle: AppTypography.labelLarge
                                           .override(
                                             font: TextStyle(fontFamily: 'Manrope',
                                               fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelLarge
+                                                  AppTypography.labelLarge
                                                       .fontWeight,
                                               fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelLarge
+                                                  AppTypography.labelLarge
                                                       .fontStyle,
                                             ),
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                AppTheme.of(context)
-                                                    .labelLarge
+                                                AppTypography.labelLarge
                                                     .fontWeight,
                                             fontStyle:
-                                                AppTheme.of(context)
-                                                    .labelLarge
+                                                AppTypography.labelLarge
                                                     .fontStyle,
                                           ),
                                       enabledBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: AppTheme.of(context)
-                                              .primaryBackground,
+                                          color: AppColors.sand,
                                           width: 2.0,
                                         ),
                                         borderRadius:
@@ -158,8 +152,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: AppTheme.of(context)
-                                              .primary,
+                                          color: AppColors.navyDark,
                                           width: 2.0,
                                         ),
                                         borderRadius:
@@ -167,8 +160,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       ),
                                       errorBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: AppTheme.of(context)
-                                              .error,
+                                          color: AppColors.error,
                                           width: 2.0,
                                         ),
                                         borderRadius:
@@ -176,38 +168,31 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       ),
                                       focusedErrorBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: AppTheme.of(context)
-                                              .error,
+                                          color: AppColors.error,
                                           width: 2.0,
                                         ),
                                         borderRadius:
                                             BorderRadius.circular(12.0),
                                       ),
                                       filled: true,
-                                      fillColor: AppTheme.of(context)
-                                          .primaryBackground,
+                                      fillColor: AppColors.sand,
                                     ),
-                                    style: AppTheme.of(context)
-                                        .bodyLarge
+                                    style: AppTypography.bodyLarge
                                         .override(
                                           font: TextStyle(fontFamily: 'Manrope',
                                             fontWeight:
-                                                AppTheme.of(context)
-                                                    .bodyLarge
+                                                AppTypography.bodyLarge
                                                     .fontWeight,
                                             fontStyle:
-                                                AppTheme.of(context)
-                                                    .bodyLarge
+                                                AppTypography.bodyLarge
                                                     .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
                                           fontWeight:
-                                              AppTheme.of(context)
-                                                  .bodyLarge
+                                              AppTypography.bodyLarge
                                                   .fontWeight,
                                           fontStyle:
-                                              AppTheme.of(context)
-                                                  .bodyLarge
+                                              AppTypography.bodyLarge
                                                   .fontStyle,
                                         ),
                                     keyboardType: TextInputType.emailAddress,
@@ -229,33 +214,27 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     obscureText: !passwordVisibility,
                                     decoration: InputDecoration(
                                       labelText: 'Password',
-                                      labelStyle: AppTheme.of(context)
-                                          .labelLarge
+                                      labelStyle: AppTypography.labelLarge
                                           .override(
                                             font: TextStyle(fontFamily: 'Manrope',
                                               fontWeight:
-                                                  AppTheme.of(context)
-                                                      .labelLarge
+                                                  AppTypography.labelLarge
                                                       .fontWeight,
                                               fontStyle:
-                                                  AppTheme.of(context)
-                                                      .labelLarge
+                                                  AppTypography.labelLarge
                                                       .fontStyle,
                                             ),
                                             letterSpacing: 0.0,
                                             fontWeight:
-                                                AppTheme.of(context)
-                                                    .labelLarge
+                                                AppTypography.labelLarge
                                                     .fontWeight,
                                             fontStyle:
-                                                AppTheme.of(context)
-                                                    .labelLarge
+                                                AppTypography.labelLarge
                                                     .fontStyle,
                                           ),
                                       enabledBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: AppTheme.of(context)
-                                              .primaryBackground,
+                                          color: AppColors.sand,
                                           width: 2.0,
                                         ),
                                         borderRadius:
@@ -263,8 +242,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: AppTheme.of(context)
-                                              .primary,
+                                          color: AppColors.navyDark,
                                           width: 2.0,
                                         ),
                                         borderRadius:
@@ -272,8 +250,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       ),
                                       errorBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: AppTheme.of(context)
-                                              .error,
+                                          color: AppColors.error,
                                           width: 2.0,
                                         ),
                                         borderRadius:
@@ -281,16 +258,14 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       ),
                                       focusedErrorBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: AppTheme.of(context)
-                                              .error,
+                                          color: AppColors.error,
                                           width: 2.0,
                                         ),
                                         borderRadius:
                                             BorderRadius.circular(12.0),
                                       ),
                                       filled: true,
-                                      fillColor: AppTheme.of(context)
-                                          .primaryBackground,
+                                      fillColor: AppColors.sand,
                                       suffixIcon: InkWell(
                                         onTap: () {
                                           if (mounted) {
@@ -304,33 +279,27 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           passwordVisibility
                                               ? Icons.visibility_outlined
                                               : Icons.visibility_off_outlined,
-                                          color: AppTheme.of(context)
-                                              .secondaryText,
+                                          color: AppColors.slate,
                                           size: 24.0,
                                         ),
                                       ),
                                     ),
-                                    style: AppTheme.of(context)
-                                        .bodyLarge
+                                    style: AppTypography.bodyLarge
                                         .override(
                                           font: TextStyle(fontFamily: 'Manrope',
                                             fontWeight:
-                                                AppTheme.of(context)
-                                                    .bodyLarge
+                                                AppTypography.bodyLarge
                                                     .fontWeight,
                                             fontStyle:
-                                                AppTheme.of(context)
-                                                    .bodyLarge
+                                                AppTypography.bodyLarge
                                                     .fontStyle,
                                           ),
                                           letterSpacing: 0.0,
                                           fontWeight:
-                                              AppTheme.of(context)
-                                                  .bodyLarge
+                                              AppTypography.bodyLarge
                                                   .fontWeight,
                                           fontStyle:
-                                              AppTheme.of(context)
-                                                  .bodyLarge
+                                              AppTypography.bodyLarge
                                                   .fontStyle,
                                         ),
                                     validator: passwordTextControllerValidator
@@ -403,8 +372,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                             height: 2.0,
                                             decoration: BoxDecoration(
                                               color:
-                                                  AppTheme.of(context)
-                                                      .alternate,
+                                                  AppColors.cloud,
                                             ),
                                           ),
                                         ),
@@ -416,38 +384,28 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           width: 70.0,
                                           height: 32.0,
                                           decoration: BoxDecoration(
-                                            color: AppTheme.of(context)
-                                                .secondaryBackground,
+                                            color: AppColors.pure,
                                           ),
                                           alignment:
                                               AlignmentDirectional(0.0, 0.0),
                                           child: Text(
                                             'OR',
-                                            style: AppTheme.of(context)
-                                                .labelLarge
+                                            style: AppTypography.labelLarge
                                                 .override(
                                                   font: TextStyle(fontFamily: 'Manrope',
                                                     fontWeight:
-                                                        AppTheme.of(
-                                                                context)
-                                                            .labelLarge
+                                                        AppTypography.labelLarge
                                                             .fontWeight,
                                                     fontStyle:
-                                                        AppTheme.of(
-                                                                context)
-                                                            .labelLarge
+                                                        AppTypography.labelLarge
                                                             .fontStyle,
                                                   ),
                                                   letterSpacing: 0.0,
                                                   fontWeight:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .labelLarge
+                                                      AppTypography.labelLarge
                                                           .fontWeight,
                                                   fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .labelLarge
+                                                      AppTypography.labelLarge
                                                           .fontStyle,
                                                 ),
                                           ),
@@ -585,54 +543,43 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           ),
                                           TextSpan(
                                             text: ' Sign Up here',
-                                            style: AppTheme.of(context)
-                                                .bodyMedium
+                                            style: AppTypography.bodyMedium
                                                 .override(
                                                   font: TextStyle(fontFamily: 'Manrope',
                                                     fontWeight: FontWeight.w600,
                                                     fontStyle:
-                                                        AppTheme.of(
-                                                                context)
+                                                        AppTypography
                                                             .bodyMedium
                                                             .fontStyle,
                                                   ),
-                                                  color: AppTheme.of(
-                                                          context)
-                                                      .primary,
+                                                  color: AppColors.navyDark,
                                                   letterSpacing: 0.0,
                                                   fontWeight: FontWeight.w600,
                                                   fontStyle:
-                                                      AppTheme.of(
-                                                              context)
+                                                      AppTypography
                                                           .bodyMedium
                                                           .fontStyle,
                                                 ),
                                           )
                                         ],
-                                        style: AppTheme.of(context)
-                                            .bodyMedium
+                                        style: AppTypography.bodyMedium
                                             .override(
                                               font: TextStyle(fontFamily: 'Manrope',
                                                 fontWeight:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
+                                                    AppTypography.bodyMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
+                                                    AppTypography.bodyMedium
                                                         .fontStyle,
                                               ),
                                               color:
-                                                  AppTheme.of(context)
-                                                      .primaryText,
+                                                  AppColors.onyx,
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  AppTheme.of(context)
-                                                      .bodyMedium
+                                                  AppTypography.bodyMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  AppTheme.of(context)
-                                                      .bodyMedium
+                                                  AppTypography.bodyMedium
                                                       .fontStyle,
                                             ),
                                       ),
@@ -676,28 +623,23 @@ class _SignInWidgetState extends State<SignInWidget> {
                                             style: TextStyle(),
                                           )
                                         ],
-                                        style: AppTheme.of(context)
-                                            .bodyMedium
+                                        style: AppTypography.bodyMedium
                                             .override(
                                               font: TextStyle(fontFamily: 'Manrope',
                                                 fontWeight:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
+                                                    AppTypography.bodyMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    AppTheme.of(context)
-                                                        .bodyMedium
+                                                    AppTypography.bodyMedium
                                                         .fontStyle,
                                               ),
-                                              color: AppTheme.of(context).primaryBtnText,
+                                              color: AppColors.navyDarkBtnText,
                                               letterSpacing: 0.0,
                                               fontWeight:
-                                                  AppTheme.of(context)
-                                                      .bodyMedium
+                                                  AppTypography.bodyMedium
                                                       .fontWeight,
                                               fontStyle:
-                                                  AppTheme.of(context)
-                                                      .bodyMedium
+                                                  AppTypography.bodyMedium
                                                       .fontStyle,
                                             ),
                                       ),
@@ -729,8 +671,8 @@ class _SignInWidgetState extends State<SignInWidget> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppTheme.of(context).primary,
-                          AppTheme.of(context).secondary
+                          AppColors.navyDark,
+                          AppColors.navy
                         ],
                         stops: [0.0, 1.0],
                         begin: AlignmentDirectional(1.0, -1.0),
@@ -750,12 +692,11 @@ class _SignInWidgetState extends State<SignInWidget> {
                               maxWidth: 400.0,
                             ),
                             decoration: BoxDecoration(
-                              color: AppTheme.of(context)
-                                  .secondaryBackground,
+                              color: AppColors.pure,
                               boxShadow: [
                                 BoxShadow(
                                   blurRadius: 3.0,
-                                  color: Color(0x2E000000),
+                                  color: AppColors.overlayDark,
                                   offset: Offset(
                                     0.0,
                                     2.0,
@@ -764,8 +705,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                               ],
                               borderRadius: BorderRadius.circular(AppSpacing.xs),
                               border: Border.all(
-                                color: AppTheme.of(context)
-                                    .primaryBackground,
+                                color: AppColors.sand,
                                 width: 2.0,
                               ),
                             ),
@@ -794,14 +734,12 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                 width: 40.0,
                                                 height: 40.0,
                                                 decoration: BoxDecoration(
-                                                  color: Color(0xFFEEEEEE),
+                                                  color: AppColors.cloud,
                                                   shape: BoxShape.circle,
                                                 ),
                                                 child: Icon(
                                                   Icons.person,
-                                                  color: AppTheme.of(
-                                                          context)
-                                                      .primary,
+                                                  color: AppColors.navyDark,
                                                   size: 24.0,
                                                 ),
                                               ),
@@ -809,32 +747,23 @@ class _SignInWidgetState extends State<SignInWidget> {
                                             Text(
                                               'UserName',
                                               style:
-                                                  AppTheme.of(context)
-                                                      .titleMedium
+                                                  AppTypography.titleMedium
                                                       .override(
                                                         font:
                                                             TextStyle(fontFamily: 'Manrope',
                                                           fontWeight:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .titleMedium
+                                                              AppTypography.titleMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .titleMedium
+                                                              AppTypography.titleMedium
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .titleMedium
+                                                            AppTypography.titleMedium
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .titleMedium
+                                                            AppTypography.titleMedium
                                                                 .fontStyle,
                                                       ),
                                             ),
@@ -848,32 +777,23 @@ class _SignInWidgetState extends State<SignInWidget> {
                                             Text(
                                               'Overall',
                                               style:
-                                                  AppTheme.of(context)
-                                                      .bodySmall
+                                                  AppTypography.bodySmall
                                                       .override(
                                                         font:
                                                             TextStyle(fontFamily: 'Manrope',
                                                           fontWeight:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodySmall
+                                                              AppTypography.bodySmall
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodySmall
+                                                              AppTypography.bodySmall
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .bodySmall
+                                                            AppTypography.bodySmall
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            AppTheme.of(
-                                                                    context)
-                                                                .bodySmall
+                                                            AppTypography.bodySmall
                                                                 .fontStyle,
                                                       ),
                                             ),
@@ -886,42 +806,30 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                           0.0, 0.0, AppSpacing.xxs, 0.0),
                                                   child: Text(
                                                     '5',
-                                                    style: AppTheme.of(
-                                                            context)
-                                                        .headlineMedium
+                                                    style: AppTypography.headlineMedium
                                                         .override(
                                                           font: TextStyle(
                                                             fontFamily: 'Manrope',
                                                             fontWeight:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .headlineMedium
+                                                                AppTypography.headlineMedium
                                                                     .fontWeight,
                                                             fontStyle:
-                                                                AppTheme.of(
-                                                                        context)
-                                                                    .headlineMedium
+                                                                AppTypography.headlineMedium
                                                                     .fontStyle,
                                                           ),
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .headlineMedium
+                                                              AppTypography.headlineMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .headlineMedium
+                                                              AppTypography.headlineMedium
                                                                   .fontStyle,
                                                         ),
                                                   ),
                                                 ),
                                                 Icon(
                                                   Icons.star_rounded,
-                                                  color: AppTheme.of(
-                                                          context)
-                                                      .primary,
+                                                  color: AppColors.navyDark,
                                                   size: 20.0,
                                                 ),
                                               ],
@@ -940,31 +848,22 @@ class _SignInWidgetState extends State<SignInWidget> {
                                         Expanded(
                                           child: AutoSizeText(
                                             'Nice outdoor courts, solid concrete and good hoops for the neighborhood.',
-                                            style: AppTheme.of(context)
-                                                .bodyMedium
+                                            style: AppTypography.bodyMedium
                                                 .override(
                                                   font: TextStyle(fontFamily: 'Manrope',
                                                     fontWeight:
-                                                        AppTheme.of(
-                                                                context)
-                                                            .bodyMedium
+                                                        AppTypography.bodyMedium
                                                             .fontWeight,
                                                     fontStyle:
-                                                        AppTheme.of(
-                                                                context)
-                                                            .bodyMedium
+                                                        AppTypography.bodyMedium
                                                             .fontStyle,
                                                   ),
                                                   letterSpacing: 0.0,
                                                   fontWeight:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
+                                                      AppTypography.bodyMedium
                                                           .fontWeight,
                                                   fontStyle:
-                                                      AppTheme.of(
-                                                              context)
-                                                          .bodyMedium
+                                                      AppTypography.bodyMedium
                                                           .fontStyle,
                                                 ),
                                           ),

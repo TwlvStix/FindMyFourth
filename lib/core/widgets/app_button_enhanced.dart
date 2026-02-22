@@ -301,9 +301,9 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
 
       case AppButtonVariant.destructive:
         return _isPressed
-            ? const Color(0xFFC03D3D) // Darker error red when pressed
+            ? AppColors.errorPressed // Darker error red when pressed
             : _isHovered
-                ? const Color(0xFFE05555) // Lighter error red on hover
+                ? AppColors.errorHovered // Lighter error red on hover
                 : AppColors.error;
     }
   }

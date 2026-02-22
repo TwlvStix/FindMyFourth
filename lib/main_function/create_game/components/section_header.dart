@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '/core/app_theme.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_icon.dart';
@@ -58,16 +57,16 @@ class SectionHeader extends StatelessWidget {
           SizedBox(width: AppSpacing.sm),
           Text(
             title,
-            style: AppTheme.of(context).labelMedium.override(
+            style: AppTypography.labelMedium.override(
                   font: TextStyle(fontFamily: 'Manrope',
-                    fontWeight: AppTheme.of(context).labelMedium.fontWeight,
-                    fontStyle: AppTheme.of(context).labelMedium.fontStyle,
+                    fontWeight: AppTypography.labelMedium.fontWeight,
+                    fontStyle: AppTypography.labelMedium.fontStyle,
                   ),
                   color: Colors.white,
                   fontSize: 16,
                   letterSpacing: 0.0,
                   fontWeight: FontWeight.w600,
-                  fontStyle: AppTheme.of(context).labelMedium.fontStyle,
+                  fontStyle: AppTypography.labelMedium.fontStyle,
                 ),
           ),
           if (helpText != null && onHelpTap != null) ...[

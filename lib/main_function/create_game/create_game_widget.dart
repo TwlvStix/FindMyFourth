@@ -4,7 +4,6 @@ import '/core/design_tokens/app_icons.dart';
 import '/core/widgets/app_text_field.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/motion/motion_helpers.dart';
-import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
@@ -320,7 +319,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Please select a course'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
       return;
@@ -330,7 +329,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Please select Friends or Public game'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
       return;
@@ -341,7 +340,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Please select a game vibe'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
         return;
@@ -351,7 +350,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Please select stakes'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
         return;
@@ -361,7 +360,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Please select a primary format'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
         return;
@@ -376,7 +375,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           SnackBar(
             content: Text('Please select a date and time.'),
             duration: Duration(milliseconds: 4000),
-            backgroundColor: AppTheme.of(context).primary,
+            backgroundColor: AppColors.navyDark,
           ),
         );
         return;
@@ -391,7 +390,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             content: Text(
                 'Please select at least a week, days, or time of day for flexible games.'),
             duration: Duration(milliseconds: 4000),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
         return;
@@ -405,7 +404,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           SnackBar(
             content: Text('Please select a team style for 2v2 games.'),
             duration: Duration(milliseconds: 4000),
-            backgroundColor: AppTheme.of(context).primary,
+            backgroundColor: AppColors.navyDark,
           ),
         );
         return;
@@ -418,7 +417,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           SnackBar(
             content: Text('Please describe the other game.'),
             duration: Duration(milliseconds: 4000),
-            backgroundColor: AppTheme.of(context).primary,
+            backgroundColor: AppColors.navyDark,
           ),
         );
         return;
@@ -445,7 +444,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           SnackBar(
             content: Text('Please sign in to create a game.'),
             duration: Duration(milliseconds: 4000),
-            backgroundColor: AppTheme.of(context).primary,
+            backgroundColor: AppColors.navyDark,
           ),
         );
         return;
@@ -576,12 +575,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 'You have created a game!',
                 style: TextStyle(
                   fontFamily: 'Manrope',
-                  color: AppTheme.of(context).secondaryBackground,
+                  color: AppColors.navyBackground,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               duration: Duration(milliseconds: 4000),
-              backgroundColor: AppTheme.of(context).primary,
+              backgroundColor: AppColors.navyDark,
             ),
           );
         }),
@@ -608,7 +607,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             style: TextStyle(fontFamily: 'Manrope', color: Colors.white),
           ),
           duration: Duration(milliseconds: 6000),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
       return;
@@ -861,13 +860,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppTheme.of(context).primary
-                      : AppTheme.of(context).secondaryBackground,
+                      ? AppColors.navyDark
+                      : AppColors.navyBackground,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isSelected
-                        ? AppTheme.of(context).primary
-                        : AppTheme.of(context).accent4.withValues(alpha: 0.3),
+                        ? AppColors.navyDark
+                        : AppColors.greenLight.withValues(alpha: 0.3),
                     width: 1.5,
                   ),
                 ),
@@ -879,8 +878,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: isSelected
-                        ? AppTheme.of(context).primaryBtnText
-                        : AppTheme.of(context).primaryText,
+                        ? AppColors.navyDarkBtnText
+                        : AppColors.navyDarkText,
                   ),
                 ),
               ),
@@ -934,12 +933,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                     )
                   : null,
               color:
-                  isSelected ? null : AppTheme.of(context).secondaryBackground,
+                  isSelected ? null : AppColors.navyBackground,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isSelected
                     ? AppColors.gold
-                    : AppTheme.of(context).accent4.withValues(alpha: 0.3),
+                    : AppColors.greenLight.withValues(alpha: 0.3),
                 width: 1.5,
               ),
             ),
@@ -951,7 +950,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 fontWeight: FontWeight.w600,
                 color: isSelected
                     ? Colors.white
-                    : AppTheme.of(context).primaryText,
+                    : AppColors.navyDarkText,
               ),
             ),
           ),
@@ -1108,7 +1107,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         },
         child: AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemUiOverlayStyle(
-            statusBarColor: AppTheme.of(context).primary,
+            statusBarColor: AppColors.navyDark,
             statusBarIconBrightness: Brightness.light,
             statusBarBrightness: Brightness.dark,
           ),
@@ -1125,17 +1124,17 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               leading: const PremiumBackButton(),
               title: Text(
                 'Create Game',
-                style: AppTheme.of(context).headlineLarge.override(
+                style: AppTypography.headlineLarge.override(
                       font: TextStyle(
                         fontFamily: 'Manrope',
                         fontWeight: FontWeight.w500,
-                        fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
+                        fontStyle: AppTypography.headlineLarge.fontStyle,
                       ),
                       color: AppColors.pure,
                       fontSize: 24.0,
                       letterSpacing: 0.0,
                       fontWeight: FontWeight.w500,
-                      fontStyle: AppTheme.of(context).headlineLarge.fontStyle,
+                      fontStyle: AppTypography.headlineLarge.fontStyle,
                     ),
               ),
               centerTitle: false,
@@ -1327,13 +1326,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                 padding: EdgeInsets.all(
                                                     AppSpacing.md),
                                                 decoration: BoxDecoration(
-                                                  color: AppTheme.of(context)
-                                                      .secondaryBackground,
+                                                  color: AppColors.pure,
                                                   borderRadius:
                                                       BorderRadius.circular(12),
                                                   border: Border.all(
-                                                    color: AppTheme.of(context)
-                                                        .primary,
+                                                    color: AppColors.navyDark,
                                                     width: 1.5,
                                                   ),
                                                 ),
@@ -1341,9 +1338,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   children: [
                                                     Icon(
                                                       Icons.access_time_rounded,
-                                                      color:
-                                                          AppTheme.of(context)
-                                                              .primary,
+                                                      color: AppColors.navyDark,
                                                       size: 24,
                                                     ),
                                                     SizedBox(
@@ -1363,9 +1358,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                               fontWeight:
                                                                   FontWeight
                                                                       .w500,
-                                                              color: AppTheme.of(
-                                                                      context)
-                                                                  .secondaryText,
+                                                              color: AppColors.slate,
                                                             ),
                                                           ),
                                                           SizedBox(height: 2),
@@ -1379,9 +1372,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                               fontWeight:
                                                                   FontWeight
                                                                       .w600,
-                                                              color: AppTheme.of(
-                                                                      context)
-                                                                  .primaryText,
+                                                              color: AppColors.onyx,
                                                             ),
                                                           ),
                                                         ],
@@ -1390,8 +1381,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                     Icon(
                                                       Icons.edit_rounded,
                                                       color:
-                                                          AppTheme.of(context)
-                                                              .secondaryText,
+                                                          AppColors.slate,
                                                       size: 20,
                                                     ),
                                                   ],
@@ -1599,85 +1589,64 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   },
                                                   width: 300.0,
                                                   height: 50.0,
-                                                  searchHintTextStyle: AppTheme
-                                                          .of(context)
+                                                  searchHintTextStyle: AppTypography
                                                       .labelMedium
                                                       .override(
                                                         font: TextStyle(
                                                           fontFamily: 'Manrope',
                                                           fontWeight:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .labelMedium
+                                                              AppTypography.labelMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .labelMedium
+                                                              AppTypography.labelMedium
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            AppTheme.of(context)
-                                                                .labelMedium
+                                                            AppTypography.labelMedium
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            AppTheme.of(context)
-                                                                .labelMedium
+                                                            AppTypography.labelMedium
                                                                 .fontStyle,
                                                       ),
-                                                  searchTextStyle: AppTheme.of(
-                                                          context)
+                                                  searchTextStyle: AppTypography
                                                       .bodyMedium
                                                       .override(
                                                         font: TextStyle(
                                                           fontFamily: 'Manrope',
                                                           fontWeight:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
+                                                              AppTypography.bodyMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
+                                                              AppTypography.bodyMedium
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            AppTheme.of(context)
-                                                                .bodyMedium
+                                                            AppTypography.bodyMedium
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            AppTheme.of(context)
-                                                                .bodyMedium
+                                                            AppTypography.bodyMedium
                                                                 .fontStyle,
                                                       ),
-                                                  textStyle: AppTheme.of(
-                                                          context)
+                                                  textStyle: AppTypography
                                                       .bodyMedium
                                                       .override(
                                                         font: TextStyle(
                                                           fontFamily: 'Manrope',
                                                           fontWeight:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
+                                                              AppTypography.bodyMedium
                                                                   .fontWeight,
                                                           fontStyle:
-                                                              AppTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
+                                                              AppTypography.bodyMedium
                                                                   .fontStyle,
                                                         ),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            AppTheme.of(context)
-                                                                .bodyMedium
+                                                            AppTypography.bodyMedium
                                                                 .fontWeight,
                                                         fontStyle:
-                                                            AppTheme.of(context)
-                                                                .bodyMedium
+                                                            AppTypography.bodyMedium
                                                                 .fontStyle,
                                                       ),
                                                   hintText:
@@ -1687,17 +1656,14 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   icon: Icon(
                                                     Icons
                                                         .keyboard_arrow_down_rounded,
-                                                    color: AppTheme.of(context)
-                                                        .secondaryText,
+                                                    color: AppColors.slate,
                                                     size: 24.0,
                                                   ),
                                                   fillColor:
-                                                      AppTheme.of(context)
-                                                          .secondaryBackground,
+                                                      AppColors.pure,
                                                   elevation: 2.0,
                                                   borderColor:
-                                                      AppTheme.of(context)
-                                                          .primary,
+                                                      AppColors.navyDark,
                                                   borderWidth: 1.0,
                                                   borderRadius: 10.0,
                                                   margin: EdgeInsetsDirectional

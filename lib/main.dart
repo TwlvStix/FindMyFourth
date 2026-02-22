@@ -16,6 +16,7 @@ import 'auth/firebase_auth/auth_util.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/core/config/build_flags.dart';
 import '/core/app_theme.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/icon_size.dart';
@@ -477,7 +478,7 @@ class _InternalCrashTestOverlay extends StatelessWidget {
             onLongPress: triggerInternalCrashForTesting,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.9),
+                color: AppColors.error.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(16.0),
               ),
               padding: const EdgeInsets.symmetric(
@@ -578,7 +579,7 @@ class _NavBarPageState extends State<NavBarPage> {
                   },
                 );
               },
-              backgroundColor: AppTheme.of(context).primary,
+              backgroundColor: AppColors.navyDark,
               elevation: 8.0,
               child: Icon(
                 Icons.add,
@@ -600,8 +601,8 @@ class _NavBarPageState extends State<NavBarPage> {
           }
         },
         backgroundColor: Colors.white,
-        color: AppTheme.of(context).tertiary,
-        activeColor: AppTheme.of(context).primary,
+        color: AppColors.stone,
+        activeColor: AppColors.navyDark,
         tabBackgroundColor: Colors.transparent,
         tabBorderRadius: 0.0,
         tabMargin: EdgeInsets.all(AppSpacing.xxs),
@@ -617,8 +618,8 @@ class _NavBarPageState extends State<NavBarPage> {
               assetPath: AppIcons.games,
               size: AppIconSize.lg,
               isActive: currentIndex == 0,
-              activeColor: AppTheme.of(context).primary,
-              inactiveColor: AppTheme.of(context).tertiary,
+              activeColor: AppColors.navyDark,
+              inactiveColor: AppColors.stone,
             ),
             icon: Icons.golf_course, // Fallback (hidden)
             iconSize: 0, // Hide default icon
@@ -628,8 +629,8 @@ class _NavBarPageState extends State<NavBarPage> {
               assetPath: AppIcons.myGames,
               size: AppIconSize.lg,
               isActive: currentIndex == 1,
-              activeColor: AppTheme.of(context).primary,
-              inactiveColor: AppTheme.of(context).tertiary,
+              activeColor: AppColors.navyDark,
+              inactiveColor: AppColors.stone,
             ),
             icon: Icons.calendar_today_outlined, // Fallback (hidden)
             iconSize: 0, // Hide default icon
@@ -639,8 +640,8 @@ class _NavBarPageState extends State<NavBarPage> {
               assetPath: AppIcons.golfers,
               size: AppIconSize.lg,
               isActive: currentIndex == 2,
-              activeColor: AppTheme.of(context).primary,
-              inactiveColor: AppTheme.of(context).tertiary,
+              activeColor: AppColors.navyDark,
+              inactiveColor: AppColors.stone,
             ),
             icon: Icons.people_outline, // Fallback (hidden)
             iconSize: 0, // Hide default icon
@@ -650,8 +651,8 @@ class _NavBarPageState extends State<NavBarPage> {
               assetPath: AppIcons.chat,
               size: AppIconSize.lg,
               isActive: currentIndex == 3,
-              activeColor: AppTheme.of(context).primary,
-              inactiveColor: AppTheme.of(context).tertiary,
+              activeColor: AppColors.navyDark,
+              inactiveColor: AppColors.stone,
             ),
             icon: Icons.chat_bubble_outline, // Fallback (hidden)
             iconSize: 0, // Hide default icon
@@ -661,8 +662,8 @@ class _NavBarPageState extends State<NavBarPage> {
               assetPath: AppIcons.profile,
               size: AppIconSize.lg,
               isActive: currentIndex == 4,
-              activeColor: AppTheme.of(context).primary,
-              inactiveColor: AppTheme.of(context).tertiary,
+              activeColor: AppColors.navyDark,
+              inactiveColor: AppColors.stone,
             ),
             icon: Icons.person_outline, // Fallback (hidden)
             iconSize: 0, // Hide default icon

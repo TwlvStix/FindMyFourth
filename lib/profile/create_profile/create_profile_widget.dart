@@ -3,7 +3,6 @@ import '/backend/backend.dart';
 import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/widgets/app_count_controller.dart';
 import '/core/widgets/app_drop_down.dart';
-import '/core/app_theme.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
@@ -233,11 +232,11 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
           content: Text(
             'Please update your Firebase Auth email ($currentUserEmail) before saving your profile.',
             style: AppTypography.bodySmall.copyWith(
-              color: AppTheme.of(context).secondaryBackground,
+              color: AppColors.navyBackground,
             ),
           ),
           duration: Duration(milliseconds: 2000),
-          backgroundColor: AppTheme.of(context).primary,
+          backgroundColor: AppColors.navyDark,
         ),
       );
       return;
@@ -485,7 +484,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppTheme.of(context).secondaryBackground,
+        backgroundColor: AppColors.navyBackground,
         body: FairwayBackgroundDark(
           showOrganic: true,
           child: Form(

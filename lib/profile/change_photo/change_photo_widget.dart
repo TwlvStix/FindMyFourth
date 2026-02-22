@@ -3,12 +3,12 @@ import 'dart:io';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
-import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/utils/profile_image_picker.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
 import '/utils/upload_data.dart';
 import 'package:flutter/material.dart';
 
@@ -45,7 +45,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
           width: MediaQuery.sizeOf(context).width * 1.0,
           height: 350.0,
           decoration: BoxDecoration(
-            color: AppTheme.of(context).secondaryBackground,
+            color: AppColors.navyBackground,
             borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(0.0),
               bottomRight: Radius.circular(0.0),
@@ -71,7 +71,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                             thickness: 3.0,
                             indent: 150.0,
                             endIndent: 150.0,
-                            color: AppTheme.of(context).primaryBackground,
+                            color: AppColors.navyDarkBackground,
                           ),
                         Row(
                           mainAxisSize: MainAxisSize.max,
@@ -82,20 +82,17 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                 padding: EdgeInsets.fromLTRB(0.0, AppSpacing.xxs, AppSpacing.md, 0.0),
                                 child: Text(
                                   'Change Profile Picture',
-                                  style: AppTheme.of(context)
-                                      .headlineMedium
+                                  style: AppTypography.headlineMedium
                                       .override(
                                         font: TextStyle(fontFamily: 'Manrope',
                                           fontWeight: FontWeight.bold,
                                           fontStyle:
-                                              AppTheme.of(context)
-                                                  .headlineMedium
+                                              AppTypography.headlineMedium
                                                   .fontStyle,
                                         ),
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.bold,
-                                        fontStyle: AppTheme.of(context)
-                                            .headlineMedium
+                                        fontStyle: AppTypography.headlineMedium
                                             .fontStyle,
                                       ),
                                 ),
@@ -111,25 +108,20 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                 padding: EdgeInsets.only(top: AppSpacing.xs),
                                 child: Text(
                                   'Upload a new photo below in order to change your profile picture.',
-                                  style: AppTheme.of(context)
-                                      .labelMedium
+                                  style: AppTypography.labelMedium
                                       .override(
                                         font: TextStyle(fontFamily: 'Manrope',
                                           fontWeight:
-                                              AppTheme.of(context)
-                                                  .labelMedium
+                                              AppTypography.labelMedium
                                                   .fontWeight,
                                           fontStyle:
-                                              AppTheme.of(context)
-                                                  .labelMedium
+                                              AppTypography.labelMedium
                                                   .fontStyle,
                                         ),
                                         letterSpacing: 0.0,
-                                        fontWeight: AppTheme.of(context)
-                                            .labelMedium
+                                        fontWeight: AppTypography.labelMedium
                                             .fontWeight,
-                                        fontStyle: AppTheme.of(context)
-                                            .labelMedium
+                                        fontStyle: AppTypography.labelMedium
                                             .fontStyle,
                                       ),
                                 ),
@@ -147,7 +139,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                 width: 100.0,
                                 height: 100.0,
                                 decoration: BoxDecoration(
-                                  color: Color(0xFFDBE2E7),
+                                  color: AppColors.mist,
                                   shape: BoxShape.circle,
                                 ),
                                 child: Stack(

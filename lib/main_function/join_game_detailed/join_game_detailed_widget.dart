@@ -4,7 +4,6 @@ import '/core/motion/motion_helpers.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/trust/restriction_banner.dart';
-import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/utils/firebase_error_utils.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -1118,16 +1117,13 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                           Flexible(
                                                             child: Text(
                                                               displayName,
-                                                              style: AppTheme.of(context)
-                                                                  .bodyLarge
+                                                              style: AppTypography.bodyLarge
                                                                   .override(
                                                                     font: TextStyle(fontFamily: 'Manrope',
                                                                       fontWeight:
                                                                           FontWeight.w500,
                                                                       fontStyle:
-                                                                          AppTheme.of(
-                                                                                  context)
-                                                                              .bodyLarge
+                                                                          AppTypography.bodyLarge
                                                                               .fontStyle,
                                                                     ),
                                                                     color: Colors.white,
@@ -1135,9 +1131,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                                     fontWeight:
                                                                         FontWeight.w500,
                                                                     fontStyle:
-                                                                        AppTheme.of(
-                                                                                context)
-                                                                            .bodyLarge
+                                                                        AppTypography.bodyLarge
                                                                             .fontStyle,
                                                                   ),
                                                               maxLines: 1,
@@ -1158,17 +1152,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                       SizedBox(height: AppSpacing.xxs),
                                                       Text(
                                                         'Ready',
-                                                        style: AppTheme.of(context)
-                                                            .bodySmall
+                                                        style: AppTypography.bodySmall
                                                             .override(
                                                               font: TextStyle(fontFamily: 'Manrope',
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .normal,
                                                                 fontStyle:
-                                                                    AppTheme.of(
-                                                                            context)
-                                                                        .bodySmall
+                                                                    AppTypography.bodySmall
                                                                         .fontStyle,
                                                               ),
                                                               color: AppColors
@@ -1177,9 +1168,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                               fontWeight:
                                                                   FontWeight.normal,
                                                               fontStyle:
-                                                                  AppTheme.of(
-                                                                          context)
-                                                                      .bodySmall
+                                                                  AppTypography.bodySmall
                                                                       .fontStyle,
                                                             ),
                                                       ),
@@ -1242,22 +1231,19 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                             child: Center(
                                               child: Text(
                                                 'G',
-                                                style: AppTheme.of(context)
-                                                    .titleMedium
+                                                style: AppTypography.titleMedium
                                                     .override(
                                                       font: TextStyle(fontFamily: 'Manrope',
                                                         fontWeight: FontWeight.w600,
                                                         fontStyle:
-                                                            AppTheme.of(context)
-                                                                .titleMedium
+                                                            AppTypography.titleMedium
                                                                 .fontStyle,
                                                       ),
                                                       color: Colors.white,
                                                       letterSpacing: 0.0,
                                                       fontWeight: FontWeight.w600,
                                                       fontStyle:
-                                                          AppTheme.of(context)
-                                                              .titleMedium
+                                                          AppTypography.titleMedium
                                                               .fontStyle,
                                                     ),
                                               ),
@@ -1273,23 +1259,20 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                               children: [
                                                 Text(
                                                   guestName,
-                                                  style: AppTheme.of(context)
-                                                      .bodyLarge
+                                                  style: AppTypography.bodyLarge
                                                       .override(
                                                         font: TextStyle(fontFamily: 'Manrope',
                                                           fontWeight:
                                                               FontWeight.w500,
                                                           fontStyle:
-                                                              AppTheme.of(context)
-                                                                  .bodyLarge
+                                                              AppTypography.bodyLarge
                                                                   .fontStyle,
                                                         ),
                                                         color: Colors.white,
                                                         letterSpacing: 0.0,
                                                         fontWeight: FontWeight.w500,
                                                         fontStyle:
-                                                            AppTheme.of(context)
-                                                                .bodyLarge
+                                                            AppTypography.bodyLarge
                                                                 .fontStyle,
                                                       ),
                                                   maxLines: 1,
@@ -1298,15 +1281,13 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                 SizedBox(height: AppSpacing.xxs),
                                                 Text(
                                                   'Guest',
-                                                  style: AppTheme.of(context)
-                                                      .bodySmall
+                                                  style: AppTypography.bodySmall
                                                       .override(
                                                         font: TextStyle(fontFamily: 'Manrope',
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
-                                                              AppTheme.of(context)
-                                                                  .bodySmall
+                                                              AppTypography.bodySmall
                                                                   .fontStyle,
                                                         ),
                                                         color: Colors.white
@@ -1315,8 +1296,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
-                                                            AppTheme.of(context)
-                                                                .bodySmall
+                                                            AppTypography.bodySmall
                                                                 .fontStyle,
                                                       ),
                                                 ),

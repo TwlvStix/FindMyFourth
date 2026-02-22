@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
@@ -262,7 +261,7 @@ class _ChatWidgetState extends State<ChatWidget> {
 
       return Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppTheme.of(context).secondaryBackground,
+        backgroundColor: AppColors.navyBackground,
         body: Center(
           child: Text(
             'Please sign in to view chats.',

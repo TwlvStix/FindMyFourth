@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '/core/app_theme.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/utils/formatting_utils.dart';
@@ -67,11 +67,11 @@ class ChatMessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bubbleColor = isSentByCurrentUser
-        ? AppTheme.of(context).primary
-        : AppTheme.of(context).secondaryBackground;
+        ? AppColors.navyDark
+        : AppColors.navyBackground;
     final textColor = isSentByCurrentUser
-        ? AppTheme.of(context).primaryBtnText
-        : AppTheme.of(context).primaryText;
+        ? AppColors.navyDarkBtnText
+        : AppColors.navyDarkText;
 
     return Dismissible(
       key: Key('message_${message.id}'),
@@ -89,7 +89,7 @@ class ChatMessageBubble extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 20),
         child: Icon(
           Icons.reply_rounded,
-          color: AppTheme.of(context).primary,
+          color: AppColors.navyDark,
           size: 28,
         ),
       ),
@@ -114,8 +114,7 @@ class ChatMessageBubble extends StatelessWidget {
                 child: isFirstInGroup
                     ? CircleAvatar(
                         radius: 16,
-                        backgroundColor: AppTheme.of(context)
-                            .primary
+                        backgroundColor: AppColors.navyDark
                             .withValues(alpha: 0.3),
                         backgroundImage: senderPhotoUrl != null &&
                                 senderPhotoUrl!.isNotEmpty
@@ -222,13 +221,13 @@ class ChatMessageBubble extends StatelessWidget {
                                         return Container(
                                           width: w,
                                           height: h,
-                                          color: Colors.grey.withValues(alpha: 0.2),
+                                          color: AppColors.stone.withValues(alpha: 0.2),
                                           child: Center(
                                             child: CircularProgressIndicator(
                                               color: isSentByCurrentUser
                                                   ? Colors.white
                                                       .withValues(alpha: 0.8)
-                                                  : AppTheme.of(context).primary,
+                                                  : AppColors.navyDark,
                                               strokeWidth: 2,
                                             ),
                                           ),
@@ -238,7 +237,7 @@ class ChatMessageBubble extends StatelessWidget {
                                         return Container(
                                           height: 150,
                                           width: 200,
-                                          color: Colors.grey.withValues(alpha: 0.2),
+                                          color: AppColors.stone.withValues(alpha: 0.2),
                                           child: Column(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
@@ -297,7 +296,7 @@ class ChatMessageBubble extends StatelessWidget {
                                         : Icons.done,
                                     size: 14,
                                     color: message.readBy.length > 1
-                                        ? AppTheme.of(context).tertiary
+                                        ? AppColors.stone
                                         : textColor.withValues(alpha: 0.6),
                                   ),
                                 ],
@@ -334,16 +333,14 @@ class ChatMessageBubble extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: hasReacted
-                                    ? AppTheme.of(context)
-                                        .primary
+                                    ? AppColors.navyDark
                                         .withValues(alpha: 0.3)
-                                    : AppTheme.of(context)
-                                        .secondaryBackground
+                                    : AppColors.pure
                                         .withValues(alpha: 0.6),
                                 borderRadius: BorderRadius.circular(12),
                                 border: hasReacted
                                     ? Border.all(
-                                        color: AppTheme.of(context).primary,
+                                        color: AppColors.navyDark,
                                         width: 1.5,
                                       )
                                     : null,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '/core/app_theme.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -54,7 +53,7 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(content: Text(message), backgroundColor: AppColors.error),
     );
   }
 
@@ -70,7 +69,7 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
     debugPrint('🎯 Firm It Up Bottom Sheet: Building UI');
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.of(context).primaryBackground,
+        color: AppColors.navyDarkBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
@@ -86,7 +85,7 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppTheme.of(context).accent4,
+                    color: AppColors.greenLight,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -99,7 +98,7 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                   fontFamily: 'Manrope',
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.of(context).primaryText,
+                  color: AppColors.navyDarkText,
                 ),
               ),
               SizedBox(height: AppSpacing.lg),
@@ -128,17 +127,17 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                   child: Container(
                     padding: EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: AppTheme.of(context).secondaryBackground,
+                      color: AppColors.navyBackground,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppTheme.of(context).primary,
+                        color: AppColors.navyDark,
                         width: 1.5,
                       ),
                     ),
                     child: Row(
                       children: [
                         Icon(Icons.access_time_rounded,
-                          color: AppTheme.of(context).primary, size: 24),
+                          color: AppColors.navyDark, size: 24),
                         SizedBox(width: AppSpacing.sm),
                         Text(
                           dateTimeFormat("jm", _selectedDate),
@@ -172,7 +171,7 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                     return Center(
                       child: Text(
                         'Error loading courses: ${snapshot.error}',
-                        style: TextStyle(color: Colors.red),
+                        style: TextStyle(color: AppColors.error),
                       ),
                     );
                   }
@@ -204,23 +203,23 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                     },
                     width: 300.0,
                     height: 50.0,
-                    textStyle: AppTheme.of(context).bodyMedium.override(
+                    textStyle: AppTypography.bodyMedium.override(
                       font: TextStyle(
                         fontFamily: 'Manrope',
-                        fontWeight: AppTheme.of(context).bodyMedium.fontWeight,
-                        fontStyle: AppTheme.of(context).bodyMedium.fontStyle,
+                        fontWeight: AppTypography.bodyMedium.fontWeight,
+                        fontStyle: AppTypography.bodyMedium.fontStyle,
                       ),
                       letterSpacing: 0.0,
                     ),
                     hintText: 'Select a course',
                     icon: Icon(
                       Icons.keyboard_arrow_down_rounded,
-                      color: AppTheme.of(context).secondaryText,
+                      color: AppColors.navyText,
                       size: 24.0,
                     ),
-                    fillColor: AppTheme.of(context).secondaryBackground,
+                    fillColor: AppColors.navyBackground,
                     elevation: 2.0,
-                    borderColor: AppTheme.of(context).primary,
+                    borderColor: AppColors.navyDark,
                     borderWidth: 1.0,
                     borderRadius: 10.0,
                     margin: EdgeInsetsDirectional.only(start: 0),
@@ -254,6 +253,6 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
     fontFamily: 'Manrope',
     fontSize: 13,
     fontWeight: FontWeight.w600,
-    color: AppTheme.of(context).secondaryText,
+    color: AppColors.navyText,
   );
 }

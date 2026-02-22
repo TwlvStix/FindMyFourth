@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '/backend/backend.dart';
-import '/core/app_theme.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -252,80 +251,80 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                         helperStyle: AppTypography.labelSmall.copyWith(
                           color: Colors.white,
                         ),
-                        labelStyle: AppTheme.of(context).labelMedium.override(
+                        labelStyle: AppTypography.labelMedium.override(
                               font: TextStyle(fontFamily: 'Manrope',
                                 fontWeight:
-                                    AppTheme.of(context).labelMedium.fontWeight,
+                                    AppTypography.labelMedium.fontWeight,
                                 fontStyle:
-                                    AppTheme.of(context).labelMedium.fontStyle,
+                                    AppTypography.labelMedium.fontStyle,
                               ),
-                              color: AppTheme.of(context).primaryBtnText,
+                              color: AppColors.navyDarkBtnText,
                               letterSpacing: 0.0,
                               fontWeight:
-                                  AppTheme.of(context).labelMedium.fontWeight,
+                                  AppTypography.labelMedium.fontWeight,
                               fontStyle:
-                                  AppTheme.of(context).labelMedium.fontStyle,
+                                  AppTypography.labelMedium.fontStyle,
                             ),
-                        hintStyle: AppTheme.of(context).labelMedium.override(
+                        hintStyle: AppTypography.labelMedium.override(
                               font: TextStyle(fontFamily: 'Manrope',
                                 fontWeight:
-                                    AppTheme.of(context).labelMedium.fontWeight,
+                                    AppTypography.labelMedium.fontWeight,
                                 fontStyle:
-                                    AppTheme.of(context).labelMedium.fontStyle,
+                                    AppTypography.labelMedium.fontStyle,
                               ),
-                              color: AppTheme.of(context).primaryBtnText,
+                              color: AppColors.navyDarkBtnText,
                               letterSpacing: 0.0,
                               fontWeight:
-                                  AppTheme.of(context).labelMedium.fontWeight,
+                                  AppTypography.labelMedium.fontWeight,
                               fontStyle:
-                                  AppTheme.of(context).labelMedium.fontStyle,
+                                  AppTypography.labelMedium.fontStyle,
                             ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: AppTheme.of(context).primaryBtnText,
+                            color: AppColors.navyDarkBtnText,
                             width: 2.0,
                           ),
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: AppTheme.of(context).primaryBtnText,
+                            color: AppColors.navyDarkBtnText,
                             width: 2.0,
                           ),
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                         errorBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: AppTheme.of(context).error,
+                            color: AppColors.error,
                             width: 2.0,
                           ),
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: AppTheme.of(context).error,
+                            color: AppColors.error,
                             width: 2.0,
                           ),
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                         prefixIcon: Icon(
                           Icons.search_rounded,
-                          color: AppTheme.of(context).primaryBtnText,
+                          color: AppColors.navyDarkBtnText,
                         ),
                       ),
-                      style: AppTheme.of(context).bodyMedium.override(
+                      style: AppTypography.bodyMedium.override(
                             font: TextStyle(fontFamily: 'Manrope',
                               fontWeight:
-                                  AppTheme.of(context).bodyMedium.fontWeight,
+                                  AppTypography.bodyMedium.fontWeight,
                               fontStyle:
-                                  AppTheme.of(context).bodyMedium.fontStyle,
+                                  AppTypography.bodyMedium.fontStyle,
                             ),
-                            color: AppTheme.of(context).secondaryBackground,
+                            color: AppColors.navyBackground,
                             letterSpacing: 0.0,
                             fontWeight:
-                                AppTheme.of(context).bodyMedium.fontWeight,
+                                AppTypography.bodyMedium.fontWeight,
                             fontStyle:
-                                AppTheme.of(context).bodyMedium.fontStyle,
+                                AppTypography.bodyMedium.fontStyle,
                           ),
                     ),
                   ),
@@ -349,7 +348,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                         Icons.tune_rounded,
                         color: widget.friendFilters?.hasActiveFilters == true
                             ? AppColors.navy
-                            : AppTheme.of(context).primaryBtnText,
+                            : AppColors.navyDarkBtnText,
                         size: 24.0,
                       ),
                       onPressed: widget.onFilterPressed,
@@ -366,7 +365,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                     tooltip: 'Clear search',
                     icon: Icon(
                       Icons.clear_sharp,
-                      color: AppTheme.of(context).primaryBtnText,
+                      color: AppColors.navyDarkBtnText,
                       size: 24.0,
                     ),
                     onPressed: _clearSearch,
@@ -430,7 +429,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
               child: Text(
                 widget.resultsLabel,
                 style: AppTypography.labelMedium.copyWith(
-                  color: AppTheme.of(context).primaryBtnText,
+                  color: AppColors.navyDarkBtnText,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.8,
                 ),

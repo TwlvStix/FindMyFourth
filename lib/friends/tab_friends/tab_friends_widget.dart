@@ -2,7 +2,6 @@ import 'dart:async';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
@@ -204,11 +203,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
           content: Text(
             'Friend removed',
             style: AppTypography.titleMedium.copyWith(
-              color: AppTheme.of(context).primaryBtnText,
+              color: AppColors.navyDarkBtnText,
             ),
           ),
           duration: Duration(milliseconds: 1500),
-          backgroundColor: AppTheme.of(context).primary,
+          backgroundColor: AppColors.navyDark,
         ),
       );
 
@@ -551,11 +550,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
           content: Text(
             'Request cancelled.',
             style: AppTypography.titleMedium.copyWith(
-              color: AppTheme.of(context).primaryBtnText,
+              color: AppColors.navyDarkBtnText,
             ),
           ),
           duration: const Duration(milliseconds: 1500),
-          backgroundColor: AppTheme.of(context).primary,
+          backgroundColor: AppColors.navyDark,
         ),
       );
     } catch (_) {
@@ -574,11 +573,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
           content: Text(
             'Friend request sent!',
             style: AppTypography.titleMedium.copyWith(
-              color: AppTheme.of(context).primaryBtnText,
+              color: AppColors.navyDarkBtnText,
             ),
           ),
           duration: const Duration(milliseconds: 1500),
-          backgroundColor: AppTheme.of(context).primary,
+          backgroundColor: AppColors.navyDark,
         ),
       );
     } catch (_) {
@@ -695,11 +694,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
           content: Text(
             'Friend request accepted!',
             style: AppTypography.titleMedium.copyWith(
-              color: AppTheme.of(context).primaryBtnText,
+              color: AppColors.navyDarkBtnText,
             ),
           ),
           duration: const Duration(milliseconds: 1500),
-          backgroundColor: AppTheme.of(context).primary,
+          backgroundColor: AppColors.navyDark,
         ),
       );
     } catch (e) {
@@ -718,11 +717,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
           content: Text(
             'Request denied.',
             style: AppTypography.titleMedium.copyWith(
-              color: AppTheme.of(context).primaryBtnText,
+              color: AppColors.navyDarkBtnText,
             ),
           ),
           duration: const Duration(milliseconds: 1500),
-          backgroundColor: AppTheme.of(context).primary,
+          backgroundColor: AppColors.navyDark,
         ),
       );
     } catch (e) {

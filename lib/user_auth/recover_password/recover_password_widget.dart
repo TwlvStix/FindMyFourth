@@ -1,10 +1,10 @@
 import '/auth/firebase_auth/auth_util.dart';
-import '/core/app_theme.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_text.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
@@ -67,16 +67,16 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppTheme.of(context).primaryBackground,
+        backgroundColor: AppColors.navyDarkBackground,
         appBar: AppBar(
-          backgroundColor: AppTheme.of(context).primaryBackground,
+          backgroundColor: AppColors.navyDarkBackground,
           automaticallyImplyLeading: false,
           leading: PremiumBackButton(
             onTap: _returnToSignIn,
           ),
           title: AppText.screenTitle(
             'Recover Password',
-            color: AppTheme.of(context).primary,
+            color: AppColors.navyDark,
             textAlign: TextAlign.center,
           ),
           actions: [],
@@ -101,7 +101,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                         width: 100.0,
                         height: 100.0,
                         decoration: BoxDecoration(
-                          color: AppTheme.of(context).primaryBackground,
+                          color: AppColors.navyDarkBackground,
                         ),
                         child: Padding(
                           padding: EdgeInsets.only(
@@ -128,11 +128,11 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                         width: 100.0,
                         height: 75.0,
                         decoration: BoxDecoration(
-                          color: AppTheme.of(context).primary,
+                          color: AppColors.navyDark,
                           boxShadow: [
                             BoxShadow(
                               blurRadius: 6.0,
-                              color: Color(0x33000000),
+                              color: AppColors.overlayDark,
                               offset: Offset(
                                 0.0,
                                 4.0,
@@ -153,7 +153,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                               decoration: InputDecoration(
                                 labelText: 'Enter Email Here',
                                 labelStyle: AppTypography.bodyLarge.copyWith(
-                                  color: AppTheme.of(context).primaryBtnText,
+                                  color: AppColors.navyDarkBtnText,
                                   fontWeight: FontWeight.w500,
                                 ),
                                 enabledBorder: InputBorder.none,
@@ -162,7 +162,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                                 focusedErrorBorder: InputBorder.none,
                               ),
                               style: AppTypography.bodyLarge.copyWith(
-                                color: AppTheme.of(context).primaryBtnText,
+                                color: AppColors.navyDarkBtnText,
                                 fontWeight: FontWeight.w500,
                               ),
                               textAlign: TextAlign.start,
@@ -215,7 +215,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                   ),
                   child: AppText.body(
                     'Check your email for the reset link. You can return to sign in once you receive it.',
-                    color: AppTheme.of(context).secondaryText,
+                    color: AppColors.navyText,
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -227,7 +227,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                   onPressed: _returnToSignIn,
                   child: AppText.label(
                     'Back to Sign In',
-                    color: AppTheme.of(context).primary,
+                    color: AppColors.navyDark,
                   ),
                 ),
               ),

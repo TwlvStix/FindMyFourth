@@ -1,4 +1,3 @@
-import '/core/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class EmptyStateSimpleWidget extends StatefulWidget {
@@ -44,19 +43,19 @@ class _EmptyStateSimpleWidgetState extends State<EmptyStateSimpleWidget> {
             child: Text(
               widget.title,
               textAlign: TextAlign.center,
-              style: AppTheme.of(context).headlineSmall.override(
+              style: AppTypography.headlineSmall.override(
                     font: TextStyle(fontFamily: 'Manrope',
                       fontWeight:
-                          AppTheme.of(context).headlineSmall.fontWeight,
+                          AppTypography.headlineSmall.fontWeight,
                       fontStyle:
-                          AppTheme.of(context).headlineSmall.fontStyle,
+                          AppTypography.headlineSmall.fontStyle,
                     ),
-                    color: AppTheme.of(context).primaryText,
+                    color: AppColors.navyDarkText,
                     letterSpacing: 0.0,
                     fontWeight:
-                        AppTheme.of(context).headlineSmall.fontWeight,
+                        AppTypography.headlineSmall.fontWeight,
                     fontStyle:
-                        AppTheme.of(context).headlineSmall.fontStyle,
+                        AppTypography.headlineSmall.fontStyle,
                   ),
             ),
           ),
@@ -65,18 +64,18 @@ class _EmptyStateSimpleWidgetState extends State<EmptyStateSimpleWidget> {
             child: Text(
               widget.body,
               textAlign: TextAlign.center,
-              style: AppTheme.of(context).labelMedium.override(
+              style: AppTypography.labelMedium.override(
                     font: TextStyle(fontFamily: 'Manrope',
                       fontWeight:
-                          AppTheme.of(context).labelMedium.fontWeight,
+                          AppTypography.labelMedium.fontWeight,
                       fontStyle:
-                          AppTheme.of(context).labelMedium.fontStyle,
+                          AppTypography.labelMedium.fontStyle,
                     ),
                     letterSpacing: 0.0,
                     fontWeight:
-                        AppTheme.of(context).labelMedium.fontWeight,
+                        AppTypography.labelMedium.fontWeight,
                     fontStyle:
-                        AppTheme.of(context).labelMedium.fontStyle,
+                        AppTypography.labelMedium.fontStyle,
                   ),
             ),
           ),

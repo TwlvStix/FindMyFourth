@@ -3,8 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '/backend/cloud_functions/cloud_functions.dart';
-import '/core/app_theme.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_avatar.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -166,18 +167,16 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-
     if (_loading) {
       return Scaffold(
-        backgroundColor: theme.primaryBackground,
+        backgroundColor: AppColors.navyDarkBackground,
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_successMessage != null) {
       return Scaffold(
-        backgroundColor: theme.primaryBackground,
+        backgroundColor: AppColors.navyDarkBackground,
         body: SafeArea(
           child: Center(
             child: Padding(
@@ -186,11 +185,11 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.check_circle_rounded,
-                      color: theme.primary, size: 72),
+                      color: AppColors.navyDark, size: 72),
                   SizedBox(height: AppSpacing.lg),
                   Text(
                     _successMessage!,
-                    style: theme.titleMedium,
+                    style: AppTypography.titleMedium,
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: AppSpacing.xxl),
@@ -209,17 +208,17 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
     }
 
     return Scaffold(
-      backgroundColor: theme.primaryBackground,
+      backgroundColor: AppColors.navyDarkBackground,
       appBar: AppBar(
-        backgroundColor: theme.primaryBackground,
+        backgroundColor: AppColors.navyDarkBackground,
         elevation: 0,
         title: Text(
           'Confirm Attendance',
-          style: theme.titleMedium,
+          style: AppTypography.titleMedium,
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_rounded, color: theme.primaryText),
+          icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.navyDarkText),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -234,7 +233,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
                   bottom: AppSpacing.sm),
               child: Text(
                 'Who played at $_courseName today?',
-                style: theme.bodyLarge,
+                style: AppTypography.bodyLarge,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -243,9 +242,9 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
                 padding: AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 child: Text(
                   _error!,
-                  style: theme.bodySmall.override(
+                  style: AppTypography.bodySmall.override(
                     font: const TextStyle(fontFamily: 'Manrope'),
-                    color: theme.error,
+                    color: AppColors.error,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -316,43 +315,41 @@ class _ParticipantRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-
     return Container(
       margin: AppSpacing.only(bottom: AppSpacing.sm),
       padding: AppSpacing.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
       decoration: BoxDecoration(
-        color: theme.secondaryBackground,
+        color: AppColors.navyBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isPresent
-              ? theme.primary.withValues(alpha:0.3)
-              : theme.error.withValues(alpha:0.3),
+              ? AppColors.navyDark.withValues(alpha:0.3)
+              : AppColors.error.withValues(alpha:0.3),
           width: 1,
         ),
       ),
       child: Row(
         children: [
           // Avatar
-          _buildAvatar(theme),
+          _buildAvatar(),
           SizedBox(width: AppSpacing.md),
           // Name + role
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(participant.displayName, style: theme.bodyLarge),
+                Text(participant.displayName, style: AppTypography.bodyLarge),
                 if (participant.role == 'host')
                   Text('Host',
-                      style: theme.bodySmall.override(
+                      style: AppTypography.bodySmall.override(
                         font: const TextStyle(fontFamily: 'Manrope'),
-                        color: theme.primary,
+                        color: AppColors.navyDark,
                       ))
                 else if (participant.isGuest)
                   Text('Guest',
-                      style: theme.bodySmall.override(
+                      style: AppTypography.bodySmall.override(
                         font: const TextStyle(fontFamily: 'Manrope'),
-                        color: theme.secondaryText,
+                        color: AppColors.navyText,
                       )),
               ],
             ),
@@ -367,7 +364,7 @@ class _ParticipantRow extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar(AppTheme theme) {
+  Widget _buildAvatar() {
     final initials = participant.displayName.trim().split(' ')
         .where((p) => p.isNotEmpty)
         .map((p) => p[0].toUpperCase())
@@ -389,21 +386,20 @@ class _AttendanceToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         _ToggleChip(
           label: 'Present',
           selected: isPresent,
-          selectedColor: theme.primary,
+          selectedColor: AppColors.navyDark,
           onTap: () => onToggle(true),
         ),
         SizedBox(width: AppSpacing.sm),
         _ToggleChip(
           label: 'No-show',
           selected: !isPresent,
-          selectedColor: theme.error,
+          selectedColor: AppColors.error,
           onTap: () => onToggle(false),
         ),
       ],
@@ -426,7 +422,6 @@ class _ToggleChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -436,14 +431,14 @@ class _ToggleChip extends StatelessWidget {
           color: selected ? selectedColor : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? selectedColor : theme.secondaryText.withValues(alpha:0.4),
+            color: selected ? selectedColor : AppColors.navyText.withValues(alpha:0.4),
           ),
         ),
         child: Text(
           label,
-          style: theme.bodySmall.override(
+          style: AppTypography.bodySmall.override(
             font: const TextStyle(fontFamily: 'Manrope'),
-            color: selected ? Colors.white : theme.secondaryText,
+            color: selected ? Colors.white : AppColors.navyText,
             fontWeight: FontWeight.w600,
           ),
         ),
