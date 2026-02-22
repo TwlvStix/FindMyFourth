@@ -7,6 +7,8 @@ import '/backend/backend.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/friends/components/empty_state.dart';
 import '/friends/components/friend_card_skeleton.dart';
@@ -262,28 +264,28 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                             color: AppColors.pure,
                             width: 2.0,
                           ),
-                          borderRadius: BorderRadius.circular(8.0),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: AppColors.pure,
                             width: 2.0,
                           ),
-                          borderRadius: BorderRadius.circular(8.0),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                         ),
                         errorBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: AppColors.error,
                             width: 2.0,
                           ),
-                          borderRadius: BorderRadius.circular(8.0),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: AppColors.error,
                             width: 2.0,
                           ),
-                          borderRadius: BorderRadius.circular(8.0),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                         ),
                         prefixIcon: Icon(
                           Icons.search_rounded,
@@ -316,7 +318,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                         color: widget.friendFilters?.hasActiveFilters == true
                             ? AppColors.navy
                             : AppColors.pure,
-                        size: 24.0,
+                        size: AppIconSize.md,
                       ),
                       onPressed: widget.onFilterPressed,
                     ),
@@ -333,7 +335,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                     icon: Icon(
                       Icons.clear_sharp,
                       color: AppColors.pure,
-                      size: 24.0,
+                      size: AppIconSize.md,
                     ),
                     onPressed: _clearSearch,
                   ),

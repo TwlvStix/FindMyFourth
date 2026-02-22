@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_icons.dart';
 import '/core/widgets/app_icon.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/models/game.dart';
 
 /// Premium hero section displaying game title, course, date/time with gradient background
@@ -28,18 +31,12 @@ class PremiumHeroSection extends StatelessWidget {
             AppColors.navyDark.withValues(alpha: 0.6),
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
         border: Border.all(
           color: AppColors.gold.withValues(alpha: 0.3),
           width: 2,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.gold.withValues(alpha: 0.15),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        boxShadow: [AppElevation.xl],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,12 +51,12 @@ class PremiumHeroSection extends StatelessWidget {
               gradient: const LinearGradient(
                 colors: [AppColors.gold, AppColors.goldLight],
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppBorderRadius.xl),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const AppIcon(assetPath: AppIcons.joined, color: Colors.white, size: 14),
+                AppIcon(assetPath: AppIcons.joined, color: AppColors.pure, size: AppIconSize.xs),
                 const SizedBox(width: 4),
                 Text(
                   'Joined',
@@ -82,20 +79,14 @@ class PremiumHeroSection extends StatelessWidget {
                   gradient: const LinearGradient(
                     colors: [AppColors.gold, AppColors.goldLight],
                   ),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.gold.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                  borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+                  boxShadow: [AppElevation.md],
                 ),
-                child: const Center(
+                child: Center(
                   child: AppIcon(
                     assetPath: AppIcons.course,
-                    color: Colors.white,
-                    size: 24,
+                    color: AppColors.pure,
+                    size: AppIconSize.md,
                   ),
                 ),
               ),

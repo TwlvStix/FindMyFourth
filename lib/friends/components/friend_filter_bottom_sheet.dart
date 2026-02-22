@@ -3,6 +3,8 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/models/vibe_profile.dart';
 import '/services/vibe_matcher.dart';
@@ -43,7 +45,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
       ),
       child: SafeArea(
         child: Column(
@@ -56,7 +58,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
               margin: EdgeInsets.only(top: AppSpacing.sm),
               decoration: BoxDecoration(
                 color: AppColors.cloud,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
               ),
             ),
 
@@ -76,7 +78,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
                         },
                         icon: Icon(Icons.close),
                         color: AppColors.onyx,
-                        iconSize: 24,
+                        iconSize: AppIconSize.md,
                         padding: EdgeInsets.zero,
                         constraints: BoxConstraints(),
                       ),
@@ -238,7 +240,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
             color: isSelected ? AppColors.navy : AppColors.cloud,
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
         ),
         child: Center(
           child: Text(
@@ -305,7 +307,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
             color: isSelected ? AppColors.navy : AppColors.cloud,
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
         ),
         child: Center(
           child: Text(
@@ -328,12 +330,12 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
       ),
       decoration: BoxDecoration(
         color: AppColors.sand.withValues(alpha:0.3),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(color: AppColors.cloud),
       ),
       child: Row(
         children: [
-          Icon(Icons.golf_course_rounded, color: AppColors.navy, size: 20),
+          Icon(Icons.golf_course_rounded, color: AppColors.navy, size: AppIconSize.button),
           SizedBox(width: AppSpacing.sm),
           Expanded(
             child: TextField(
@@ -392,21 +394,21 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
             color: value ? AppColors.navy : AppColors.cloud,
             width: value ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
         ),
         child: Row(
           children: [
             Container(
-              padding: EdgeInsets.all(6),
+              padding: EdgeInsets.all(AppSpacing.xs - 2),
               decoration: BoxDecoration(
                 color: value
                     ? AppColors.navy.withValues(alpha:0.2)
                     : AppColors.cloud.withValues(alpha:0.3),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
               child: Icon(
                 icon,
-                size: 18,
+                size: AppIconSize.button,
                 color: value ? AppColors.navy : AppColors.stone,
               ),
             ),
@@ -424,7 +426,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
               Icon(
                 Icons.check_circle_rounded,
                 color: AppColors.navy,
-                size: 20,
+                size: AppIconSize.button,
               ),
           ],
         ),

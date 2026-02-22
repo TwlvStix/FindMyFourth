@@ -11,6 +11,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/utils/upload_data.dart';
+import '/core/design_tokens/border_radius.dart';
 import 'package:flutter/material.dart';
 
 class ChangePhotoWidget extends StatefulWidget {
@@ -50,8 +51,8 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
             borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(0.0),
               bottomRight: Radius.circular(0.0),
-              topLeft: Radius.circular(16.0),
-              topRight: Radius.circular(16.0),
+              topLeft: Radius.circular(AppBorderRadius.lg),
+              topRight: Radius.circular(AppBorderRadius.lg),
             ),
           ),
           child: Padding(
@@ -83,19 +84,10 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                 padding: EdgeInsets.fromLTRB(0.0, AppSpacing.xxs, AppSpacing.md, 0.0),
                                 child: Text(
                                   'Change Profile Picture',
-                                  style: AppTypography.headlineMedium
-                                      .override(
-                                        font: TextStyle(fontFamily: 'Manrope',
-                                          fontWeight: FontWeight.bold,
-                                          fontStyle:
-                                              AppTypography.headlineMedium
-                                                  .fontStyle,
-                                        ),
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: AppTypography.headlineMedium
-                                            .fontStyle,
-                                      ),
+                                  style: AppTypography.headlineMediumSans.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.0,
+                                  ),
                                 ),
                               ),
                             ),

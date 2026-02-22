@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '/backend/schema/player_standing.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -47,13 +49,7 @@ class RestrictionBanner extends StatelessWidget {
         border: Border(
           left: BorderSide(color: config.accentColor, width: 4),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.onyx.withValues(alpha:0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: [AppElevation.md],
       ),
       padding: EdgeInsets.all(AppSpacing.cardPadding),
       child: Column(
@@ -62,7 +58,7 @@ class RestrictionBanner extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(config.icon, color: config.accentColor, size: 22),
+              Icon(config.icon, color: config.accentColor, size: AppIconSize.md),
               SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(
@@ -70,10 +66,8 @@ class RestrictionBanner extends StatelessWidget {
                   children: [
                     Text(
                       config.title,
-                      style: TextStyle(
+                      style: AppTypography.titleSmall.copyWith(
                         fontFamily: AppTypography.displayFamily,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
                         color: AppColors.onyx,
                       ),
                     ),
@@ -239,10 +233,8 @@ class _ComebackBannerState extends State<ComebackBanner> {
               Expanded(
                 child: Text(
                   'Welcome back!',
-                  style: TextStyle(
+                  style: AppTypography.titleSmall.copyWith(
                     fontFamily: AppTypography.displayFamily,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
                     color: AppColors.onyx,
                   ),
                 ),
@@ -251,7 +243,7 @@ class _ComebackBannerState extends State<ComebackBanner> {
                 onTap: _dismiss,
                 child: Icon(
                   Icons.close_rounded,
-                  size: 20,
+                  size: AppIconSize.button,
                   color: AppColors.stone,
                 ),
               ),

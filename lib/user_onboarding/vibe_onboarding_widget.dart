@@ -1,6 +1,8 @@
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/models/vibe_profile.dart';
@@ -301,7 +303,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               color: AppColors.gold.withValues(alpha:0.15),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppBorderRadius.md),
               border: Border.all(
                 color: AppColors.gold.withValues(alpha:0.3),
               ),
@@ -313,7 +315,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                   children: [
                     Icon(
                       Icons.emoji_events_rounded,
-                      size: 20,
+                      size: AppIconSize.button,
                       color: AppColors.gold,
                     ),
                     const SizedBox(width: AppSpacing.sm),
@@ -410,7 +412,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
       ),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppBorderRadius.full),
         border: Border.all(color: color.withValues(alpha:0.3)),
       ),
       child: Row(
@@ -464,7 +466,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(color: borderColor.withValues(alpha:0.5)),
       ),
       child: Column(
@@ -501,7 +503,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                         ? Icons.arrow_downward_rounded
                         : Icons.radio_button_unchecked_rounded,
                 color: isTop || isBottom ? AppColors.pure : AppColors.stone,
-                size: 22,
+                size: AppIconSize.md,
               ),
             ],
           ),
@@ -540,7 +542,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
+      borderRadius: BorderRadius.circular(AppBorderRadius.full),
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm,
@@ -548,7 +550,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
         ),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(AppBorderRadius.full),
           border: Border.all(
             color: selected ? color : AppColors.cloud,
             width: selected ? 1.5 : 1,
@@ -624,7 +626,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                   child: LinearProgressIndicator(
                     value: (_currentIndex + 1) / (_categories.length + 1),
                     backgroundColor: AppColors.slate.withValues(alpha:0.3),
@@ -672,7 +674,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                                   padding: const EdgeInsets.all(AppSpacing.md),
                                   decoration: BoxDecoration(
                                     color: AppColors.navyLight.withValues(alpha:0.1),
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                     border: Border.all(
                                       color: AppColors.navy.withValues(alpha:0.2),
                                     ),
@@ -681,7 +683,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                                     children: [
                                       Icon(
                                         Icons.lightbulb_outline_rounded,
-                                        size: 20,
+                                        size: AppIconSize.button,
                                         color: AppColors.navy,
                                       ),
                                       const SizedBox(width: AppSpacing.sm),

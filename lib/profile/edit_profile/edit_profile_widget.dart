@@ -9,7 +9,10 @@ import '/utils/app_util.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/form_field_controller.dart';
 import '/profile/change_photo/change_photo_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
@@ -198,7 +201,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           'Profile updated successfully!',
           style: AppTypography.bodyMedium.copyWith(
             color: Colors.white,
-            fontWeight: FontWeight.w500,
+            fontWeight: AppTypography.medium,
           ),
         ),
         duration: Duration(milliseconds: 2500),
@@ -233,9 +236,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           leading: const PremiumBackButton(),
           title: Text(
             'Edit Profile',
-            style: AppTypography.headlineSmall.copyWith(
+            style: AppTypography.titleLarge.copyWith(
               color: Colors.white,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -266,8 +268,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                     decoration: BoxDecoration(
                       color: AppColors.pure,
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(32.0),
-                        topRight: Radius.circular(32.0),
+                        topLeft: Radius.circular(AppBorderRadius.xxl),
+                        topRight: Radius.circular(AppBorderRadius.xxl),
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -286,7 +288,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                           height: 4,
                           decoration: BoxDecoration(
                             color: AppColors.cloud,
-                            borderRadius: BorderRadius.circular(2),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                           ),
                         ),
 
@@ -395,7 +397,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                   errorBuilder: (context, error, stackTrace) => Container(
                     color: AppColors.sand,
                     child: Icon(Icons.person_rounded,
-                        size: 60, color: AppColors.stone),
+                        size: AppIconSize.hero, color: AppColors.stone),
                   ),
                 ),
               ),
@@ -442,16 +444,10 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         end: Alignment.bottomRight,
                       ),
                       shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.gold.withValues(alpha:0.4),
-                          blurRadius: 12,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
+                      boxShadow: [AppElevation.glowGold],
                     ),
                     child: Icon(Icons.camera_alt_rounded,
-                        color: Colors.white, size: 22),
+                        color: AppColors.pure, size: AppIconSize.md),
                   ),
                 ),
               ),
@@ -482,7 +478,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             'Change Photo',
             style: AppTypography.labelMedium.copyWith(
               color: AppColors.gold,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -504,7 +499,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             'Personal Information',
             style: AppTypography.titleMedium.copyWith(
               color: AppColors.onyx,
-              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: AppSpacing.md),
@@ -586,7 +580,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             'Golf Profile',
             style: AppTypography.titleMedium.copyWith(
               color: AppColors.onyx,
-              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: AppSpacing.md),
@@ -602,7 +595,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         height: 56,
                         decoration: BoxDecoration(
                           color: AppColors.sand,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
                           border: Border.all(color: AppColors.cloud),
                         ),
                         alignment: Alignment.center,
@@ -625,7 +618,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                     return Container(
                       decoration: BoxDecoration(
                         color: AppColors.sand,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
                         border: Border.all(color: AppColors.cloud),
                       ),
                       child: AppDropDown<String>(
@@ -642,7 +635,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         icon: Icon(
                           Icons.golf_course_rounded,
                           color: AppColors.navy,
-                          size: 22,
+                          size: AppIconSize.md,
                         ),
                         fillColor: AppColors.sand,
                         elevation: 0,
@@ -662,7 +655,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
                     color: AppColors.sand,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
                     border: Border.all(color: AppColors.cloud),
                   ),
                   child: Row(
@@ -672,12 +665,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         height: 40,
                         decoration: BoxDecoration(
                           color: AppColors.gold.withValues(alpha:0.15),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                         ),
                         child: Icon(
                           FontAwesomeIcons.flagCheckered,
                           color: AppColors.gold,
-                          size: 18,
+                          size: AppIconSize.button,
                         ),
                       ),
                       SizedBox(width: AppSpacing.md),
@@ -709,13 +702,13 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             color: enabled
                                 ? AppColors.navy.withValues(alpha:0.1)
                                 : AppColors.cloud.withValues(alpha:0.5),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                           ),
                           child: Icon(
                             Icons.remove_rounded,
                             color:
                                 enabled ? AppColors.navy : AppColors.stone,
-                            size: 18,
+                            size: AppIconSize.button,
                           ),
                         ),
                         incrementIconBuilder: (enabled) => Container(
@@ -725,13 +718,13 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             color: enabled
                                 ? AppColors.navy.withValues(alpha:0.1)
                                 : AppColors.cloud.withValues(alpha:0.5),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                           ),
                           child: Icon(
                             Icons.add_rounded,
                             color:
                                 enabled ? AppColors.navy : AppColors.stone,
-                            size: 18,
+                            size: AppIconSize.button,
                           ),
                         ),
                         countBuilder: (count) => Container(
@@ -745,7 +738,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             textAlign: TextAlign.center,
                             style: AppTypography.monoLarge.copyWith(
                               color: AppColors.onyx,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -794,25 +786,18 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             gradient: LinearGradient(
               colors: [AppColors.navyLight, AppColors.navy],
             ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.navy.withValues(alpha:0.3),
-                blurRadius: 12,
-                offset: Offset(0, 4),
-              ),
-            ],
+            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+            boxShadow: [AppElevation.lg],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check_circle_rounded, color: Colors.white, size: 22),
+              Icon(Icons.check_circle_rounded, color: AppColors.pure, size: AppIconSize.md),
               SizedBox(width: AppSpacing.xs),
               Text(
                 'Save Changes',
                 style: AppTypography.titleSmall.copyWith(
                   color: Colors.white,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -836,13 +821,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                 context: context,
                 builder: (alertDialogContext) => AlertDialog(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                   ),
                   title: Text(
                     'Delete Account?',
                     style: AppTypography.titleMedium.copyWith(
                       color: AppColors.onyx,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   content: Text(
@@ -867,7 +851,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         'Delete',
                         style: AppTypography.labelLarge.copyWith(
                           color: AppColors.error,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -909,20 +892,20 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
           decoration: BoxDecoration(
             color: AppColors.error.withValues(alpha:0.1),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
             border: Border.all(color: AppColors.error.withValues(alpha:0.3)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.delete_outline_rounded,
-                  color: AppColors.error, size: 22),
+                  color: AppColors.error, size: AppIconSize.md),
               SizedBox(width: AppSpacing.xs),
               Text(
                 'Delete Account',
                 style: AppTypography.titleSmall.copyWith(
                   color: AppColors.error,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: AppTypography.medium,
                 ),
               ),
             ],

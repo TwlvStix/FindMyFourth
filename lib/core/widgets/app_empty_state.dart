@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../design_tokens/colors.dart';
+import '../design_tokens/icon_size.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/spacing.dart';
 import '../design_tokens/app_icons.dart';
@@ -34,13 +35,13 @@ class AppEmptyState extends StatelessWidget {
             if (svgPath != null)
               AppIcon(
                 assetPath: svgPath!,
-                size: 64,
+                size: AppIconSize.hero,
                 color: AppColors.cloud,
               )
             else if (icon != null)
               Icon(
                 icon,
-                size: 64,
+                size: AppIconSize.hero,
                 color: AppColors.cloud,
               ),
             SizedBox(height: AppSpacing.md),

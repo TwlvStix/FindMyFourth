@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:find_my_fourth/core/design_tokens/spacing.dart';
 import 'package:find_my_fourth/core/design_tokens/typography.dart';
+import 'package:find_my_fourth/core/design_tokens/border_radius.dart';
 import 'package:find_my_fourth/models/vibe_profile.dart';
 import 'package:find_my_fourth/vibe/premium_vibe_page/styles/premium_vibe_page_styles.dart';
 
@@ -67,7 +68,7 @@ class VibeSpectrumBar extends StatelessWidget {
                     height: 4,
                     decoration: BoxDecoration(
                       color: PremiumVibePageStyles.spectrumBarColor,
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                     ),
                   ),
                 ),

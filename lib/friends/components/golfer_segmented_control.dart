@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 
@@ -24,10 +27,10 @@ class GolferSegmentedControl extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 52,
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(AppSpacing.xs - 2),
       decoration: BoxDecoration(
         color: AppColors.navy.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
         border: Border.all(
           color: AppColors.navyLight.withValues(alpha: 0.25),
           width: 1,
@@ -77,7 +80,7 @@ class GolferSegmentedControl extends StatelessWidget {
             color: isSelected
                 ? AppColors.navyLight.withValues(alpha: 0.5)
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           ),
           child: Center(
             child: Row(
@@ -85,9 +88,7 @@ class GolferSegmentedControl extends StatelessWidget {
               children: [
                 AnimatedDefaultTextStyle(
                   duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 14,
+                  style: AppTypography.bodySmall.copyWith(
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isSelected
                         ? Colors.white
@@ -97,7 +98,7 @@ class GolferSegmentedControl extends StatelessWidget {
                   child: Text(label),
                 ),
                 if (badgeCount > 0) ...[
-                  const SizedBox(width: 6),
+                  SizedBox(width: AppSpacing.xs - 2),
                   _buildBadge(badgeCount),
                 ],
               ],
@@ -110,15 +111,14 @@ class GolferSegmentedControl extends StatelessWidget {
 
   Widget _buildBadge(int count) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs - 2, vertical: 2),
       decoration: BoxDecoration(
         color: AppColors.gold,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppBorderRadius.sm),
       ),
       child: Text(
         count > 99 ? '99+' : count.toString(),
-        style: const TextStyle(
-          fontFamily: 'Manrope',
+        style: AppTypography.labelSmall.copyWith(
           fontSize: 11,
           fontWeight: FontWeight.w700,
           color: AppColors.navyDark,

@@ -4,6 +4,7 @@ import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -65,7 +66,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                           child: Icon(
                             Icons.check_rounded,
                             color: AppColors.pure,
-                            size: 60.0,
+                            size: AppIconSize.hero,
                           ),
                         ),
                       ),

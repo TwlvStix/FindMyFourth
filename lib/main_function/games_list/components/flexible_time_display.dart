@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/models/game.dart';
 
 /// Displays flexible time information with week range and selected day pills
@@ -66,7 +69,7 @@ class FlexibleTimeDisplay extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: AppColors.navy.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppBorderRadius.md),
               border: Border.all(
                 color: AppColors.navy.withValues(alpha: 0.5),
                 width: 1,
@@ -78,7 +81,7 @@ class FlexibleTimeDisplay extends StatelessWidget {
                 Icon(
                   _getTimeOfDayIcon(game.flexibleTimeOfDay),
                   color: Colors.white.withValues(alpha: 0.9),
-                  size: compact ? 12 : 14,
+                  size: AppIconSize.xs,
                 ),
                 SizedBox(width: 4),
                 Text(
@@ -109,14 +112,8 @@ class FlexibleTimeDisplay extends StatelessWidget {
         gradient: const LinearGradient(
           colors: [AppColors.gold, AppColors.goldLight],
         ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.gold.withValues(alpha: 0.3),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
+        boxShadow: [AppElevation.xs],
       ),
       child: Text(
         day,

@@ -14,6 +14,8 @@ import '/core/widgets/profile_card_section.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/form_field_controller.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/profile/change_photo/change_photo_widget.dart';
@@ -435,28 +437,28 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
         filled: true,
         fillColor: Colors.white,
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
           borderSide: BorderSide(
             color: AppColors.cloud,
             width: 1.5,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
           borderSide: BorderSide(
             color: AppColors.navy,
             width: 2.0,
           ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
           borderSide: BorderSide(
             color: AppColors.error,
             width: 1.5,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
           borderSide: BorderSide(
             color: AppColors.error,
             width: 2.0,
@@ -621,7 +623,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                 icon: Icon(
                                   Icons.golf_course_rounded,
                                   color: AppColors.navy,
-                                  size: 24,
+                                  size: AppIconSize.md,
                                 ),
                                 fillColor: Colors.white,
                                 elevation: 2,
@@ -655,13 +657,13 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                 Icons.remove_rounded,
                                 color:
                                     enabled ? AppColors.navy : AppColors.cloud,
-                                size: 20,
+                                size: AppIconSize.button,
                               ),
                               incrementIconBuilder: (enabled) => Icon(
                                 Icons.add_rounded,
                                 color:
                                     enabled ? AppColors.navy : AppColors.cloud,
-                                size: 20,
+                                size: AppIconSize.button,
                               ),
                               countBuilder: (count) => Text(
                                 count < 0 ? '+${count.abs()}' : count.toString(),

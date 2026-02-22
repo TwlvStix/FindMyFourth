@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../design_tokens/colors.dart';
+import '../design_tokens/icon_size.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/border_radius.dart';
 import '../design_tokens/spacing.dart';
@@ -170,15 +171,15 @@ class _AppTextFieldState extends State<AppTextField> {
           ),
           prefixIcon: widget.prefixSvgPath != null
               ? Padding(
-                  padding: EdgeInsets.all(12),
-                  child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.slate, size: 20),
+                  padding: AppSpacing.allSm,
+                  child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
                 )
               : widget.prefixIcon != null
                   ? Icon(widget.prefixIcon, color: AppColors.slate)
                   : null,
           suffixIcon: widget.suffixSvgPath != null
               ? IconButton(
-                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: 20),
+                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
                   onPressed: widget.onSuffixIconTap,
                 )
               : widget.suffixIcon != null
@@ -217,15 +218,15 @@ class _AppTextFieldState extends State<AppTextField> {
           ),
           prefixIcon: widget.prefixSvgPath != null
               ? Padding(
-                  padding: EdgeInsets.all(12),
-                  child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.slate, size: 20),
+                  padding: AppSpacing.allSm,
+                  child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
                 )
               : widget.prefixIcon != null
                   ? Icon(widget.prefixIcon, color: AppColors.slate)
                   : null,
           suffixIcon: widget.suffixSvgPath != null
               ? IconButton(
-                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: 20),
+                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
                   onPressed: widget.onSuffixIconTap,
                 )
               : widget.suffixIcon != null
@@ -258,15 +259,15 @@ class _AppTextFieldState extends State<AppTextField> {
           ),
           prefixIcon: widget.prefixSvgPath != null
               ? Padding(
-                  padding: EdgeInsets.all(12),
-                  child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.slate, size: 20),
+                  padding: AppSpacing.allSm,
+                  child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
                 )
               : widget.prefixIcon != null
                   ? Icon(widget.prefixIcon, color: AppColors.slate)
                   : null,
           suffixIcon: widget.suffixSvgPath != null
               ? IconButton(
-                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: 20),
+                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
                   onPressed: widget.onSuffixIconTap,
                 )
               : widget.suffixIcon != null
@@ -295,10 +296,13 @@ class _AppTextFieldState extends State<AppTextField> {
           hintStyle: AppTypography.bodyMedium.copyWith(
             color: AppColors.stone,
           ),
-          prefixIcon: Icon(Icons.search, color: AppColors.slate),
+          prefixIcon: Padding(
+            padding: AppSpacing.allSm,
+            child: AppIcon(assetPath: AppIcons.search, color: AppColors.slate, size: AppIconSize.button),
+          ),
           suffixIcon: widget.suffixSvgPath != null
               ? IconButton(
-                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: 20),
+                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
                   onPressed: widget.onSuffixIconTap,
                 )
               : widget.suffixIcon != null

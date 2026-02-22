@@ -261,7 +261,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
     final baseStyle = widget.size == AppButtonSize.large ||
             widget.size == AppButtonSize.xlarge
         ? AppTypography.buttonLarge
-        : AppTypography.button;
+        : AppTypography.labelLarge;
 
     return baseStyle.copyWith(
       color: _getTextColor(),

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 
 class FirmItUpBanner extends StatelessWidget {
   final VoidCallback onPressed;
@@ -23,7 +26,7 @@ class FirmItUpBanner extends StatelessWidget {
             AppColors.goldLight.withValues(alpha: 0.2),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(
           color: AppColors.gold.withValues(alpha: 0.4),
           width: 2,
@@ -38,12 +41,12 @@ class FirmItUpBanner extends StatelessWidget {
                 padding: EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
                   color: AppColors.gold.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                 ),
                 child: Icon(
                   Icons.event_available_rounded,
                   color: AppColors.gold,
-                  size: 24,
+                  size: AppIconSize.md,
                 ),
               ),
               SizedBox(width: AppSpacing.md),
@@ -53,9 +56,7 @@ class FirmItUpBanner extends StatelessWidget {
                   children: [
                     Text(
                       'Got Your Tee Time?',
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 16,
+                      style: AppTypography.titleSmall.copyWith(
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
@@ -63,8 +64,7 @@ class FirmItUpBanner extends StatelessWidget {
                     SizedBox(height: 4),
                     Text(
                       'Lock in your date, time, and course',
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
+                      style: AppTypography.bodySmall.copyWith(
                         fontSize: 13,
                         color: Colors.white.withValues(alpha: 0.8),
                       ),

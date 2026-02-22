@@ -44,20 +44,10 @@ class _DateFormatWidgetState extends State<DateFormatWidget> {
         ),
         Text(
           ',',
-          style: AppTypography.headlineMedium.override(
-                font: TextStyle(fontFamily: 'Manrope',
-                  fontWeight:
-                      AppTypography.headlineMedium.fontWeight,
-                  fontStyle:
-                      AppTypography.headlineMedium.fontStyle,
-                ),
-                color: Colors.white,
-                letterSpacing: 0.0,
-                fontWeight:
-                    AppTypography.headlineMedium.fontWeight,
-                fontStyle:
-                    AppTypography.headlineMedium.fontStyle,
-              ),
+          style: AppTypography.headlineMediumSans.copyWith(
+            color: Colors.white,
+            letterSpacing: 0.0,
+          ),
         ),
         Padding(
           padding: EdgeInsetsDirectional.fromSTEB(4.0, 0.0, 0.0, 0.0),

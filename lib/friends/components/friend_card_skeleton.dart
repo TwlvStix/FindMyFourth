@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/border_radius.dart';
 
 /// Compact skeleton loading card matching redesigned PremiumFriendCard
 /// Clean white background with horizontal action layout
@@ -49,7 +50,7 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
       decoration: BoxDecoration(
         // Dark green tinted background - matches card style
         color: AppColors.navy.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),
           width: 1.0,
@@ -88,7 +89,7 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
                             shimmerPosition: _shimmerAnimation.value,
                           ),
 
-                          SizedBox(height: 6),
+                          SizedBox(height: AppSpacing.xs - 2),
 
                           // Badges row skeleton (vibe + handicap only, no location)
                           Row(
@@ -99,7 +100,7 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
                                 borderRadius: 999,
                                 shimmerPosition: _shimmerAnimation.value,
                               ),
-                              SizedBox(width: 6),
+                              SizedBox(width: AppSpacing.xs - 2),
                               _buildShimmerBox(
                                 width: 50,
                                 height: 22,

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '/backend/backend.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/models/vibe_profile.dart';
 import '/services/vibe_matcher.dart';
 import '/services/vibe_repository.dart';
@@ -234,18 +237,12 @@ class _SuggestedGolferCard extends StatelessWidget {
         padding: EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: AppColors.navy.withValues(alpha:0.28),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
             color: AppColors.glassSurface,
             width: 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha:0.08),
-              blurRadius: 10,
-              offset: Offset(0, 6),
-            ),
-          ],
+          boxShadow: [AppElevation.md],
         ),
         child: Row(
           children: [
@@ -280,7 +277,7 @@ class _SuggestedGolferCard extends StatelessWidget {
                       color: recommendation == VibeRecommendation.caution
                           ? AppColors.stone.withValues(alpha:0.3)
                           : null,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                     ),
                     child: Text(
                       'VIBE $score%',
@@ -299,6 +296,7 @@ class _SuggestedGolferCard extends StatelessWidget {
             Icon(
               Icons.chevron_right_rounded,
               color: AppColors.glassTextTertiary,
+              size: AppIconSize.button,
             ),
           ],
         ),
@@ -330,14 +328,14 @@ class _Avatar extends StatelessWidget {
         gradient: LinearGradient(
           colors: [AppColors.navyLight, AppColors.navy],
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
           color: AppColors.glassBorder,
           width: 2,
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppBorderRadius.sm),
         child: photoUrl.isNotEmpty
             ? Image.network(
                 photoUrl,
@@ -346,14 +344,14 @@ class _Avatar extends StatelessWidget {
                 cacheHeight: 88,
                 errorBuilder: (context, error, stackTrace) => Icon(
                   Icons.person_rounded,
-                  color: Colors.white,
-                  size: 24,
+                  color: AppColors.pure,
+                  size: AppIconSize.md,
                 ),
               )
             : Icon(
                 Icons.person_rounded,
-                color: Colors.white,
-                size: 24,
+                color: AppColors.pure,
+                size: AppIconSize.md,
               ),
       ),
     );

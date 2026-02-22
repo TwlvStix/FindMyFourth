@@ -9,6 +9,7 @@ import '../core/design_tokens/colors.dart';
 import '../core/design_tokens/spacing.dart';
 import '../core/design_tokens/border_radius.dart';
 import '../core/design_tokens/typography.dart';
+import '../core/design_tokens/icon_size.dart';
 import '../core/widgets/app_button_enhanced.dart';
 import '../core/widgets/fairway_background.dart';
 
@@ -293,8 +294,7 @@ class _Slide1FindYourGame extends StatelessWidget {
           SizedBox(height: AppSpacing.xl),
           Text(
             'Find the Game You Actually Want to Play',
-            style: AppTypography.headlineMedium?.copyWith(
-                  fontFamily: 'Fraunces',
+            style: AppTypography.headlineMedium.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
             textAlign: TextAlign.center,
@@ -337,7 +337,7 @@ class _GameDetailCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [AppColors.navyDark, AppColors.navy],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
         boxShadow: [
           BoxShadow(
             color: AppColors.overlayDark,
@@ -347,7 +347,7 @@ class _GameDetailCard extends StatelessWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
         child: SingleChildScrollView(
           physics: const NeverScrollableScrollPhysics(),
           child: Padding(
@@ -378,13 +378,12 @@ class _GameDetailCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   decoration: BoxDecoration(
                     color: AppColors.sand,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                   ),
                   child: Text(
                     'Join Game',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
+                    style: AppTypography.labelLarge.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppColors.navyDark,
                     ),
@@ -406,7 +405,7 @@ class _VibeMatchSection extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha:0.08),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
       ),
       child: Column(
         children: [
@@ -420,10 +419,10 @@ class _VibeMatchSection extends StatelessWidget {
                   color: AppColors.gold,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.location_on,
-                  size: 14,
-                  color: Colors.white,
+                  size: AppIconSize.xs,
+                  color: AppColors.pure,
                 ),
               ),
               const SizedBox(width: 10),
@@ -431,10 +430,9 @@ class _VibeMatchSection extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Group Vibe Match',
-                      style: TextStyle(
-                        fontSize: 15,
+                      style: AppTypography.labelMedium.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -442,7 +440,7 @@ class _VibeMatchSection extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       'Based on your preferences',
-                      style: TextStyle(
+                      style: AppTypography.caption.copyWith(
                         fontSize: 11,
                         color: AppColors.glassTextSecondary,
                       ),
@@ -456,12 +454,11 @@ class _VibeMatchSection extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.gold,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 child: Text(
                   '85%',
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppTypography.labelMedium.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.navyDark,
                   ),
@@ -476,13 +473,13 @@ class _VibeMatchSection extends StatelessWidget {
             children: [
               Icon(
                 Icons.insights,
-                size: 14,
+                size: AppIconSize.xs,
                 color: AppColors.glassTextSecondary,
               ),
               const SizedBox(width: 6),
               Text(
                 'View Detailed Breakdown >',
-                style: TextStyle(
+                style: AppTypography.bodySmall.copyWith(
                   fontSize: 13,
                   color: AppColors.glassTextSecondary,
                 ),
@@ -509,14 +506,13 @@ class _SectionHeader extends StatelessWidget {
           height: 20,
           decoration: BoxDecoration(
             color: AppColors.gold,
-            borderRadius: BorderRadius.circular(2),
+            borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
           ),
         ),
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 18,
+          style: AppTypography.titleMedium.copyWith(
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -615,7 +611,7 @@ class _DetailCell extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha:0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -629,14 +625,14 @@ class _DetailCell extends StatelessWidget {
             ),
             child: Icon(
               icon,
-              size: 16,
+              size: AppIconSize.xs,
               color: AppColors.navyDark,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             label,
-            style: TextStyle(
+            style: AppTypography.caption.copyWith(
               fontSize: 11,
               color: AppColors.glassTextSecondary,
             ),
@@ -644,8 +640,7 @@ class _DetailCell extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 14,
+            style: AppTypography.labelMedium.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -665,10 +660,9 @@ class _PlayersSection extends StatelessWidget {
         // Header with count badge
         Row(
           children: [
-            const Text(
+            Text(
               'Players',
-              style: TextStyle(
-                fontSize: 16,
+              style: AppTypography.labelLarge.copyWith(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -678,12 +672,11 @@ class _PlayersSection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: AppColors.gold.withValues(alpha:0.2),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppBorderRadius.md),
               ),
               child: Text(
                 '3/4',
-                style: TextStyle(
-                  fontSize: 12,
+                style: AppTypography.labelSmall.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.gold,
                 ),
@@ -723,20 +716,20 @@ class _PlayersSection extends StatelessWidget {
               width: 1.5,
               style: BorderStyle.solid,
             ),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.add_circle_outline,
-                size: 18,
+                size: AppIconSize.button,
                 color: AppColors.glassTextSecondary,
               ),
               const SizedBox(width: 8),
               Text(
                 '+1 spot open',
-                style: TextStyle(
+                style: AppTypography.bodySmall.copyWith(
                   fontSize: 13,
                   color: AppColors.glassTextSecondary,
                 ),
@@ -777,10 +770,9 @@ class _PlayerRow extends StatelessWidget {
           child: Center(
             child: Text(
               initial,
-              style: const TextStyle(
-                color: Colors.white,
+              style: AppTypography.labelMedium.copyWith(
                 fontWeight: FontWeight.bold,
-                fontSize: 14,
+                color: Colors.white,
               ),
             ),
           ),
@@ -790,10 +782,10 @@ class _PlayerRow extends StatelessWidget {
         Expanded(
           child: Text(
             name,
-            style: const TextStyle(
+            style: AppTypography.bodySmall.copyWith(
               fontSize: 13,
-              color: Colors.white,
               fontWeight: FontWeight.w500,
+              color: Colors.white,
             ),
           ),
         ),
@@ -802,11 +794,11 @@ class _PlayerRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
             color: AppColors.gold.withValues(alpha:0.15),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
           ),
           child: Text(
             vibeMatch,
-            style: TextStyle(
+            style: AppTypography.caption.copyWith(
               fontSize: 11,
               fontWeight: FontWeight.bold,
               color: AppColors.gold,
@@ -817,7 +809,7 @@ class _PlayerRow extends StatelessWidget {
         // Checkmark
         Icon(
           Icons.check_circle,
-          size: 16,
+          size: AppIconSize.xs,
           color: AppColors.success,
         ),
       ],
@@ -843,10 +835,9 @@ class _PlayerAvatar extends StatelessWidget {
       child: Center(
         child: Text(
           name,
-          style: const TextStyle(
-            color: Colors.white,
+          style: AppTypography.labelMedium.copyWith(
             fontWeight: FontWeight.bold,
-            fontSize: 14,
+            color: Colors.white,
           ),
         ),
       ),
@@ -907,7 +898,7 @@ class _Slide2RightGroup extends StatelessWidget {
                           maxHeight: constraints.maxHeight,
                         ),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha:0.12),
@@ -917,7 +908,7 @@ class _Slide2RightGroup extends StatelessWidget {
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                           child: Image.asset(
                             'assets/images/Slide #2 - Vibe Match.png',
                             fit: BoxFit.contain,
@@ -934,8 +925,7 @@ class _Slide2RightGroup extends StatelessWidget {
           SizedBox(height: AppSpacing.xl),
           Text(
             'Golf Is Better When the Group Is Right',
-            style: AppTypography.headlineMedium?.copyWith(
-                  fontFamily: 'Fraunces',
+            style: AppTypography.headlineMedium.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
             textAlign: TextAlign.center,
@@ -1036,7 +1026,7 @@ class _Slide3GetAlerted extends StatelessWidget {
                                   maxHeight: constraints.maxHeight,
                                 ),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withValues(alpha:0.12),
@@ -1046,7 +1036,7 @@ class _Slide3GetAlerted extends StatelessWidget {
                                   ],
                                 ),
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                                   child: Image.asset(
                                     'assets/images/Slide #3 -Notification.png',
                                     fit: BoxFit.contain,
@@ -1077,8 +1067,7 @@ class _Slide3GetAlerted extends StatelessWidget {
           SizedBox(height: AppSpacing.xl),
           Text(
             'The Right Game Finds You',
-            style: AppTypography.headlineMedium?.copyWith(
-                  fontFamily: 'Fraunces',
+            style: AppTypography.headlineMedium.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
             textAlign: TextAlign.center,
@@ -1187,7 +1176,7 @@ class _Slide4FillFoursome extends StatelessWidget {
                                   maxHeight: constraints.maxHeight,
                                 ),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withValues(alpha:0.12),
@@ -1197,7 +1186,7 @@ class _Slide4FillFoursome extends StatelessWidget {
                                   ],
                                 ),
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                                   child: Image.asset(
                                     'assets/images/Slide #4 - GameList.png',
                                     fit: BoxFit.contain,
@@ -1234,8 +1223,7 @@ class _Slide4FillFoursome extends StatelessWidget {
           SizedBox(height: AppSpacing.xl),
           Text(
             'Buddy Bailed? You are Covered.',
-            style: AppTypography.headlineMedium?.copyWith(
-                  fontFamily: 'Fraunces',
+            style: AppTypography.headlineMedium.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
             textAlign: TextAlign.center,
@@ -1283,7 +1271,7 @@ class _AppNotificationBanner extends StatelessWidget {
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           boxShadow: [
             BoxShadow(
               color: AppColors.overlayDark,
@@ -1304,13 +1292,13 @@ class _AppNotificationBanner extends StatelessWidget {
                   end: Alignment.bottomRight,
                   colors: [AppColors.navyDark, AppColors.green],
                 ),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
-              child: const Center(
+              child: Center(
                 child: Icon(
                   Icons.golf_course_rounded,
-                  color: Colors.white,
-                  size: 18,
+                  color: AppColors.pure,
+                  size: AppIconSize.button,
                 ),
               ),
             ),
@@ -1323,9 +1311,8 @@ class _AppNotificationBanner extends StatelessWidget {
                 children: [
                   Text(
                     'FIND MY FOURTH',
-                    style: TextStyle(
+                    style: AppTypography.overline.copyWith(
                       fontSize: 10,
-                      fontWeight: FontWeight.w600,
                       color: AppColors.slate,
                       letterSpacing: 0.4,
                     ),
@@ -1333,9 +1320,8 @@ class _AppNotificationBanner extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     'New Game Match',
-                    style: TextStyle(
+                    style: AppTypography.labelSmall.copyWith(
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
                       color: AppColors.onyx,
                       height: 1.2,
                     ),
@@ -1345,9 +1331,8 @@ class _AppNotificationBanner extends StatelessWidget {
                   const SizedBox(height: 1),
                   Text(
                     'Match Play · Meadow Creek · Saturday 8:40 AM',
-                    style: TextStyle(
+                    style: AppTypography.timestamp.copyWith(
                       fontSize: 11,
-                      fontWeight: FontWeight.w400,
                       color: AppColors.slate,
                       height: 1.3,
                     ),
@@ -1375,7 +1360,7 @@ class _FoursomeCompleteToast extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.navy,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
           boxShadow: [
             BoxShadow(
               color: AppColors.navyDark.withValues(alpha:0.3),
@@ -1397,28 +1382,28 @@ class _FoursomeCompleteToast extends StatelessWidget {
               ),
               child: Icon(
                 Icons.check,
-                size: 18,
+                size: AppIconSize.button,
                 color: AppColors.navy,
               ),
             ),
             const SizedBox(width: 10),
             // Text column
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   'Foursome Complete!',
-                  style: TextStyle(
+                  style: AppTypography.labelSmall.copyWith(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
                 ),
-                SizedBox(height: 1),
+                const SizedBox(height: 1),
                 Text(
                   'Ryan\'s group is ready to go',
-                  style: TextStyle(
+                  style: AppTypography.caption.copyWith(
                     fontSize: 10,
                     color: AppColors.glassTextSecondary,
                   ),

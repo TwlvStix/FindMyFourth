@@ -1,6 +1,8 @@
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/premium_back_button.dart';
@@ -203,7 +205,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                               padding: const EdgeInsets.all(AppSpacing.md),
                               decoration: BoxDecoration(
                                 color: AppColors.gold.withValues(alpha:0.15),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                 border: Border.all(
                                   color: AppColors.gold.withValues(alpha:0.3),
                                 ),
@@ -215,7 +217,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                     children: [
                                       Icon(
                                         Icons.emoji_events_rounded,
-                                        size: 20,
+                                        size: AppIconSize.button,
                                         color: AppColors.gold,
                                       ),
                                       const SizedBox(width: AppSpacing.sm),
@@ -269,7 +271,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                             padding: const EdgeInsets.all(AppSpacing.md),
                             decoration: BoxDecoration(
                               color: AppColors.sand,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                               border: Border.all(
                                 color: AppColors.cloud,
                               ),
@@ -282,12 +284,12 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                   decoration: BoxDecoration(
                                     color:
                                         AppColors.navyLight.withValues(alpha:0.2),
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                   ),
                                   child: Icon(
                                     Icons.star_rounded,
                                     color: AppColors.navy,
-                                    size: 20,
+                                    size: AppIconSize.button,
                                   ),
                                 ),
                                 const SizedBox(width: AppSpacing.md),
@@ -317,7 +319,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                 Icon(
                                   Icons.arrow_forward_ios_rounded,
                                   color: AppColors.stone,
-                                  size: 16,
+                                  size: AppIconSize.xs,
                                 ),
                               ],
                             ),

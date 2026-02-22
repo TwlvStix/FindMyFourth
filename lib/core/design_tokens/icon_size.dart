@@ -8,6 +8,17 @@
 /// Our sizes ensure touch targets meet accessibility standards (minimum 48px interactive
 /// area) while maintaining visual balance.
 ///
+/// Token Reference:
+/// | Token | Pixels | Semantic Aliases |
+/// |-------|--------|------------------|
+/// | xs    | 16     | —                |
+/// | sm    | 20     | button           |
+/// | md    | 24     | nav, listItem    |
+/// | lg    | 32     | section          |
+/// | xl    | 40     | feature          |
+/// | xxl   | 48     | avatar           |
+/// | xxxl  | 60     | hero             |
+///
 /// Usage:
 /// ```dart
 /// Icon(
@@ -50,6 +61,11 @@ class AppIconSize {
   /// Golf aesthetic: Tournament trophy display
   static const double xxl = 48.0;
 
+  /// 60px - Extra extra extra large icons for hero elements
+  /// Usage: Empty states, success confirmations, peer rating, onboarding heroes
+  /// Golf aesthetic: The grand tournament trophy at center stage
+  static const double xxxl = 60.0;
+
   // ============================================================================
   // SEMANTIC SHORTCUTS (COMPONENT-SPECIFIC)
   // ============================================================================
@@ -71,4 +87,7 @@ class AppIconSize {
 
   /// Avatar icon size - profile pictures and user icons
   static const double avatar = xxl;
+
+  /// Hero icon size - empty states, success confirmations, feedback screens
+  static const double hero = xxxl;
 }

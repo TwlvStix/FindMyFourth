@@ -7,7 +7,9 @@ import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -302,7 +304,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                     children: [
                       Text(
                         'Golfers',
-                        style: AppTypography.headlineMedium.copyWith(
+                        style: AppTypography.headlineMediumSans.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
@@ -314,7 +316,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                           height: 48,
                           decoration: BoxDecoration(
                             color: AppColors.navy.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
                             border: Border.all(
                               color: AppColors.navyLight.withValues(alpha: 0.3),
                               width: 1,
@@ -322,8 +324,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                           ),
                           child: Icon(
                             Icons.settings_outlined,
-                            color: Colors.white.withValues(alpha: 0.7),
-                            size: 22,
+                            color: AppColors.pure.withValues(alpha: 0.7),
+                            size: AppIconSize.md,
                           ),
                         ),
                       ),

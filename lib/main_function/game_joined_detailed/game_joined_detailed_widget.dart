@@ -9,10 +9,13 @@ import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
 import '/providers/trust_provider.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_icons.dart';
 import '/core/widgets/app_icon.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
@@ -46,6 +49,7 @@ import 'components/firm_it_up_banner.dart';
 import 'components/firm_it_up_bottom_sheet.dart';
 import 'components/edit_game_details_bottom_sheet.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
+import '/screens/trust/cancellation_warning_modal.dart';
 
 enum _CancelListingHandling {
   removeNow,
@@ -211,8 +215,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                   ),
                   child: Icon(
                     Icons.error_outline_rounded,
-                    color: Colors.white.withValues(alpha: 0.5),
-                    size: 40,
+                    color: AppColors.pure.withValues(alpha: 0.5),
+                    size: AppIconSize.xl,
                   ),
                 ),
                 SizedBox(height: AppSpacing.md),
@@ -401,10 +405,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         SizedBox(height: AppSpacing.md),
                                         Text(
                                           'Confirming tee time...',
-                                          style: TextStyle(
-                                            fontFamily: 'Manrope',
-                                            fontSize: 14,
-                                          ),
+                                          style: AppTypography.bodySmall,
                                         ),
                                       ],
                                     ),
@@ -545,19 +546,13 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                               gradient: LinearGradient(
                                 colors: [AppColors.gold, AppColors.goldLight],
                               ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.gold.withValues(alpha: 0.3),
-                                  blurRadius: 12,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
+                              borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+                              boxShadow: [AppElevation.glowGold],
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                AppIcon(assetPath: AppIcons.chat, color: Colors.white, size: 22),
+                                AppIcon(assetPath: AppIcons.chat, color: AppColors.pure, size: AppIconSize.md),
                                 SizedBox(width: AppSpacing.sm),
                                 Text(
                                   'Message Group',
@@ -604,7 +599,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                     end: Alignment.bottomCenter,
                                     colors: [AppColors.gold, AppColors.goldLight],
                                   ),
-                                  borderRadius: BorderRadius.circular(2),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                                 ),
                               ),
                               SizedBox(width: AppSpacing.sm),
@@ -697,7 +692,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                     end: Alignment.bottomCenter,
                                     colors: [AppColors.gold, AppColors.goldLight],
                                   ),
-                                  borderRadius: BorderRadius.circular(2),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                                 ),
                               ),
                               SizedBox(width: AppSpacing.sm),
@@ -716,7 +711,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: AppColors.gold.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                 ),
                                 child: Text(
                                   '${_getPlayerCount(gameJoinedDetailedGamesRecord)}/4',
@@ -826,7 +821,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                   icon: Icon(
                                                     Icons.remove_circle_outline,
                                                     color: AppColors.error,
-                                                    size: 24.0,
+                                                    size: AppIconSize.md,
                                                   ),
                                                   borderRadius: 20.0,
                                                   buttonSize: 40.0,
@@ -845,7 +840,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                               : AppIcon(
                                                   assetPath: AppIcons.joined,
                                                   color: AppColors.goldLight,
-                                                  size: 24.0,
+                                                  size: AppIconSize.md,
                                                 ),
                                       onTap: () {
                                         context.pushNamed(
@@ -872,7 +867,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                   decoration: BoxDecoration(
                                     color: AppColors.navy
                                         .withValues(alpha: 0.3),
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                     border: Border.all(
                                       color: AppColors.navyLight
                                           .withValues(alpha: 0.3),
@@ -991,30 +986,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                         context: context,
                         text: 'Leave game',
                         onPressed: () async {
-                          final confirmed = await showDialog<bool>(
-                            context: context,
-                            builder: (dialogContext) => AlertDialog(
-                              title: Text('Leave Game'),
-                              content: Text(
-                                'Are you sure you want to leave this game?',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(dialogContext).pop(false),
-                                  child: Text('Cancel'),
-                                ),
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(dialogContext).pop(true),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor:
-                                        AppColors.error,
-                                  ),
-                                  child: Text('Leave Game'),
-                                ),
-                              ],
-                            ),
+                          // Show tier-aware cancellation warning
+                          final confirmed = await CancellationWarningModal.show(
+                            context,
+                            game: gameJoinedDetailedGamesRecord,
                           );
                           if (confirmed != true) return;
                           if (currentUserRef == null) {
@@ -1315,7 +1290,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
             decoration: BoxDecoration(
               color: AppColors.pure,
               borderRadius: BorderRadius.vertical(
-                top: Radius.circular(20),
+                top: Radius.circular(AppBorderRadius.xl),
               ),
             ),
             child: SingleChildScrollView(
@@ -1334,7 +1309,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                       height: 4,
                       decoration: BoxDecoration(
                         color: AppColors.cloud,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
                       ),
                     ),
                   ),
@@ -1392,7 +1367,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.sand,
-                          borderRadius: BorderRadius.circular(999),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.full),
                           border: Border.all(
                             color: AppColors.cloud,
                           ),
@@ -1511,7 +1486,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
       ),
       decoration: BoxDecoration(
         color: AppColors.sand,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(color: AppColors.cloud),
       ),
       child: Row(
@@ -1738,7 +1713,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
       height: 56.0,
       decoration: BoxDecoration(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
           color: AppColors.error.withValues(alpha: 0.5),
           width: 2.0,
@@ -1748,7 +1723,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
         color: Colors.transparent,
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
           child: Center(
             child: Text(
               text,
@@ -1781,7 +1756,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
         color: isFunBadge
             ? AppColors.navy.withValues(alpha: 0.4)
             : AppColors.navy.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(
           color: isFunBadge
               ? AppColors.gold.withValues(alpha: 0.4)
@@ -1795,7 +1770,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
             height: 36,
             decoration: BoxDecoration(
               gradient: LinearGradient(colors: iconColors),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               boxShadow: [
                 BoxShadow(
                   color: iconColors.first.withValues(alpha: 0.3),
@@ -1804,7 +1779,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                 ),
               ],
             ),
-            child: Icon(icon, color: Colors.white, size: 18),
+            child: Icon(icon, color: AppColors.pure, size: AppIconSize.button),
           ),
           SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -1920,7 +1895,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                 SizedBox(height: AppSpacing.md),
                 Text(
                   'Updating game details...',
-                  style: TextStyle(fontFamily: 'Manrope', fontSize: 14),
+                  style: AppTypography.bodySmall,
                 ),
               ],
             ),

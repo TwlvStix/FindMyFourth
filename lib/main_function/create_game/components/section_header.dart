@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_icon.dart';
 
@@ -40,14 +42,14 @@ class SectionHeader extends StatelessWidget {
               gradient: LinearGradient(
                 colors: [AppColors.navyLight, AppColors.navy],
               ),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
             ),
             child: Center(
               child: svgPath != null
                   ? AppIcon(
                       assetPath: svgPath!,
-                      size: 18,
-                      color: Colors.white,
+                      size: AppIconSize.button,
+                      color: AppColors.pure,
                     )
                   : Text(
                       emoji ?? '',
@@ -78,7 +80,7 @@ class SectionHeader extends StatelessWidget {
                 child: Icon(
                   Icons.help_outline_rounded,
                   color: AppColors.gold,
-                  size: 14,
+                  size: AppIconSize.xs,
                 ),
               ),
             ),

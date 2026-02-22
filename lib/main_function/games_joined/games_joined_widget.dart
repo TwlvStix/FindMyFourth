@@ -3,10 +3,13 @@ import '/core/widgets/app_stream_builder.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
+import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_icon.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/create_game/create_game_widget.dart';
@@ -70,7 +73,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
           automaticallyImplyLeading: false,
           title: Text(
             'My Games',
-            style: AppTypography.headlineMedium.copyWith(
+            style: AppTypography.headlineMediumSans.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
@@ -143,7 +146,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                         child: Center(
                                           child: AppIcon(
                                             assetPath: AppIcons.games,
-                                            size: 64,
+                                            size: AppIconSize.hero,
                                             color: AppColors.glassTextTertiary,
                                           ),
                                         ),
@@ -247,18 +250,12 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
         width: double.infinity,
         decoration: BoxDecoration(
           color: AppColors.navy.withValues(alpha:0.3),
-          borderRadius: BorderRadius.circular(20.0),
+          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
           border: Border.all(
             color: AppColors.gold.withValues(alpha:0.4),
             width: 2.0,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.gold.withValues(alpha:0.15),
-              blurRadius: 20,
-              offset: Offset(0, 4),
-            ),
-          ],
+          boxShadow: [AppElevation.lg],
         ),
         child: Column(
           children: [
@@ -284,7 +281,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                   ? [AppColors.gold, AppColors.goldLight]
                                   : [AppColors.navyLight, AppColors.navy],
                             ),
-                            borderRadius: BorderRadius.circular(20.0),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                             boxShadow: [
                               BoxShadow(
                                 color: (game.styleGame == 'Money Game'
@@ -313,7 +310,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.gold.withValues(alpha:0.2),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Text(
                             '\$\$\$',
@@ -334,7 +331,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.error.withValues(alpha:0.2),
-                            borderRadius: BorderRadius.circular(12.0),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
                             border: Border.all(
                               color: AppColors.error.withValues(alpha:0.3),
                             ),
@@ -355,7 +352,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.warning.withValues(alpha:0.2),
-                            borderRadius: BorderRadius.circular(12.0),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Text(
                             'Completed',
@@ -373,14 +370,14 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.green.withValues(alpha:0.9),
-                            borderRadius: BorderRadius.circular(12.0),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               AppIcon(
                                   assetPath: AppIcons.owner,
-                                  color: Colors.white, size: 14),
+                                  color: AppColors.pure, size: AppIconSize.xs),
                               SizedBox(width: 4),
                               Text(
                                 'Owner',
@@ -402,14 +399,14 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             gradient: LinearGradient(
                               colors: [AppColors.gold, AppColors.goldLight],
                             ),
-                            borderRadius: BorderRadius.circular(12.0),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               AppIcon(
                                   assetPath: AppIcons.joined,
-                                  color: Colors.white, size: 14),
+                                  color: AppColors.pure, size: AppIconSize.xs),
                               SizedBox(width: 4),
                               Text(
                                 'Joined',
@@ -436,13 +433,13 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           gradient: LinearGradient(
                             colors: [AppColors.navyLight, AppColors.navy],
                           ),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                         ),
                         child: Center(
                           child: AppIcon(
                             assetPath: AppIcons.course,
-                            color: Colors.white,
-                            size: 18,
+                            color: AppColors.pure,
+                            size: AppIconSize.button,
                           ),
                         ),
                       ),
@@ -513,19 +510,13 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                               gradient: LinearGradient(
                                 colors: [AppColors.gold, AppColors.goldLight],
                               ),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.gold.withValues(alpha:0.3),
-                                  blurRadius: 8,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
+                              borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                              boxShadow: [AppElevation.md],
                             ),
                             child: AppIcon(
                               assetPath: AppIcons.chat,
-                              color: Colors.white,
-                              size: 20,
+                              color: AppColors.pure,
+                              size: AppIconSize.button,
                             ),
                           ),
                         ),
@@ -539,7 +530,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                     padding: EdgeInsets.all(AppSpacing.sm),
                     decoration: BoxDecoration(
                       color: AppColors.glassSurface,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.md),
                     ),
                     child: Row(
                       children: [
@@ -548,13 +539,13 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           height: 32,
                           decoration: BoxDecoration(
                             color: AppColors.goldLight.withValues(alpha:0.2),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                           ),
                           child: Center(
                             child: AppIcon(
                               assetPath: AppIcons.calendarCheck,
                               color: AppColors.goldLight,
-                              size: 16,
+                              size: AppIconSize.xs,
                             ),
                           ),
                         ),
@@ -599,7 +590,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             color: isFull
                                 ? AppColors.error.withValues(alpha:0.2)
                                 : AppColors.navyLight.withValues(alpha:0.2),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                             border: Border.all(
                               color: isFull
                                   ? AppColors.error.withValues(alpha:0.3)
@@ -611,8 +602,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             children: [
                               AppIcon(
                                 assetPath: AppIcons.golfers,
-                                color: isFull ? AppColors.error : Colors.white,
-                                size: 16,
+                                color: isFull ? AppColors.error : AppColors.pure,
+                                size: AppIconSize.xs,
                               ),
                               SizedBox(width: 4),
                               Text(
@@ -641,8 +632,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
               decoration: BoxDecoration(
                 color: AppColors.glassSurface,
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
+                  bottomLeft: Radius.circular(AppBorderRadius.xl),
+                  bottomRight: Radius.circular(AppBorderRadius.xl),
                 ),
               ),
               child: Row(
@@ -656,7 +647,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                       ),
                       decoration: BoxDecoration(
                         color: AppColors.navyLight.withValues(alpha:0.2),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -664,7 +655,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           AppIcon(
                             assetPath: AppIcons.memberDiscount,
                             color: AppColors.navyLight,
-                            size: 12,
+                            size: AppIconSize.xs,
                           ),
                           SizedBox(width: 4),
                           Text(
@@ -688,22 +679,16 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                       gradient: LinearGradient(
                         colors: [AppColors.navyLight, AppColors.navy],
                       ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.navy.withValues(alpha:0.3),
-                          blurRadius: 8,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
+                      borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+                      boxShadow: [AppElevation.md],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           Icons.visibility_rounded,
-                          color: Colors.white,
-                          size: 16,
+                          color: AppColors.pure,
+                          size: AppIconSize.xs,
                         ),
                         SizedBox(width: 6),
                         Text(

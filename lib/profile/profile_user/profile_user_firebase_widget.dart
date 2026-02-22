@@ -6,8 +6,11 @@ import 'package:provider/provider.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/navigation/app_router.dart';
 import '/core/widgets/fairway_background.dart';
@@ -334,7 +337,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                   color: AppColors.sand,
                   child: Icon(
                     Icons.person_rounded,
-                    size: 60,
+                    size: AppIconSize.hero,
                     color: AppColors.stone,
                   ),
                 ),
@@ -356,7 +359,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.navy.withValues(alpha:0.4),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppBorderRadius.xl),
               border: Border.all(
                 color: AppColors.glassSurface,
               ),
@@ -450,7 +453,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         ),
         decoration: BoxDecoration(
           color: AppColors.navy.withValues(alpha:0.3),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
             color: AppColors.glassSurface,
           ),
@@ -463,12 +466,12 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               height: 36,
               decoration: BoxDecoration(
                 gradient: LinearGradient(colors: gradient),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
               child: Icon(
                 icon,
-                color: Colors.white,
-                size: 16,
+                color: AppColors.pure,
+                size: AppIconSize.xs,
               ),
             ),
             SizedBox(height: AppSpacing.xs),
@@ -632,7 +635,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             ),
             decoration: BoxDecoration(
               color: AppColors.navy.withValues(alpha:0.3),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               border: Border.all(
                 color: AppColors.glassSurface,
               ),
@@ -654,8 +657,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                   ),
                   child: Icon(
                     icon,
-                    color: Colors.white,
-                    size: 22,
+                    color: AppColors.pure,
+                    size: AppIconSize.md,
                   ),
                 ),
                 SizedBox(height: AppSpacing.xs),
@@ -698,7 +701,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
         decoration: BoxDecoration(
           color: AppColors.sand,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
             color: AppColors.cloud,
           ),
@@ -718,19 +721,13 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.navy.withValues(alpha:0.3),
-                      blurRadius: 12,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
+                  borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+                  boxShadow: [AppElevation.lg],
                 ),
                 child: Icon(
                   Icons.people_alt_rounded,
-                  color: Colors.white,
-                  size: 24,
+                  color: AppColors.pure,
+                  size: AppIconSize.md,
                 ),
               ),
             SizedBox(height: AppSpacing.xs),
@@ -773,13 +770,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.sand, width: 2),
                 color: AppColors.navy.withValues(alpha: 0.15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+                boxShadow: [AppElevation.sm],
               ),
               child: ClipOval(
                 child: friend.photoUrl.isNotEmpty
@@ -788,13 +779,13 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Icon(
                           Icons.person,
-                          size: 20,
+                          size: AppIconSize.button,
                           color: AppColors.navy,
                         ),
                       )
                     : Icon(
                         Icons.person,
-                        size: 20,
+                        size: AppIconSize.button,
                         color: AppColors.navy,
                       ),
               ),
@@ -876,7 +867,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
         decoration: BoxDecoration(
           color: AppColors.sand,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
             color: AppColors.cloud,
           ),
@@ -888,7 +879,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               height: 48,
               decoration: BoxDecoration(
                 gradient: LinearGradient(colors: effectiveGradient),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                 boxShadow: isDisabled
                     ? []
                     : [
@@ -901,8 +892,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               ),
               child: Icon(
                 icon,
-                color: isDisabled ? AppColors.stone : Colors.white,
-                size: 24,
+                color: isDisabled ? AppColors.stone : AppColors.pure,
+                size: AppIconSize.md,
               ),
             ),
             SizedBox(height: AppSpacing.xs),
@@ -943,9 +934,9 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         children: [
           Text(
             'Golf Info',
-            style: AppTypography.titleMedium.copyWith(
+            style: AppTypography.titleLarge.copyWith(
+              fontSize: 18,
               color: AppColors.onyx,
-              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: AppSpacing.md),
@@ -992,7 +983,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.sand,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(color: AppColors.cloud),
       ),
       child: Row(
@@ -1002,9 +993,9 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             height: 40,
             decoration: BoxDecoration(
               color: iconColor.withValues(alpha:0.15),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
             ),
-            child: Icon(icon, color: iconColor, size: 20),
+            child: Icon(icon, color: iconColor, size: AppIconSize.button),
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
@@ -1065,7 +1056,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.error_outline, color: AppColors.glassTextTertiary, size: 48),
+                              Icon(Icons.error_outline, color: AppColors.glassTextTertiary, size: AppIconSize.xxl),
                               SizedBox(height: AppSpacing.md),
                               Text(
                                 'Unable to load profile',
@@ -1223,8 +1214,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                         decoration: BoxDecoration(
                           color: AppColors.pure,
                           borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(32.0),
-                            topRight: Radius.circular(32.0),
+                            topLeft: Radius.circular(AppBorderRadius.xxl),
+                            topRight: Radius.circular(AppBorderRadius.xxl),
                           ),
                           boxShadow: [
                             BoxShadow(
@@ -1242,7 +1233,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                               height: 4,
                               decoration: BoxDecoration(
                                 color: AppColors.cloud,
-                                borderRadius: BorderRadius.circular(2),
+                                borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                               ),
                             ),
                             SizedBox(height: AppSpacing.lg),
@@ -1296,8 +1287,8 @@ class MutualFriendsSheet extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.pure,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(32),
-          topRight: Radius.circular(32),
+          topLeft: Radius.circular(AppBorderRadius.xxl),
+          topRight: Radius.circular(AppBorderRadius.xxl),
         ),
       ),
       child: Column(
@@ -1310,7 +1301,7 @@ class MutualFriendsSheet extends StatelessWidget {
             height: 4,
             decoration: BoxDecoration(
               color: AppColors.cloud,
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
             ),
           ),
           SizedBox(height: AppSpacing.md),
@@ -1334,7 +1325,7 @@ class MutualFriendsSheet extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.navy.withValues(alpha:0.12),
-                    borderRadius: BorderRadius.circular(99),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.full),
                   ),
                   child: Text(
                     mutualFriends.length > 3
@@ -1401,13 +1392,13 @@ class MutualFriendsSheet extends StatelessWidget {
                                     errorBuilder: (_, __, ___) => Icon(
                                       Icons.person,
                                       color: AppColors.navy,
-                                      size: 24,
+                                      size: AppIconSize.md,
                                     ),
                                   )
                                 : Icon(
                                     Icons.person,
                                     color: AppColors.navy,
-                                    size: 24,
+                                    size: AppIconSize.md,
                                   ),
                           ),
                         ),
@@ -1447,7 +1438,7 @@ class MutualFriendsSheet extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.gold.withValues(alpha:0.12),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                           ),
                           child: Text(
                             handicapStr,
@@ -1461,7 +1452,7 @@ class MutualFriendsSheet extends StatelessWidget {
                         Icon(
                           Icons.chevron_right_rounded,
                           color: AppColors.stone,
-                          size: 20,
+                          size: AppIconSize.button,
                         ),
                       ],
                     ),

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/typography.dart';
 import '/utils/app_util.dart';
 
 /// Premium date picker with quick date chips and calendar bottom sheet
@@ -37,7 +40,7 @@ class PremiumDatePicker extends StatelessWidget {
       builder: (context) => Container(
         decoration: BoxDecoration(
           color: AppColors.navyDark,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
         ),
         child: SafeArea(
           child: Padding(
@@ -51,7 +54,7 @@ class PremiumDatePicker extends StatelessWidget {
                   height: 4,
                   decoration: BoxDecoration(
                     color: AppColors.greenLight,
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                   ),
                 ),
                 SizedBox(height: AppSpacing.md),
@@ -62,14 +65,13 @@ class PremiumDatePicker extends StatelessWidget {
                   children: [
                     Text(
                       'Pick a Date',
-                      style: TextStyle(fontFamily: 'Manrope',
+                      style: AppTypography.headlineMediumSans.copyWith(
                         fontSize: 22,
-                        fontWeight: FontWeight.w600,
                         color: AppColors.pure,
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.close, color: AppColors.pure),
+                      icon: Icon(Icons.close, color: AppColors.pure, size: AppIconSize.md),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -149,7 +151,7 @@ class PremiumDatePicker extends StatelessWidget {
                 );
           onDateSelected(newDate);
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         child: Container(
           padding: EdgeInsets.symmetric(
             vertical: AppSpacing.sm,
@@ -159,7 +161,7 @@ class PremiumDatePicker extends StatelessWidget {
             color: isSelected
                 ? AppColors.navyDark
                 : AppColors.navy,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
             border: Border.all(
               color: isSelected
                   ? AppColors.navyDark
@@ -172,21 +174,15 @@ class PremiumDatePicker extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: TextStyle(fontFamily: 'Manrope',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: isSelected
-                      ? AppColors.pure
-                      : AppColors.pure,
+                style: AppTypography.labelMedium.copyWith(
+                  color: AppColors.pure,
                 ),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 4),
               Text(
                 dateTimeFormat("MMM d", date),
-                style: TextStyle(fontFamily: 'Manrope',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
+                style: AppTypography.caption.copyWith(
                   color: isSelected
                       ? AppColors.pure.withValues(alpha: 0.8)
                       : AppColors.pure,
@@ -240,7 +236,7 @@ class PremiumDatePicker extends StatelessWidget {
         // Pick a date button
         InkWell(
           onTap: () => _showCalendarBottomSheet(context),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
           child: Container(
             width: double.infinity,
             padding: EdgeInsets.symmetric(
@@ -249,7 +245,7 @@ class PremiumDatePicker extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: AppColors.navy,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppBorderRadius.md),
               border: Border.all(
                 color: AppColors.greenLight.withValues(alpha: 0.3),
                 width: 1.5,
@@ -261,14 +257,12 @@ class PremiumDatePicker extends StatelessWidget {
                 Icon(
                   Icons.calendar_month_rounded,
                   color: AppColors.navyDark,
-                  size: 20,
+                  size: AppIconSize.button,
                 ),
                 SizedBox(width: AppSpacing.xs),
                 Text(
                   'Pick a Date',
-                  style: TextStyle(fontFamily: 'Manrope',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                  style: AppTypography.labelMedium.copyWith(
                     color: AppColors.pure,
                   ),
                 ),

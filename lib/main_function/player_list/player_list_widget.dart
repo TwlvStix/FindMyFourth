@@ -3,9 +3,12 @@ import 'dart:async';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/main_function/games_list/games_list_widget.dart';
@@ -290,20 +293,20 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20.0),
-                      topRight: Radius.circular(20.0),
+                      topLeft: Radius.circular(AppBorderRadius.xl),
+                      topRight: Radius.circular(AppBorderRadius.xl),
                     ),
                   ),
                   child: Column(
                     children: [
                       // Handle bar
                       Container(
-                        margin: EdgeInsets.only(top: 12.0, bottom: 8.0),
+                        margin: EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.xs),
                         width: 40.0,
                         height: 4.0,
                         decoration: BoxDecoration(
                           color: AppColors.mist,
-                          borderRadius: BorderRadius.circular(2.0),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                         ),
                       ),
                       // Header
@@ -342,7 +345,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                             hintStyle: AppTypography.bodyMedium.copyWith(
                               color: AppColors.stone,
                             ),
-                            prefixIcon: Icon(Icons.search, size: 20.0),
+                            prefixIcon: Icon(Icons.search, size: AppIconSize.button),
                             filled: true,
                             fillColor: AppColors.navy,
                             contentPadding: EdgeInsets.symmetric(
@@ -350,21 +353,21 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                               vertical: 12.0,
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                               borderSide: BorderSide(
                                 color: AppColors.cloud,
                                 width: 1.0,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                               borderSide: BorderSide(
                                 color: AppColors.cloud,
                                 width: 1.0,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                               borderSide: BorderSide(
                                 color: AppColors.navyDark,
                                 width: 2.0,
@@ -380,7 +383,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                           alignment: Alignment.centerLeft,
                           child: Text(
                             'Tap a player to add them to this slot',
-                            style: AppTypography.text13.copyWith(
+                            style: AppTypography.labelSmall.copyWith(
+                              fontSize: 13,
                               color: AppColors.stone,
                             ),
                           ),
@@ -462,7 +466,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
         child: Text(
           'Type at least $_minSearchChars characters to search members.',
-          style: AppTypography.text13.copyWith(
+          style: AppTypography.labelSmall.copyWith(
+            fontSize: 13,
             color: AppColors.stone,
           ),
           textAlign: TextAlign.center,
@@ -482,7 +487,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
         child: Text(
           'No members found.',
-          style: AppTypography.text13.copyWith(
+          style: AppTypography.labelSmall.copyWith(
+            fontSize: 13,
             color: AppColors.stone,
           ),
           textAlign: TextAlign.center,
@@ -547,10 +553,10 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         duration: const Duration(milliseconds: 200),
         child: Container(
           margin: EdgeInsets.only(bottom: AppSpacing.xs),
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
           decoration: BoxDecoration(
             color: AppColors.navy,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
             border: Border.all(
               color: AppColors.navyLight.withValues(alpha: 0.4),
               width: 1,
@@ -565,7 +571,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   height: 48,
                   decoration: BoxDecoration(
                     color: _goldAccent.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
                     border: Border.all(
                       color: _goldAccent.withValues(alpha: 0.4),
                       width: 1.5,
@@ -574,7 +580,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   child: Icon(
                     Icons.person_outline_rounded,
                     color: _goldAccent,
-                    size: 24,
+                    size: AppIconSize.md,
                   ),
                 )
               else
@@ -583,14 +589,14 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   height: 48,
                   decoration: BoxDecoration(
                     color: AppColors.navyLight,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.3),
                       width: 1.5,
                     ),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                     child: photoUrl != null && photoUrl.isNotEmpty
                         ? Image.network(
                             photoUrl,
@@ -599,20 +605,20 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                             cacheWidth: 144,
                             cacheHeight: 144,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(
+                            errorBuilder: (_, __, ___) => Icon(
                               Icons.person_rounded,
                               color: AppColors.glassTextSecondary,
-                              size: 24,
+                              size: AppIconSize.md,
                             ),
                           )
-                        : const Icon(
+                        : Icon(
                             Icons.person_rounded,
                             color: AppColors.glassTextSecondary,
-                            size: 24,
+                            size: AppIconSize.md,
                           ),
                   ),
                 ),
-              const SizedBox(width: 12),
+              AppSpacing.horizontalSmBox,
 
               // ── Name + subtitle ────────────────────────────────────────
               Expanded(
@@ -622,10 +628,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(
-                        fontFamily: 'Manrope',
+                      style: AppTypography.labelMedium.copyWith(
                         fontSize: 15,
-                        fontWeight: FontWeight.w600,
                         color: Colors.white,
                         letterSpacing: 0.2,
                       ),
@@ -636,9 +640,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 12,
+                        style: AppTypography.caption.copyWith(
                           fontWeight: FontWeight.w500,
                           color: _goldAccent,
                           letterSpacing: 0.1,
@@ -656,12 +658,12 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   height: 32,
                   decoration: BoxDecoration(
                     color: _goldAccent,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.add_rounded,
                     color: AppColors.navyDark,
-                    size: 20,
+                    size: AppIconSize.button,
                   ),
                 ),
             ],
@@ -684,10 +686,10 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       return GestureDetector(
         onTap: () => _showAddPlayerModal(slotIndex, joinedPlayerIds),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
           decoration: BoxDecoration(
             color: AppColors.navy.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
             border: Border.all(
               color: AppColors.navy.withValues(alpha: 0.3),
               width: 1.5,
@@ -701,7 +703,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 height: 48,
                 decoration: BoxDecoration(
                   color: AppColors.navy.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   border: Border.all(
                     color: AppColors.navy.withValues(alpha: 0.3),
                     width: 1.5,
@@ -710,15 +712,14 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 child: AppIcon(
                   assetPath: AppIcons.addPlayer,
                   color: AppColors.navy.withValues(alpha: 0.6),
-                  size: 24,
+                  size: AppIconSize.md,
                 ),
               ),
-              const SizedBox(width: 12),
+              AppSpacing.horizontalSmBox,
               Expanded(
                 child: Text(
                   slotLabel,
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
+                  style: AppTypography.bodySmall.copyWith(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
                     color: AppColors.navy.withValues(alpha: 0.6),
@@ -733,14 +734,12 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.navy,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                 ),
-                child: const Text(
+                child: Text(
                   'Add',
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
+                  style: AppTypography.labelSmall.copyWith(
                     fontSize: 13,
-                    fontWeight: FontWeight.w600,
                     color: Colors.white,
                     letterSpacing: 0.3,
                   ),
@@ -758,10 +757,10 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     final String? photoUrl = playerData['photoUrl'];
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
       decoration: BoxDecoration(
         color: AppColors.navy,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(
           color: AppColors.navyLight.withValues(alpha: 0.4),
           width: 1,
@@ -776,7 +775,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               height: 48,
               decoration: BoxDecoration(
                 color: _goldAccent.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 border: Border.all(
                   color: _goldAccent.withValues(alpha: 0.4),
                   width: 1.5,
@@ -785,7 +784,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               child: Icon(
                 Icons.person_outline_rounded,
                 color: _goldAccent,
-                size: 24,
+                size: AppIconSize.md,
               ),
             )
           else
@@ -794,14 +793,14 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               height: 48,
               decoration: BoxDecoration(
                 color: AppColors.navyLight,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.3),
                   width: 1.5,
                 ),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                 child: photoUrl != null && photoUrl.isNotEmpty
                     ? Image.network(
                         photoUrl,
@@ -810,20 +809,20 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                         cacheWidth: 144,
                         cacheHeight: 144,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(
+                        errorBuilder: (_, __, ___) => Icon(
                           Icons.person_rounded,
                           color: AppColors.glassTextSecondary,
-                          size: 24,
+                          size: AppIconSize.md,
                         ),
                       )
-                    : const Icon(
+                    : Icon(
                         Icons.person_rounded,
                         color: AppColors.glassTextSecondary,
-                        size: 24,
+                        size: AppIconSize.md,
                       ),
               ),
             ),
-          const SizedBox(width: 12),
+          AppSpacing.horizontalSmBox,
 
           // ── Name + role ────────────────────────────────────────────────
           Expanded(
@@ -833,10 +832,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               children: [
                 Text(
                   name,
-                  style: const TextStyle(
-                    fontFamily: 'Manrope',
+                  style: AppTypography.labelMedium.copyWith(
                     fontSize: 15,
-                    fontWeight: FontWeight.w600,
                     color: Colors.white,
                     letterSpacing: 0.2,
                   ),
@@ -846,9 +843,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 const SizedBox(height: 2),
                 Text(
                   isGuest ? 'Guest' : 'Member',
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 12,
+                  style: AppTypography.caption.copyWith(
                     fontWeight: FontWeight.w500,
                     color: _goldAccent,
                     letterSpacing: 0.1,
@@ -866,12 +861,12 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               height: 36,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
               child: Icon(
                 Icons.close_rounded,
-                color: Colors.white.withValues(alpha: 0.8),
-                size: 20,
+                color: AppColors.pure.withValues(alpha: 0.8),
+                size: AppIconSize.button,
               ),
             ),
           ),
@@ -992,15 +987,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                               width: double.infinity,
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(16.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color:
-                                        Colors.black.withValues(alpha: 0.06),
-                                    blurRadius: 12.0,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
+                                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+                                boxShadow: [AppElevation.lg],
                               ),
                                 child: Padding(
                                   padding: AppSpacing.allLg,
@@ -1030,11 +1018,11 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                     userSnapshot.data!)
                                                 : null;
                                             return Container(
-                                              padding: EdgeInsets.all(16.0),
+                                              padding: AppSpacing.allMd,
                                               decoration: BoxDecoration(
                                                 color: AppColors.cloud,
                                                 borderRadius:
-                                                    BorderRadius.circular(12.0),
+                                                    BorderRadius.circular(AppBorderRadius.md),
                                                 border: Border.all(
                                                   color: AppColors.greenDark
                                                       .withValues(alpha: 0.2),
@@ -1046,7 +1034,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                   ClipRRect(
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            24.0),
+                                                            AppBorderRadius.xxl),
                                                     child: Image.network(
                                                       profile?.photoUrl
                                                                   .isNotEmpty ??
@@ -1082,7 +1070,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                         SizedBox(height: 2.0),
                                                         Text(
                                                           'Game Creator',
-                                                          style: AppTypography.text13.copyWith(
+                                                          style: AppTypography.labelSmall.copyWith(
+                                                            fontSize: 13,
                                                             color: Color(
                                                                 0xFF718096),
                                                           ),
@@ -1100,13 +1089,12 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                       color: AppColors.greenDark,
                                                       borderRadius:
                                                           BorderRadius.circular(
-                                                              20.0),
+                                                              AppBorderRadius.xl),
                                                     ),
                                                     child: Text(
                                                       'You',
-                                                      style: AppTypography.text13.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w600,
+                                                      style: AppTypography.labelSmall.copyWith(
+                                                        fontSize: 13,
                                                         color: Colors.white,
                                                       ),
                                                     ),
@@ -1130,7 +1118,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                               ),
                                               Text(
                                                 'Tap a slot to add',
-                                                style: AppTypography.text13.copyWith(
+                                                style: AppTypography.labelSmall.copyWith(
+                                                  fontSize: 13,
                                                   color: AppColors.stone,
                                                 ),
                                               ),
@@ -1151,7 +1140,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         if (remainingSlots == 0) ...[
                                           Text(
                                             'This game is already full.',
-                                            style: AppTypography.text13.copyWith(
+                                            style: AppTypography.labelSmall.copyWith(
+                                              fontSize: 13,
                                               color: AppColors.stone,
                                             ),
                                           ),
@@ -1301,7 +1291,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                 padding: EdgeInsets.all(AppSpacing.md),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12.0),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                   border: Border.all(
                                     color: AppColors.greenDark
                                         .withValues(alpha: 0.2),
@@ -1315,7 +1305,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                       children: [
                                         Icon(
                                           Icons.info_outline,
-                                          size: 20.0,
+                                          size: AppIconSize.button,
                                           color: AppColors.greenDark,
                                         ),
                                         SizedBox(width: 8.0),
@@ -1373,13 +1363,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         if (svgPath != null)
           AppIcon(
             assetPath: svgPath,
-            size: 16.0,
+            size: AppIconSize.xs,
             color: AppColors.stone,
           )
         else if (icon != null)
           Icon(
             icon,
-            size: 16.0,
+            size: AppIconSize.xs,
             color: AppColors.stone,
           ),
         SizedBox(width: 8.0),

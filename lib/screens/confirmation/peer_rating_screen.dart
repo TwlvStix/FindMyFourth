@@ -7,6 +7,7 @@ import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_avatar.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -208,7 +209,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.thumb_up_rounded, color: AppColors.navyDark, size: 64),
+                  Icon(Icons.thumb_up_rounded, color: AppColors.navyDark, size: AppIconSize.hero),
                   SizedBox(height: AppSpacing.lg),
                   Text(
                     'Ratings submitted!',
@@ -310,7 +311,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
                   children: [
                     Icon(
                       Icons.lock_outline_rounded,
-                      size: 16,
+                      size: AppIconSize.xs,
                       color: AppColors.stone,
                     ),
                     SizedBox(width: AppSpacing.xs),
@@ -405,7 +406,7 @@ class _RateeRow extends StatelessWidget {
       padding: AppSpacing.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.navy,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
           color: rating == null
               ? AppColors.pure.withValues(alpha:0.2)
@@ -505,8 +506,8 @@ class _ThumbButton extends StatelessWidget {
         ),
         child: Icon(
           icon,
-          size: 22,
-          color: selected ? Colors.white : AppColors.pure,
+          size: AppIconSize.md,
+          color: selected ? AppColors.pure : AppColors.pure,
         ),
       ),
     );

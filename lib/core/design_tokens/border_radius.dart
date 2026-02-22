@@ -44,10 +44,15 @@ class AppBorderRadius {
   /// Golf aesthetic: Sophisticated curvature, balancing modern and traditional
   static const double lg = 16.0;
 
-  /// 24px - Extra large - dramatic rounding for hero elements
+  /// 20px - Extra large - prominent rounding for major containers
   /// Usage: Hero cards, special features, prominent containers
   /// Golf aesthetic: Bold yet refined, like the gentle curve of a sand trap
-  static const double xl = 24.0;
+  static const double xl = 20.0;
+
+  /// 24px - Extra extra large - dramatic rounding for hero elements
+  /// Usage: Large modals, feature cards, dramatic containers
+  /// Golf aesthetic: Generous curvature, like the sweeping arc of a bunker edge
+  static const double xxl = 24.0;
 
   /// 999px - Full - pill/circular shape for avatars and badges
   /// Usage: Avatar images, status badges, pill-shaped buttons, circular icons

@@ -70,7 +70,7 @@ class AppText extends StatelessWidget {
 
   /// Caption (12px Manrope regular) - use for helper text, captions
   factory AppText.caption(String text, {Color? color, TextAlign? textAlign, int? maxLines, TextOverflow? overflow, Key? key}) {
-    return AppText(text, style: AppTypography.caption, color: color, textAlign: textAlign, maxLines: maxLines, overflow: overflow, key: key);
+    return AppText(text, style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.w400, height: 1.5, letterSpacing: 0.0), color: color, textAlign: textAlign, maxLines: maxLines, overflow: overflow, key: key);
   }
 
   /// Label (14px Manrope semibold) - use for form labels, badges
@@ -85,7 +85,7 @@ class AppText extends StatelessWidget {
 
   /// Button text (16px Manrope semibold) - use for buttons (but prefer AppButtonEnhanced)
   factory AppText.button(String text, {Color? color, Key? key}) {
-    return AppText(text, style: AppTypography.button, color: color, key: key);
+    return AppText(text, style: AppTypography.labelLarge, color: color, key: key);
   }
 
   /// Timestamp (12px Manrope regular, secondary color) - use for timestamps

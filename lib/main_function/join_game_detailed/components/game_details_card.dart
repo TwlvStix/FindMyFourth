@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_icon.dart';
 import '/models/game.dart';
 
@@ -26,20 +29,14 @@ class GameDetailsCard extends StatelessWidget {
             gradient: const LinearGradient(
               colors: [AppColors.gold, AppColors.goldLight],
             ),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.gold.withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+            boxShadow: [AppElevation.md],
           ),
           child: const Center(
             child: AppIcon(
               assetPath: AppIcons.course,
-              color: Colors.white,
-              size: 22,
+              color: AppColors.pure,
+              size: AppIconSize.md,
             ),
           ),
         ),

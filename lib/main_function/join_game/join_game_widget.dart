@@ -4,6 +4,7 @@ import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/border_radius.dart';
 import 'dart:ui';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/models/game.dart';
@@ -94,7 +95,7 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                               height: 3.0,
                               decoration: BoxDecoration(
                                 color: AppColors.cloud,
-                                borderRadius: BorderRadius.circular(AppSpacing.xxs),
+                                borderRadius: BorderRadius.circular(AppBorderRadius.xs),
                               ),
                             ),
                           ],
@@ -120,20 +121,9 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                   style: TextStyle(),
                                 )
                               ],
-                              style: AppTypography.headlineMedium
-                                  .override(
-                                    font: TextStyle(fontFamily: 'Manrope',
-                                      fontWeight: AppTypography.headlineMedium
-                                          .fontWeight,
-                                      fontStyle: AppTypography.headlineMedium
-                                          .fontStyle,
-                                    ),
-                                    letterSpacing: 0.0,
-                                    fontWeight: AppTypography.headlineMedium
-                                        .fontWeight,
-                                    fontStyle: AppTypography.headlineMedium
-                                        .fontStyle,
-                                  ),
+                              style: AppTypography.headlineMediumSans.copyWith(
+                                letterSpacing: 0.0,
+                              ),
                             ),
                           ),
                         ),

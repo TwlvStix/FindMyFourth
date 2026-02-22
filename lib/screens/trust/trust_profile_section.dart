@@ -5,6 +5,9 @@ import '/backend/schema/users_record.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/motion/motion_helpers.dart';
 
 /// TrustProfileSection
@@ -65,7 +68,7 @@ class TrustProfileSection extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(9),
+            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
             boxShadow: [
               BoxShadow(
                 color: AppColors.navy.withValues(alpha:0.3),
@@ -74,7 +77,7 @@ class TrustProfileSection extends StatelessWidget {
               ),
             ],
           ),
-          child: Icon(Icons.shield_rounded, color: Colors.white, size: 16),
+          child: Icon(Icons.shield_rounded, color: AppColors.pure, size: AppIconSize.xs),
         ),
         SizedBox(width: AppSpacing.sm),
         Text(
@@ -107,8 +110,8 @@ class TrustProfileSection extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
+          topLeft: Radius.circular(AppBorderRadius.xl),
+          topRight: Radius.circular(AppBorderRadius.xl),
         ),
       ),
       child: Stack(
@@ -118,8 +121,8 @@ class TrustProfileSection extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+                  topLeft: Radius.circular(AppBorderRadius.xl),
+                  topRight: Radius.circular(AppBorderRadius.xl),
                 ),
                 gradient: LinearGradient(
                   colors: [
@@ -139,13 +142,13 @@ class TrustProfileSection extends StatelessWidget {
                 height: 52,
                 decoration: BoxDecoration(
                   color: AppColors.glassBorder,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                   border: Border.all(
                     color: AppColors.glassTextTertiary,
                     width: 1.5,
                   ),
                 ),
-                child: Icon(info.icon, color: Colors.white, size: 26),
+                child: Icon(info.icon, color: AppColors.pure, size: AppIconSize.md),
               ),
               SizedBox(width: AppSpacing.md),
               Expanded(
@@ -178,7 +181,7 @@ class TrustProfileSection extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.glassSurface,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   border: Border.all(
                     color: AppColors.glassBorder,
                   ),
@@ -219,15 +222,9 @@ class TrustProfileSection extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.pure,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
         border: Border.all(color: AppColors.cloud),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.overlayDark,
-            blurRadius: 12,
-            offset: Offset(0, 2),
-          ),
-        ],
+        boxShadow: [AppElevation.md],
       ),
       child: Column(
         children: [
@@ -304,7 +301,7 @@ class TrustProfileSection extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               boxShadow: [
                 BoxShadow(
                   color: iconGradient[0].withValues(alpha:0.25),
@@ -313,7 +310,7 @@ class TrustProfileSection extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(icon, color: Colors.white, size: 16),
+            child: Icon(icon, color: AppColors.pure, size: AppIconSize.xs),
           ),
           SizedBox(height: AppSpacing.xs),
           Text(
@@ -373,15 +370,9 @@ class TrustProfileSection extends StatelessWidget {
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.sand,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(color: AppColors.cloud),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.overlayDark,
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
+        boxShadow: [AppElevation.md],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -397,7 +388,7 @@ class TrustProfileSection extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(11),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   boxShadow: [
                     BoxShadow(
                       color: color.withValues(alpha:0.25),
@@ -407,7 +398,7 @@ class TrustProfileSection extends StatelessWidget {
                   ],
                 ),
                 child: Icon(Icons.check_circle_rounded,
-                    color: Colors.white, size: 20),
+                    color: AppColors.pure, size: AppIconSize.button),
               ),
               SizedBox(width: AppSpacing.md),
               Expanded(
@@ -441,7 +432,7 @@ class TrustProfileSection extends StatelessWidget {
           ),
           SizedBox(height: AppSpacing.sm),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppBorderRadius.xs),
             child: LinearProgressIndicator(
               value: rate,
               backgroundColor: AppColors.cloud,
@@ -466,7 +457,7 @@ class TrustProfileSection extends StatelessWidget {
         padding: EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: AppColors.warning.withValues(alpha:0.08),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(color: AppColors.warning.withValues(alpha:0.4)),
           boxShadow: [
             BoxShadow(
@@ -487,7 +478,7 @@ class TrustProfileSection extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(11),
+                borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.warning.withValues(alpha:0.25),
@@ -497,7 +488,7 @@ class TrustProfileSection extends StatelessWidget {
                 ],
               ),
               child: Icon(Icons.warning_amber_rounded,
-                  color: Colors.white, size: 20),
+                  color: AppColors.pure, size: AppIconSize.button),
             ),
             SizedBox(width: AppSpacing.md),
             Expanded(
@@ -524,7 +515,7 @@ class TrustProfileSection extends StatelessWidget {
             Icon(
               Icons.chevron_right_rounded,
               color: AppColors.stone,
-              size: 20,
+              size: AppIconSize.button,
             ),
           ],
         ),
@@ -577,7 +568,7 @@ class TrustProfileSection extends StatelessWidget {
                     height: 4,
                     decoration: BoxDecoration(
                       color: AppColors.cloud,
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                     ),
                   ),
                 ),
@@ -596,7 +587,7 @@ class TrustProfileSection extends StatelessWidget {
                             gradient: LinearGradient(
                               colors: [AppColors.navy, AppColors.navyLight],
                             ),
-                            borderRadius: BorderRadius.circular(2),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                           ),
                         ),
                       );
@@ -750,9 +741,9 @@ class _WarningDetailSheet extends StatelessWidget {
         : '$warningCount late or same-day cancellations';
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.pure,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
       ),
       padding: EdgeInsets.fromLTRB(
         AppSpacing.xl,
@@ -771,7 +762,7 @@ class _WarningDetailSheet extends StatelessWidget {
               height: 4,
               decoration: BoxDecoration(
                 color: AppColors.cloud,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
               ),
             ),
           ),
@@ -779,7 +770,7 @@ class _WarningDetailSheet extends StatelessWidget {
           Row(
             children: [
               Icon(Icons.warning_amber_rounded,
-                  color: AppColors.warning, size: 24),
+                  color: AppColors.warning, size: AppIconSize.md),
               SizedBox(width: AppSpacing.sm),
               Text(
                 'Cancellation Notice',

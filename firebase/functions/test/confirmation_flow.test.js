@@ -249,6 +249,17 @@ class MockCollectionRef {
     this._db._collections[this._name] = col;
     return new MockDocRef(this._db, this._name, id);
   }
+  // Direct .get() on a collection returns all documents (used by trust_profile.js:79)
+  async get() {
+    const col = this._db._collections[this._name] || {};
+    const docs = Object.entries(col).map(([id, data]) => ({
+      id,
+      exists: true,
+      data: () => ({ ...data }),
+      ref: new MockDocRef(this._db, this._name, id),
+    }));
+    return { docs, empty: docs.length === 0, size: docs.length };
+  }
   where(field, op, value) { return new MockQuery(this).where(field, op, value); }
   orderBy(field, dir) { return new MockQuery(this).orderBy(field, dir); }
 }

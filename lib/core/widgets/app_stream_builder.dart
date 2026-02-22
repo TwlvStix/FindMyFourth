@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/spacing.dart';
 import 'package:find_my_fourth/core/utils/error_messages.dart';
 import 'package:find_my_fourth/core/exceptions/app_exceptions.dart';
 
@@ -70,19 +72,19 @@ class AppStreamBuilder<T> extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: AppSpacing.allMd,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 48, color: AppColors.error),
-            SizedBox(height: 16),
+            Icon(Icons.error_outline, size: AppIconSize.xxl, color: AppColors.error),
+            AppSpacing.verticalMdBox,
             Text(
               message,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16),
             ),
             if (onRetry != null) ...[
-              SizedBox(height: 16),
+              AppSpacing.verticalMdBox,
               ElevatedButton(
                 onPressed: onRetry,
                 child: Text('Retry'),

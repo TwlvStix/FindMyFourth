@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
 
 /// Premium tee time picker with iOS-style wheel picker
@@ -150,7 +153,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.navyDark,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
       ),
       child: SafeArea(
         child: Padding(
@@ -169,7 +172,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                 height: 4,
                 decoration: BoxDecoration(
                   color: AppColors.greenLight,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                 ),
               ),
               SizedBox(height: AppSpacing.sm),
@@ -180,14 +183,12 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                 children: [
                   Text(
                     'Enter Tee Time',
-                    style: TextStyle(fontFamily: 'Manrope',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
+                    style: AppTypography.titleLarge.copyWith(
                       color: AppColors.pure,
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close, color: AppColors.pure),
+                    icon: Icon(Icons.close, color: AppColors.pure, size: AppIconSize.md),
                     onPressed: () => Navigator.pop(context),
                     padding: EdgeInsets.zero,
                     constraints: BoxConstraints(),
@@ -197,9 +198,10 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
               SizedBox(height: AppSpacing.sm),
 
               // Current time display
+              // TODO: migrate to token — no matching token exists (fontSize: 40 Manrope)
               Text(
                 '${_hour.toString().padLeft(2, '0')}:${_minute.toString().padLeft(2, '0')} ${_isPM ? 'PM' : 'AM'}',
-                style: TextStyle(fontFamily: 'Manrope',
+                style: AppTypography.headlineMediumSans.copyWith(
                   fontSize: 40,
                   fontWeight: FontWeight.w700,
                   color: AppColors.pure,
@@ -212,10 +214,10 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                 SizedBox(height: AppSpacing.xs),
                 Text(
                   _errorMessage!,
-                  style: TextStyle(fontFamily: 'Manrope',
+                  style: AppTypography.errorText.copyWith(
                     fontSize: 13,
-                    color: AppColors.error,
                     fontWeight: FontWeight.w500,
+                    color: AppColors.error,
                   ),
                 ),
               ],
@@ -227,7 +229,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                 height: 160,
                 decoration: BoxDecoration(
                   color: AppColors.navy,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                   border: Border.all(
                     color: AppColors.greenLight.withValues(alpha: 0.2),
                     width: 1,
@@ -241,12 +243,11 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Padding(
-                            padding: EdgeInsets.only(top: AppSpacing.xs, bottom: 4),
+                            padding: EdgeInsets.only(top: AppSpacing.xs, bottom: AppSpacing.xxs),
                             child: Text(
                               'Hour',
-                              style: TextStyle(fontFamily: 'Manrope',
+                              style: AppTypography.overline.copyWith(
                                 fontSize: 11,
-                                fontWeight: FontWeight.w600,
                                 color: AppColors.pure,
                                 letterSpacing: 0.5,
                               ),
@@ -277,9 +278,8 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                                 return Center(
                                   child: Text(
                                     hour.toString().padLeft(2, '0'),
-                                    style: TextStyle(fontFamily: 'Manrope',
+                                    style: AppTypography.headlineMediumSans.copyWith(
                                       fontSize: 28,
-                                      fontWeight: FontWeight.w600,
                                       color: AppColors.pure,
                                     ),
                                   ),
@@ -293,12 +293,11 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
 
                     // Colon separator
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
                       child: Text(
                         ':',
-                        style: TextStyle(fontFamily: 'Manrope',
+                        style: AppTypography.headlineMediumSans.copyWith(
                           fontSize: 28,
-                          fontWeight: FontWeight.w600,
                           color: AppColors.pure,
                         ),
                       ),
@@ -310,12 +309,11 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Padding(
-                            padding: EdgeInsets.only(top: AppSpacing.xs, bottom: 4),
+                            padding: EdgeInsets.only(top: AppSpacing.xs, bottom: AppSpacing.xxs),
                             child: Text(
                               'Minutes',
-                              style: TextStyle(fontFamily: 'Manrope',
+                              style: AppTypography.overline.copyWith(
                                 fontSize: 11,
-                                fontWeight: FontWeight.w600,
                                 color: AppColors.pure,
                                 letterSpacing: 0.5,
                               ),
@@ -346,9 +344,8 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                                 return Center(
                                   child: Text(
                                     minute.toString().padLeft(2, '0'),
-                                    style: TextStyle(fontFamily: 'Manrope',
+                                    style: AppTypography.headlineMediumSans.copyWith(
                                       fontSize: 28,
-                                      fontWeight: FontWeight.w600,
                                       color: AppColors.pure,
                                     ),
                                   ),
@@ -369,7 +366,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
               Container(
                 decoration: BoxDecoration(
                   color: AppColors.navy,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   border: Border.all(
                     color: AppColors.greenLight.withValues(alpha: 0.3),
                   ),
@@ -385,24 +382,20 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                             _errorMessage = null;
                           });
                         },
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                           decoration: BoxDecoration(
                             color: !_isPM
                                 ? AppColors.navyDark
                                 : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Text(
                             'AM',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontFamily: 'Manrope',
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: !_isPM
-                                  ? AppColors.pure
-                                  : AppColors.pure,
+                            style: AppTypography.titleMedium.copyWith(
+                              color: AppColors.pure,
                             ),
                           ),
                         ),
@@ -417,24 +410,20 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                             _errorMessage = null;
                           });
                         },
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                           decoration: BoxDecoration(
                             color: _isPM
                                 ? AppColors.navyDark
                                 : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Text(
                             'PM',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontFamily: 'Manrope',
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: _isPM
-                                  ? AppColors.pure
-                                  : AppColors.pure,
+                            style: AppTypography.titleMedium.copyWith(
+                              color: AppColors.pure,
                             ),
                           ),
                         ),
@@ -449,7 +438,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
               // Quick adjust controls
               Text(
                 'Quick Adjust',
-                style: TextStyle(fontFamily: 'Manrope',
+                style: AppTypography.labelSmall.copyWith(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: AppColors.pure,
@@ -491,23 +480,22 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
   Widget _buildAdjustButton(String label, int minutesDelta) {
     return InkWell(
       onTap: () => _adjustTime(minutesDelta),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppBorderRadius.sm),
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: AppSpacing.sm,
-          vertical: 8,
+          vertical: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
           color: AppColors.navy,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppBorderRadius.sm),
           border: Border.all(
             color: AppColors.greenLight.withValues(alpha: 0.3),
           ),
         ),
         child: Text(
           label,
-          style: TextStyle(fontFamily: 'Manrope',
-            fontSize: 12,
+          style: AppTypography.caption.copyWith(
             fontWeight: FontWeight.w500,
             color: AppColors.pure,
           ),

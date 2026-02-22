@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/app_icons.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/widgets/app_icon.dart';
 
 /// Premium profile hero section with animated gradient ring around avatar.
 ///
@@ -117,15 +122,9 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.pure,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 16,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
+                        boxShadow: [AppElevation.lg],
                       ),
-                      padding: EdgeInsets.all(4),
+                      padding: AppSpacing.allXxs,
                       child: ClipOval(
                         child: Image.network(
                           widget.photoUrl.isNotEmpty
@@ -137,9 +136,9 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                           errorBuilder: (context, error, stackTrace) =>
                               Container(
                             color: AppColors.cloud,
-                            child: Icon(
-                              Icons.person,
-                              size: 60,
+                            child: AppIcon(
+                              assetPath: AppIcons.profile,
+                              size: AppIconSize.hero,
                               color: AppColors.stone,
                             ),
                           ),
@@ -167,18 +166,12 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                               end: Alignment.bottomRight,
                             ),
                             shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.gold.withValues(alpha:0.4),
-                                blurRadius: 12,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
+                            boxShadow: [AppElevation.glowGold],
                           ),
-                          child: Icon(
-                            Icons.camera_alt_rounded,
+                          child: AppIcon(
+                            assetPath: AppIcons.camera,
                             color: Colors.white,
-                            size: 22,
+                            size: AppIconSize.md,
                           ),
                         ),
                       ),

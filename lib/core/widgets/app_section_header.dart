@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/spacing.dart';
+import '../design_tokens/icon_size.dart';
 import '../design_tokens/app_icons.dart';
 import 'app_icon.dart';
 
@@ -68,14 +69,14 @@ class AppSectionHeader extends StatelessWidget {
             AppIcon(
               assetPath: leadingSvgPath!,
               color: AppColors.navy,
-              size: 20,
+              size: AppIconSize.button,
             ),
             SizedBox(width: AppSpacing.xs),
           ] else if (leadingIcon != null) ...[
             Icon(
               leadingIcon,
               color: AppColors.navy,
-              size: 20,
+              size: AppIconSize.button,
             ),
             SizedBox(width: AppSpacing.xs),
           ],
@@ -85,7 +86,8 @@ class AppSectionHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppTypography.titleMedium.copyWith(
+                  style: AppTypography.titleLarge.copyWith(
+                    fontSize: 18,
                     color: AppColors.onyx,
                   ),
                 ),

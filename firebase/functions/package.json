@@ -34,7 +34,9 @@
     "compile": "cp ../../tsconfig.template.json ./tsconfig-compile.json && tsc --project tsconfig-compile.json",
     "load-test": "node --max-old-space-size=4096 test/load-test.js",
     "load-test:small": "node --max-old-space-size=2048 test/load-test.js --small",
-    "load-test:cleanup": "node test/load-test.js --cleanup"
+    "load-test:cleanup": "node test/load-test.js --cleanup",
+    "notif-load-test": "jest test/notification-load.test.js --testTimeout=300000",
+    "notif-load-test:small": "NOTIF_LOAD_TEST_SMALL=true jest test/notification-load.test.js --testTimeout=60000"
   },
   "engines": {
     "node": "20"

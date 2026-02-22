@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/services/vibe_group_matcher.dart';
 
 /// Individual player vibe compatibility chip showing name and match percentage
@@ -35,7 +36,7 @@ class PlayerMatchChip extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: AppColors.navy.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(AppBorderRadius.full),
             border: Border.all(
               color: AppColors.navy.withValues(alpha: 0.3),
             ),

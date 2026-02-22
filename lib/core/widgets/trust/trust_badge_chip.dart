@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '/backend/schema/trust_profile.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -112,11 +113,7 @@ class TrustBadgeChip extends StatelessWidget {
           backgroundColor: AppColors.goldLight.withValues(alpha:0.15),
           borderColor: AppColors.goldLight.withValues(alpha:0.55),
           textColor: AppColors.goldLight,
-          boxShadow: BoxShadow(
-            color: AppColors.goldLight.withValues(alpha: 0.25),
-            blurRadius: 10,
-            offset: Offset(0, 3),
-          ),
+          boxShadow: AppElevation.glowGold,
         );
       case BadgeTier.confirmed:
         return _BadgeConfig(
@@ -175,7 +172,7 @@ class _StandardBadgeChip extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xxs),
           decoration: BoxDecoration(
             color: config.backgroundColor,
             borderRadius: BorderRadius.circular(AppBorderRadius.full),
@@ -185,14 +182,12 @@ class _StandardBadgeChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(config.icon, color: config.textColor, size: 14),
-              const SizedBox(width: 5),
+              Icon(config.icon, color: config.textColor, size: AppIconSize.xs),
+              AppSpacing.horizontalXxs,
               Text(
                 config.label,
-                style: TextStyle(
+                style: AppTypography.labelSmall.copyWith(
                   fontFamily: AppTypography.displayFamily,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
                   color: config.textColor,
                   height: 1.2,
                 ),
@@ -229,7 +224,7 @@ class _AnchorBadgeChip extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xxs),
           decoration: BoxDecoration(
             color: config.backgroundColor,
             borderRadius: BorderRadius.circular(AppBorderRadius.full),
@@ -239,14 +234,12 @@ class _AnchorBadgeChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(config.icon, color: config.textColor, size: 14),
-              const SizedBox(width: 5),
+              Icon(config.icon, color: config.textColor, size: AppIconSize.xs),
+              AppSpacing.horizontalXxs,
               Text(
                 config.label,
-                style: TextStyle(
+                style: AppTypography.labelSmall.copyWith(
                   fontFamily: AppTypography.displayFamily,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
                   color: config.textColor,
                   height: 1.2,
                 ),

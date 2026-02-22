@@ -8,9 +8,11 @@ import '/core/widgets/app_drop_down.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/form_field_controller.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 import '/user_onboarding/vibe_onboarding_widget.dart';
@@ -385,7 +387,7 @@ class _ProgressiveOnboardingWidgetState
               color: index <= _currentStep
                   ? AppColors.navyDark
                   : AppColors.navyDark.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(2.0),
+              borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
             ),
           ),
         ),
@@ -405,15 +407,10 @@ class _ProgressiveOnboardingWidgetState
         children: [
           Text(
             'Welcome to\nFind My Fourth',
-            style: AppTypography.displaySmall.override(
-                  font: TextStyle(fontFamily: 'Manrope',
-                    fontWeight: FontWeight.bold,
-                    fontStyle: AppTypography.displaySmall.fontStyle,
-                  ),
-                  letterSpacing: 0.0,
-                  fontWeight: FontWeight.bold,
-                  fontStyle: AppTypography.displaySmall.fontStyle,
-                ),
+            style: AppTypography.displaySmallSans.copyWith(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.0,
+            ),
           ),
           Padding(
             padding: AppSpacing.only(top: AppSpacing.sm),
@@ -467,16 +464,10 @@ class _ProgressiveOnboardingWidgetState
           children: [
             Text(
               'Let\'s set up your profile',
-              style: AppTypography.headlineMedium.override(
-                    font: TextStyle(fontFamily: 'Manrope',
-                      fontWeight: FontWeight.bold,
-                      fontStyle:
-                          AppTypography.headlineMedium.fontStyle,
-                    ),
-                    letterSpacing: 0.0,
-                    fontWeight: FontWeight.bold,
-                    fontStyle: AppTypography.headlineMedium.fontStyle,
-                  ),
+              style: AppTypography.headlineMediumSans.copyWith(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.0,
+              ),
             ),
             Padding(
               padding: AppSpacing.only(top: AppSpacing.xs),
@@ -501,28 +492,28 @@ class _ProgressiveOnboardingWidgetState
                     color: AppColors.cloud,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: AppColors.navyDark,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: AppColors.error,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: AppColors.error,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 filled: true,
                 fillColor: AppColors.navy,
@@ -549,28 +540,28 @@ class _ProgressiveOnboardingWidgetState
                     color: AppColors.cloud,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: AppColors.navyDark,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: AppColors.error,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: AppColors.error,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 filled: true,
                 fillColor: AppColors.navy,
@@ -597,28 +588,28 @@ class _ProgressiveOnboardingWidgetState
                     color: AppColors.cloud,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: AppColors.navyDark,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: AppColors.error,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: AppColors.error,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 filled: true,
                 fillColor: AppColors.navy,
@@ -642,14 +633,14 @@ class _ProgressiveOnboardingWidgetState
                     color: AppColors.cloud,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: AppColors.navyDark,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 filled: true,
                 fillColor: AppColors.navy,
@@ -671,28 +662,28 @@ class _ProgressiveOnboardingWidgetState
                     color: AppColors.cloud,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: AppColors.navyDark,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: AppColors.error,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                     color: AppColors.error,
                     width: 2.0,
                   ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 filled: true,
                 fillColor: AppColors.navy,
@@ -716,15 +707,10 @@ class _ProgressiveOnboardingWidgetState
         children: [
           Text(
             'Your golf profile',
-            style: AppTypography.headlineMedium.override(
-                  font: TextStyle(fontFamily: 'Manrope',
-                    fontWeight: FontWeight.bold,
-                    fontStyle: AppTypography.headlineMedium.fontStyle,
-                  ),
-                  letterSpacing: 0.0,
-                  fontWeight: FontWeight.bold,
-                  fontStyle: AppTypography.headlineMedium.fontStyle,
-                ),
+            style: AppTypography.headlineMediumSans.copyWith(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.0,
+            ),
           ),
           Padding(
             padding: AppSpacing.only(top: AppSpacing.xs),
@@ -763,7 +749,7 @@ class _ProgressiveOnboardingWidgetState
                 icon: Icon(
                   Icons.keyboard_arrow_down_rounded,
                   color: AppColors.pure,
-                  size: 24.0,
+                  size: AppIconSize.md,
                 ),
                 fillColor: AppColors.navy,
                 elevation: 2.0,
@@ -791,7 +777,7 @@ class _ProgressiveOnboardingWidgetState
             width: double.infinity,
             decoration: BoxDecoration(
               color: AppColors.navy,
-              borderRadius: BorderRadius.circular(12.0),
+              borderRadius: BorderRadius.circular(AppBorderRadius.md),
               border: Border.all(
                 color: AppColors.cloud,
                 width: 2.0,
@@ -805,29 +791,20 @@ class _ProgressiveOnboardingWidgetState
                   color: enabled
                       ? AppColors.navyDark
                       : AppColors.pure,
-                  size: 20.0,
+                  size: AppIconSize.button,
                 ),
                 incrementIconBuilder: (enabled) => Icon(
                   FontAwesomeIcons.plus,
                   color: enabled
                       ? AppColors.navyDark
                       : AppColors.pure,
-                  size: 20.0,
+                  size: AppIconSize.button,
                 ),
                 countBuilder: (count) => Text(
                   count < 0 ? '+${count.abs()}' : count.toString(),
-                  style: AppTypography.headlineSmall.override(
-                        font: TextStyle(fontFamily: 'Manrope',
-                          fontWeight:
-                              AppTypography.headlineSmall.fontWeight,
-                          fontStyle:
-                              AppTypography.headlineSmall.fontStyle,
-                        ),
-                        letterSpacing: 0.0,
-                        fontWeight:
-                            AppTypography.headlineSmall.fontWeight,
-                        fontStyle: AppTypography.headlineSmall.fontStyle,
-                      ),
+                  style: AppTypography.headlineSmallSans.copyWith(
+                    letterSpacing: 0.0,
+                  ),
                 ),
                 count: _handicapValue,
                 updateCount: (count) =>
@@ -854,15 +831,10 @@ class _ProgressiveOnboardingWidgetState
         children: [
           Text(
             'Your play style',
-            style: AppTypography.headlineMedium.override(
-                  font: TextStyle(fontFamily: 'Manrope',
-                    fontWeight: FontWeight.bold,
-                    fontStyle: AppTypography.headlineMedium.fontStyle,
-                  ),
-                  letterSpacing: 0.0,
-                  fontWeight: FontWeight.bold,
-                  fontStyle: AppTypography.headlineMedium.fontStyle,
-                ),
+            style: AppTypography.headlineMediumSans.copyWith(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.0,
+            ),
           ),
           Padding(
             padding: AppSpacing.only(top: AppSpacing.xs),
@@ -918,7 +890,7 @@ class _ProgressiveOnboardingWidgetState
             Icon(
               icon,
               color: AppColors.navyDark,
-              size: 20.0,
+              size: AppIconSize.button,
             ),
             SizedBox(width: AppSpacing.sm),
             Text(
@@ -934,7 +906,7 @@ class _ProgressiveOnboardingWidgetState
           width: double.infinity,
           decoration: BoxDecoration(
             color: AppColors.navy,
-            borderRadius: BorderRadius.circular(12.0),
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
             border: Border.all(
               color: AppColors.cloud,
               width: 2.0,
@@ -948,27 +920,20 @@ class _ProgressiveOnboardingWidgetState
                 color: enabled
                     ? AppColors.navyDark
                     : AppColors.pure,
-                size: 18.0,
+                size: AppIconSize.button,
               ),
               incrementIconBuilder: (enabled) => Icon(
                 FontAwesomeIcons.plus,
                 color: enabled
                     ? AppColors.navyDark
                     : AppColors.pure,
-                size: 18.0,
+                size: AppIconSize.button,
               ),
               countBuilder: (count) => Text(
                 count.toString(),
-                style: AppTypography.headlineSmall.override(
-                      font: TextStyle(fontFamily: 'Manrope',
-                        fontWeight:
-                            AppTypography.headlineSmall.fontWeight,
-                        fontStyle: AppTypography.headlineSmall.fontStyle,
-                      ),
-                      letterSpacing: 0.0,
-                      fontWeight: AppTypography.headlineSmall.fontWeight,
-                      fontStyle: AppTypography.headlineSmall.fontStyle,
-                    ),
+                style: AppTypography.headlineSmallSans.copyWith(
+                  letterSpacing: 0.0,
+                ),
               ),
               count: value,
               updateCount: onUpdate,
@@ -1047,7 +1012,7 @@ class _OnboardingFeature extends StatelessWidget {
             child: Icon(
               icon,
               color: AppColors.navyDark,
-              size: 24.0,
+              size: AppIconSize.md,
             ),
           ),
           Expanded(

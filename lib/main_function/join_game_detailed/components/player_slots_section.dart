@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -27,7 +28,7 @@ class PlayerSlotsSectionHeader extends StatelessWidget {
               end: Alignment.bottomCenter,
               colors: [AppColors.gold, AppColors.goldLight],
             ),
-            borderRadius: BorderRadius.circular(2),
+            borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
           ),
         ),
         SizedBox(width: AppSpacing.sm),
@@ -46,7 +47,7 @@ class PlayerSlotsSectionHeader extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: AppColors.gold.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
           ),
           child: Text(
             '$currentCount/$maxCount',

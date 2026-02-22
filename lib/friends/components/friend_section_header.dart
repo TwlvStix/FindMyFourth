@@ -5,7 +5,9 @@ import '/core/motion/reduced_motion.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon.dart';
 
 /// Section header for grouped friend lists
@@ -99,7 +101,7 @@ class _FriendSectionHeaderState extends State<FriendSectionHeader>
           ),
           decoration: BoxDecoration(
             color: widget.color.withValues(alpha:0.08),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
             border: Border.all(
               color: widget.color.withValues(alpha:_isPressed ? 0.2 : 0.1),
               width: 1,
@@ -120,7 +122,7 @@ class _FriendSectionHeaderState extends State<FriendSectionHeader>
                       widget.color.withValues(alpha:0.15),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                   boxShadow: [
                     BoxShadow(
                       color: widget.color.withValues(alpha:0.15),
@@ -132,12 +134,12 @@ class _FriendSectionHeaderState extends State<FriendSectionHeader>
                 child: widget.svgPath != null
                     ? AppIcon(
                         assetPath: widget.svgPath!,
-                        size: 20,
+                        size: AppIconSize.button,
                         color: widget.color,
                       )
                     : Icon(
                         widget.icon,
-                        size: 20,
+                        size: AppIconSize.button,
                         color: widget.color,
                       ),
               ),
@@ -169,14 +171,13 @@ class _FriendSectionHeaderState extends State<FriendSectionHeader>
                             widget.color.withValues(alpha:0.15),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
                       ),
                       child: Text(
                         '${widget.count}',
-                        style: AppTypography.labelSmall.copyWith(
+                        style: AppTypography.labelMicro.copyWith(
                           color: widget.color,
                           fontWeight: FontWeight.w700,
-                          fontSize: 11,
                         ),
                       ),
                     ),
@@ -193,7 +194,7 @@ class _FriendSectionHeaderState extends State<FriendSectionHeader>
                   child: Icon(
                     Icons.keyboard_arrow_down_rounded,
                     color: widget.color,
-                    size: 22,
+                    size: AppIconSize.md,
                   ),
                 ),
             ],

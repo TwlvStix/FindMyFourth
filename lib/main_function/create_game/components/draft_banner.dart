@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/typography.dart';
 
 /// Draft continuation banner for game creation
 ///
@@ -26,7 +29,7 @@ class DraftBanner extends StatelessWidget {
             AppColors.goldLight.withValues(alpha: 0.15),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(
           color: AppColors.gold.withValues(alpha: 0.4),
           width: 2,
@@ -41,12 +44,12 @@ class DraftBanner extends StatelessWidget {
               gradient: LinearGradient(
                 colors: [AppColors.gold, AppColors.goldLight],
               ),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppBorderRadius.md),
             ),
             child: Icon(
               Icons.restore_rounded,
-              color: Colors.white,
-              size: 22,
+              color: AppColors.pure,
+              size: AppIconSize.md,
             ),
           ),
           SizedBox(width: AppSpacing.md),
@@ -56,16 +59,14 @@ class DraftBanner extends StatelessWidget {
               children: [
                 Text(
                   'Continue where you left off',
-                  style: TextStyle(fontFamily: 'Manrope',
+                  style: AppTypography.titleSmall.copyWith(
                     color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   'Your draft has been restored',
-                  style: TextStyle(fontFamily: 'Manrope',
+                  style: AppTypography.bodySmall.copyWith(
                     color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 13,
                   ),
@@ -77,10 +78,8 @@ class DraftBanner extends StatelessWidget {
             onPressed: onClear,
             child: Text(
               'Clear',
-              style: TextStyle(fontFamily: 'Manrope',
+              style: AppTypography.labelMedium.copyWith(
                 color: AppColors.gold,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),

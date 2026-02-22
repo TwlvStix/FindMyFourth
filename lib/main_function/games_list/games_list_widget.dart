@@ -1,7 +1,10 @@
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/trust/restriction_banner.dart';
 import '/providers/trust_provider.dart';
@@ -538,7 +541,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
           automaticallyImplyLeading: false,
           title: Text(
             'Game List',
-            style: AppTypography.headlineMedium.copyWith(
+            style: AppTypography.headlineMediumSans.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
@@ -556,8 +559,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       tooltip: 'Notifications',
                       icon: AppIcon(
                         assetPath: AppIcons.notifications,
-                        color: Colors.white,
-                        size: 24.0,
+                        color: AppColors.pure,
+                        size: AppIconSize.md,
                       ),
                       onPressed: () {
                         context.pushNamed(
@@ -588,8 +591,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               tooltip: 'Notifications',
                               icon: AppIcon(
                                 assetPath: AppIcons.notifications,
-                                color: Colors.white,
-                                size: 24.0,
+                                color: AppColors.pure,
+                                size: AppIconSize.md,
                               ),
                               onPressed: () {
                                 context.pushNamed(
@@ -629,8 +632,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   Icons.tune_rounded,
                   color: _filters.hasActiveFilters
                       ? AppColors.navy
-                      : Colors.white,
-                  size: 24.0,
+                      : AppColors.pure,
+                  size: AppIconSize.md,
                 ),
                 onPressed: () {
                   _showFilterBottomSheet(_lastFilterMeta);
@@ -814,7 +817,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                               child: Center(
                                                 child: AppIcon(
                                                   assetPath: AppIcons.games,
-                                                  size: 64,
+                                                  size: AppIconSize.hero,
                                                   color: Colors.white
                                                       .withValues(alpha:0.5),
                                                 ),
@@ -982,7 +985,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                     padding: EdgeInsets.all(AppSpacing.md),
                                     decoration: BoxDecoration(
                                       color: AppColors.navy.withValues(alpha:0.2),
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                                       border: Border.all(
                                         color: Colors.white.withValues(alpha:0.08),
                                       ),
@@ -1000,13 +1003,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 color: Colors.white
                                                     .withValues(alpha:0.12),
                                                 borderRadius:
-                                                    BorderRadius.circular(10),
+                                                    BorderRadius.circular(AppBorderRadius.sm),
                                               ),
                                               child: AppIcon(
                                                 assetPath: AppIcons.lock,
                                                 color: Colors.white
                                                     .withValues(alpha:0.8),
-                                                size: 18,
+                                                size: AppIconSize.button,
                                               ),
                                             ),
                                             SizedBox(width: AppSpacing.sm),
@@ -1153,7 +1156,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                     0.15) // Much darker for joined games - faded background
                 : AppColors.navy
                     .withValues(alpha:0.3), // Normal background for un-joined games
-            borderRadius: BorderRadius.circular(20.0),
+            borderRadius: BorderRadius.circular(AppBorderRadius.xl),
             border: Border.all(
               color: isUserGame
                   ? Colors.white
@@ -1185,14 +1188,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha:0.12),
-                                borderRadius: BorderRadius.circular(20.0),
+                                borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   AppIcon(
                                     assetPath: AppIcons.lock,
-                                    size: 12,
+                                    size: AppIconSize.xs,
                                     color: Colors.white.withValues(alpha:0.85),
                                   ),
                                   SizedBox(width: 4),
@@ -1224,22 +1227,16 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                     AppColors.navy,
                                   ],
                                 ),
-                                borderRadius: BorderRadius.circular(20.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.navy.withValues(alpha:0.3),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
+                                borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+                                boxShadow: [AppElevation.md],
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   AppIcon(
                                     assetPath: AppIcons.games,
-                                    color: Colors.white,
-                                    size: 12,
+                                    color: AppColors.pure,
+                                    size: AppIconSize.xs,
                                   ),
                                   SizedBox(width: 4),
                                   Text(
@@ -1274,7 +1271,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                         AppColors.navy
                                       ],
                               ),
-                              borderRadius: BorderRadius.circular(20.0),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                               boxShadow: [
                                 BoxShadow(
                                   color: (game.styleGame == 'Money Game'
@@ -1306,7 +1303,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               ),
                               decoration: BoxDecoration(
                                 color: AppColors.gold.withValues(alpha:0.2),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(AppBorderRadius.md),
                               ),
                               child: Text(
                                 '\$\$\$',
@@ -1328,7 +1325,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             ),
                             decoration: BoxDecoration(
                               color: AppColors.error.withValues(alpha:0.2),
-                              borderRadius: BorderRadius.circular(12.0),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.md),
                               border: Border.all(
                                 color: AppColors.error.withValues(alpha:0.3),
                               ),
@@ -1349,7 +1346,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             ),
                             decoration: BoxDecoration(
                               color: AppColors.warning.withValues(alpha:0.2),
-                              borderRadius: BorderRadius.circular(12.0),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.md),
                             ),
                             child: Text(
                               'Expired',
@@ -1367,14 +1364,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             ),
                             decoration: BoxDecoration(
                               color: AppColors.green.withValues(alpha:0.9),
-                              borderRadius: BorderRadius.circular(12.0),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.md),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 AppIcon(
                                     assetPath: AppIcons.owner,
-                                    color: Colors.white, size: 14),
+                                    color: AppColors.pure, size: AppIconSize.xs),
                                 SizedBox(width: 4),
                                 Text(
                                   'Owner',
@@ -1394,14 +1391,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             ),
                             decoration: BoxDecoration(
                               color: AppColors.stone.withValues(alpha:0.85),
-                              borderRadius: BorderRadius.circular(12.0),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.md),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 AppIcon(
                                     assetPath: AppIcons.joined,
-                                    color: Colors.white, size: 14),
+                                    color: AppColors.pure, size: AppIconSize.xs),
                                 SizedBox(width: 4),
                                 Text(
                                   'Joined',
@@ -1433,13 +1430,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   AppColors.navy
                                 ],
                               ),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                             ),
                             child: Center(
                               child: AppIcon(
                                 assetPath: AppIcons.course,
-                                color: Colors.white,
-                                size: 18,
+                                color: AppColors.pure,
+                                size: AppIconSize.button,
                               ),
                             ),
                           ),
@@ -1488,7 +1485,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                         padding: EdgeInsets.all(AppSpacing.sm),
                         decoration: BoxDecoration(
                           color: AppColors.glassSurface,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
                         ),
                       child: Row(
                         children: [
@@ -1497,13 +1494,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             height: 32,
                             decoration: BoxDecoration(
                               color: AppColors.goldLight.withValues(alpha:0.2),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                             ),
                             child: Center(
                               child: AppIcon(
                                 assetPath: AppIcons.calendarCheck,
                                 color: AppColors.goldLight,
-                                size: 16,
+                                size: AppIconSize.xs,
                               ),
                             ),
                           ),
@@ -1552,7 +1549,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               color: isFull
                                   ? AppColors.error.withValues(alpha:0.2)
                                   : AppColors.navyLight.withValues(alpha:0.2),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                               border: Border.all(
                                 color: isFull
                                     ? AppColors.error.withValues(alpha:0.3)
@@ -1566,8 +1563,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   assetPath: AppIcons.golfers,
                                   color: isFull
                                       ? AppColors.error
-                                      : Colors.white,
-                                  size: 16,
+                                      : AppColors.pure,
+                                  size: AppIconSize.xs,
                                 ),
                                 SizedBox(width: 4),
                                 Text(
@@ -1600,8 +1597,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   decoration: BoxDecoration(
                     color: AppColors.glassSurface,
                     borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(20),
-                      bottomRight: Radius.circular(20),
+                      bottomLeft: Radius.circular(AppBorderRadius.xl),
+                      bottomRight: Radius.circular(AppBorderRadius.xl),
                     ),
                   ),
                   child: Row(
@@ -1617,7 +1614,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             ),
                             decoration: BoxDecoration(
                               color: AppColors.navyLight.withValues(alpha:0.2),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -1625,7 +1622,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 AppIcon(
                                   assetPath: AppIcons.memberDiscount,
                                   color: AppColors.navyLight,
-                                  size: 12,
+                                  size: AppIconSize.xs,
                                 ),
                                 SizedBox(width: 4),
                                 Text(
@@ -1646,7 +1643,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               onTap: () {
                                 context.pushNamed(TabFriendsWidget.routeName);
                               },
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                               child: Container(
                                 padding: EdgeInsets.symmetric(
                                   horizontal: AppSpacing.md,
@@ -1659,23 +1656,16 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                       AppColors.goldLight
                                     ],
                                   ),
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color:
-                                          AppColors.gold.withValues(alpha:0.3),
-                                      blurRadius: 8,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+                                  boxShadow: [AppElevation.md],
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     AppIcon(
                                       assetPath: AppIcons.addPlayer,
-                                      color: Colors.white,
-                                      size: 16,
+                                      color: AppColors.pure,
+                                      size: AppIconSize.xs,
                                     ),
                                     SizedBox(width: 6),
                                     Text(
@@ -1711,7 +1701,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                         width: 1.5,
                                       )
                                     : null,
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                                 boxShadow: isUserGame
                                     ? null // No shadow for joined game button
                                     : [
@@ -1729,20 +1719,20 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   if (isUserGame)
                                     Icon(
                                       Icons.visibility_rounded,
-                                      color: Colors.white,
-                                      size: 16,
+                                      color: AppColors.pure,
+                                      size: AppIconSize.xs,
                                     )
                                   else if (isFull)
                                     AppIcon(
                                       assetPath: AppIcons.pending,
-                                      color: Colors.white,
-                                      size: 16,
+                                      color: AppColors.pure,
+                                      size: AppIconSize.xs,
                                     )
                                   else
                                     Icon(
                                       Icons.add_rounded,
-                                      color: Colors.white,
-                                      size: 16,
+                                      color: AppColors.pure,
+                                      size: AppIconSize.xs,
                                     ),
                                   SizedBox(width: 6),
                                   Text(

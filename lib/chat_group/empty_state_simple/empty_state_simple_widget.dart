@@ -45,20 +45,10 @@ class _EmptyStateSimpleWidgetState extends State<EmptyStateSimpleWidget> {
             child: Text(
               widget.title,
               textAlign: TextAlign.center,
-              style: AppTypography.headlineSmall.override(
-                    font: TextStyle(fontFamily: 'Manrope',
-                      fontWeight:
-                          AppTypography.headlineSmall.fontWeight,
-                      fontStyle:
-                          AppTypography.headlineSmall.fontStyle,
-                    ),
-                    color: AppColors.pure,
-                    letterSpacing: 0.0,
-                    fontWeight:
-                        AppTypography.headlineSmall.fontWeight,
-                    fontStyle:
-                        AppTypography.headlineSmall.fontStyle,
-                  ),
+              style: AppTypography.headlineSmallSans.copyWith(
+                color: AppColors.pure,
+                letterSpacing: 0.0,
+              ),
             ),
           ),
           Padding(

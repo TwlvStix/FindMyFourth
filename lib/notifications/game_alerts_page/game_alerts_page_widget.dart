@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -124,7 +127,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
           SnackBar(
             content: Text(
               'Alert settings saved',
-              style: TextStyle(fontFamily: 'Manrope',color: Colors.white),
+              style: AppTypography.bodySmall.copyWith(color: Colors.white),
             ),
             backgroundColor: AppColors.navy,
             duration: const Duration(seconds: 2),
@@ -234,12 +237,12 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
       color: Colors.transparent,
       child: InkWell(
         onTap: isDisabled ? null : _reset,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         child: Container(
           height: 56,
           decoration: BoxDecoration(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
             border: Border.all(
               color: isDisabled
                   ? AppColors.stone.withValues(alpha: 0.3)
@@ -267,29 +270,21 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
       color: Colors.transparent,
       child: InkWell(
         onTap: isDisabled ? null : _save,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         child: Container(
           height: 56,
           decoration: BoxDecoration(
             color: isDisabled
                 ? AppColors.stone.withValues(alpha: 0.3)
                 : AppColors.navy,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
             border: Border.all(
               color: isDisabled
                   ? Colors.transparent
                   : AppColors.pure.withValues(alpha: 0.3),
               width: 2.0,
             ),
-            boxShadow: isDisabled
-                ? []
-                : [
-                    BoxShadow(
-                      color: AppColors.navy.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+            boxShadow: isDisabled ? [] : [AppElevation.lg],
           ),
           child: Center(
             child: Row(
@@ -308,7 +303,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                 ] else ...[
                   Icon(
                     Icons.check_rounded,
-                    size: 20,
+                    size: AppIconSize.button,
                     color: AppColors.pure,
                   ),
                   SizedBox(width: 8),
@@ -337,7 +332,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
       margin: EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.navy.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),
           width: 1.0,
@@ -367,7 +362,6 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                       title,
                       style: AppTypography.titleSmall.copyWith(
                         color: Colors.white,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -430,7 +424,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                 color: isSelected
                     ? AppColors.gold
                     : Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                 border: Border.all(
                   color: isSelected
                       ? AppColors.gold
@@ -451,7 +445,6 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                       color: isSelected
                           ? AppColors.navyDark
                           : Colors.white.withValues(alpha: 0.9),
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -485,9 +478,8 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
               children: [
                 Text(
                   title,
-                  style: AppTypography.bodyLarge.copyWith(
+                  style: AppTypography.titleMedium.copyWith(
                     color: Colors.white,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 SizedBox(height: 2),
@@ -535,9 +527,8 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
         leading: const PremiumBackButton(),
         title: Text(
           'Game Alerts',
-          style: AppTypography.headlineMedium.copyWith(
+          style: AppTypography.headlineMediumSans.copyWith(
             color: Colors.white,
-            fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: false,
@@ -618,7 +609,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                 margin: EdgeInsets.only(bottom: AppSpacing.md),
                                 decoration: BoxDecoration(
                                   color: AppColors.error.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                   border: Border.all(
                                     color: AppColors.error
                                         .withValues(alpha: 0.5),
@@ -659,7 +650,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                     decoration: BoxDecoration(
                                       color: AppColors.warning
                                           .withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                       border: Border.all(
                                         color: AppColors.warning
                                             .withValues(alpha: 0.5),
@@ -669,14 +660,13 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                     child: Column(
                                       children: [
                                         Icon(Icons.settings,
-                                            size: 40, color: AppColors.warning),
+                                            size: AppIconSize.xl, color: AppColors.warning),
                                         SizedBox(height: AppSpacing.sm),
                                         Text(
                                           'Notification permission required',
                                           style: AppTypography.titleSmall
                                               .copyWith(
                                             color: Colors.white,
-                                            fontWeight: FontWeight.w600,
                                           ),
                                           textAlign: TextAlign.center,
                                         ),
@@ -819,7 +809,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                                     color: AppColors.gold,
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            16),
+                                                            AppBorderRadius.lg),
                                                   ),
                                                   child: Text(
                                                     course.name,
@@ -828,8 +818,6 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                                         .copyWith(
                                                       color:
                                                           AppColors.navyDark,
-                                                      fontWeight:
-                                                          FontWeight.w600,
                                                     ),
                                                   ),
                                                 ),
@@ -930,7 +918,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                                 border: Border.all(
                                   color: AppColors.gold
                                       .withValues(alpha: 0.3),
@@ -945,7 +933,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                       Icon(
                                         Icons.info_outline,
                                         color: AppColors.gold,
-                                        size: 20,
+                                        size: AppIconSize.button,
                                       ),
                                       SizedBox(width: AppSpacing.xs),
                                       Text(
@@ -954,7 +942,6 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                             AppTypography.labelSmall.copyWith(
                                           color: Colors.white
                                               .withValues(alpha: 0.7),
-                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                     ],
@@ -962,9 +949,8 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                   SizedBox(height: AppSpacing.xs),
                                   Text(
                                     _subscription!.getSummary(),
-                                    style: AppTypography.bodyMedium.copyWith(
+                                    style: AppTypography.titleSmall.copyWith(
                                       color: Colors.white,
-                                      fontWeight: FontWeight.w600,
                                       height: 1.4,
                                     ),
                                   ),
@@ -1059,7 +1045,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
       height: MediaQuery.of(context).size.height * 0.8,
       decoration: BoxDecoration(
         color: AppColors.navyDark,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
       ),
       child: Column(
         children: [
@@ -1070,7 +1056,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
             height: 4,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
             ),
           ),
 
@@ -1082,9 +1068,8 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                 Expanded(
                   child: Text(
                     'Select Courses',
-                    style: AppTypography.headlineSmall.copyWith(
+                    style: AppTypography.headlineSmallSans.copyWith(
                       color: Colors.white,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -1094,7 +1079,6 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                     'Done',
                     style: AppTypography.titleSmall.copyWith(
                       color: AppColors.gold,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -1120,7 +1104,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.1),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -1166,7 +1150,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                             color: isSelected
                                 ? AppColors.gold.withValues(alpha: 0.2)
                                 : Colors.white.withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
                             border: Border.all(
                               color: isSelected
                                   ? AppColors.gold
@@ -1188,12 +1172,14 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                               Expanded(
                                 child: Text(
                                   course.name,
-                                  style: AppTypography.bodyLarge.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: isSelected
-                                        ? FontWeight.w600
-                                        : FontWeight.w500,
-                                  ),
+                                  style: isSelected
+                                      ? AppTypography.titleMedium.copyWith(
+                                          color: Colors.white,
+                                        )
+                                      : AppTypography.bodyLarge.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: AppTypography.medium,
+                                        ),
                                 ),
                               ),
                             ],

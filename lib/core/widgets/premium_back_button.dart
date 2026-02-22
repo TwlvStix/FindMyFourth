@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/widgets/app_icon.dart';
 
 /// Premium glass-morphism style back button with haptic feedback
 ///
@@ -50,15 +54,15 @@ class PremiumBackButton extends StatelessWidget {
           margin: EdgeInsets.only(left: AppSpacing.sm),
           decoration: BoxDecoration(
             color: AppColors.navy.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(12.0),
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.1),
             ),
           ),
-          child: const Icon(
-            Icons.chevron_left_rounded,
+          child: AppIcon(
+            assetPath: AppIcons.back,
             color: Colors.white,
-            size: 28.0,
+            size: AppIconSize.lg,
           ),
         ),
       ),

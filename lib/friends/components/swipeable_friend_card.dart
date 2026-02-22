@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 
 /// Swipeable wrapper for friend cards with quick actions
 /// Swipe right: Primary action (Accept/Message)
@@ -154,7 +156,7 @@ class _SwipeableFriendCardState extends State<SwipeableFriendCard>
         ),
         decoration: BoxDecoration(
           color: color.withValues(alpha:opacity * 0.15),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
             color: color.withValues(alpha:opacity * 0.3),
             width: 1.5,
@@ -171,7 +173,7 @@ class _SwipeableFriendCardState extends State<SwipeableFriendCard>
                   Icon(
                     icon,
                     color: color.withValues(alpha:opacity),
-                    size: 24,
+                    size: AppIconSize.md,
                   ),
                 if (icon != null && label != null) SizedBox(width: AppSpacing.xs),
                 if (label != null)

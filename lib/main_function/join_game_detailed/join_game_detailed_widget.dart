@@ -7,10 +7,13 @@ import '/core/widgets/trust/restriction_banner.dart';
 import '/utils/app_util.dart';
 import '/core/utils/firebase_error_utils.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_icon.dart';
 import '/providers/trust_provider.dart';
 import '/models/game.dart';
@@ -131,7 +134,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   child: AppIcon(
                     assetPath: AppIcons.lock,
                     color: Colors.white.withValues(alpha: 0.7),
-                    size: 44,
+                    size: AppIconSize.xxl,
                   ),
                 ),
                 SizedBox(height: AppSpacing.md),
@@ -294,7 +297,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
             decoration: BoxDecoration(
               color: AppColors.pure,
               borderRadius: BorderRadius.vertical(
-                top: Radius.circular(20),
+                top: Radius.circular(AppBorderRadius.xl),
               ),
             ),
             child: SingleChildScrollView(
@@ -313,7 +316,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                       height: 4,
                       decoration: BoxDecoration(
                         color: AppColors.cloud,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
                       ),
                     ),
                   ),
@@ -371,7 +374,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.sand,
-                          borderRadius: BorderRadius.circular(999),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.full),
                           border: Border.all(
                             color: AppColors.cloud,
                           ),
@@ -432,7 +435,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
       ),
       decoration: BoxDecoration(
         color: AppColors.sand,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(color: AppColors.cloud),
       ),
       child: Row(
@@ -520,7 +523,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
         ),
         decoration: BoxDecoration(
           color: AppColors.navy.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(AppBorderRadius.full),
           border: Border.all(
             color: AppColors.navy.withValues(alpha: 0.3),
           ),
@@ -553,7 +556,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
       ),
       title: Text(
         title,
-        style: AppTypography.headlineMedium.copyWith(
+        style: AppTypography.headlineMediumSans.copyWith(
           color: Colors.white,
           fontWeight: FontWeight.w600,
         ),
@@ -586,7 +589,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   child: Icon(
                     Icons.error_outline_rounded,
                     color: Colors.white.withValues(alpha: 0.5),
-                    size: 40,
+                    size: AppIconSize.xl,
                   ),
                 ),
                 SizedBox(height: AppSpacing.md),
@@ -760,7 +763,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                               height: 200,
                               decoration: BoxDecoration(
                                 color: AppColors.navy.withValues(alpha: 0.3),
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
                               ),
                               child: Center(
                                 child: Text(
@@ -783,7 +786,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 height: 200,
                                 decoration: BoxDecoration(
                                   color: AppColors.navy.withValues(alpha: 0.3),
-                                  borderRadius: BorderRadius.circular(24),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
                                 ),
                                 child: Center(
                                   child: Column(
@@ -812,7 +815,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 height: 200,
                                 decoration: BoxDecoration(
                                   color: AppColors.navy.withValues(alpha: 0.3),
-                                  borderRadius: BorderRadius.circular(24),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
                                 ),
                                 child: Center(
                                   child: SpinKitWanderingCubes(
@@ -833,18 +836,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                     AppColors.navyDark.withValues(alpha: 0.6),
                                   ],
                                 ),
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
                                 border: Border.all(
                                   color: Colors.white.withValues(alpha: 0.1),
                                   width: 1,
                                 ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.navyDark.withValues(alpha: 0.3),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 10),
-                                  ),
-                                ],
+                                boxShadow: [AppElevation.xl],
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -897,7 +894,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                       end: Alignment.bottomCenter,
                                       colors: [AppColors.gold, AppColors.goldLight],
                                     ),
-                                    borderRadius: BorderRadius.circular(2),
+                                    borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                                   ),
                                 ),
                                 SizedBox(width: AppSpacing.sm),
@@ -1059,7 +1056,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                               color: AppColors.navy
                                                   .withValues(alpha: 0.3),
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                                  BorderRadius.circular(AppBorderRadius.md),
                                               border: Border.all(
                                                 color: AppColors.navyLight
                                                     .withValues(alpha: 0.3),
@@ -1076,14 +1073,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                     gradient: LinearGradient(
                                                       colors: [AppColors.navyLight, AppColors.navy],
                                                     ),
-                                                    borderRadius: BorderRadius.circular(12),
+                                                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                                     border: Border.all(
                                                       color: Colors.white.withValues(alpha: 0.2),
                                                       width: 2,
                                                     ),
                                                   ),
                                                   child: ClipRRect(
-                                                    borderRadius: BorderRadius.circular(10),
+                                                    borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                                                     child: photoUrl.isNotEmpty
                                                         ? Image.network(
                                                             photoUrl,
@@ -1093,14 +1090,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                             errorBuilder: (context, error, stackTrace) =>
                                                                 Icon(
                                                               Icons.person_rounded,
-                                                              color: Colors.white,
-                                                              size: 24,
+                                                              color: AppColors.pure,
+                                                              size: AppIconSize.md,
                                                             ),
                                                           )
                                                         : Icon(
                                                             Icons.person_rounded,
-                                                            color: Colors.white,
-                                                            size: 24,
+                                                            color: AppColors.pure,
+                                                            size: AppIconSize.md,
                                                           ),
                                                   ),
                                                 ),
@@ -1131,7 +1128,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                             AppIcon(
                                                               assetPath: AppIcons.owner,
                                                               color: AppColors.gold,
-                                                              size: 16,
+                                                              size: AppIconSize.xs,
                                                             ),
                                                           ],
                                                         ],
@@ -1159,7 +1156,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                 AppIcon(
                                                   assetPath: AppIcons.joined,
                                                   color: AppColors.gold,
-                                                  size: 24.0,
+                                                  size: AppIconSize.md,
                                                 ),
                                               ],
                                             ),
@@ -1176,7 +1173,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                       decoration: BoxDecoration(
                                         color: AppColors.navy
                                             .withValues(alpha: 0.3),
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                         border: Border.all(
                                           color: AppColors.navyLight
                                               .withValues(alpha: 0.3),
@@ -1499,7 +1496,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
             AppColors.navyDark.withValues(alpha: 0.3),
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
@@ -1514,9 +1511,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   gradient: LinearGradient(
                     colors: [AppColors.gold, AppColors.goldLight],
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
-                child: Icon(Icons.psychology_rounded, color: Colors.white, size: 22),
+                child: Icon(Icons.psychology_rounded, color: AppColors.pure, size: AppIconSize.md),
               ),
               SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -1556,7 +1553,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                         )
                       : null,
                   color: hasResult ? null : Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                 ),
                 child: hasResult
                     ? Text(
@@ -1585,7 +1582,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                 padding: EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   border: Border.all(
                     color: AppColors.error.withValues(alpha: 0.4),
                   ),
@@ -1594,8 +1591,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   children: [
                     Icon(
                       Icons.info_outline_rounded,
-                      color: Colors.white,
-                      size: 18,
+                      color: AppColors.pure,
+                      size: AppIconSize.button,
                     ),
                     SizedBox(width: AppSpacing.xs),
                     Expanded(
@@ -1620,7 +1617,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1628,7 +1625,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                     Icon(
                       Icons.insights_rounded,
                       color: AppColors.gold,
-                      size: 18,
+                      size: AppIconSize.button,
                     ),
                     SizedBox(width: AppSpacing.xs),
                     Text(
@@ -1642,7 +1639,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                     Icon(
                       Icons.chevron_right_rounded,
                       color: Colors.white.withValues(alpha: 0.6),
-                      size: 18,
+                      size: AppIconSize.button,
                     ),
                   ],
                 ),
@@ -1669,7 +1666,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
       padding: EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: AppColors.navy.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),
         ),
@@ -1681,7 +1678,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
             height: 36,
             decoration: BoxDecoration(
               gradient: LinearGradient(colors: iconColors),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               boxShadow: [
                 BoxShadow(
                   color: iconColors.first.withValues(alpha: 0.3),
@@ -1691,8 +1688,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
               ],
             ),
             child: svgPath != null
-                ? AppIcon(assetPath: svgPath, color: Colors.white, size: 18)
-                : Icon(icon, color: Colors.white, size: 18),
+                ? AppIcon(assetPath: svgPath, color: AppColors.pure, size: AppIconSize.button)
+                : Icon(icon, color: AppColors.pure, size: AppIconSize.button),
           ),
           SizedBox(width: AppSpacing.sm),
           Expanded(

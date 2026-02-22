@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
 import '/backend/backend.dart';
@@ -69,7 +72,7 @@ class _ChatWidgetState extends State<ChatWidget> {
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.navy.withValues(alpha:0.3),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
             color: unreadCount > 0
                 ? AppColors.gold.withValues(alpha:0.4)
@@ -91,14 +94,14 @@ class _ChatWidgetState extends State<ChatWidget> {
                     AppColors.navy,
                   ],
                 ),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                 border: Border.all(
                   color: AppColors.glassBorder,
                   width: 2,
                 ),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 child: photoUrl.isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl: photoUrl,
@@ -107,19 +110,19 @@ class _ChatWidgetState extends State<ChatWidget> {
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Icon(
                           Icons.person_rounded,
-                          color: Colors.white,
-                          size: 28,
+                          color: AppColors.pure,
+                          size: AppIconSize.md,
                         ),
                         errorWidget: (context, url, error) => Icon(
                           Icons.person_rounded,
-                          color: Colors.white,
-                          size: 28,
+                          color: AppColors.pure,
+                          size: AppIconSize.md,
                         ),
                       )
                     : Icon(
                         Icons.person_rounded,
-                        color: Colors.white,
-                        size: 28,
+                        color: AppColors.pure,
+                        size: AppIconSize.md,
                       ),
               ),
             ),
@@ -153,14 +156,8 @@ class _ChatWidgetState extends State<ChatWidget> {
                                 AppColors.goldLight,
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.gold.withValues(alpha:0.4),
-                                blurRadius: 4,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
+                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                            boxShadow: [AppElevation.sm],
                           ),
                           constraints: BoxConstraints(minWidth: 24),
                           child: Text(
@@ -174,7 +171,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                         ),
                     ],
                   ),
-                  SizedBox(height: 4),
+                  AppSpacing.verticalXxs,
                   Text(
                     lastMessage.isNotEmpty ? lastMessage : 'No messages yet.',
                     maxLines: 1,
@@ -184,7 +181,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                     ),
                   ),
                   if (lastMessageAt != null) ...[
-                    SizedBox(height: 4),
+                    AppSpacing.verticalXxs,
                     Text(
                       dateTimeFormat('relative', lastMessageAt),
                       style: AppTypography.labelSmall.copyWith(
@@ -199,7 +196,7 @@ class _ChatWidgetState extends State<ChatWidget> {
             Icon(
               Icons.chevron_right_rounded,
               color: AppColors.glassTextTertiary,
-              size: 24,
+              size: AppIconSize.button,
             ),
           ],
         ),
@@ -295,7 +292,7 @@ class _ChatWidgetState extends State<ChatWidget> {
           automaticallyImplyLeading: false,
           title: Text(
             'My Chats',
-            style: AppTypography.headlineMedium.copyWith(
+            style: AppTypography.headlineMediumSans.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
@@ -441,7 +438,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                     child: Icon(
                       Icons.mark_chat_unread_outlined,
                       color: AppColors.glassTextTertiary,
-                      size: 40,
+                      size: AppIconSize.xl,
                     ),
                   ),
                   SizedBox(height: AppSpacing.md),

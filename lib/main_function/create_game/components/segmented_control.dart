@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/elevation.dart';
+import '/core/design_tokens/spacing.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 
 /// A generic segmented control widget for binary or multi-option selections.
 ///
@@ -41,12 +45,12 @@ class SegmentedControl extends StatelessWidget {
         return Container(
           decoration: BoxDecoration(
             color: AppColors.navy.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.1),
             ),
           ),
-          padding: EdgeInsets.all(4),
+          padding: AppSpacing.allXxs,
           child: Row(
             children: options.map((option) {
               final isSelected = selectedValue == option['value'];
@@ -71,16 +75,8 @@ class SegmentedControl extends StatelessWidget {
                               ],
                             )
                           : null,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: AppColors.gold.withValues(alpha: 0.4),
-                                blurRadius: 8,
-                                offset: Offset(0, 2),
-                              ),
-                            ]
-                          : null,
+                      borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                      boxShadow: isSelected ? [AppElevation.md] : null,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -97,8 +93,7 @@ class SegmentedControl extends StatelessWidget {
                         Flexible(
                           child: Text(
                             option['label'] as String,
-                            style: TextStyle(
-                              fontFamily: 'Manrope',
+                            style: AppTypography.labelMedium.copyWith(
                               color: isSelected
                                   ? Colors.white
                                   : Colors.white.withValues(alpha: 0.6),

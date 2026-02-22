@@ -158,9 +158,21 @@ The token system is the source of truth for all visual design.
 *Utility:* `AppColorStates.pressed(color)` and `AppColorStates.hovered(color)` for computing interaction states on arbitrary colors.
 
 **Typography** (`typography.dart`) — Three font families:
-- **Fraunces**: Sophisticated serif for headers and titles (`AppTypography.headlineLarge`, `displayLarge`)
-- **Manrope**: Refined sans-serif for body text and UI (`AppTypography.bodyMedium`, `button`)
+- **Fraunces**: Sophisticated serif for display/headline tokens (`AppTypography.displaySmall`, `headlineMedium`, `headlineSmall`)
+- **Manrope**: Refined sans-serif for body, title, label tokens and sans headline variants (`AppTypography.bodyMedium`, `labelLarge`, `headlineMediumSans`)
 - **DM Mono**: Elegant monospace for scores and data (`AppTypography.monoLarge`, `monoDisplay`)
+
+Sans-serif headline tokens exist for contexts where Manrope is needed at headline sizes (dialog titles, onboarding headings, bottom sheet headers): `displaySmallSans`, `headlineMediumSans`, `headlineSmallSans`.
+
+`labelMicro` (11px) is available for badges, compact metadata, and dense UI elements.
+
+**Canonical token-to-pattern mapping:**
+- Screen titles / page headers → `headlineMediumSans`
+- Section headers → `titleLarge`
+- Button labels → `labelLarge`
+- Captions / metadata → `labelSmall`
+
+**Deprecated tokens** (still in codebase but annotated `@Deprecated`): `text10`, `text11`, `text13`. Use `labelMicro`, `labelSmall`, or `bodySmall` with `.copyWith()` instead.
 
 **Spacing** (`spacing.dart`) — 8-point grid with 4px increments:
 - **Scale**: `xxs` (4px), `xs` (8px), `sm` (12px), `md` (16px), `lg` (20px), `xl` (24px), `xxl` (32px), `xxxl` (48px)
@@ -174,8 +186,9 @@ The token system is the source of truth for all visual design.
 - **Semantic**: `AppElevation.card`, `button`, `modal`, `dropdown`, `tooltip`
 
 **Border Radius** (`border_radius.dart`):
-- **Scale**: `xxs` (2px), `xs` (4px), `sm` (8px), `md` (12px), `lg` (16px), `xl` (24px), `full` (999px)
+- **Scale**: `xxs` (2px), `xs` (4px), `sm` (8px), `md` (12px), `lg` (16px), `xl` (20px), `xxl` (24px), `full` (999px)
 - **Semantic**: `AppBorderRadius.button` (8px), `card` (12px), `modal` (16px), `avatar` (999px), `chip` (999px)
+- **Consolidation rules**: 6→xs, 9/10→sm, 11/12.5→md, 14→lg, 32→xxl. Do not introduce off-grid radius values.
 
 **Opacity** (`opacity.dart`):
 - **Scale**: `subtle` (0.05), `light` (0.10), `medium` (0.20), `strong` (0.40), `prominent` (0.60), `heavy` (0.80)
@@ -242,8 +255,11 @@ Prefixed with `app_` and built on design tokens:
 #### Quick Reference
 ```dart
 // Typography
-Text('Title', style: AppTypography.headlineMedium)
+Text('Screen Title', style: AppTypography.headlineMediumSans)
+Text('Section', style: AppTypography.titleLarge)
 Text('Body', style: AppTypography.bodyMedium)
+Text('Button', style: AppTypography.labelLarge)
+Text('Badge', style: AppTypography.labelMicro)
 Text('72', style: AppTypography.monoDisplay)
 
 // Colors — use the three roles
@@ -305,7 +321,10 @@ AnimatedContainer(duration: MotionTokens.microInteraction, curve: MotionTokens.c
 - **`premium_ui_patterns.dart`** has stale naming — `AppGradients` references old "Fairway Sunset" names (`sunsetGold`, `fairway`) instead of The Clubhouse vocabulary. Comments in the file also reference the old design language. Update when next modifying this file.
 - **Remaining `withOpacity()` deprecation warnings** — use `Color.withValues(alpha: ...)` or the pre-computed glass/overlay constants in `AppColors` instead.
 - **Some files still use `AppTheme.of(context)`** with FlutterFlow naming instead of direct tokens.
-- **Flutter analyze: 61 remaining issues** (non-blocking: unused imports, deprecated API usage, unused local variables).
+- **Deprecated typography helpers** (`text10`, `text11`, `text13`) still referenced in ~11 files — migrate to semantic tokens when touching these files.
+- **`caption` token** still used in ~10 files alongside the standard `labelSmall` — consolidate to `labelSmall` when touching these files.
+- **54 hardcoded BoxShadow instances** remain (intentionally — upward shadows, animated glows, dynamic colors that don't map to tokens).
+- **Flutter analyze: ~55 remaining issues** (non-blocking: unused imports, deprecated API usage).
 
 ### Data Models: Record Classes vs Model Classes
 
@@ -364,6 +383,7 @@ Key collections:
 - **Naming**: Files use `snake_case`. Classes use `PascalCase`. Route names match widget class names.
 - **Logging**: Use `AppLog.d()` from `lib/core/utils/app_log.dart` for all logging in services AND providers. Do not use `print()` or `debugPrint()`.
 - **Emoji in logs**: Use emoji prefixes for log readability: ✅ success, ❌ error, 📖 info, 📱 chat operations, 🔵 stream events, 💬 chat UI, 🔥 cache warming, 🆕 new fetches
+- **Icons**: Always use `AppIcon` with `AppIconSize` tokens. Do not use raw `Icon()` with hardcoded sizes. When no SVG equivalent exists in `AppIcons`, use `Icon()` but always pair with `AppIconSize` for the size parameter. See `docs/icon-size-mapping-reference.md` for which token to use in which context.
 
 ### Provider Pattern
 Providers follow a consistent structure:
@@ -469,6 +489,13 @@ When adding a new feature, the typical file set is:
 - **Don't catch generic exceptions in services** — catch `FirebaseException` specifically to preserve error codes
 - **`lib/custom_code/`** is excluded from analysis and contains legacy/generated code — avoid modifying or depending on it for new features
 - **`lib/app_state.dart`** is legacy — it only holds SharedPreferences-backed cancelled game state. Do not add new state here; use the appropriate domain provider instead.
+- **Don't use hardcoded icon sizes** — use `AppIconSize` tokens (e.g., `AppIconSize.button`, `AppIconSize.listItem`). Literal pixel values on icons bypass the design system and create visual inconsistency.
+- **Don't use raw `Icon()` when an `AppIcons` SVG exists** — use `AppIcon(assetPath: AppIcons.xxx)` to stay within the unified icon system. Check `app_icons.dart` before reaching for Material Icons.
+- **Don't hardcode `fontFamily`, `fontSize`, or `fontWeight`** — use `AppTypography` tokens. If no token matches exactly, use the closest token with `.copyWith()`. Never use raw `TextStyle(fontFamily: 'Manrope', ...)`.
+- **Don't hardcode `BorderRadius.circular()` values** — use `AppBorderRadius` tokens. Map to nearest token: 8→sm, 12→md, 16→lg, 20→xl, 24→xxl, 999→full.
+- **Don't hardcode spacing values** — use `AppSpacing` tokens and shortcuts. Use `AppSpacing.allMd` instead of `EdgeInsets.all(16)`, and `AppSpacing.verticalSmBox` instead of `SizedBox(height: 12)`.
+- **Don't hardcode `BoxShadow()`** — use `AppElevation` tokens. Use semantic aliases when context matches (e.g., `AppElevation.card` for cards, `AppElevation.modal` for modals).
+- **Don't use `AppSpacing` tokens for `BorderRadius`** — spacing and radius are separate token systems. Use `AppBorderRadius` for border radius values.
 
 ## Vibe System
 

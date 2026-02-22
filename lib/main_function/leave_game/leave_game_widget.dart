@@ -1,6 +1,7 @@
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
@@ -76,8 +77,8 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(0.0),
                       bottomRight: Radius.circular(0.0),
-                      topLeft: Radius.circular(AppSpacing.md),
-                      topRight: Radius.circular(AppSpacing.md),
+                      topLeft: Radius.circular(AppBorderRadius.lg),
+                      topRight: Radius.circular(AppBorderRadius.lg),
                     ),
                   ),
                   child: Padding(
@@ -95,7 +96,7 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                               height: 3.0,
                               decoration: BoxDecoration(
                                 color: AppColors.cloud,
-                                borderRadius: BorderRadius.circular(4.0),
+                                borderRadius: BorderRadius.circular(AppBorderRadius.xs),
                               ),
                             ),
                           ],
@@ -121,20 +122,9 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                                   style: TextStyle(),
                                 )
                               ],
-                              style: AppTypography.headlineMedium
-                                  .override(
-                                    font: TextStyle(fontFamily: 'Manrope',
-                                      fontWeight: AppTypography.headlineMedium
-                                          .fontWeight,
-                                      fontStyle: AppTypography.headlineMedium
-                                          .fontStyle,
-                                    ),
-                                    letterSpacing: 0.0,
-                                    fontWeight: AppTypography.headlineMedium
-                                        .fontWeight,
-                                    fontStyle: AppTypography.headlineMedium
-                                        .fontStyle,
-                                  ),
+                              style: AppTypography.headlineMediumSans.copyWith(
+                                letterSpacing: 0.0,
+                              ),
                             ),
                           ),
                         ),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 
@@ -34,19 +37,8 @@ class ProfileCardSection extends StatelessWidget {
           EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: AppColors.pure,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+        boxShadow: [AppElevation.md, AppElevation.lg],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,7 +95,7 @@ class ProfilePreferenceItem extends StatelessWidget {
           child: Icon(
             icon,
             color: iconColor,
-            size: 28,
+            size: AppIconSize.lg,
           ),
         ),
         SizedBox(height: AppSpacing.sm),

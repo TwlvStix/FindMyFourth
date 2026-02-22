@@ -4,6 +4,8 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_icons.dart';
 import '/core/widgets/app_icon.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/models/game.dart';
 import '/utils/app_util.dart';
@@ -35,7 +37,7 @@ class QuickStatsRow extends StatelessWidget {
             padding: EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               color: AppColors.navy.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
             child: Row(
@@ -47,10 +49,10 @@ class QuickStatsRow extends StatelessWidget {
                     gradient: const LinearGradient(
                       colors: [AppColors.goldLight, AppColors.error],
                     ),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                   ),
-                  child: const Center(
-                    child: AppIcon(assetPath: AppIcons.calendarCheck, color: Colors.white, size: 18),
+                  child: Center(
+                    child: AppIcon(assetPath: AppIcons.calendarCheck, color: AppColors.pure, size: AppIconSize.button),
                   ),
                 ),
                 SizedBox(width: AppSpacing.sm),
@@ -86,7 +88,7 @@ class QuickStatsRow extends StatelessWidget {
                     icon: Icon(
                       Icons.edit_rounded,
                       color: AppColors.gold,
-                      size: 18,
+                      size: AppIconSize.button,
                     ),
                     borderRadius: 8.0,
                     buttonSize: 32.0,
@@ -107,7 +109,7 @@ class QuickStatsRow extends StatelessWidget {
             color: isFull
                 ? AppColors.navyLight.withValues(alpha: 0.2)
                 : AppColors.gold.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
             border: Border.all(
               color: isFull
                   ? AppColors.navyLight.withValues(alpha: 0.3)
@@ -125,12 +127,12 @@ class QuickStatsRow extends StatelessWidget {
                         ? [AppColors.navyLight, AppColors.navy]
                         : [AppColors.gold, AppColors.goldLight],
                   ),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                 ),
                 child: Center(
                   child: isFull
-                      ? const Icon(Icons.groups_rounded, color: Colors.white, size: 18)
-                      : const AppIcon(assetPath: AppIcons.addPlayer, color: Colors.white, size: 18),
+                      ? Icon(Icons.groups_rounded, color: AppColors.pure, size: AppIconSize.button)
+                      : AppIcon(assetPath: AppIcons.addPlayer, color: AppColors.pure, size: AppIconSize.button),
                 ),
               ),
               SizedBox(width: AppSpacing.sm),

@@ -6,6 +6,8 @@ import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/fairway_background.dart';
 
 /// YourStandingScreen
@@ -115,10 +117,10 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
               height: 40,
               decoration: BoxDecoration(
                 color: AppColors.glassSurface,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppBorderRadius.md),
               ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white, size: 18),
+              child: Icon(Icons.arrow_back_ios_new_rounded,
+                  color: AppColors.pure, size: AppIconSize.button),
             ),
           ),
           SizedBox(width: AppSpacing.md),
@@ -152,7 +154,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.error_outline_rounded,
-                color: AppColors.glassTextTertiary, size: 48),
+                color: AppColors.glassTextTertiary, size: AppIconSize.xxl),
             SizedBox(height: AppSpacing.md),
             Text(
               _error!,
@@ -184,12 +186,12 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
               height: 72,
               decoration: BoxDecoration(
                 color: AppColors.glassSurface,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppBorderRadius.xl),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.sports_golf_rounded,
-                color: Colors.white,
-                size: 36,
+                color: AppColors.pure,
+                size: AppIconSize.lg,
               ),
             ),
             SizedBox(height: AppSpacing.lg),
@@ -262,7 +264,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
         boxShadow: [
           BoxShadow(
             color: info.gradientStart.withValues(alpha:0.3),
@@ -281,9 +283,9 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
                 height: 48,
                 decoration: BoxDecoration(
                   color: AppColors.glassBorder,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                 ),
-                child: Icon(info.icon, color: Colors.white, size: 24),
+                child: Icon(info.icon, color: AppColors.pure, size: AppIconSize.md),
               ),
               SizedBox(width: AppSpacing.md),
               Expanded(
@@ -337,7 +339,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
             ),
             SizedBox(height: AppSpacing.xs),
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(AppBorderRadius.xs),
               child: LinearProgressIndicator(
                 value: progress,
                 backgroundColor: AppColors.glassBorder,
@@ -398,7 +400,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
             children: [
               Icon(Icons.bolt_rounded,
                   color: activeCount > 0 ? AppColors.warning : AppColors.success,
-                  size: 20),
+                  size: AppIconSize.button),
               SizedBox(width: AppSpacing.sm),
               Text(
                 'Active Strikes',
@@ -415,7 +417,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
                   color: activeCount > 0
                       ? AppColors.warning.withValues(alpha:0.15)
                       : AppColors.success.withValues(alpha:0.12),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                 ),
                 child: Text(
                   '$activeCount',
@@ -531,7 +533,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
       children: [
         Row(
           children: [
-            Icon(icon, color: color, size: 16),
+            Icon(icon, color: color, size: AppIconSize.xs),
             SizedBox(width: AppSpacing.xxs),
             Expanded(
               child: Text(
@@ -599,7 +601,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
         children: [
           Row(
             children: [
-              Icon(nextInfo.icon, color: AppColors.gold, size: 20),
+              Icon(nextInfo.icon, color: AppColors.gold, size: AppIconSize.button),
               SizedBox(width: AppSpacing.sm),
               Text(
                 'Next: ${nextInfo.label}',
@@ -660,7 +662,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
         Icon(
           met ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
           color: met ? AppColors.success : AppColors.cloud,
-          size: 18,
+          size: AppIconSize.button,
         ),
         SizedBox(width: AppSpacing.sm),
         Expanded(
@@ -694,7 +696,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
         Icon(
           met ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
           color: met ? AppColors.success : AppColors.cloud,
-          size: 18,
+          size: AppIconSize.button,
         ),
         SizedBox(width: AppSpacing.sm),
         Expanded(
@@ -790,7 +792,7 @@ class _StrikeRow extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(top: 2),
             child: Icon(Icons.bolt_rounded,
-                color: AppColors.warning, size: 16),
+                color: AppColors.warning, size: AppIconSize.xs),
           ),
           SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -860,7 +862,7 @@ class _SectionCard extends StatelessWidget {
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.pure,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         boxShadow: [
           BoxShadow(
             color: AppColors.onyx.withValues(alpha:0.06),
@@ -892,7 +894,7 @@ class _RetryButton extends StatelessWidget {
             horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
         decoration: BoxDecoration(
           color: AppColors.gold,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
         ),
         child: Text(
           'Try Again',

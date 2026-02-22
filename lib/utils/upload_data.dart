@@ -9,6 +9,7 @@ import 'package:video_player/video_player.dart';
 
 import '../auth/firebase_auth/auth_util.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 import 'app_util.dart';
 
 const allowedFormats = {'image/png', 'image/jpeg', 'video/mp4', 'image/gif'};
@@ -53,7 +54,6 @@ Future<List<SelectedFile>?> selectMediaWithSourceBottomSheet({
   int? imageQuality,
   required bool allowPhoto,
   bool allowVideo = false,
-  String pickerFontFamily = 'Roboto',
   Color? textColor,
   Color? backgroundColor,
   bool includeDimensions = false,
@@ -66,11 +66,8 @@ Future<List<SelectedFile>?> selectMediaWithSourceBottomSheet({
             title: Text(
               label,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: pickerFontFamily,
+              style: AppTypography.titleLarge.copyWith(
                 color: effectiveTextColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 20,
               ),
             ),
             tileColor: effectiveBgColor,
@@ -94,11 +91,8 @@ Future<List<SelectedFile>?> selectMediaWithSourceBottomSheet({
                   title: Text(
                     'Choose Source',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: pickerFontFamily,
+                    style: AppTypography.headlineSmallSans.copyWith(
                       color: effectiveTextColor.applyAlpha(0.65),
-                      fontWeight: FontWeight.w500,
-                      fontSize: 20,
                     ),
                   ),
                   tileColor: effectiveBgColor,

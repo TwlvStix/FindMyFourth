@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
+import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 
 /// A consistent toggle switch widget with label and description.
 ///
@@ -35,7 +38,7 @@ class ToggleSwitch extends StatelessWidget {
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.navy.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(
           color: value
               ? AppColors.gold.withValues(alpha: 0.5)
@@ -51,16 +54,14 @@ class ToggleSwitch extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: TextStyle(fontFamily: 'Manrope',
+                  style: AppTypography.titleSmall.copyWith(
                     color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   description,
-                  style: TextStyle(fontFamily: 'Manrope',
+                  style: AppTypography.bodySmall.copyWith(
                     color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 13,
                   ),
@@ -85,7 +86,7 @@ class ToggleSwitch extends StatelessWidget {
                       )
                     : null,
                 color: value ? null : Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               ),
               child: AnimatedAlign(
                 duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
@@ -98,13 +99,7 @@ class ToggleSwitch extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
+                    boxShadow: [AppElevation.sm],
                   ),
                 ),
               ),

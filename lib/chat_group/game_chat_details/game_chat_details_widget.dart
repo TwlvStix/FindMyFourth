@@ -17,8 +17,11 @@ import '/providers/chat_provider.dart';
 import '/providers/profile_provider.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
@@ -225,13 +228,13 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                           children: [
                             Icon(
                               Icons.error_outline,
-                              color: Colors.white,
-                              size: 48,
+                              color: AppColors.pure,
+                              size: AppIconSize.xxl,
                             ),
                             SizedBox(height: 16),
                             Text(
                               'Failed to load image',
-                              style: TextStyle(color: Colors.white),
+                              style: TextStyle(color: AppColors.pure),
                             ),
                           ],
                         ),
@@ -244,7 +247,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                 top: 10,
                 right: 10,
                 child: IconButton(
-                  icon: Icon(Icons.close, color: Colors.white, size: 30),
+                  icon: Icon(Icons.close, color: AppColors.pure, size: AppIconSize.md),
                   tooltip: 'Close image',
                   onPressed: () => Navigator.of(context).pop(),
                 ),
@@ -291,8 +294,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
           decoration: BoxDecoration(
             color: AppColors.navyDark,
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
+              topLeft: Radius.circular(AppBorderRadius.xl),
+              topRight: Radius.circular(AppBorderRadius.xl),
             ),
           ),
           padding: EdgeInsets.all(AppSpacing.lg),
@@ -304,7 +307,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                 height: 4,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha:0.3),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                 ),
               ),
               SizedBox(height: AppSpacing.md),
@@ -345,7 +348,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                         color: hasReacted
                             ? AppColors.navyDark.withValues(alpha:0.3)
                             : AppColors.navy,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
                         border: hasReacted
                             ? Border.all(
                                 color: AppColors.navyDark,
@@ -491,6 +494,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       icon: Icon(
         Icons.more_vert,
         color: AppColors.pure,
+        size: AppIconSize.md,
       ),
       tooltip: 'More options',
       onSelected: (String value) {
@@ -506,7 +510,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
               Icon(
                 Icons.delete_outline,
                 color: AppColors.error,
-                size: 20.0,
+                size: AppIconSize.button,
               ),
               SizedBox(width: 12.0),
               Text(
@@ -718,8 +722,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.navyDark,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.lg)),
       ),
       builder: (sheetCtx) => SafeArea(
         child: Padding(
@@ -854,7 +858,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -1074,7 +1078,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                       padding: EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
                         color: AppColors.navyDark,
-                        borderRadius: BorderRadius.circular(12.0),
+                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
                         border: Border.all(
                           color: AppColors.navyDark
                               .withValues(alpha: 0.2),
@@ -1086,7 +1090,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                           Icon(
                             Icons.info_outline,
                             color: AppColors.navyDark,
-                            size: 20.0,
+                            size: AppIconSize.button,
                           ),
                           SizedBox(width: AppSpacing.sm),
                           Expanded(
@@ -1495,7 +1499,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                     label: 'Scroll to bottom',
                     child: Material(
                       elevation: 4,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                       color: Colors.transparent,
                       child: Container(
                         decoration: BoxDecoration(
@@ -1505,25 +1509,18 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                               AppColors.navyDark.withValues(alpha:0.8),
                             ],
                           ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.navyDark
-                                  .withValues(alpha:0.4),
-                              blurRadius: 8,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
+                          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+                          boxShadow: [AppElevation.md],
                         ),
                         child: InkWell(
                           onTap: _scrollToBottom,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                           child: Padding(
                             padding: EdgeInsets.all(12),
                             child: Icon(
                               Icons.keyboard_arrow_down_rounded,
-                              color: Colors.white,
-                              size: 28,
+                              color: AppColors.pure,
+                              size: AppIconSize.md,
                             ),
                           ),
                         ),

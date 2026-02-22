@@ -2,6 +2,9 @@ import 'package:collection/collection.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 
 import '../form_field_controller.dart';
+import '../design_tokens/border_radius.dart';
+import '../design_tokens/icon_size.dart';
+import '../design_tokens/spacing.dart';
 import 'package:flutter/material.dart';
 
 class AppDropDown<T> extends StatefulWidget {
@@ -258,10 +261,10 @@ class _AppDropDownState<T> extends State<AppDropDown<T>> {
                     child: Row(
                       children: [
                         if (isSelected)
-                          const Icon(Icons.check_box_outlined)
+                          Icon(Icons.check_box_outlined, size: AppIconSize.md)
                         else
-                          const Icon(Icons.check_box_outline_blank),
-                        const SizedBox(width: 16),
+                          Icon(Icons.check_box_outline_blank, size: AppIconSize.md),
+                        AppSpacing.horizontalMdBox,
                         Expanded(
                           child: Text(
                             optionLabels[item]!,
@@ -295,12 +298,12 @@ class _AppDropDownState<T> extends State<AppDropDown<T>> {
       ),
       menuItemStyleData: MenuItemStyleData(
         overlayColor: overlayColor,
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: AppSpacing.horizontalMd,
       ),
       dropdownStyleData: DropdownStyleData(
         elevation: widget.elevation.toInt(),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(4.0),
+          borderRadius: BorderRadius.circular(AppBorderRadius.xs),
           color: widget.fillColor,
         ),
         isOverButton: widget.isOverButton,
@@ -334,11 +337,11 @@ class _AppDropDownState<T> extends State<AppDropDown<T>> {
               searchInnerWidgetHeight: 50,
               searchInnerWidget: Container(
                 height: 50,
-                padding: const EdgeInsets.only(
-                  top: 8,
-                  bottom: 4,
-                  right: 8,
-                  left: 8,
+                padding: EdgeInsets.only(
+                  top: AppSpacing.xs,
+                  bottom: AppSpacing.xxs,
+                  right: AppSpacing.xs,
+                  left: AppSpacing.xs,
                 ),
                 child: TextFormField(
                   expands: true,
@@ -348,14 +351,14 @@ class _AppDropDownState<T> extends State<AppDropDown<T>> {
                   style: widget.searchTextStyle,
                   decoration: InputDecoration(
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
                     ),
                     hintText: widget.searchHintText,
                     hintStyle: widget.searchHintTextStyle,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                     ),
                   ),
                 ),

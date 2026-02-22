@@ -6,6 +6,8 @@ import '/core/design_tokens/colors.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_card.dart';
 import '/models/vibe_profile.dart';
 
@@ -147,14 +149,14 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.sand,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         ),
         title: Row(
           children: [
             Icon(
               Icons.block_rounded,
               color: AppColors.navy,
-              size: 24,
+              size: AppIconSize.md,
             ),
             const SizedBox(width: AppSpacing.sm),
             Text(
@@ -242,7 +244,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
             ),
             decoration: BoxDecoration(
               color: AppColors.navyLight.withValues(alpha:0.15),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               border: Border.all(
                 color: AppColors.navy.withValues(alpha:0.3),
                 width: 1,
@@ -322,7 +324,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
                     onTap: () => _showDealbreakerInfo(context),
                     child: Icon(
                       Icons.info_outline_rounded,
-                      size: 18,
+                      size: AppIconSize.button,
                       color: AppColors.stone,
                     ),
                   ),

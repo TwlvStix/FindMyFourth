@@ -8,6 +8,8 @@ import '/main_function/create_game/components/premium_date_picker.dart';
 import '/main_function/create_game/components/tee_time_picker.dart';
 import '/models/course.dart';
 import '/core/widgets/app_drop_down.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/form_field_controller.dart';
 import '/utils/app_util.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -71,7 +73,7 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.navyDark,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
       ),
       child: SafeArea(
         child: SingleChildScrollView(
@@ -87,7 +89,7 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                   height: 4,
                   decoration: BoxDecoration(
                     color: AppColors.greenLight,
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                   ),
                 ),
               ),
@@ -95,10 +97,8 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
 
               Text(
                 'Set Tee Time & Course',
-                style: TextStyle(
-                  fontFamily: 'Manrope',
+                style: AppTypography.headlineMediumSans.copyWith(
                   fontSize: 22,
-                  fontWeight: FontWeight.w600,
                   color: AppColors.pure,
                 ),
               ),
@@ -129,7 +129,7 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                     padding: EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
                       color: AppColors.navy,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.md),
                       border: Border.all(
                         color: AppColors.navyDark,
                         width: 1.5,
@@ -138,15 +138,11 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                     child: Row(
                       children: [
                         Icon(Icons.access_time_rounded,
-                          color: AppColors.navyDark, size: 24),
+                          color: AppColors.navyDark, size: AppIconSize.md),
                         SizedBox(width: AppSpacing.sm),
                         Text(
                           dateTimeFormat("jm", _selectedDate),
-                          style: TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTypography.titleSmall,
                         ),
                       ],
                     ),
@@ -209,7 +205,7 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                     icon: Icon(
                       Icons.keyboard_arrow_down_rounded,
                       color: AppColors.pure,
-                      size: 24.0,
+                      size: AppIconSize.md,
                     ),
                     fillColor: AppColors.navy,
                     elevation: 2.0,
@@ -243,10 +239,8 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
     );
   }
 
-  TextStyle _labelStyle(BuildContext context) => TextStyle(
-    fontFamily: 'Manrope',
+  TextStyle _labelStyle(BuildContext context) => AppTypography.labelSmall.copyWith(
     fontSize: 13,
-    fontWeight: FontWeight.w600,
     color: AppColors.pure,
   );
 }

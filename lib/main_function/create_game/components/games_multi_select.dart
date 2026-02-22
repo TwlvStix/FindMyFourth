@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_text_field.dart';
 import '/core/widgets/app_icon.dart';
 
@@ -90,22 +94,14 @@ class GamesMultiSelect extends StatelessWidget {
                         )
                       : null,
                   color: isSelected ? null : AppColors.navy.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   border: Border.all(
                     color: isSelected
                         ? AppColors.gold
                         : Colors.white.withValues(alpha: 0.1),
                     width: isSelected ? 2 : 1,
                   ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: AppColors.gold.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : null,
+                  boxShadow: isSelected ? [AppElevation.md] : null,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -120,13 +116,13 @@ class GamesMultiSelect extends StatelessWidget {
                               )
                             : null,
                         color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                       ),
                       child: Center(
                         child: AppIcon(
                           assetPath: option['svgPath'] as String,
-                          size: 16,
-                          color: Colors.white,
+                          size: AppIconSize.xs,
+                          color: AppColors.pure,
                         ),
                       ),
                     ),
@@ -134,9 +130,8 @@ class GamesMultiSelect extends StatelessWidget {
                     Text(
                       option['label'] as String,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontFamily: 'Manrope',
+                      style: AppTypography.labelMicro.copyWith(
                         color: Colors.white,
-                        fontSize: 11,
                         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                       ),
                       maxLines: 1,

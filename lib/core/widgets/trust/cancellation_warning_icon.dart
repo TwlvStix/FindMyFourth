@@ -39,7 +39,7 @@ class CancellationWarningIcon extends StatelessWidget {
         },
         behavior: HitTestBehavior.opaque,
         child: Padding(
-          padding: const EdgeInsets.all(4),
+          padding: AppSpacing.allXxs,
           child: Icon(
             Icons.warning_amber_rounded,
             size: AppIconSize.sm,
@@ -104,7 +104,7 @@ class _CancellationWarningSheet extends StatelessWidget {
               height: 4,
               decoration: BoxDecoration(
                 color: AppColors.cloud,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
               ),
             ),
           ),
@@ -113,9 +113,7 @@ class _CancellationWarningSheet extends StatelessWidget {
           // Title
           Text(
             'Recent Cancellations',
-            style: TextStyle(
-              fontFamily: AppTypography.displayFamily,
-              fontSize: 20,
+            style: AppTypography.headlineSmall.copyWith(
               fontWeight: FontWeight.w600,
               color: AppColors.onyx,
             ),

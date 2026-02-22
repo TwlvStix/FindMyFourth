@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/backend/backend.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/navigation/app_router.dart';
 
 /// Host information section showing avatar, name, and view profile button
@@ -21,7 +23,7 @@ class HostInfoSection extends StatelessWidget {
       padding: EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
       ),
       child: Row(
         children: [
@@ -32,7 +34,7 @@ class HostInfoSection extends StatelessWidget {
               gradient: const LinearGradient(
                 colors: [AppColors.navyLight, AppColors.navy],
               ),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               border: Border.all(
                 color: AppColors.gold,
                 width: 2,
@@ -45,16 +47,16 @@ class HostInfoSection extends StatelessWidget {
                     fit: BoxFit.cover,
                     cacheWidth: 96,
                     cacheHeight: 96,
-                    errorBuilder: (_, __, ___) => const Icon(
+                    errorBuilder: (_, __, ___) => Icon(
                       Icons.person_rounded,
-                      color: Colors.white,
-                      size: 24,
+                      color: AppColors.pure,
+                      size: AppIconSize.md,
                     ),
                   )
-                : const Icon(
+                : Icon(
                     Icons.person_rounded,
-                    color: Colors.white,
-                    size: 24,
+                    color: AppColors.pure,
+                    size: AppIconSize.md,
                   ),
           ),
           SizedBox(width: AppSpacing.sm),
@@ -98,7 +100,7 @@ class HostInfoSection extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppBorderRadius.xl),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -109,11 +111,11 @@ class HostInfoSection extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  AppSpacing.horizontalXxs,
                   Icon(
                     Icons.chevron_right_rounded,
                     color: Colors.white.withValues(alpha: 0.8),
-                    size: 16,
+                    size: AppIconSize.xs,
                   ),
                 ],
               ),

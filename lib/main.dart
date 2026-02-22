@@ -20,6 +20,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/app_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/utils/app_util.dart';
@@ -474,12 +475,12 @@ class _InternalCrashTestOverlay extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(16.0),
+            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
             onLongPress: triggerInternalCrashForTesting,
             child: Container(
               decoration: BoxDecoration(
                 color: AppColors.error.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(16.0),
+                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               ),
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,
@@ -583,8 +584,8 @@ class _NavBarPageState extends State<NavBarPage> {
               elevation: 8.0,
               child: Icon(
                 Icons.add,
-                color: Colors.white,
-                size: 28.0,
+                color: AppColors.pure,
+                size: AppIconSize.lg,
               ),
             )
           : null,

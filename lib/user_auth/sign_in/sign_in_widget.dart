@@ -2,9 +2,12 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_text.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/user_auth/recover_password/recover_password_widget.dart';
@@ -131,7 +134,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           width: 2.0,
                                         ),
                                         borderRadius:
-                                            BorderRadius.circular(12.0),
+                                            BorderRadius.circular(AppBorderRadius.md),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
@@ -139,7 +142,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           width: 2.0,
                                         ),
                                         borderRadius:
-                                            BorderRadius.circular(12.0),
+                                            BorderRadius.circular(AppBorderRadius.md),
                                       ),
                                       errorBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
@@ -147,7 +150,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           width: 2.0,
                                         ),
                                         borderRadius:
-                                            BorderRadius.circular(12.0),
+                                            BorderRadius.circular(AppBorderRadius.md),
                                       ),
                                       focusedErrorBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
@@ -155,7 +158,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           width: 2.0,
                                         ),
                                         borderRadius:
-                                            BorderRadius.circular(12.0),
+                                            BorderRadius.circular(AppBorderRadius.md),
                                       ),
                                       filled: true,
                                       fillColor: AppColors.sand,
@@ -187,7 +190,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           width: 2.0,
                                         ),
                                         borderRadius:
-                                            BorderRadius.circular(12.0),
+                                            BorderRadius.circular(AppBorderRadius.md),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
@@ -195,7 +198,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           width: 2.0,
                                         ),
                                         borderRadius:
-                                            BorderRadius.circular(12.0),
+                                            BorderRadius.circular(AppBorderRadius.md),
                                       ),
                                       errorBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
@@ -203,7 +206,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           width: 2.0,
                                         ),
                                         borderRadius:
-                                            BorderRadius.circular(12.0),
+                                            BorderRadius.circular(AppBorderRadius.md),
                                       ),
                                       focusedErrorBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
@@ -211,7 +214,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           width: 2.0,
                                         ),
                                         borderRadius:
-                                            BorderRadius.circular(12.0),
+                                            BorderRadius.circular(AppBorderRadius.md),
                                       ),
                                       filled: true,
                                       fillColor: AppColors.sand,
@@ -229,7 +232,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                               ? Icons.visibility_outlined
                                               : Icons.visibility_off_outlined,
                                           color: AppColors.slate,
-                                          size: 24.0,
+                                          size: AppIconSize.md,
                                         ),
                                       ),
                                     ),
@@ -547,7 +550,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                         begin: AlignmentDirectional(1.0, -1.0),
                         end: AlignmentDirectional(-1.0, 1.0),
                       ),
-                      borderRadius: BorderRadius.circular(AppSpacing.md),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                     ),
                     child: Padding(
                       padding: EdgeInsets.all(AppSpacing.xl),
@@ -562,17 +565,8 @@ class _SignInWidgetState extends State<SignInWidget> {
                             ),
                             decoration: BoxDecoration(
                               color: AppColors.pure,
-                              boxShadow: [
-                                BoxShadow(
-                                  blurRadius: 3.0,
-                                  color: AppColors.overlayDark,
-                                  offset: Offset(
-                                    0.0,
-                                    2.0,
-                                  ),
-                                )
-                              ],
-                              borderRadius: BorderRadius.circular(AppSpacing.xs),
+                              boxShadow: [AppElevation.sm],
+                              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                               border: Border.all(
                                 color: AppColors.sand,
                                 width: 2.0,
@@ -609,7 +603,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                 child: Icon(
                                                   Icons.person,
                                                   color: AppColors.navyDark,
-                                                  size: 24.0,
+                                                  size: AppIconSize.md,
                                                 ),
                                               ),
                                             ),
@@ -643,7 +637,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                 Icon(
                                                   Icons.star_rounded,
                                                   color: AppColors.navyDark,
-                                                  size: 20.0,
+                                                  size: AppIconSize.button,
                                                 ),
                                               ],
                                             ),

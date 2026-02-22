@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
 
 /// Quick create banner for game creation
@@ -27,7 +30,7 @@ class QuickCreateBanner extends StatelessWidget {
             AppColors.navy.withValues(alpha: 0.15),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(
           color: AppColors.navyLight.withValues(alpha: 0.4),
           width: 2,
@@ -42,12 +45,12 @@ class QuickCreateBanner extends StatelessWidget {
               gradient: LinearGradient(
                 colors: [AppColors.gold, AppColors.goldLight],
               ),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppBorderRadius.md),
             ),
             child: Icon(
               Icons.flash_on_rounded,
-              color: Colors.white,
-              size: 22,
+              color: AppColors.pure,
+              size: AppIconSize.md,
             ),
           ),
           SizedBox(width: AppSpacing.md),
@@ -57,16 +60,14 @@ class QuickCreateBanner extends StatelessWidget {
               children: [
                 Text(
                   'Quick Create',
-                  style: TextStyle(fontFamily: 'Manrope',
+                  style: AppTypography.titleSmall.copyWith(
                     color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   'Use smart defaults for faster setup',
-                  style: TextStyle(fontFamily: 'Manrope',
+                  style: AppTypography.bodySmall.copyWith(
                     color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 13,
                   ),

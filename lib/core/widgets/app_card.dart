@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '../design_tokens/colors.dart';
+import '../design_tokens/icon_size.dart';
 import '../design_tokens/spacing.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/border_radius.dart';
@@ -417,14 +418,14 @@ class StatCard extends StatelessWidget {
                 AppIcon(
                   assetPath: svgPath!,
                   color: AppColors.navy,
-                  size: 20,
+                  size: AppIconSize.button,
                 ),
                 AppSpacing.horizontalSmBox,
               ] else if (icon != null) ...[
                 Icon(
                   icon,
                   color: AppColors.navy,
-                  size: 20,
+                  size: AppIconSize.button,
                 ),
                 AppSpacing.horizontalSmBox,
               ],

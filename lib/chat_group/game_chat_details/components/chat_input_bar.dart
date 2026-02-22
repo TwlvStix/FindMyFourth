@@ -4,6 +4,8 @@ import '/models/chat_message.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 
 /// Chat input bar component with message field and send button.
 ///
@@ -72,7 +74,7 @@ class ChatInputBar extends StatelessWidget {
               padding: EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
                 color: AppColors.navy,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                 border: Border(
                   left: BorderSide(
                     color: AppColors.navyDark,
@@ -93,7 +95,7 @@ class ChatInputBar extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        AppSpacing.verticalXxs,
                         Text(
                           replyToMessage!.text.isNotEmpty
                               ? replyToMessage!.text
@@ -110,8 +112,8 @@ class ChatInputBar extends StatelessWidget {
                   IconButton(
                     icon: Icon(
                       Icons.close,
-                      size: 20,
-                      color: Colors.white.withValues(alpha: 0.6),
+                      size: AppIconSize.button,
+                      color: AppColors.pure.withValues(alpha: 0.6),
                     ),
                     onPressed: onCancelReply,
                   ),
@@ -128,7 +130,7 @@ class ChatInputBar extends StatelessWidget {
                   padding: EdgeInsets.only(right: AppSpacing.sm),
                   child: Icon(
                     Icons.image_rounded,
-                    size: 26,
+                    size: AppIconSize.md,
                     color: (enabled && onAttachImage != null)
                         ? AppColors.navyDark
                         : AppColors.pure.withValues(alpha: 0.4),
@@ -164,15 +166,15 @@ class ChatInputBar extends StatelessWidget {
                       vertical: AppSpacing.sm,
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20.0),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                       borderSide: BorderSide.none,
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20.0),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                       borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20.0),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                       borderSide: BorderSide(
                         color: AppColors.navyDark.withValues(alpha: 0.3),
                         width: 1.5,
@@ -196,9 +198,10 @@ class ChatInputBar extends StatelessWidget {
                     child: IconButton(
                       icon: Icon(
                         Icons.send_rounded,
+                        size: AppIconSize.md,
                         color: enabled && hasText
-                            ? Colors.white
-                            : AppColors.pure,
+                            ? AppColors.pure
+                            : AppColors.pure.withValues(alpha: 0.5),
                       ),
                       onPressed: enabled && hasText ? onSendMessage : null,
                     ),

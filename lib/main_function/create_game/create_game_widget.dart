@@ -1,6 +1,9 @@
 import '/core/widgets/app_drop_down.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/elevation.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_text_field.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/motion/motion_helpers.dart';
@@ -574,8 +577,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             SnackBar(
               content: Text(
                 'You have created a game!',
-                style: TextStyle(
-                  fontFamily: 'Manrope',
+                style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.navy,
                   fontWeight: FontWeight.w500,
                 ),
@@ -605,7 +607,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         SnackBar(
           content: Text(
             'Failed to create game: $errorMsg',
-            style: TextStyle(fontFamily: 'Manrope', color: Colors.white),
+            style: AppTypography.bodyMedium.copyWith(color: Colors.white),
           ),
           duration: Duration(milliseconds: 6000),
           backgroundColor: AppColors.error,
@@ -666,14 +668,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 20,
-                offset: Offset(0, 10),
-              ),
-            ],
+            borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
+            boxShadow: [AppElevation.xl],
           ),
           padding: EdgeInsets.all(AppSpacing.lg),
           child: Column(
@@ -688,17 +684,15 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 ),
                 child: Icon(
                   Icons.help_outline_rounded,
-                  color: Colors.white,
-                  size: 28,
+                  color: AppColors.pure,
+                  size: AppIconSize.lg,
                 ),
               ),
               SizedBox(height: AppSpacing.md),
               Text(
                 title,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
+                style: AppTypography.headlineMediumSans.copyWith(
                   fontSize: 22,
-                  fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
                 textAlign: TextAlign.center,
@@ -706,11 +700,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               SizedBox(height: AppSpacing.sm),
               Text(
                 message,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 15,
+                style: AppTypography.bodySmall.copyWith(
                   color: Colors.white.withValues(alpha: 0.9),
-                  height: 1.5,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -750,18 +741,17 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           padding: EdgeInsets.all(AppSpacing.sm),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
             border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
-              Icon(Icons.info_outline_rounded, color: Colors.white, size: 20),
+              Icon(Icons.info_outline_rounded, color: AppColors.pure, size: AppIconSize.button),
               SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   'No tee time yet? Pick when you\'re available — lock it in once you have your group.',
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
+                  style: AppTypography.bodySmall.copyWith(
                     fontSize: 13,
                     color: Colors.white,
                   ),
@@ -803,19 +793,16 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               gradient: LinearGradient(
                 colors: [AppColors.navyLight, AppColors.navy],
               ),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppBorderRadius.md),
             ),
             child: Row(
               children: [
-                Icon(Icons.event_note_rounded, color: Colors.white, size: 20),
+                Icon(Icons.event_note_rounded, color: AppColors.pure, size: AppIconSize.button),
                 SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
                     _buildFlexibleSummary(),
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                    style: AppTypography.labelMedium.copyWith(
                       color: Colors.white,
                     ),
                   ),
@@ -828,10 +815,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     );
   }
 
-  TextStyle _labelStyle() => TextStyle(
-        fontFamily: 'Manrope',
+  TextStyle _labelStyle() => AppTypography.labelSmall.copyWith(
         fontSize: 13,
-        fontWeight: FontWeight.w600,
         color: Colors.white.withValues(alpha: 0.7),
       );
 
@@ -856,14 +841,14 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 setState(() => _flexibleWeek = week['value'] as String);
                 _saveDraft();
               },
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppBorderRadius.md),
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppColors.navyDark
                       : AppColors.navy,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   border: Border.all(
                     color: isSelected
                         ? AppColors.navyDark
@@ -874,13 +859,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 child: Text(
                   week['label'] as String,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: isSelected
-                        ? AppColors.pure
-                        : AppColors.pure,
+                  style: AppTypography.labelMedium.copyWith(
+                    color: AppColors.pure,
                   ),
                 ),
               ),
@@ -921,7 +901,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             });
             _saveDraft();
           },
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
           child: Container(
             padding: EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
@@ -935,7 +915,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                   : null,
               color:
                   isSelected ? null : AppColors.navy,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppBorderRadius.xl),
               border: Border.all(
                 color: isSelected
                     ? AppColors.gold
@@ -945,10 +925,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             ),
             child: Text(
               day['label'] as String,
-              style: TextStyle(
-                fontFamily: 'Manrope',
+              style: AppTypography.labelSmall.copyWith(
                 fontSize: 13,
-                fontWeight: FontWeight.w600,
                 color: isSelected
                     ? Colors.white
                     : AppColors.pure,
@@ -1014,7 +992,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                   : null,
               color:
                   isSelected ? null : AppColors.navy.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               border: Border.all(
                 color: isSelected
                     ? AppColors.gold
@@ -1027,15 +1005,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               children: [
                 AppIcon(
                   assetPath: time['svgPath'] as String,
-                  size: 28,
-                  color: Colors.white,
+                  size: AppIconSize.lg,
+                  color: AppColors.pure,
                 ),
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   time['label'] as String,
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 12,
+                  style: AppTypography.labelSmall.copyWith(
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                     color: Colors.white,
                   ),
@@ -1044,8 +1020,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 SizedBox(height: 2),
                 Text(
                   time['subtitle'] as String,
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
+                  style: AppTypography.caption.copyWith(
                     fontSize: 10,
                     color: Colors.white.withValues(alpha: 0.7),
                   ),
@@ -1125,7 +1100,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               leading: const PremiumBackButton(),
               title: Text(
                 'Create Game',
-                style: AppTypography.headlineMedium.copyWith(
+                style: AppTypography.headlineMediumSans.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1149,11 +1124,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                             SizedBox(height: AppSpacing.md),
                             Text(
                               'Loading...',
-                              style: TextStyle(
-                                fontFamily: 'Manrope',
-                                color: Colors.white,
-                                fontSize: 16,
+                              style: AppTypography.bodyMedium.copyWith(
                                 fontWeight: FontWeight.w500,
+                                color: Colors.white,
                               ),
                             ),
                           ],
@@ -1313,7 +1286,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                 );
                                               },
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                                  BorderRadius.circular(AppBorderRadius.md),
                                               child: Container(
                                                 width: double.infinity,
                                                 padding: EdgeInsets.all(
@@ -1321,7 +1294,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                 decoration: BoxDecoration(
                                                   color: AppColors.pure,
                                                   borderRadius:
-                                                      BorderRadius.circular(12),
+                                                      BorderRadius.circular(AppBorderRadius.md),
                                                   border: Border.all(
                                                     color: AppColors.navyDark,
                                                     width: 1.5,
@@ -1332,7 +1305,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                     Icon(
                                                       Icons.access_time_rounded,
                                                       color: AppColors.navyDark,
-                                                      size: 24,
+                                                      size: AppIconSize.md,
                                                     ),
                                                     SizedBox(
                                                         width: AppSpacing.sm),
@@ -1344,13 +1317,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                         children: [
                                                           Text(
                                                             'Tee Time',
-                                                            style: TextStyle(
-                                                              fontFamily:
-                                                                  'Manrope',
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
+                                                            style: AppTypography.caption.copyWith(
+                                                              fontWeight: FontWeight.w500,
                                                               color: AppColors.slate,
                                                             ),
                                                           ),
@@ -1358,13 +1326,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                           Text(
                                                             dateTimeFormat("jm",
                                                                 datePicked),
-                                                            style: TextStyle(
-                                                              fontFamily:
-                                                                  'Manrope',
-                                                              fontSize: 16,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
+                                                            style: AppTypography.titleSmall.copyWith(
                                                               color: AppColors.onyx,
                                                             ),
                                                           ),
@@ -1375,7 +1337,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                       Icons.edit_rounded,
                                                       color:
                                                           AppColors.slate,
-                                                      size: 20,
+                                                      size: AppIconSize.button,
                                                     ),
                                                   ],
                                                 ),
@@ -1400,25 +1362,21 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   end: Alignment.bottomRight,
                                                 ),
                                                 borderRadius:
-                                                    BorderRadius.circular(12),
+                                                    BorderRadius.circular(AppBorderRadius.md),
                                               ),
                                               child: Row(
                                                 children: [
                                                   Icon(
                                                     Icons.golf_course_rounded,
-                                                    color: Colors.white,
-                                                    size: 20,
+                                                    color: AppColors.pure,
+                                                    size: AppIconSize.button,
                                                   ),
                                                   SizedBox(
                                                       width: AppSpacing.sm),
                                                   Expanded(
                                                     child: Text(
                                                       '${dateTimeFormat("EEEE, MMM d", datePicked)} at ${dateTimeFormat("jm", datePicked)}',
-                                                      style: TextStyle(
-                                                        fontFamily: 'Manrope',
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.w600,
+                                                      style: AppTypography.labelMedium.copyWith(
                                                         color: Colors.white,
                                                       ),
                                                     ),
@@ -1517,7 +1475,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                               alpha: 0.2),
                                                       borderRadius:
                                                           BorderRadius.circular(
-                                                              12),
+                                                              AppBorderRadius.md),
                                                       border: Border.all(
                                                         color: AppColors
                                                             .navyLight
@@ -1530,7 +1488,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                         Icon(
                                                           Icons
                                                               .golf_course_rounded,
-                                                          size: 40,
+                                                          size: AppIconSize.xl,
                                                           color: Colors.white
                                                               .withValues(
                                                                   alpha: 0.4),
@@ -1540,13 +1498,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                                 AppSpacing.sm),
                                                         Text(
                                                           'No courses available',
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                'Manrope',
-                                                            color: Colors.white
-                                                                .withValues(
-                                                                    alpha: 0.7),
-                                                            fontSize: 15,
+                                                          style: AppTypography.bodySmall.copyWith(
+                                                            color: Colors.white.withValues(alpha: 0.7),
                                                           ),
                                                         ),
                                                       ],
@@ -1593,7 +1546,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                     Icons
                                                         .keyboard_arrow_down_rounded,
                                                     color: AppColors.slate,
-                                                    size: 24.0,
+                                                    size: AppIconSize.md,
                                                   ),
                                                   fillColor:
                                                       AppColors.pure,
@@ -1896,7 +1849,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                     end: Alignment.bottomRight,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(12),
+                                                      BorderRadius.circular(AppBorderRadius.md),
                                                   border: Border.all(
                                                     color: AppColors.gold
                                                         .withValues(alpha: 0.3),
@@ -1909,25 +1862,17 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   children: [
                                                     Text(
                                                       'Game Summary',
-                                                      style: TextStyle(
-                                                        fontFamily: 'Manrope',
+                                                      style: AppTypography.labelSmall.copyWith(
                                                         fontSize: 13,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: Colors.white
-                                                            .withValues(
-                                                                alpha: 0.7),
+                                                        fontWeight: FontWeight.w500,
+                                                        color: Colors.white.withValues(alpha: 0.7),
                                                       ),
                                                     ),
                                                     SizedBox(
                                                         height: AppSpacing.xs),
                                                     Text(
                                                       _buildGameSummary(),
-                                                      style: TextStyle(
-                                                        fontFamily: 'Manrope',
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.w600,
+                                                      style: AppTypography.labelMedium.copyWith(
                                                         color: Colors.white,
                                                         height: 1.4,
                                                       ),

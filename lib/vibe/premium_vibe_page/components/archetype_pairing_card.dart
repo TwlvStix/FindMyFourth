@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:find_my_fourth/core/design_tokens/colors.dart';
 import 'package:find_my_fourth/core/design_tokens/spacing.dart';
 import 'package:find_my_fourth/core/design_tokens/typography.dart';
+import 'package:find_my_fourth/core/design_tokens/icon_size.dart';
 import 'package:find_my_fourth/utils/vibe_archetypes.dart';
 import 'package:find_my_fourth/vibe/premium_vibe_page/styles/premium_vibe_page_styles.dart';
 
@@ -207,7 +208,7 @@ class _ExpandableArchetypeCardState extends State<_ExpandableArchetypeCard> {
                             bottom: 2,
                             child: Icon(
                               Icons.expand_more,
-                              size: 16,
+                              size: AppIconSize.xs,
                               color: AppColors.stone.withValues(alpha:0.5),
                             ),
                           ),
@@ -224,7 +225,7 @@ class _ExpandableArchetypeCardState extends State<_ExpandableArchetypeCard> {
                     child: IgnorePointer(
                       child: Icon(
                         Icons.expand_less,
-                        size: 16,
+                        size: AppIconSize.xs,
                         color: AppColors.stone.withValues(alpha:0.5),
                       ),
                     ),

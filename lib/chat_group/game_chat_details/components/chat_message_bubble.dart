@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/utils/formatting_utils.dart';
 import '/models/chat_message.dart';
 
@@ -86,11 +88,11 @@ class ChatMessageBubble extends StatelessWidget {
         alignment: isSentByCurrentUser
             ? Alignment.centerRight
             : Alignment.centerLeft,
-        padding: EdgeInsets.symmetric(horizontal: 20),
+        padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         child: Icon(
           Icons.reply_rounded,
           color: AppColors.navyDark,
-          size: 28,
+          size: AppIconSize.md,
         ),
       ),
       child: Padding(
@@ -110,7 +112,7 @@ class ChatMessageBubble extends StatelessWidget {
               Container(
                 width: 32,
                 height: 32,
-                margin: EdgeInsets.only(bottom: 4, right: AppSpacing.xs),
+                margin: EdgeInsets.only(bottom: AppSpacing.xxs, right: AppSpacing.xs),
                 child: isFirstInGroup
                     ? CircleAvatar(
                         radius: 16,
@@ -123,8 +125,8 @@ class ChatMessageBubble extends StatelessWidget {
                         child: senderPhotoUrl == null || senderPhotoUrl!.isEmpty
                             ? Icon(
                                 Icons.person,
-                                size: 18,
-                                color: Colors.white.withValues(alpha: 0.7),
+                                size: AppIconSize.button,
+                                color: AppColors.pure.withValues(alpha: 0.7),
                               )
                             : null,
                       )
@@ -146,7 +148,7 @@ class ChatMessageBubble extends StatelessWidget {
                     Padding(
                       padding: EdgeInsets.only(
                         left: AppSpacing.xs,
-                        bottom: 4,
+                        bottom: AppSpacing.xxs,
                       ),
                       child: Text(
                         senderName!,
@@ -171,14 +173,14 @@ class ChatMessageBubble extends StatelessWidget {
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(
                               isSentByCurrentUser || !isFirstInGroup
-                                  ? 14.0
-                                  : 4.0),
+                                  ? AppBorderRadius.lg
+                                  : AppBorderRadius.xs),
                           topRight: Radius.circular(
                               !isSentByCurrentUser || !isFirstInGroup
-                                  ? 14.0
-                                  : 4.0),
-                          bottomLeft: Radius.circular(14.0),
-                          bottomRight: Radius.circular(14.0),
+                                  ? AppBorderRadius.lg
+                                  : AppBorderRadius.xs),
+                          bottomLeft: Radius.circular(AppBorderRadius.lg),
+                          bottomRight: Radius.circular(AppBorderRadius.lg),
                         ),
                       ),
                       child: Column(
@@ -196,7 +198,7 @@ class ChatMessageBubble extends StatelessWidget {
                               child: GestureDetector(
                                 onTap: onImageTap,
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(10.0),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                                   child: ConstrainedBox(
                                     constraints: const BoxConstraints(
                                       maxWidth: 250,
@@ -246,9 +248,9 @@ class ChatMessageBubble extends StatelessWidget {
                                                 Icons.broken_image_outlined,
                                                 color: textColor
                                                     .withValues(alpha: 0.6),
-                                                size: 40,
+                                                size: AppIconSize.xl,
                                               ),
-                                              const SizedBox(height: 8),
+                                              AppSpacing.verticalXsBox,
                                               Text(
                                                 'Failed to load',
                                                 style: AppTypography.text11
@@ -277,7 +279,7 @@ class ChatMessageBubble extends StatelessWidget {
                             ),
                           // Timestamp and read receipts
                           if (timestamp != null && isLastInGroup) ...[
-                            SizedBox(height: 4),
+                            AppSpacing.verticalXxs,
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -289,12 +291,12 @@ class ChatMessageBubble extends StatelessWidget {
                                 ),
                                 // Read receipts for sent messages
                                 if (isSentByCurrentUser) ...[
-                                  SizedBox(width: 4),
+                                  AppSpacing.horizontalXxs,
                                   Icon(
                                     message.readBy.length > 1
                                         ? Icons.done_all
                                         : Icons.done,
-                                    size: 14,
+                                    size: AppIconSize.xs,
                                     color: message.readBy.length > 1
                                         ? AppColors.stone
                                         : textColor.withValues(alpha: 0.6),
@@ -309,15 +311,15 @@ class ChatMessageBubble extends StatelessWidget {
                   ),
                   // Reactions
                   if (message.reactions.isNotEmpty) ...[
-                    SizedBox(height: 4),
+                    AppSpacing.verticalXxs,
                     Container(
                       margin: EdgeInsets.only(
                         left: isSentByCurrentUser ? 40 : AppSpacing.md + 40,
                         right: isSentByCurrentUser ? AppSpacing.md : 40,
                       ),
                       child: Wrap(
-                        spacing: 4,
-                        runSpacing: 4,
+                        spacing: AppSpacing.xxs,
+                        runSpacing: AppSpacing.xxs,
                         children: message.reactions.entries.map((entry) {
                           final emoji = entry.key;
                           final users = entry.value;
@@ -328,8 +330,8 @@ class ChatMessageBubble extends StatelessWidget {
                             onTap: () => onReactionTap?.call(emoji, hasReacted),
                             child: Container(
                               padding: EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                                horizontal: AppSpacing.xs,
+                                vertical: AppSpacing.xxs,
                               ),
                               decoration: BoxDecoration(
                                 color: hasReacted
@@ -337,7 +339,7 @@ class ChatMessageBubble extends StatelessWidget {
                                         .withValues(alpha: 0.3)
                                     : AppColors.pure
                                         .withValues(alpha: 0.6),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                 border: hasReacted
                                     ? Border.all(
                                         color: AppColors.navyDark,
@@ -353,7 +355,7 @@ class ChatMessageBubble extends StatelessWidget {
                                     style: AppTypography.bodyMedium,
                                   ),
                                   if (users.length > 1) ...[
-                                    SizedBox(width: 4),
+                                    AppSpacing.horizontalXxs,
                                     Text(
                                       '${users.length}',
                                       style: AppTypography.text11.copyWith(

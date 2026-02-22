@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/services/vibe_group_matcher.dart';
 
 /// Group vibe match visualization displaying overall group compatibility score
@@ -32,7 +34,7 @@ class GroupVibeSummary extends StatelessWidget {
             AppColors.navyDark.withValues(alpha: 0.3),
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
@@ -47,9 +49,9 @@ class GroupVibeSummary extends StatelessWidget {
                   gradient: const LinearGradient(
                     colors: [AppColors.gold, AppColors.goldLight],
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
-                child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 22),
+                child: Icon(Icons.psychology_rounded, color: AppColors.pure, size: AppIconSize.md),
               ),
               SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -89,7 +91,7 @@ class GroupVibeSummary extends StatelessWidget {
                         )
                       : null,
                   color: hasResult ? null : Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                 ),
                 child: hasResult
                     ? Text(
@@ -118,17 +120,17 @@ class GroupVibeSummary extends StatelessWidget {
                 padding: EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   border: Border.all(
                     color: AppColors.error.withValues(alpha: 0.4),
                   ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.info_outline_rounded,
-                      color: Colors.white,
-                      size: 18,
+                      color: AppColors.pure,
+                      size: AppIconSize.button,
                     ),
                     SizedBox(width: AppSpacing.xs),
                     Expanded(
@@ -153,15 +155,15 @@ class GroupVibeSummary extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.insights_rounded,
                       color: AppColors.gold,
-                      size: 18,
+                      size: AppIconSize.button,
                     ),
                     SizedBox(width: AppSpacing.xs),
                     Text(
@@ -175,7 +177,7 @@ class GroupVibeSummary extends StatelessWidget {
                     Icon(
                       Icons.chevron_right_rounded,
                       color: Colors.white.withValues(alpha: 0.6),
-                      size: 18,
+                      size: AppIconSize.button,
                     ),
                   ],
                 ),

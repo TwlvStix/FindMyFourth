@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '/backend/schema/trust_profile.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -94,8 +95,7 @@ class TrustPlayerCard extends StatelessWidget {
                     children: [
                       Text(
                         '$verifiedRounds',
-                        style: TextStyle(
-                          fontFamily: AppTypography.monoFamily,
+                        style: AppTypography.monoSmall.copyWith(
                           fontSize: 12,
                           color: AppColors.slate,
                         ),
@@ -112,8 +112,7 @@ class TrustPlayerCard extends StatelessWidget {
                       ),
                       Text(
                         '$uniqueCoPlayers',
-                        style: TextStyle(
-                          fontFamily: AppTypography.monoFamily,
+                        style: AppTypography.monoSmall.copyWith(
                           fontSize: 12,
                           color: AppColors.slate,
                         ),
@@ -141,7 +140,7 @@ class TrustPlayerCard extends StatelessWidget {
               Icon(
                 Icons.chevron_right_rounded,
                 color: AppColors.stone,
-                size: 20,
+                size: AppIconSize.button,
               ),
           ],
         ),

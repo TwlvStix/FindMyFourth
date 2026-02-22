@@ -3,9 +3,11 @@ import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/fairway_background.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/widgets/app_text.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import 'package:flutter/material.dart';
@@ -129,17 +131,8 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                         height: 75.0,
                         decoration: BoxDecoration(
                           color: AppColors.navyDark,
-                          boxShadow: [
-                            BoxShadow(
-                              blurRadius: 6.0,
-                              color: AppColors.overlayDark,
-                              offset: Offset(
-                                0.0,
-                                4.0,
-                              ),
-                            )
-                          ],
-                          borderRadius: BorderRadius.circular(24.0),
+                          boxShadow: [AppElevation.md],
+                          borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
                         ),
                         child: Align(
                           alignment: AlignmentDirectional(-1.0, 0.0),

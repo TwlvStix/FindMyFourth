@@ -16,9 +16,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/widgets/app_icon.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // GRADIENT PRESETS
@@ -100,7 +105,7 @@ class GlassCard extends StatelessWidget {
         padding: padding ?? EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: AppColors.navy.withValues(alpha:opacity),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
             color: AppColors.glassSurface,
           ),
@@ -299,18 +304,12 @@ class _AnimatedAvatarRingState extends State<AnimatedAvatarRing>
                 decoration: BoxDecoration(
                   gradient: AppGradients.gold,
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.gold.withValues(alpha:0.4),
-                      blurRadius: 12,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
+                  boxShadow: [AppElevation.glowGold],
                 ),
-                child: Icon(
-                  Icons.camera_alt_rounded,
+                child: AppIcon(
+                  assetPath: AppIcons.camera,
                   color: Colors.white,
-                  size: 20,
+                  size: AppIconSize.button,
                 ),
               ),
             ),
@@ -323,8 +322,8 @@ class _AnimatedAvatarRingState extends State<AnimatedAvatarRing>
     return Container(
       color: AppColors.sand,
       child: widget.fallbackIcon ??
-          Icon(
-            Icons.person_rounded,
+          AppIcon(
+            assetPath: AppIcons.profile,
             size: widget.size * 0.45,
             color: AppColors.stone,
           ),
@@ -434,7 +433,7 @@ class QuickActionCard extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
         decoration: BoxDecoration(
           color: AppColors.sand,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(color: AppColors.cloud),
         ),
         child: Column(
@@ -488,7 +487,7 @@ class InfoRow extends StatelessWidget {
         padding: EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: AppColors.sand,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
           border: Border.all(color: AppColors.cloud),
         ),
         child: Row(
@@ -498,9 +497,9 @@ class InfoRow extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 color: iconColor.withValues(alpha:0.15),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
-              child: Icon(icon, color: iconColor, size: 20),
+              child: Icon(icon, color: iconColor, size: AppIconSize.button),
             ),
             SizedBox(width: AppSpacing.md),
             Expanded(
@@ -528,7 +527,7 @@ class InfoRow extends StatelessWidget {
               Icon(
                 Icons.chevron_right_rounded,
                 color: AppColors.stone,
-                size: 22,
+                size: AppIconSize.md,
               ),
           ],
         ),
@@ -554,10 +553,10 @@ class NotificationBadge extends StatelessWidget {
     final displayText = count > 99 ? '99+' : '$count';
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs - 2, vertical: AppSpacing.xxs - 1),
       decoration: BoxDecoration(
         gradient: AppGradients.warmAccent,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppBorderRadius.sm),
         boxShadow: [
           BoxShadow(
             color: AppColors.error.withValues(alpha:0.4),
@@ -621,7 +620,7 @@ class BottomSheetCard extends StatelessWidget {
             height: 4,
             decoration: BoxDecoration(
               color: AppColors.cloud,
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
             ),
           ),
           child,
@@ -649,10 +648,10 @@ class UsernamePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xxs),
       decoration: BoxDecoration(
         color: AppColors.navy.withValues(alpha:0.4),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
         border: Border.all(
           color: AppColors.glassSurface,
         ),

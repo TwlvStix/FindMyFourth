@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -190,7 +193,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
           SnackBar(
             content: Text(
               'Settings saved successfully',
-              style: TextStyle(fontFamily: 'Manrope',color: Colors.white),
+              style: AppTypography.bodySmall.copyWith(color: Colors.white),
             ),
             backgroundColor: AppColors.navy,
             duration: const Duration(seconds: 2),
@@ -444,12 +447,12 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
       color: Colors.transparent,
       child: InkWell(
         onTap: isDisabled ? null : _reset,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         child: Container(
           height: 56,
           decoration: BoxDecoration(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
             border: Border.all(
               color: isDisabled
                   ? AppColors.stone.withValues(alpha: 0.3)
@@ -477,29 +480,21 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
       color: Colors.transparent,
       child: InkWell(
         onTap: isDisabled ? null : _save,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         child: Container(
           height: 56,
           decoration: BoxDecoration(
             color: isDisabled
                 ? AppColors.stone.withValues(alpha: 0.3)
                 : AppColors.navy,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
             border: Border.all(
               color: isDisabled
                   ? Colors.transparent
                   : AppColors.pure.withValues(alpha: 0.3),
               width: 2.0,
             ),
-            boxShadow: isDisabled
-                ? []
-                : [
-                    BoxShadow(
-                      color: AppColors.navy.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+            boxShadow: isDisabled ? [] : [AppElevation.lg],
           ),
           child: Center(
             child: Row(
@@ -518,7 +513,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 ] else ...[
                   Icon(
                     Icons.check_rounded,
-                    size: 20,
+                    size: AppIconSize.button,
                     color: AppColors.pure,
                   ),
                   SizedBox(width: 8),
@@ -553,7 +548,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
           margin: EdgeInsets.only(bottom: AppSpacing.md),
           decoration: BoxDecoration(
             color: AppColors.navy.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppBorderRadius.xl),
             border: Border.all(
               color: disabled
                   ? Colors.white.withValues(alpha: 0.05)
@@ -579,8 +574,8 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                         if (svgPath != null)
                           AppIcon(
                             assetPath: svgPath,
-                            size: 20,
-                            color: Colors.white,
+                            size: AppIconSize.button,
+                            color: AppColors.pure,
                           )
                         else if (emoji != null)
                           Text(
@@ -592,7 +587,6 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                           title,
                           style: AppTypography.titleSmall.copyWith(
                             color: Colors.white,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -641,9 +635,8 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               children: [
                 Text(
                   title,
-                  style: AppTypography.bodyLarge.copyWith(
+                  style: AppTypography.titleMedium.copyWith(
                     color: Colors.white,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 if (subtitle != null) ...[
@@ -703,9 +696,8 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 children: [
                   Text(
                     title,
-                    style: AppTypography.bodyLarge.copyWith(
+                    style: AppTypography.titleMedium.copyWith(
                       color: Colors.white,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   SizedBox(height: 2),
@@ -720,8 +712,8 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
             ),
             Icon(
               Icons.chevron_right,
-              color: Colors.white.withValues(alpha: 0.5),
-              size: 24,
+              color: AppColors.pure.withValues(alpha: 0.5),
+              size: AppIconSize.md,
             ),
           ],
         ),
@@ -746,17 +738,15 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
             Expanded(
               child: Text(
                 label,
-                style: AppTypography.bodyMedium.copyWith(
+                style: AppTypography.titleSmall.copyWith(
                   color: Colors.white,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
             Text(
               time,
-              style: AppTypography.bodyMedium.copyWith(
+              style: AppTypography.titleSmall.copyWith(
                 color: Colors.white.withValues(alpha: 0.7),
-                fontWeight: FontWeight.w600,
               ),
             ),
             SizedBox(width: AppSpacing.xs),
@@ -796,7 +786,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 color: isSelected
                     ? AppColors.gold
                     : Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                 border: Border.all(
                   color: isSelected
                       ? AppColors.gold
@@ -810,7 +800,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   if (option.svgPath != null)
                     AppIcon(
                       assetPath: option.svgPath!,
-                      size: 18,
+                      size: AppIconSize.button,
                       color: isSelected
                           ? AppColors.navyDark
                           : Colors.white.withValues(alpha: 0.7),
@@ -818,7 +808,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   else
                     Icon(
                       option.icon,
-                      size: 18,
+                      size: AppIconSize.button,
                       color: isSelected
                           ? AppColors.navyDark
                           : Colors.white.withValues(alpha: 0.7),
@@ -830,7 +820,6 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                       color: isSelected
                           ? AppColors.navyDark
                           : Colors.white.withValues(alpha: 0.9),
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -855,9 +844,8 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
         leading: const PremiumBackButton(),
         title: Text(
           'Notification Settings',
-          style: AppTypography.headlineMedium.copyWith(
+          style: AppTypography.headlineMediumSans.copyWith(
             color: Colors.white,
-            fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: false,
@@ -893,15 +881,14 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                           children: [
                             Icon(
                               Icons.error_outline,
-                              size: 64,
+                              size: AppIconSize.hero,
                               color: AppColors.error,
                             ),
                             SizedBox(height: AppSpacing.md),
                             Text(
                               'Failed to load settings',
-                              style: AppTypography.headlineSmall.copyWith(
+                              style: AppTypography.headlineSmallSans.copyWith(
                                 color: Colors.white,
-                                fontWeight: FontWeight.w600,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -911,7 +898,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                 padding: EdgeInsets.all(AppSpacing.md),
                                 decoration: BoxDecoration(
                                   color: AppColors.error.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                   border: Border.all(
                                     color: AppColors.error.withValues(alpha: 0.5),
                                     width: 1.0,
@@ -974,7 +961,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                 margin: EdgeInsets.only(bottom: AppSpacing.md),
                                 decoration: BoxDecoration(
                                   color: AppColors.error.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                   border: Border.all(
                                     color: AppColors.error
                                         .withValues(alpha: 0.5),
@@ -1032,7 +1019,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                     decoration: BoxDecoration(
                                       color: AppColors.warning
                                           .withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                       border: Border.all(
                                         color: AppColors.warning
                                             .withValues(alpha: 0.5),
@@ -1042,14 +1029,13 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                     child: Column(
                                       children: [
                                         Icon(Icons.settings,
-                                            size: 40, color: AppColors.warning),
+                                            size: AppIconSize.xl, color: AppColors.warning),
                                         SizedBox(height: AppSpacing.sm),
                                         Text(
                                           'Notification permission required',
                                           style: AppTypography.titleSmall
                                               .copyWith(
                                             color: Colors.white,
-                                            fontWeight: FontWeight.w600,
                                           ),
                                           textAlign: TextAlign.center,
                                         ),
@@ -1115,14 +1101,13 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                             Icon(
                                               Icons.info_outline,
                                               color: AppColors.gold,
-                                              size: 16,
+                                              size: AppIconSize.xs,
                                             ),
                                             SizedBox(width: AppSpacing.xs),
                                             Text(
                                               'Current filters',
                                               style: AppTypography.labelSmall.copyWith(
                                                 color: Colors.white.withValues(alpha: 0.6),
-                                                fontWeight: FontWeight.w600,
                                               ),
                                             ),
                                           ],
@@ -1132,7 +1117,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                           _alertSub!.getSummary(),
                                           style: AppTypography.bodyMedium.copyWith(
                                             color: Colors.white,
-                                            fontWeight: FontWeight.w500,
+                                            fontWeight: AppTypography.medium,
                                           ),
                                         ),
                                       ],

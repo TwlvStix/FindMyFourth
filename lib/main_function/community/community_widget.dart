@@ -32,7 +32,7 @@ class _CommunityWidgetState extends State<CommunityWidget> {
           automaticallyImplyLeading: false,
           title: Text(
             'Chats',
-            style: AppTypography.headlineMedium.copyWith(
+            style: AppTypography.headlineMediumSans.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w600,
             ),

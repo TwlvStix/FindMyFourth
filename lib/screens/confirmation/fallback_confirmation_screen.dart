@@ -5,6 +5,8 @@ import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_button_enhanced.dart';
 
@@ -102,7 +104,7 @@ class _FallbackConfirmationScreenState
                   Icon(
                     _answered! ? Icons.check_circle_rounded : Icons.cancel_rounded,
                     color: _answered! ? AppColors.navyDark : AppColors.pure,
-                    size: 64,
+                    size: AppIconSize.hero,
                   ),
                   SizedBox(height: AppSpacing.lg),
                   Text(
@@ -149,12 +151,12 @@ class _FallbackConfirmationScreenState
               Icon(
                 Icons.golf_course_rounded,
                 color: AppColors.navyDark,
-                size: 56,
+                size: AppIconSize.xxl,
               ),
               SizedBox(height: AppSpacing.xl),
               Text(
                 'Did you play at $_courseName today?',
-                style: AppTypography.headlineMedium ?? AppTypography.titleLarge,
+                style: AppTypography.headlineMediumSans,
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: AppSpacing.sm),
@@ -226,17 +228,17 @@ class _YesNoButton extends StatelessWidget {
         opacity: onTap == null ? 0.5 : 1.0,
         duration: const Duration(milliseconds: 150),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 18),
+          padding: EdgeInsets.symmetric(vertical: AppSpacing.lg - 2),
           decoration: BoxDecoration(
             color: color.withValues(alpha:0.12),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
             border: Border.all(color: color.withValues(alpha:0.5), width: 1.5),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(height: 8),
+              Icon(icon, color: color, size: AppIconSize.lg),
+              AppSpacing.verticalXsBox,
               Text(
                 label,
                 style: AppTypography.titleMedium.copyWith(

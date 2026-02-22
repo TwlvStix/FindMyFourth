@@ -158,9 +158,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
         children: [
           Text(
             label,
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 11,
+            style: AppTypography.labelMicro.copyWith(
               fontWeight: FontWeight.w600,
               letterSpacing: 1.5,
               color: color.withValues(alpha: 0.8),
@@ -168,9 +166,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
           ),
           Text(
             '$count ${count == 1 ? 'golfer' : 'golfers'}',
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 12,
+            style: AppTypography.caption.copyWith(
               fontWeight: FontWeight.w500,
               color: Colors.white.withValues(alpha: 0.5),
             ),

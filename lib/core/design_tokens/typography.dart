@@ -99,15 +99,6 @@ class AppTypography {
   // DISPLAY STYLES (Headers, Titles - Fraunces)
   // ============================================================================
 
-  /// Display Extra Large - Hero headlines
-  /// Usage: Landing page hero, major section headers
-  static TextStyle get displayXL => const TextStyle(fontFamily: displayFamily,
-        fontSize: size72,
-        fontWeight: black,
-        height: lineHeightTight,
-        letterSpacing: letterSpacingTight,
-      );
-
   /// Display Large - Primary headlines
   /// Usage: Page titles, major headers
   static TextStyle get displayLarge => const TextStyle(fontFamily: displayFamily,
@@ -135,17 +126,19 @@ class AppTypography {
         letterSpacing: letterSpacingSnug,
       );
 
+  /// Sans-serif variant of [displaySmall] for contexts where the body font
+  /// (Manrope) is preferred over the display font (Fraunces).
+  /// Usage: Onboarding headings, welcome screens, promotional UI.
+  static TextStyle get displaySmallSans => const TextStyle(fontFamily: bodyFamily,
+        fontSize: size32,
+        fontWeight: semiBold,
+        height: lineHeightSnug,
+        letterSpacing: letterSpacingSnug,
+      );
+
   // ============================================================================
   // HEADLINE STYLES (Fraunces - Smaller display uses)
   // ============================================================================
-
-  /// Headline Large - Major headings
-  static TextStyle get headlineLarge => const TextStyle(fontFamily: displayFamily,
-        fontSize: size28,
-        fontWeight: semiBold,
-        height: lineHeightSnug,
-        letterSpacing: letterSpacingNormal,
-      );
 
   /// Headline Medium - Standard headings
   static TextStyle get headlineMedium => const TextStyle(fontFamily: displayFamily,
@@ -155,8 +148,28 @@ class AppTypography {
         letterSpacing: letterSpacingNormal,
       );
 
+  /// Sans-serif variant of [headlineMedium] for contexts where the body font
+  /// (Manrope) is preferred over the display font (Fraunces).
+  /// Usage: Dialog titles, bottom sheet headers, onboarding step titles.
+  static TextStyle get headlineMediumSans => const TextStyle(fontFamily: bodyFamily,
+        fontSize: size24,
+        fontWeight: semiBold,
+        height: lineHeightSnug,
+        letterSpacing: letterSpacingNormal,
+      );
+
   /// Headline Small - Minor headings
   static TextStyle get headlineSmall => const TextStyle(fontFamily: displayFamily,
+        fontSize: size20,
+        fontWeight: medium,
+        height: lineHeightNormal,
+        letterSpacing: letterSpacingNormal,
+      );
+
+  /// Sans-serif variant of [headlineSmall] for contexts where the body font
+  /// (Manrope) is preferred over the display font (Fraunces).
+  /// Usage: Empty state titles, counter displays, inline headings.
+  static TextStyle get headlineSmallSans => const TextStyle(fontFamily: bodyFamily,
         fontSize: size20,
         fontWeight: medium,
         height: lineHeightNormal,
@@ -242,6 +255,14 @@ class AppTypography {
         letterSpacing: letterSpacingWide,
       );
 
+  /// Micro label for badges, compact metadata, and dense UI elements (11px).
+  static TextStyle get labelMicro => const TextStyle(fontFamily: bodyFamily,
+        fontSize: 11,
+        fontWeight: medium,
+        height: 1.0,
+        letterSpacing: letterSpacingWide,
+      );
+
   /// Label Small - Small buttons, compact labels
   static TextStyle get labelSmall => const TextStyle(fontFamily: bodyFamily,
         fontSize: size12,
@@ -297,14 +318,6 @@ class AppTypography {
   // ============================================================================
   // SPECIALIZED STYLES
   // ============================================================================
-
-  /// Button Text - Optimized for buttons
-  static TextStyle get button => const TextStyle(fontFamily: bodyFamily,
-        fontSize: size16,
-        fontWeight: semiBold,
-        height: 1.0,
-        letterSpacing: letterSpacingWider,
-      );
 
   /// Button Large - Large button text
   static TextStyle get buttonLarge => const TextStyle(fontFamily: bodyFamily,
@@ -391,16 +404,6 @@ class AppTypography {
   /// Usage: Status badges, count badges (but prefer AppBadge component)
   static TextStyle get badge => labelSmall;
 
-  // Button semantics (convenience getters - prefer AppButtonEnhanced component)
-
-  /// Button primary text - Primary button style
-  /// Usage: Primary action buttons (but prefer AppButtonEnhanced)
-  static TextStyle get buttonPrimary => button;
-
-  /// Button secondary text - Secondary button style
-  /// Usage: Secondary action buttons (but prefer AppButtonEnhanced)
-  static TextStyle get buttonSecondary => button;
-
   // ============================================================================
   // MIGRATION HELPERS (DEPRECATED)
   // ============================================================================
@@ -415,25 +418,17 @@ class AppTypography {
   //
   // ============================================================================
 
-  // DEPRECATED - use semantic styles instead
-  // For badges that genuinely need smaller text than caption
+  /// For badges that genuinely need smaller text than caption.
+  @Deprecated('Use labelSmall.copyWith(fontSize: 10) or labelMicro instead')
   static TextStyle get text10 => caption.copyWith(fontSize: 10);
 
-  // DEPRECATED - use AppTypography.timestamp instead
-  // For chat timestamps
+  /// For chat timestamps.
+  @Deprecated('Use labelMicro or caption.copyWith(fontSize: 11) instead')
   static TextStyle get text11 => caption.copyWith(fontSize: 11);
 
-  // DEPRECATED - use AppTypography.bodySmall or AppTypography.labelSmall instead
-  // Transition helper for 13px text
+  /// Transition helper for 13px text.
+  @Deprecated('Use bodySmall or labelSmall instead')
   static TextStyle get text13 => labelSmall.copyWith(fontSize: 13);
-
-  // DEPRECATED - use AppTypography.bodySmall instead
-  // Transition helper for 15px text
-  static TextStyle get text15 => bodySmall.copyWith(fontSize: 15);
-
-  // DEPRECATED - use AppTypography.screenTitle instead
-  // Transition helper for 22px text
-  static TextStyle get text22 => headlineMedium.copyWith(fontSize: 22);
 
   // ============================================================================
   // FLUTTER TEXTTHEME INTEGRATION
@@ -449,7 +444,6 @@ class AppTypography {
       displaySmall: displaySmall,
 
       // Headline styles
-      headlineLarge: headlineLarge,
       headlineMedium: headlineMedium,
       headlineSmall: headlineSmall,
 
@@ -535,48 +529,4 @@ extension TextStyleExtensions on TextStyle {
   /// Uppercase with proper spacing
   TextStyle get uppercase =>
       copyWith(letterSpacing: AppTypography.letterSpacingWidest);
-
-  /// Override method for backwards compatibility with FlutterFlow-style code.
-  ///
-  /// Allows setting multiple properties at once with an optional base font.
-  /// If [font] is provided, its properties are used as the base and this
-  /// style's properties are applied on top.
-  TextStyle override({
-    TextStyle? font,
-    String? fontFamily,
-    Color? color,
-    double? fontSize,
-    FontWeight? fontWeight,
-    double? letterSpacing,
-    FontStyle? fontStyle,
-    bool useGoogleFonts = false, // Kept for backwards compatibility, ignored
-    TextDecoration? decoration,
-    double? lineHeight,
-    List<Shadow>? shadows,
-    String? package,
-  }) {
-    return font != null
-        ? font.copyWith(
-            color: color ?? this.color,
-            fontSize: fontSize ?? this.fontSize,
-            letterSpacing: letterSpacing ?? this.letterSpacing,
-            fontWeight: fontWeight ?? this.fontWeight,
-            fontStyle: fontStyle ?? this.fontStyle,
-            decoration: decoration,
-            height: lineHeight,
-            shadows: shadows,
-          )
-        : copyWith(
-            fontFamily: fontFamily,
-            package: package,
-            color: color,
-            fontSize: fontSize,
-            letterSpacing: letterSpacing,
-            fontWeight: fontWeight,
-            fontStyle: fontStyle,
-            decoration: decoration,
-            height: lineHeight,
-            shadows: shadows,
-          );
-  }
 }

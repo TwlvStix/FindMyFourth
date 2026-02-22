@@ -4,6 +4,7 @@ import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/models/game.dart';
@@ -96,7 +97,7 @@ class _CancellationWarningSheet extends StatelessWidget {
               height: 4,
               decoration: BoxDecoration(
                 color: AppColors.cloud,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
               ),
             ),
           ),
@@ -105,10 +106,8 @@ class _CancellationWarningSheet extends StatelessWidget {
           // Header
           Text(
             'Cancel your spot?',
-            style: TextStyle(
-              fontFamily: AppTypography.displayFamily,
+            style: AppTypography.headlineMediumSans.copyWith(
               fontSize: 22,
-              fontWeight: FontWeight.w600,
               color: AppColors.onyx,
             ),
           ),
@@ -182,7 +181,7 @@ class _EarlyState extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(Icons.check_circle_outline_rounded,
-                  color: AppColors.success, size: 20),
+                  color: AppColors.success, size: AppIconSize.button),
               SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Text(
@@ -247,7 +246,7 @@ class _LateState extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.warning_amber_rounded,
-                      color: AppColors.goldLight, size: 20),
+                      color: AppColors.goldLight, size: AppIconSize.button),
                   SizedBox(width: AppSpacing.xs),
                   Expanded(
                     child: Text(
@@ -326,7 +325,7 @@ class _DayOfState extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.error_outline_rounded,
-                      color: AppColors.error, size: 20),
+                      color: AppColors.error, size: AppIconSize.button),
                   SizedBox(width: AppSpacing.xs),
                   Expanded(
                     child: Text(

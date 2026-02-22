@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_button_enhanced.dart';
 
 /// Empty state widget for friends page
@@ -174,8 +175,8 @@ class _FriendsEmptyStateState extends State<FriendsEmptyState>
           ),
           child: Icon(
             iconData,
-            size: 56,
-            color: Colors.white,
+            size: AppIconSize.xxl,
+            color: AppColors.pure,
           ),
         ),
       ),

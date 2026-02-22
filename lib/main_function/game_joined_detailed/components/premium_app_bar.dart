@@ -28,7 +28,7 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       title: Text(
         title,
-        style: AppTypography.headlineMedium.copyWith(
+        style: AppTypography.headlineMediumSans.copyWith(
           color: Colors.white,
           fontWeight: FontWeight.w600,
         ),

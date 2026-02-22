@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 
 /// Custom clipper for elegant curved bottom edge on branded header.
 ///
@@ -298,9 +300,8 @@ class BrandedGolfHeader extends StatelessWidget {
                     flex: 2,
                     child: Text(
                       username,
-                      style: TextStyle(
-                        fontSize: 26, // Slightly smaller for compact header
-                        fontWeight: FontWeight.w600,
+                      style: AppTypography.headlineMediumSans.copyWith(
+                        fontSize: 26,
                         color: Colors.white,
                         letterSpacing: -0.5,
                         height: 1.2,
@@ -322,7 +323,7 @@ class BrandedGolfHeader extends StatelessWidget {
                     ),
                   ),
 
-                  SizedBox(width: 12),
+                  AppSpacing.horizontalSmBox,
 
                   // Course name - bottom right
                   Flexible(
@@ -330,8 +331,8 @@ class BrandedGolfHeader extends StatelessWidget {
                     child: Text(
                       courseName,
                       textAlign: TextAlign.right,
-                      style: TextStyle(
-                        fontSize: 15, // Slightly smaller for compact header
+                      style: AppTypography.bodySmall.copyWith(
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                         color: Colors.white.withValues(alpha: 0.95),
                         letterSpacing: 0.2,

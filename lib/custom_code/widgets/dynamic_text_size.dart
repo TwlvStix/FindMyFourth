@@ -1,5 +1,7 @@
 // Automatic imports
 import 'package:flutter/material.dart';
+
+import '/core/design_tokens/typography.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -26,9 +28,7 @@ class _DynamicTextSizeState extends State<DynamicTextSize> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final resolvedTextStyle = widget.textStyle ??
-        theme.textTheme.bodyMedium?.copyWith(
-          fontFamily: 'Manrope',
-          fontSize: 14,
+        AppTypography.bodySmall.copyWith(
           color: theme.colorScheme.onPrimary,
         );
     return Container(

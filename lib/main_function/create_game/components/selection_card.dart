@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
+import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_icon.dart';
 
 /// A premium selection card widget for grid-based selections.
@@ -57,22 +61,14 @@ class SelectionCard extends StatelessWidget {
                 )
               : null,
           color: isSelected ? null : AppColors.navy.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
             color: isSelected
                 ? AppColors.gold
                 : Colors.white.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.gold.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: Offset(0, 4),
-                  ),
-                ]
-              : null,
+          boxShadow: isSelected ? [AppElevation.glowGold] : null,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -88,21 +84,21 @@ class SelectionCard extends StatelessWidget {
                       )
                     : null,
                 color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
               child: svgPath != null
                   ? Center(
                       child: AppIcon(
                         assetPath: svgPath!,
-                        size: 20,
-                        color: Colors.white,
+                        size: AppIconSize.button,
+                        color: AppColors.pure,
                       ),
                     )
                   : emoji != null
                       ? Center(
-                          child: Text(emoji!, style: TextStyle(fontSize: 18)),
+                          child: Text(emoji!, style: AppTypography.bodyLarge.copyWith(fontSize: 18)),
                         )
-                      : Icon(icon, color: Colors.white, size: 20),
+                      : Icon(icon, color: AppColors.pure, size: AppIconSize.button),
             ),
             SizedBox(height: AppSpacing.xxs),
             Flexible(
@@ -111,10 +107,8 @@ class SelectionCard extends StatelessWidget {
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
+                style: AppTypography.labelSmall.copyWith(
                   color: Colors.white,
-                  fontSize: 12,
                   height: 1.2,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 ),

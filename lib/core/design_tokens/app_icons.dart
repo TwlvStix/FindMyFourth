@@ -13,6 +13,23 @@
 ///   color: AppColors.navy,
 /// )
 /// ```
+///
+/// TODO: These Material Icons are used in the codebase but need SVG equivalents:
+/// - Icons.chevron_right_rounded → AppIcons.chevronRight (trailing navigation)
+/// - Icons.error_outline → AppIcons.error (error state)
+/// - Icons.star_rounded → AppIcons.star (favorite/rating)
+/// - Icons.check_box_outlined → AppIcons.checkboxChecked (checkbox checked)
+/// - Icons.check_box_outline_blank → AppIcons.checkboxUnchecked (checkbox unchecked)
+/// - Icons.hourglass_top_rounded → (already have AppIcons.pending)
+/// - Icons.pause_circle_outline_rounded → AppIcons.paused (paused state)
+/// - Icons.block_rounded → AppIcons.blocked (blocked state)
+/// - Icons.gpp_bad_rounded → AppIcons.securityWarning (security issue)
+/// - Icons.golf_course_rounded → AppIcons.golfCourse (golf course icon)
+/// - Icons.check_circle_outline_rounded → AppIcons.checkCircle (confirmed)
+/// - Icons.sports_golf_rounded → AppIcons.golfBall (golf sport icon)
+/// - Icons.flag_rounded → AppIcons.flag (flag marker)
+/// - Icons.verified_rounded → AppIcons.verified (verified badge)
+/// - Icons.warning_amber_rounded → AppIcons.warning (warning state)
 class AppIcons {
   AppIcons._();
 

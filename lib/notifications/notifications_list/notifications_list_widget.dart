@@ -2,9 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
@@ -475,7 +478,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
           leading: const PremiumBackButton(),
           title: Text(
             'Notifications',
-            style: AppTypography.headlineMedium.copyWith(
+            style: AppTypography.headlineMediumSans.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
@@ -525,7 +528,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                             Icon(
                               Icons.delete_sweep,
                               color: AppColors.error,
-                              size: 20.0,
+                              size: AppIconSize.button,
                             ),
                             SizedBox(width: AppSpacing.sm),
                             Text(
@@ -631,12 +634,12 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               padding: EdgeInsets.only(right: AppSpacing.md),
                               decoration: BoxDecoration(
                                 color: AppColors.error,
-                                borderRadius: BorderRadius.circular(12.0),
+                                borderRadius: BorderRadius.circular(AppBorderRadius.md),
                               ),
                               child: Icon(
                                 Icons.delete_outline,
-                                color: Colors.white,
-                                size: 28.0,
+                                color: AppColors.pure,
+                                size: AppIconSize.md,
                               ),
                             ),
                             confirmDismiss: (direction) async {
@@ -669,7 +672,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               _deleteNotification(doc.reference);
                             },
                             child: InkWell(
-                              borderRadius: BorderRadius.circular(12.0),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.md),
                               onTap: () async {
                                 await _handleNotificationTap(doc);
                               },
@@ -721,18 +724,12 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                 decoration: BoxDecoration(
                                   color:
                                       AppColors.navy,
-                                  borderRadius: BorderRadius.circular(12.0),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                   border: Border.all(
                                     color: AppColors.cloud,
                                     width: 1.0,
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      blurRadius: 3.0,
-                                      color: AppColors.overlayDark,
-                                      offset: Offset(0.0, 1.0),
-                                    ),
-                                  ],
+                                  boxShadow: [AppElevation.xs],
                                 ),
                                 padding: EdgeInsets.all(AppSpacing.md),
                                 child: Row(
@@ -749,7 +746,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                         _iconForType(type),
                                         color:
                                             AppColors.pure,
-                                        size: 18.0,
+                                        size: AppIconSize.button,
                                       ),
                                     ),
                                     SizedBox(width: AppSpacing.sm),

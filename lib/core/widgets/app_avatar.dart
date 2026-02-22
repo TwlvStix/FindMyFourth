@@ -102,7 +102,7 @@ class AppAvatar extends StatelessWidget {
   BorderRadius? _getBorderRadius() {
     switch (shape) {
       case AppAvatarShape.circle:
-        return BorderRadius.circular(999); // Full circle
+        return BorderRadius.circular(AppBorderRadius.full); // Full circle
       case AppAvatarShape.rounded:
         return BorderRadius.circular(AppBorderRadius.md);
       case AppAvatarShape.square:

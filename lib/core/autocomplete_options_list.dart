@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:substring_highlight/substring_highlight.dart';
+import '/core/design_tokens/spacing.dart';
 
 class AutocompleteOptionsList extends StatelessWidget {
   const AutocompleteOptionsList({
@@ -66,7 +67,7 @@ class AutocompleteOptionsList extends StatelessWidget {
                     color: highlight
                         ? optionHighlightColor ?? Theme.of(context).focusColor
                         : optionBackgroundColor,
-                    padding: const EdgeInsets.all(16.0),
+                    padding: AppSpacing.allMd,
                     child: SubstringHighlight(
                       text: option,
                       term: textController.text,

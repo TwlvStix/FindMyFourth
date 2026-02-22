@@ -19,8 +19,11 @@ import '/models/vibe_profile.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon.dart';
 import '/screens/trust/trust_profile_section.dart';
 import '/screens/trust/your_standing_screen.dart';
@@ -126,7 +129,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         Container(
                           decoration: BoxDecoration(
                             color: AppColors.navy.withValues(alpha:0.3),
-                            borderRadius: BorderRadius.circular(12.0),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
                             border: Border.all(
                               color: AppColors.glassSurface,
                             ),
@@ -139,8 +142,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             tooltip: 'Notifications',
                             icon: AppIcon(
                               assetPath: AppIcons.notifications,
-                              color: Colors.white,
-                              size: 24.0,
+                              color: AppColors.pure,
+                              size: AppIconSize.md,
                             ),
                             onPressed: () async {
                               HapticFeedback.lightImpact();
@@ -160,8 +163,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             bottom: 0.0,
                             child: Container(
                               padding: EdgeInsets.symmetric(
-                                horizontal: 6.0,
-                                vertical: 3.0,
+                                horizontal: AppSpacing.xs - 2,
+                                vertical: AppSpacing.xxs - 1,
                               ),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
@@ -170,21 +173,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                     AppColors.goldLight,
                                   ],
                                 ),
-                                borderRadius: BorderRadius.circular(10.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color:
-                                        AppColors.error.withValues(alpha:0.4),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
+                                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                                boxShadow: [AppElevation.md],
                               ),
                               child: Text(
                                 badgeText,
                                 style: AppTypography.labelSmall.copyWith(
                                   color: Colors.white,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: AppTypography.bold,
                                 ),
                               ),
                             ),
@@ -229,8 +225,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     decoration: BoxDecoration(
                       color: AppColors.pure,
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(32.0),
-                        topRight: Radius.circular(32.0),
+                        topLeft: Radius.circular(AppBorderRadius.xxl),
+                        topRight: Radius.circular(AppBorderRadius.xxl),
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -249,7 +245,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           height: 4,
                           decoration: BoxDecoration(
                             color: AppColors.cloud,
-                            borderRadius: BorderRadius.circular(2),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                           ),
                         ),
 
@@ -414,17 +410,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           end: Alignment.bottomRight,
                         ),
                         shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.gold.withValues(alpha:0.4),
-                            blurRadius: 12,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
+                        boxShadow: [AppElevation.glowGold],
                       ),
                       child: AppIcon(
                         assetPath: AppIcons.camera,
-                        color: Colors.white,
+                        color: AppColors.pure,
                         size: buttonSize * 0.5,
                       ),
                     ),
@@ -443,7 +433,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             '${valueOrDefault(currentUserDocument?.firstName, '')} ${valueOrDefault(currentUserDocument?.lastName, '')}',
             style: AppTypography.headlineMedium.copyWith(
               color: Colors.white,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -453,10 +442,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         // Username
         AuthUserStreamWidget(
           builder: (context) => Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xxs),
             decoration: BoxDecoration(
               color: AppColors.navy.withValues(alpha:0.4),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppBorderRadius.xl),
               border: Border.all(
                 color: AppColors.glassSurface,
               ),
@@ -465,7 +454,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               '@${currentUserDisplayName}',
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.gold,
-                fontWeight: FontWeight.w500,
+                fontWeight: AppTypography.medium,
               ),
             ),
           ),
@@ -560,7 +549,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             vertical: AppSpacing.md, horizontal: AppSpacing.xs),
         decoration: BoxDecoration(
           color: AppColors.navy.withValues(alpha:0.3),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
             color: AppColors.glassSurface,
           ),
@@ -572,12 +561,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               height: 36,
               decoration: BoxDecoration(
                 gradient: LinearGradient(colors: gradient),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
               child: Icon(
                 icon,
-                color: Colors.white,
-                size: 16,
+                color: AppColors.pure,
+                size: AppIconSize.xs,
               ),
             ),
             SizedBox(height: AppSpacing.xs),
@@ -586,11 +575,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               style: isText
                   ? AppTypography.labelSmall.copyWith(
                       color: Colors.white,
-                      fontWeight: FontWeight.w600,
                     )
                   : AppTypography.monoLarge.copyWith(
                       color: Colors.white,
-                      fontWeight: FontWeight.w700,
                     ),
               textAlign: TextAlign.center,
               maxLines: 1,
@@ -652,7 +639,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     AppColors.goldLight.withValues(alpha:0.1),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                 border: Border.all(
                   color: AppColors.gold.withValues(alpha:0.3),
                 ),
@@ -666,12 +653,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       gradient: LinearGradient(
                         colors: [AppColors.gold, AppColors.goldLight],
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.md),
                     ),
                     child: Icon(
                       Icons.tune_rounded,
-                      color: Colors.white,
-                      size: 22,
+                      color: AppColors.pure,
+                      size: AppIconSize.md,
                     ),
                   ),
                   SizedBox(width: AppSpacing.md),
@@ -683,7 +670,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           'Complete Your Vibe Profile',
                           style: AppTypography.titleSmall.copyWith(
                             color: AppColors.onyx,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         SizedBox(height: AppSpacing.xxs),
@@ -699,7 +685,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   Icon(
                     Icons.arrow_forward_ios_rounded,
                     color: AppColors.gold,
-                    size: 18,
+                    size: AppIconSize.button,
                   ),
                 ],
               ),
@@ -851,7 +837,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
         decoration: BoxDecoration(
           color: AppColors.sand,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
             color: AppColors.cloud,
           ),
@@ -863,7 +849,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               height: 48,
               decoration: BoxDecoration(
                 gradient: LinearGradient(colors: gradient),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                 boxShadow: [
                   BoxShadow(
                     color: gradient[0].withValues(alpha:0.3),
@@ -874,8 +860,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               ),
               child: Icon(
                 icon,
-                color: Colors.white,
-                size: 24,
+                color: AppColors.pure,
+                size: AppIconSize.md,
               ),
             ),
             SizedBox(height: AppSpacing.xs),
@@ -883,7 +869,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               label,
               style: AppTypography.labelMedium.copyWith(
                 color: AppColors.slate,
-                fontWeight: FontWeight.w500,
+                fontWeight: AppTypography.medium,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -907,9 +893,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         children: [
           Text(
             'Golf Info',
-            style: AppTypography.titleMedium.copyWith(
+            style: AppTypography.titleLarge.copyWith(
+              fontSize: 18,
               color: AppColors.onyx,
-              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: AppSpacing.md),
@@ -968,7 +954,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.sand,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(color: AppColors.cloud),
       ),
       child: Row(
@@ -978,11 +964,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             height: 40,
             decoration: BoxDecoration(
               color: iconColor.withValues(alpha:0.15),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
             ),
             child: svgPath != null
-                ? AppIcon(assetPath: svgPath, color: iconColor, size: 20)
-                : Icon(icon, color: iconColor, size: 20),
+                ? AppIcon(assetPath: svgPath, color: iconColor, size: AppIconSize.button)
+                : Icon(icon, color: iconColor, size: AppIconSize.button),
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
@@ -1000,7 +986,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   value,
                   style: AppTypography.bodyMedium.copyWith(
                     color: AppColors.onyx,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: AppTypography.medium,
                   ),
                 ),
               ],
@@ -1023,16 +1009,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         children: [
           Text(
             'Settings',
-            style: AppTypography.titleMedium.copyWith(
+            style: AppTypography.titleLarge.copyWith(
+              fontSize: 18,
               color: AppColors.onyx,
-              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: AppSpacing.md),
           Container(
             decoration: BoxDecoration(
               color: AppColors.sand,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               border: Border.all(color: AppColors.cloud),
             ),
             child: Column(
@@ -1125,13 +1111,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       context: context,
                       builder: (context) => AlertDialog(
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                         ),
                         title: Text(
                           'Log Out?',
                           style: AppTypography.titleMedium.copyWith(
                             color: AppColors.onyx,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         content: Text(
@@ -1156,7 +1141,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               'Log Out',
                               style: AppTypography.labelLarge.copyWith(
                                 color: AppColors.error,
-                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -1197,14 +1181,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppBorderRadius.lg),
       child: Padding(
         padding: EdgeInsets.all(AppSpacing.md),
         child: Row(
           children: [
             svgPath != null
-                ? AppIcon(assetPath: svgPath, color: color, size: 22)
-                : Icon(icon, color: color, size: 22),
+                ? AppIcon(assetPath: svgPath, color: color, size: AppIconSize.md)
+                : Icon(icon, color: color, size: AppIconSize.md),
             SizedBox(width: AppSpacing.md),
             Expanded(
               child: Text(
@@ -1212,7 +1196,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 style: AppTypography.bodyMedium.copyWith(
                   color: color,
                   fontWeight:
-                      isDestructive ? FontWeight.w500 : FontWeight.normal,
+                      isDestructive ? AppTypography.medium : null,
                 ),
               ),
             ),
@@ -1223,7 +1207,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             Icon(
               Icons.chevron_right_rounded,
               color: AppColors.stone,
-              size: 22,
+              size: AppIconSize.md,
             ),
           ],
         ),

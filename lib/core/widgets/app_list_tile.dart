@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../design_tokens/colors.dart';
+import '../design_tokens/icon_size.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/border_radius.dart';
 import '../design_tokens/spacing.dart';
@@ -186,7 +187,7 @@ class AppListTile extends StatelessWidget {
               child: AppIcon(
                 assetPath: leadingSvgPath!,
                 color: AppColors.slate,
-                size: 20,
+                size: AppIconSize.button,
               ),
             ),
           )
@@ -201,7 +202,7 @@ class AppListTile extends StatelessWidget {
             child: Icon(
               leadingIcon,
               color: AppColors.slate,
-              size: 20,
+              size: AppIconSize.button,
             ),
           ),
         if (leadingWidget != null ||
@@ -251,13 +252,13 @@ class AppListTile extends StatelessWidget {
           AppIcon(
             assetPath: trailingSvgPath!,
             color: AppColors.slate,
-            size: 20,
+            size: AppIconSize.button,
           )
         else if (trailingIcon != null)
           Icon(
             trailingIcon,
             color: AppColors.slate,
-            size: 20,
+            size: AppIconSize.button,
           ),
       ],
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '/core/design_tokens/border_radius.dart';
 import 'app_icon.dart';
 
 class AppIconButton extends StatefulWidget {
@@ -118,7 +119,7 @@ class _AppIconButtonState extends State<AppIconButton> {
               widget.focusBorderSide != null) {
             return RoundedRectangleBorder(
               borderRadius:
-                  widget.focusBorderRadius ?? BorderRadius.circular(8),
+                  widget.focusBorderRadius ?? BorderRadius.circular(AppBorderRadius.sm),
               side: widget.focusBorderSide!,
             );
           }

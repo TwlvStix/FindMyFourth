@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_text.dart';
@@ -300,7 +302,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
       ),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppBorderRadius.full),
         border: Border.all(color: color.withValues(alpha:0.3)),
       ),
       child: Row(
@@ -354,7 +356,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(color: borderColor.withValues(alpha:0.5)),
       ),
       child: Column(
@@ -391,7 +393,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
                         ? Icons.arrow_downward_rounded
                         : Icons.radio_button_unchecked_rounded,
                 color: isTop || isBottom ? AppColors.pure : AppColors.stone,
-                size: 22,
+                size: AppIconSize.md,
               ),
             ],
           ),
@@ -439,7 +441,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
+      borderRadius: BorderRadius.circular(AppBorderRadius.full),
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm,
@@ -447,7 +449,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
         ),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(AppBorderRadius.full),
           border: Border.all(
             color: selected ? color : AppColors.cloud,
             width: selected ? 1.5 : 1,

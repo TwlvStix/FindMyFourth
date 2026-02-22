@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '/backend/schema/trust_profile.dart';
+import '/core/design_tokens/app_icons.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/elevation.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/border_radius.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/trust/trust_badge_chip.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -120,10 +127,10 @@ class _CardBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.lg - 2),
       decoration: BoxDecoration(
         color: AppColors.navy.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
         border: Border.all(
           color: AppColors.navyLight.withValues(alpha: 0.3),
           width: 1,
@@ -136,7 +143,7 @@ class _CardBody extends StatelessWidget {
             children: [
               // ── Avatar ───────────────────────────────────────────────────
               _Avatar(url: avatarUrl),
-              const SizedBox(width: 14),
+              AppSpacing.horizontalMdBox,
 
               // ── Name + status ─────────────────────────────────────────────
               Expanded(
@@ -150,10 +157,10 @@ class _CardBody extends StatelessWidget {
                         Flexible(
                           child: Text(
                             name,
-                            style: TextStyle(
-                              fontFamily: 'Manrope',
+                            // TODO: fontSize 15 has no exact token match; using bodySmall + copyWith
+                            style: AppTypography.bodySmall.copyWith(
                               fontSize: 15,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: AppTypography.semiBold,
                               color: _textPrimary,
                               letterSpacing: 0.2,
                             ),
@@ -162,22 +169,19 @@ class _CardBody extends StatelessWidget {
                           ),
                         ),
                         if (isFavorite) ...[
-                          const SizedBox(width: 5),
+                          AppSpacing.horizontalXxs,
                           Icon(
                             Icons.star_rounded,
                             color: _goldAccent,
-                            size: 15,
+                            size: AppIconSize.xs,
                           ),
                         ],
                       ],
                     ),
-                    const SizedBox(height: 3),
+                    AppSpacing.verticalXxs,
                     Text(
                       status,
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
+                      style: AppTypography.caption.copyWith(
                         color: AppColors.gold,
                         letterSpacing: 0.1,
                       ),
@@ -188,13 +192,13 @@ class _CardBody extends StatelessWidget {
 
               // ── Match chip ───────────────────────────────────────────────
               if (percentWidget != null) ...[
-                const SizedBox(width: 10),
+                AppSpacing.horizontalSmBox,
                 percentWidget!,
               ],
 
               // ── Trailing action (checkmark / remove) ─────────────────────
               if (trailingWidget != null) ...[
-                const SizedBox(width: 10),
+                AppSpacing.horizontalSmBox,
                 trailingWidget!,
               ],
             ],
@@ -221,14 +225,14 @@ class _Avatar extends StatelessWidget {
       height: 52,
       decoration: BoxDecoration(
         color: AppColors.navyLight.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.2),
           width: 1.5,
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12.5),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         child: url.isNotEmpty
             ? Image.network(
                 url,
@@ -248,7 +252,7 @@ class _AvatarPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white.withValues(alpha: 0.04),
-      child: Icon(Icons.person_rounded, color: _textMuted, size: 26),
+      child: AppIcon(assetPath: AppIcons.profile, color: _textMuted, size: AppIconSize.md),
     );
   }
 }
@@ -265,32 +269,25 @@ class _PendantBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs - 2),
       decoration: BoxDecoration(
         color: AppColors.navy,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(10),
-          bottomRight: Radius.circular(10),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(AppBorderRadius.sm),
+          bottomRight: Radius.circular(AppBorderRadius.sm),
         ),
         border: Border(
           left: BorderSide(color: tierStyle.borderColor, width: 1),
           right: BorderSide(color: tierStyle.borderColor, width: 1),
           bottom: BorderSide(color: tierStyle.borderColor, width: 1),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.overlayDark,
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
+        boxShadow: [AppElevation.lg],
       ),
       child: Text(
         tierStyle.label,
-        style: TextStyle(
-          fontFamily: 'Fraunces',
+        // Pendant badge: uses Fraunces with tight letter-spacing for luxury feel
+        style: AppTypography.headlineMedium.copyWith(
           fontSize: 10,
-          fontWeight: FontWeight.w600,
           letterSpacing: 2.5,
           color: tierStyle.accent,
           height: 1.0,

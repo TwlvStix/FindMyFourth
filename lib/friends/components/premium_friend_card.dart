@@ -4,8 +4,11 @@ import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon.dart';
 import '/services/vibe_matcher.dart';
 import '/models/vibe_profile.dart';
@@ -138,7 +141,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
           ),
           decoration: BoxDecoration(
             color: AppColors.navy.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppBorderRadius.xl),
             border: Border.all(
               color: _isPressed
                   ? AppColors.navyLight.withValues(alpha: 0.4)
@@ -151,7 +154,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
 
               // Main content with responsive layout
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.lg - 2),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     return Row(
@@ -188,14 +191,14 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       height: 52,
       decoration: BoxDecoration(
         color: AppColors.navyLight.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.2),
           width: 1.5,
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12.5),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         child: widget.user.photoUrl.isNotEmpty
             ? Image.network(
                 widget.user.photoUrl,
@@ -217,7 +220,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       child: Icon(
         Icons.person_rounded,
         color: PremiumFriendCard.textMuted,
-        size: 26,
+        size: AppIconSize.md,
       ),
     );
   }
@@ -234,10 +237,8 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
         // NAME - Hero element with cream color
         Text(
           displayName,
-          style: TextStyle(
-            fontFamily: 'Manrope',
+          style: AppTypography.labelMedium.copyWith(
             fontSize: 15,
-            fontWeight: FontWeight.w600,
             color: PremiumFriendCard.textPrimary,
             letterSpacing: 0.2,
           ),
@@ -245,7 +246,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
           overflow: TextOverflow.ellipsis,
         ),
 
-        const SizedBox(height: 3),
+        AppSpacing.verticalXxs,
 
         // Secondary badges row: vibe % + handicap
         Wrap(
@@ -267,10 +268,10 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     final score = _vibeMatch!.finalScorePercent.round();
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xxs),
       decoration: BoxDecoration(
         color: PremiumFriendCard.goldAccent.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xs),
         border: Border.all(
           color: PremiumFriendCard.goldAccent.withValues(alpha: 0.3),
           width: 1,
@@ -284,13 +285,11 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
             size: 10,
             color: PremiumFriendCard.goldAccent,
           ),
-          const SizedBox(width: 4),
+          AppSpacing.horizontalXxs,
           Text(
             '$score%',
-            style: TextStyle(
-              fontFamily: 'Manrope',
+            style: AppTypography.labelSmall.copyWith(
               fontSize: 11,
-              fontWeight: FontWeight.w600,
               color: PremiumFriendCard.goldAccent,
               letterSpacing: 0.2,
             ),
@@ -302,15 +301,14 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
 
   Widget _buildHandicapBadge(int handicap) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xxs),
       decoration: BoxDecoration(
         color: AppColors.gold,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xs),
       ),
       child: Text(
         handicap < 0 ? '+${handicap.abs()}' : '$handicap',
-        style: const TextStyle(
-          fontFamily: 'Manrope',
+        style: AppTypography.labelSmall.copyWith(
           fontSize: 11,
           fontWeight: FontWeight.w700,
           color: AppColors.navyDark,
@@ -354,7 +352,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: actions
-          .expand((widget) => [widget, const SizedBox(width: 8)])
+          .expand((widget) => [widget, AppSpacing.horizontalXsBox])
           .toList()
         ..removeLast(), // Remove last spacer
     );
@@ -375,7 +373,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
         color: isPrimary
             ? AppColors.navyDark
             : Colors.white.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
           color: isPrimary
               ? AppColors.navyLight.withValues(alpha: 0.3)
@@ -387,7 +385,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
         color: Colors.transparent,
         child: InkWell(
           onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
           child: Center(
             child: isLoading
                 ? SizedBox(
@@ -403,12 +401,12 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
                 : svgPath != null
                     ? AppIcon(
                         assetPath: svgPath,
-                        size: 20,
+                        size: AppIconSize.button,
                         color: PremiumFriendCard.textPrimary,
                       )
                     : Icon(
                         icon,
-                        size: 20,
+                        size: AppIconSize.button,
                         color: PremiumFriendCard.textPrimary,
                       ),
           ),

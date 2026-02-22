@@ -1,6 +1,7 @@
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import '/core/design_tokens/border_radius.dart';
 
 class AppButtonOptions {
   const AppButtonOptions({
@@ -165,12 +166,12 @@ class _AppButtonState extends State<AppButton> {
             widget.options.hoverBorderSide != null) {
           return RoundedRectangleBorder(
             borderRadius:
-                widget.options.borderRadius ?? BorderRadius.circular(8),
+                widget.options.borderRadius ?? BorderRadius.circular(AppBorderRadius.sm),
             side: widget.options.hoverBorderSide!,
           );
         }
         return RoundedRectangleBorder(
-          borderRadius: widget.options.borderRadius ?? BorderRadius.circular(8),
+          borderRadius: widget.options.borderRadius ?? BorderRadius.circular(AppBorderRadius.sm),
           side: widget.options.borderSide ?? BorderSide.none,
         );
       }),
@@ -243,7 +244,7 @@ class _AppButtonState extends State<AppButton> {
               widget.options.borderSide ?? BorderSide.none,
             ),
             borderRadius:
-                widget.options.borderRadius ?? BorderRadius.circular(8),
+                widget.options.borderRadius ?? BorderRadius.circular(AppBorderRadius.sm),
           ),
           child: IconButton(
             splashRadius: 1.0,

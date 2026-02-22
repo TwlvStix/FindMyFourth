@@ -6,6 +6,8 @@ import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_avatar.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -185,7 +187,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.check_circle_rounded,
-                      color: AppColors.navyDark, size: 72),
+                      color: AppColors.navyDark, size: AppIconSize.hero),
                   SizedBox(height: AppSpacing.lg),
                   Text(
                     _successMessage!,
@@ -319,7 +321,7 @@ class _ParticipantRow extends StatelessWidget {
       padding: AppSpacing.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.navy,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
           color: isPresent
               ? AppColors.navyDark.withValues(alpha:0.3)
@@ -423,10 +425,10 @@ class _ToggleChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm - 2, vertical: AppSpacing.xs - 2),
         decoration: BoxDecoration(
           color: selected ? selectedColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
           border: Border.all(
             color: selected ? selectedColor : AppColors.pure.withValues(alpha:0.4),
           ),

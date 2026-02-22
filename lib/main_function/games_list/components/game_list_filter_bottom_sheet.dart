@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/form_field_controller.dart';
@@ -136,7 +138,7 @@ class _GameListFilterBottomSheetState
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
       ),
       child: SafeArea(
         child: Column(
@@ -148,7 +150,7 @@ class _GameListFilterBottomSheetState
               margin: EdgeInsets.only(top: AppSpacing.sm),
               decoration: BoxDecoration(
                 color: AppColors.cloud,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
               ),
             ),
             SizedBox(height: AppSpacing.md),
@@ -163,9 +165,8 @@ class _GameListFilterBottomSheetState
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
-                        icon: Icon(Icons.close),
+                        icon: Icon(Icons.close, size: AppIconSize.md),
                         color: AppColors.onyx,
-                        iconSize: 24,
                         padding: EdgeInsets.zero,
                         constraints: BoxConstraints(),
                       ),
@@ -319,7 +320,7 @@ class _GameListFilterBottomSheetState
                 color: isSelected ? AppColors.navy : AppColors.cloud,
                 width: isSelected ? 2 : 1,
               ),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppBorderRadius.md),
             ),
             child: Text(
               label,
@@ -462,7 +463,7 @@ class _GameListFilterBottomSheetState
             color: isSelected ? AppColors.navy : AppColors.cloud,
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
         ),
         child: Center(
           child: Text(
