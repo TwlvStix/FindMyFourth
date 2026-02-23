@@ -3,7 +3,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -56,7 +56,7 @@ class PremiumHeroSection extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AppIcon(assetPath: AppIcons.joined, color: AppColors.pure, size: AppIconSize.xs),
+                AppIcon(icon: AppPhosphorIcons.joined, color: AppColors.pure, size: AppIconSize.xs),
                 const SizedBox(width: 4),
                 Text(
                   'Joined',
@@ -84,7 +84,7 @@ class PremiumHeroSection extends StatelessWidget {
                 ),
                 child: Center(
                   child: AppIcon(
-                    assetPath: AppIcons.course,
+                    icon: AppPhosphorIcons.course,
                     color: AppColors.pure,
                     size: AppIconSize.md,
                   ),

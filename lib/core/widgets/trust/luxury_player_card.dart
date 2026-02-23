@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '/backend/schema/trust_profile.dart';
-import '/core/design_tokens/app_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/border_radius.dart';
-import '/core/widgets/app_icon.dart';
 import '/core/widgets/trust/trust_badge_chip.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -252,7 +250,7 @@ class _AvatarPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white.withValues(alpha: 0.04),
-      child: AppIcon(assetPath: AppIcons.profile, color: _textMuted, size: AppIconSize.md),
+      child: Icon(Icons.person_rounded, color: _textMuted, size: AppIconSize.md),
     );
   }
 }

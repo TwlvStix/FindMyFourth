@@ -16,7 +16,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
@@ -39,9 +39,9 @@ class AppGradients {
     end: Alignment.bottomRight,
   );
 
-  /// Warm accent gradient for social/friends elements
-  static const warmAccent = LinearGradient(
-    colors: [AppColors.goldLight, AppColors.error],
+  /// Social accent gradient for friends/community elements
+  static const socialAccent = LinearGradient(
+    colors: [AppColors.green, AppColors.greenLight],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -307,7 +307,7 @@ class _AnimatedAvatarRingState extends State<AnimatedAvatarRing>
                   boxShadow: [AppElevation.glowGreen],
                 ),
                 child: AppIcon(
-                  assetPath: AppIcons.camera,
+                  icon: AppPhosphorIcons.camera,
                   color: Colors.white,
                   size: AppIconSize.button,
                 ),
@@ -323,7 +323,7 @@ class _AnimatedAvatarRingState extends State<AnimatedAvatarRing>
       color: AppColors.sand,
       child: widget.fallbackIcon ??
           AppIcon(
-            assetPath: AppIcons.profile,
+            icon: AppPhosphorIcons.profile,
             size: widget.size * 0.45,
             color: AppColors.stone,
           ),
@@ -555,7 +555,7 @@ class NotificationBadge extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs - 2, vertical: AppSpacing.xxs - 1),
       decoration: BoxDecoration(
-        gradient: AppGradients.warmAccent,
+        gradient: AppGradients.socialAccent,
         borderRadius: BorderRadius.circular(AppBorderRadius.sm),
         boxShadow: [
           BoxShadow(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -47,12 +47,12 @@ class QuickStatsRow extends StatelessWidget {
                   height: 36,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [AppColors.goldLight, AppColors.error],
+                      colors: [AppColors.green, AppColors.greenLight],
                     ),
                     borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                   ),
                   child: Center(
-                    child: AppIcon(assetPath: AppIcons.calendarCheck, color: AppColors.pure, size: AppIconSize.button),
+                    child: AppIcon(icon: AppPhosphorIcons.calendarCheck, color: AppColors.pure, size: AppIconSize.button),
                   ),
                 ),
                 SizedBox(width: AppSpacing.sm),
@@ -132,7 +132,7 @@ class QuickStatsRow extends StatelessWidget {
                 child: Center(
                   child: isFull
                       ? Icon(Icons.groups_rounded, color: AppColors.pure, size: AppIconSize.button)
-                      : AppIcon(assetPath: AppIcons.addPlayer, color: AppColors.pure, size: AppIconSize.button),
+                      : AppIcon(icon: AppPhosphorIcons.addPlayer, color: AppColors.pure, size: AppIconSize.button),
                 ),
               ),
               SizedBox(width: AppSpacing.sm),

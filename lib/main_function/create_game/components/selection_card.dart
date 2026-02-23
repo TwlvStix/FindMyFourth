@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -15,9 +16,11 @@ import '/core/widgets/app_icon.dart';
 /// Features:
 /// - Animated selection state with gradient background
 /// - Green border and shadow when selected (primary accent)
-/// - Supports both icon and emoji display
+/// - Supports Phosphor icons, SVG, emoji, and Material icons
 /// - Haptic feedback on tap
 /// - Consistent styling with design tokens
+///
+/// Icon priority: phosphorIcon > svgPath > emoji > icon (Material)
 ///
 /// Used for: Game type selection, course type, scoring method, etc.
 class SelectionCard extends StatelessWidget {
@@ -29,6 +32,7 @@ class SelectionCard extends StatelessWidget {
     required this.onTap,
     this.emoji,
     this.svgPath,
+    this.phosphorIcon,
   });
 
   final IconData icon;
@@ -38,6 +42,8 @@ class SelectionCard extends StatelessWidget {
   final String? emoji;
   /// Optional SVG asset path (use AppIcons constants). Takes priority over emoji.
   final String? svgPath;
+  /// Phosphor icon (preferred). Takes priority over all other icon types.
+  final PhosphorIconData? phosphorIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -86,19 +92,27 @@ class SelectionCard extends StatelessWidget {
                 color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
-              child: svgPath != null
+              child: phosphorIcon != null
                   ? Center(
                       child: AppIcon(
-                        assetPath: svgPath!,
+                        icon: phosphorIcon,
                         size: AppIconSize.button,
                         color: AppColors.pure,
                       ),
                     )
-                  : emoji != null
+                  : svgPath != null
                       ? Center(
-                          child: Text(emoji!, style: AppTypography.bodyLarge.copyWith(fontSize: 18)),
+                          child: AppIcon(
+                            assetPath: svgPath!,
+                            size: AppIconSize.button,
+                            color: AppColors.pure,
+                          ),
                         )
-                      : Icon(icon, color: AppColors.pure, size: AppIconSize.button),
+                      : emoji != null
+                          ? Center(
+                              child: Text(emoji!, style: AppTypography.bodyLarge.copyWith(fontSize: 18)),
+                            )
+                          : Icon(icon, color: AppColors.pure, size: AppIconSize.button),
             ),
             SizedBox(height: AppSpacing.xxs),
             Flexible(

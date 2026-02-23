@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/app_icon_button.dart';
@@ -21,7 +22,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon.dart';
@@ -141,7 +142,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             buttonSize: 44.0,
                             tooltip: 'Notifications',
                             icon: AppIcon(
-                              assetPath: AppIcons.notifications,
+                              icon: AppPhosphorIcons.notifications,
                               color: AppColors.pure,
                               size: AppIconSize.md,
                             ),
@@ -314,7 +315,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.gold.withValues(alpha:0.3),
+                        color: AppColors.green.withValues(alpha:0.3),
                         blurRadius: 40,
                         spreadRadius: 5,
                       ),
@@ -322,7 +323,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ),
                 ),
 
-                // Rotating gradient ring
+                // Rotating gradient ring - green-centric with navy depth
                 AnimatedBuilder(
                   animation: _ringController,
                   builder: (context, child) {
@@ -335,11 +336,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           shape: BoxShape.circle,
                           gradient: SweepGradient(
                             colors: [
+                              AppColors.green,
+                              AppColors.greenLight,
                               AppColors.gold,
-                              AppColors.goldLight,
-                              AppColors.error,
-                              AppColors.navyLight,
-                              AppColors.gold,
+                              AppColors.navy,
+                              AppColors.green,
                             ],
                           ),
                         ),
@@ -413,7 +414,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         boxShadow: [AppElevation.glowGreen],
                       ),
                       child: AppIcon(
-                        assetPath: AppIcons.camera,
+                        icon: AppPhosphorIcons.camera,
                         color: AppColors.pure,
                         size: buttonSize * 0.5,
                       ),
@@ -453,7 +454,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             child: Text(
               '@${currentUserDisplayName}',
               style: AppTypography.bodySmall.copyWith(
-                color: AppColors.gold,
+                color: AppColors.green,
                 fontWeight: AppTypography.medium,
               ),
             ),
@@ -481,7 +482,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   valueOrDefault(currentUserDocument?.handicap, 0),
                 ),
                 label: 'Handicap',
-                gradient: [AppColors.gold, AppColors.goldLight],
+                gradient: [AppColors.green, AppColors.greenLight],
               ),
             ),
           ),
@@ -519,7 +520,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   icon: FontAwesomeIcons.userFriends,
                   value: friendsCount.toString(),
                   label: 'Friends',
-                  gradient: [AppColors.goldLight, AppColors.error],
+                  gradient: [AppColors.green, AppColors.greenLight],
                   onTap: () {
                     HapticFeedback.lightImpact();
                     _pushNamed(TabFriendsWidget.routeName);
@@ -635,13 +636,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.gold.withValues(alpha:0.15),
-                    AppColors.goldLight.withValues(alpha:0.1),
+                    AppColors.green.withValues(alpha:0.15),
+                    AppColors.greenLight.withValues(alpha:0.1),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                 border: Border.all(
-                  color: AppColors.gold.withValues(alpha:0.3),
+                  color: AppColors.green.withValues(alpha:0.3),
                 ),
               ),
               child: Row(
@@ -651,7 +652,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     height: 44,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [AppColors.gold, AppColors.goldLight],
+                        colors: [AppColors.green, AppColors.greenLight],
                       ),
                       borderRadius: BorderRadius.circular(AppBorderRadius.md),
                     ),
@@ -684,7 +685,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ),
                   Icon(
                     Icons.arrow_forward_ios_rounded,
-                    color: AppColors.gold,
+                    color: AppColors.green,
                     size: AppIconSize.button,
                   ),
                 ],
@@ -743,7 +744,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         context,
                         icon: Icons.tune_rounded,
                         label: 'Golf Vibes',
-                        gradient: [AppColors.gold, AppColors.goldLight],
+                        gradient: [AppColors.green, AppColors.greenLight],
                         onTap: () {
                           HapticFeedback.lightImpact();
                           _pushNamed(
@@ -798,7 +799,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     context,
                     icon: Icons.tune_rounded,
                     label: 'Golf Vibes',
-                    gradient: [AppColors.gold, AppColors.goldLight],
+                    gradient: [AppColors.green, AppColors.greenLight],
                     onTap: () {
                       HapticFeedback.lightImpact();
                       _pushNamed(
@@ -917,8 +918,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           // Email
           _buildInfoRow(
             context,
-            svgPath: AppIcons.email,
-            iconColor: AppColors.goldLight,
+            phosphorIcon: AppPhosphorIcons.email,
+            iconColor: AppColors.green,
             label: 'Email',
             value: currentUserEmail,
           ),
@@ -929,8 +930,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           AuthUserStreamWidget(
             builder: (context) => _buildInfoRow(
               context,
-              svgPath: AppIcons.phone,
-              iconColor: AppColors.gold,
+              phosphorIcon: AppPhosphorIcons.phone,
+              iconColor: AppColors.greenLight,
               label: 'Phone',
               value: currentPhoneNumber.isNotEmpty
                   ? currentPhoneNumber
@@ -946,6 +947,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     BuildContext context, {
     IconData? icon,
     String? svgPath,
+    PhosphorIconData? phosphorIcon,
     required Color iconColor,
     required String label,
     required String value,
@@ -966,9 +968,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               color: iconColor.withValues(alpha:0.15),
               borderRadius: BorderRadius.circular(AppBorderRadius.sm),
             ),
-            child: svgPath != null
-                ? AppIcon(assetPath: svgPath, color: iconColor, size: AppIconSize.button)
-                : Icon(icon, color: iconColor, size: AppIconSize.button),
+            child: phosphorIcon != null
+                ? AppIcon(icon: phosphorIcon, color: iconColor, size: AppIconSize.button)
+                : svgPath != null
+                    ? AppIcon(assetPath: svgPath, color: iconColor, size: AppIconSize.button)
+                    : Icon(icon, color: iconColor, size: AppIconSize.button),
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
@@ -1026,7 +1030,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 currentUserReference == null
                     ? _buildSettingsRow(
                         context,
-                        svgPath: AppIcons.notifications,
+                        phosphorIcon: AppPhosphorIcons.notifications,
                         label: 'Notifications',
                         onTap: () {
                           HapticFeedback.lightImpact();
@@ -1053,7 +1057,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           final unreadCount = snapshot.data?.docs.length ?? 0;
                           return _buildSettingsRow(
                             context,
-                            svgPath: AppIcons.notifications,
+                            phosphorIcon: AppPhosphorIcons.notifications,
                             label: 'Notifications',
                             trailing: unreadCount > 0
                                 ? NotificationBadge(count: unreadCount)
@@ -1079,7 +1083,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 Divider(height: 1, color: AppColors.cloud, indent: 56),
                 _buildSettingsRow(
                   context,
-                  svgPath: AppIcons.standing,
+                  phosphorIcon: AppPhosphorIcons.standing,
                   label: 'Your Standing',
                   onTap: () {
                     HapticFeedback.lightImpact();
@@ -1100,7 +1104,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 Divider(height: 1, color: AppColors.cloud, indent: 56),
                 _buildSettingsRow(
                   context,
-                  svgPath: AppIcons.logOut,
+                  phosphorIcon: AppPhosphorIcons.logOut,
                   label: 'Log Out',
                   isDestructive: true,
                   onTap: () async {
@@ -1172,6 +1176,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     BuildContext context, {
     IconData? icon,
     String? svgPath,
+    PhosphorIconData? phosphorIcon,
     required String label,
     required VoidCallback onTap,
     bool isDestructive = false,
@@ -1186,9 +1191,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         padding: EdgeInsets.all(AppSpacing.md),
         child: Row(
           children: [
-            svgPath != null
-                ? AppIcon(assetPath: svgPath, color: color, size: AppIconSize.md)
-                : Icon(icon, color: color, size: AppIconSize.md),
+            phosphorIcon != null
+                ? AppIcon(icon: phosphorIcon, color: color, size: AppIconSize.md)
+                : svgPath != null
+                    ? AppIcon(assetPath: svgPath, color: color, size: AppIconSize.md)
+                    : Icon(icon, color: color, size: AppIconSize.md),
             SizedBox(width: AppSpacing.md),
             Expanded(
               child: Text(

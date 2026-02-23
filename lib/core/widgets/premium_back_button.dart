@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/icon_size.dart';
@@ -60,7 +60,7 @@ class PremiumBackButton extends StatelessWidget {
             ),
           ),
           child: AppIcon(
-            assetPath: AppIcons.back,
+            icon: AppPhosphorIcons.back,
             color: Colors.white,
             size: AppIconSize.lg,
           ),

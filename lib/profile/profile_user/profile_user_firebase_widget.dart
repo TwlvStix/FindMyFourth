@@ -425,7 +425,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                     icon: FontAwesomeIcons.userFriends,
                     value: friendsCount.toString(),
                     label: 'Friends',
-                    gradient: [AppColors.goldLight, AppColors.error],
+                    gradient: [AppColors.green, AppColors.greenLight],
                   )
                 : _buildFriendStatusButton(context, data),
           ),

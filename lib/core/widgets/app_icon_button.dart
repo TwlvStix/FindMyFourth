@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/design_tokens/border_radius.dart';
 import 'app_icon.dart';
 
@@ -73,10 +74,25 @@ class _AppIconButtonState extends State<AppIconButton> {
       );
       iconSize = icon.size;
       iconColor = icon.color;
+    } else if (widget.icon is PhosphorIcon) {
+      // Phosphor icon support
+      PhosphorIcon icon = widget.icon as PhosphorIcon;
+      if (icon.icon != null) {
+        effectiveIcon = PhosphorIcon(
+          icon.icon!,
+          size: icon.size,
+          color: icon.color,
+        );
+      } else {
+        effectiveIcon = icon;
+      }
+      iconSize = icon.size;
+      iconColor = icon.color;
     } else if (widget.icon is AppIcon) {
       AppIcon icon = widget.icon as AppIcon;
       effectiveIcon = AppIcon(
         assetPath: icon.assetPath,
+        icon: icon.icon,
         size: icon.size,
         color: icon.color,
       );

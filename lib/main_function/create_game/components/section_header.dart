@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
@@ -10,11 +11,14 @@ import '/core/widgets/app_icon.dart';
 ///
 /// Used throughout forms to mark distinct sections.
 /// Supports optional help text with info icon that shows dialog on tap.
+///
+/// Icon priority: phosphorIcon > svgPath > emoji
 class SectionHeader extends StatelessWidget {
   const SectionHeader({
     super.key,
     this.emoji,
     this.svgPath,
+    this.phosphorIcon,
     required this.title,
     this.helpText,
     this.onHelpTap,
@@ -22,6 +26,7 @@ class SectionHeader extends StatelessWidget {
 
   final String? emoji;
   final String? svgPath;
+  final PhosphorIconData? phosphorIcon;
   final String title;
   final String? helpText;
   final VoidCallback? onHelpTap;
@@ -45,16 +50,22 @@ class SectionHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppBorderRadius.sm),
             ),
             child: Center(
-              child: svgPath != null
+              child: phosphorIcon != null
                   ? AppIcon(
-                      assetPath: svgPath!,
+                      icon: phosphorIcon,
                       size: AppIconSize.button,
                       color: AppColors.pure,
                     )
-                  : Text(
-                      emoji ?? '',
-                      style: TextStyle(fontSize: 18),
-                    ),
+                  : svgPath != null
+                      ? AppIcon(
+                          assetPath: svgPath!,
+                          size: AppIconSize.button,
+                          color: AppColors.pure,
+                        )
+                      : Text(
+                          emoji ?? '',
+                          style: TextStyle(fontSize: 18),
+                        ),
             ),
           ),
           SizedBox(width: AppSpacing.sm),

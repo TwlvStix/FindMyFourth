@@ -12,7 +12,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -552,7 +552,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                AppIcon(assetPath: AppIcons.chat, color: AppColors.pure, size: AppIconSize.md),
+                                AppIcon(icon: AppPhosphorIcons.chat, color: AppColors.pure, size: AppIconSize.md),
                                 SizedBox(width: AppSpacing.sm),
                                 Text(
                                   'Message Group',
@@ -655,7 +655,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                 _buildPremiumInfoCard(
                                   context,
                                   icon: Icons.scoreboard_rounded,
-                                  iconColors: [AppColors.goldLight, AppColors.error],
+                                  iconColors: [AppColors.green, AppColors.greenLight],
                                   label: 'Scoring',
                                   value: funOr(gameJoinedDetailedGamesRecord.scoring),
                                   isFunBadge: isFun && gameJoinedDetailedGamesRecord.scoring.isEmpty,
@@ -838,7 +838,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                   ),
                                                 )
                                               : AppIcon(
-                                                  assetPath: AppIcons.joined,
+                                                  icon: AppPhosphorIcons.joined,
                                                   color: AppColors.goldLight,
                                                   size: AppIconSize.md,
                                                 ),

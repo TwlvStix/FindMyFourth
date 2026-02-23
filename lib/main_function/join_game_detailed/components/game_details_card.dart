@@ -4,7 +4,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_icon.dart';
 import '/models/game.dart';
@@ -34,7 +34,7 @@ class GameDetailsCard extends StatelessWidget {
           ),
           child: const Center(
             child: AppIcon(
-              assetPath: AppIcons.course,
+              icon: AppPhosphorIcons.course,
               color: AppColors.pure,
               size: AppIconSize.md,
             ),

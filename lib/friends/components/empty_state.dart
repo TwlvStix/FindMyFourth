@@ -129,7 +129,7 @@ class _FriendsEmptyStateState extends State<FriendsEmptyState>
         break;
       case FriendsEmptyStateType.noFriends:
         iconData = Icons.people_outline_rounded;
-        gradientColors = [AppColors.goldLight, AppColors.error];
+        gradientColors = [AppColors.green, AppColors.greenLight];
         break;
     }
 

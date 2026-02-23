@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/design_tokens/spacing.dart';
 import 'selection_card.dart';
 
@@ -45,6 +46,7 @@ class CardGrid extends StatelessWidget {
           label: option['label'] as String,
           emoji: option['emoji'] as String?,
           svgPath: option['svgPath'] as String?,
+          phosphorIcon: option['phosphorIcon'] as PhosphorIconData?,
           isSelected: isSelected,
           onTap: () => onChanged(option['value'] as String),
         );

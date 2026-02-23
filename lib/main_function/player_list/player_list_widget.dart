@@ -9,7 +9,7 @@ import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/models/game.dart';
@@ -18,6 +18,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class PlayerListWidget extends StatefulWidget {
   const PlayerListWidget({
@@ -709,8 +710,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                     width: 1.5,
                   ),
                 ),
-                child: AppIcon(
-                  assetPath: AppIcons.addPlayer,
+                child: Icon(
+                  Icons.person_add_rounded,
                   color: AppColors.navy.withValues(alpha: 0.6),
                   size: AppIconSize.md,
                 ),
@@ -1031,21 +1032,34 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                               ),
                                               child: Row(
                                                 children: [
-                                                  ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            AppBorderRadius.xxl),
-                                                    child: Image.network(
-                                                      profile?.photoUrl
-                                                                  .isNotEmpty ??
-                                                              false
-                                                          ? profile!.photoUrl
-                                                          : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                                                      width: 48.0,
-                                                      height: 48.0,
-                                                      fit: BoxFit.cover,
-                                                      cacheWidth: 96,
-                                                      cacheHeight: 96,
+                                                  Container(
+                                                    width: 48.0,
+                                                    height: 48.0,
+                                                    decoration: BoxDecoration(
+                                                      color: AppColors.navyLight,
+                                                      borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
+                                                    ),
+                                                    child: ClipRRect(
+                                                      borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
+                                                      child: profile?.photoUrl.isNotEmpty ?? false
+                                                          ? Image.network(
+                                                              profile!.photoUrl,
+                                                              width: 48.0,
+                                                              height: 48.0,
+                                                              fit: BoxFit.cover,
+                                                              cacheWidth: 96,
+                                                              cacheHeight: 96,
+                                                              errorBuilder: (_, __, ___) => Icon(
+                                                                Icons.person_rounded,
+                                                                color: AppColors.glassTextSecondary,
+                                                                size: AppIconSize.md,
+                                                              ),
+                                                            )
+                                                          : Icon(
+                                                              Icons.person_rounded,
+                                                              color: AppColors.glassTextSecondary,
+                                                              size: AppIconSize.md,
+                                                            ),
                                                     ),
                                                   ),
                                                   SizedBox(width: 12.0),
@@ -1319,17 +1333,17 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                     ),
                                     SizedBox(height: AppSpacing.sm),
                                     _buildInfoRow(
-                                      svgPath: AppIcons.course,
+                                      phosphorIcon: AppPhosphorIcons.course,
                                       text: game.coursePlay,
                                     ),
                                     SizedBox(height: AppSpacing.xs),
                                     _buildInfoRow(
-                                      svgPath: AppIcons.calendarCheck,
+                                      phosphorIcon: AppPhosphorIcons.calendarCheck,
                                       text: '${dateTimeFormat("EEEE, MMM d", game.date)} • ${dateTimeFormat("jm", game.date)}',
                                     ),
                                     SizedBox(height: AppSpacing.xs),
                                     _buildInfoRow(
-                                      svgPath: AppIcons.golfers,
+                                      phosphorIcon: AppPhosphorIcons.golfers,
                                       text: '$currentPlayerCount confirmed, $remainingSlots ${remainingSlots == 1 ? 'spot' : 'spots'} open',
                                     ),
                                     if (game.gameType.isNotEmpty) ...[
@@ -1357,10 +1371,16 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     );
   }
 
-  Widget _buildInfoRow({IconData? icon, String? svgPath, required String text}) {
+  Widget _buildInfoRow({IconData? icon, String? svgPath, PhosphorIconData? phosphorIcon, required String text}) {
     return Row(
       children: [
-        if (svgPath != null)
+        if (phosphorIcon != null)
+          AppIcon(
+            icon: phosphorIcon,
+            size: AppIconSize.xs,
+            color: AppColors.stone,
+          )
+        else if (svgPath != null)
           AppIcon(
             assetPath: svgPath,
             size: AppIconSize.xs,

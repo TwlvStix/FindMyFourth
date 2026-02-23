@@ -258,7 +258,7 @@ class TrustProfileSection extends StatelessWidget {
                 Expanded(
                   child: _buildStatTileCompact(
                     icon: Icons.sports_golf_outlined,
-                    iconGradient: [AppColors.gold, AppColors.goldLight],
+                    iconGradient: [AppColors.green, AppColors.greenLight],
                     value: '${user.gamesHosted}',
                     label: 'HOSTED',
                   ),
@@ -675,6 +675,8 @@ class TrustProfileSection extends StatelessWidget {
     Color gradientStart,
     Color gradientEnd,
   }) _badgeInfo(String badgeLevel) {
+    // Badge gradients use navy (structural) + green (golf) hierarchy
+    // Higher tiers = deeper navy; green accent for golf identity
     switch (badgeLevel) {
       case 'anchor':
         return (
@@ -698,15 +700,15 @@ class TrustProfileSection extends StatelessWidget {
           description: 'Established member',
           icon: Icons.sports_golf_rounded,
           gradientStart: AppColors.navyLight,
-          gradientEnd: AppColors.gold,
+          gradientEnd: AppColors.green,
         );
       case 'confirmed':
         return (
           label: 'Confirmed',
           description: 'Verified by the community',
           icon: Icons.verified_rounded,
-          gradientStart: AppColors.gold,
-          gradientEnd: AppColors.goldLight,
+          gradientStart: AppColors.green,
+          gradientEnd: AppColors.greenLight,
         );
       case 'new':
       default:
@@ -714,8 +716,8 @@ class TrustProfileSection extends StatelessWidget {
           label: 'First Tee',
           description: 'Your story begins here',
           icon: Icons.golf_course_rounded,
-          gradientStart: AppColors.goldLight,
-          gradientEnd: AppColors.error,
+          gradientStart: AppColors.greenLight,
+          gradientEnd: AppColors.green,
         );
     }
   }

@@ -1,7 +1,9 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/app_icons.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -558,7 +560,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       fillColor: Colors.transparent,
                       tooltip: 'Notifications',
                       icon: AppIcon(
-                        assetPath: AppIcons.notifications,
+                        icon: AppPhosphorIcons.notifications,
                         color: AppColors.pure,
                         size: AppIconSize.md,
                       ),
@@ -590,7 +592,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               fillColor: Colors.transparent,
                               tooltip: 'Notifications',
                               icon: AppIcon(
-                                assetPath: AppIcons.notifications,
+                                icon: AppPhosphorIcons.notifications,
                                 color: AppColors.pure,
                                 size: AppIconSize.md,
                               ),
@@ -628,8 +630,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                     ? AppColors.navy.withValues(alpha:0.12)
                     : Colors.transparent,
                 tooltip: 'Filter games',
-                icon: Icon(
-                  Icons.tune_rounded,
+                icon: AppIcon(
+                  icon: AppPhosphorIcons.filter,
                   color: _filters.hasActiveFilters
                       ? AppColors.navy
                       : AppColors.pure,
@@ -1006,7 +1008,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                     BorderRadius.circular(AppBorderRadius.sm),
                                               ),
                                               child: AppIcon(
-                                                assetPath: AppIcons.lock,
+                                                icon: AppPhosphorIcons.lock,
                                                 color: Colors.white
                                                     .withValues(alpha:0.8),
                                                 size: AppIconSize.button,
@@ -1194,7 +1196,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   AppIcon(
-                                    assetPath: AppIcons.lock,
+                                    icon: AppPhosphorIcons.lock,
                                     size: AppIconSize.xs,
                                     color: Colors.white.withValues(alpha:0.85),
                                   ),
@@ -1370,7 +1372,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 AppIcon(
-                                    assetPath: AppIcons.owner,
+                                    icon: AppPhosphorIcons.owner,
                                     color: AppColors.pure, size: AppIconSize.xs),
                                 SizedBox(width: 4),
                                 Text(
@@ -1397,7 +1399,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 AppIcon(
-                                    assetPath: AppIcons.joined,
+                                    icon: AppPhosphorIcons.joined,
                                     color: AppColors.pure, size: AppIconSize.xs),
                                 SizedBox(width: 4),
                                 Text(
@@ -1434,7 +1436,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             ),
                             child: Center(
                               child: AppIcon(
-                                assetPath: AppIcons.course,
+                                icon: AppPhosphorIcons.course,
                                 color: AppColors.pure,
                                 size: AppIconSize.button,
                               ),
@@ -1498,7 +1500,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             ),
                             child: Center(
                               child: AppIcon(
-                                assetPath: AppIcons.calendarCheck,
+                                icon: AppPhosphorIcons.calendarCheck,
                                 color: AppColors.goldLight,
                                 size: AppIconSize.xs,
                               ),
@@ -1560,7 +1562,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 AppIcon(
-                                  assetPath: AppIcons.golfers,
+                                  icon: AppPhosphorIcons.golfers,
                                   color: isFull
                                       ? AppColors.error
                                       : AppColors.pure,
@@ -1620,7 +1622,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 AppIcon(
-                                  assetPath: AppIcons.memberDiscount,
+                                  icon: AppPhosphorIcons.memberDiscount,
                                   color: AppColors.navyLight,
                                   size: AppIconSize.xs,
                                 ),
@@ -1663,7 +1665,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     AppIcon(
-                                      assetPath: AppIcons.addPlayer,
+                                      icon: AppPhosphorIcons.addPlayer,
                                       color: AppColors.pure,
                                       size: AppIconSize.xs,
                                     ),
@@ -1717,20 +1719,20 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   if (isUserGame)
-                                    Icon(
-                                      Icons.visibility_rounded,
+                                    AppIcon(
+                                      icon: AppPhosphorIcons.eye,
                                       color: AppColors.pure,
                                       size: AppIconSize.xs,
                                     )
                                   else if (isFull)
                                     AppIcon(
-                                      assetPath: AppIcons.pending,
+                                      icon: AppPhosphorIcons.pending,
                                       color: AppColors.pure,
                                       size: AppIconSize.xs,
                                     )
                                   else
-                                    Icon(
-                                      Icons.add_rounded,
+                                    AppIcon(
+                                      icon: AppPhosphorIcons.add,
                                       color: AppColors.pure,
                                       size: AppIconSize.xs,
                                     ),

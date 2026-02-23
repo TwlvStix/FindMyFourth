@@ -12,7 +12,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_icon.dart';
 import '/providers/trust_provider.dart';
@@ -30,6 +30,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
@@ -132,7 +133,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                     shape: BoxShape.circle,
                   ),
                   child: AppIcon(
-                    assetPath: AppIcons.lock,
+                    icon: AppPhosphorIcons.lock,
                     color: Colors.white.withValues(alpha: 0.7),
                     size: AppIconSize.xxl,
                   ),
@@ -943,20 +944,20 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                 _buildPremiumInfoCard(
                                   context,
                                   icon: Icons.scoreboard_rounded,
-                                  iconColors: [AppColors.goldLight, AppColors.error],
+                                  iconColors: [AppColors.green, AppColors.greenLight],
                                   label: 'Scoring',
                                   value: joinGameDetailedGamesRecord.scoring,
                                 ),
                                 _buildPremiumInfoCard(
                                   context,
-                                  svgPath: AppIcons.memberDiscount,
+                                  phosphorIcon: AppPhosphorIcons.memberDiscount,
                                   iconColors: [AppColors.navyLight, AppColors.navy],
                                   label: 'Member Discount',
                                   value: joinGameDetailedGamesRecord.memberDiscount,
                                 ),
                                 _buildPremiumInfoCard(
                                   context,
-                                  svgPath: AppIcons.groups,
+                                  phosphorIcon: AppPhosphorIcons.groups,
                                   iconColors: [AppColors.gold, AppColors.goldLight],
                                   label: 'Friends Only',
                                   value: joinGameDetailedGamesRecord.friendGame,
@@ -1126,7 +1127,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                           if (isOwner) ...[
                                                             SizedBox(width: 6),
                                                             AppIcon(
-                                                              assetPath: AppIcons.owner,
+                                                              icon: AppPhosphorIcons.owner,
                                                               color: AppColors.gold,
                                                               size: AppIconSize.xs,
                                                             ),
@@ -1154,7 +1155,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                 ),
                                                 // Checkmark icon
                                                 AppIcon(
-                                                  assetPath: AppIcons.joined,
+                                                  icon: AppPhosphorIcons.joined,
                                                   color: AppColors.gold,
                                                   size: AppIconSize.md,
                                                 ),
@@ -1658,6 +1659,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     BuildContext context, {
     IconData? icon,
     String? svgPath,
+    PhosphorIconData? phosphorIcon,
     required List<Color> iconColors,
     required String label,
     required String value,
@@ -1687,9 +1689,11 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                 ),
               ],
             ),
-            child: svgPath != null
-                ? AppIcon(assetPath: svgPath, color: AppColors.pure, size: AppIconSize.button)
-                : Icon(icon, color: AppColors.pure, size: AppIconSize.button),
+            child: phosphorIcon != null
+                ? AppIcon(icon: phosphorIcon, color: AppColors.pure, size: AppIconSize.button)
+                : svgPath != null
+                    ? AppIcon(assetPath: svgPath, color: AppColors.pure, size: AppIconSize.button)
+                    : Icon(icon, color: AppColors.pure, size: AppIconSize.button),
           ),
           SizedBox(width: AppSpacing.sm),
           Expanded(

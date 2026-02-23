@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -7,6 +8,7 @@ import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/app_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -54,9 +56,9 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
   // Quiet hours
   static final List<_DigestOption> _digestOptions = [
-    _DigestOption(value: 'instant', label: 'Instant', svgPath: AppIcons.notifications),
-    _DigestOption(value: 'hourly', label: 'Hourly', svgPath: AppIcons.teeTime),
-    _DigestOption(value: 'daily', label: 'Daily', svgPath: AppIcons.calendarCheck),
+    _DigestOption(value: 'instant', label: 'Instant', phosphorIcon: AppPhosphorIcons.notifications),
+    _DigestOption(value: 'hourly', label: 'Hourly', phosphorIcon: AppPhosphorIcons.teeTime),
+    _DigestOption(value: 'daily', label: 'Daily', phosphorIcon: AppPhosphorIcons.calendarCheck),
     _DigestOption(value: 'off', label: 'Off', icon: Icons.do_not_disturb),
   ];
 
@@ -535,6 +537,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   Widget _buildSection({
     String? emoji,
     String? svgPath,
+    PhosphorIconData? phosphorIcon,
     required String title,
     String? subtitle,
     required List<Widget> children,
@@ -571,7 +574,13 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                   children: [
                     Row(
                       children: [
-                        if (svgPath != null)
+                        if (phosphorIcon != null)
+                          AppIcon(
+                            icon: phosphorIcon,
+                            size: AppIconSize.button,
+                            color: AppColors.pure,
+                          )
+                        else if (svgPath != null)
                           AppIcon(
                             assetPath: svgPath,
                             size: AppIconSize.button,
@@ -989,7 +998,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
                             // MASTER: Push Notifications
                             _buildSection(
-                              svgPath: AppIcons.notifications,
+                              phosphorIcon: AppPhosphorIcons.notifications,
                               title: 'Push Notifications',
                               subtitle:
                                   'Master control for all notifications',
@@ -1143,7 +1152,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
                             // SUBMASTER: Chat Alerts
                             _buildSection(
-                              svgPath: AppIcons.chat,
+                              phosphorIcon: AppPhosphorIcons.chat,
                               title: 'Chat Alerts',
                               subtitle: 'Get notified for chat messages',
                               disabled: !_prefs!.pushEnabled,
@@ -1158,7 +1167,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
                             // SUBMASTER: Trust & Reliability
                             _buildSection(
-                              svgPath: AppIcons.standing,
+                              phosphorIcon: AppPhosphorIcons.standing,
                               title: 'Trust & Reliability',
                               subtitle: 'Check-ins, account standing, and badge updates',
                               disabled: !_prefs!.pushEnabled,
@@ -1317,10 +1326,12 @@ class _DigestOption {
     required this.label,
     this.icon,
     this.svgPath,
-  }) : assert(icon != null || svgPath != null);
+    this.phosphorIcon,
+  }) : assert(icon != null || svgPath != null || phosphorIcon != null);
 
   final String value;
   final String label;
   final IconData? icon;
   final String? svgPath;
+  final PhosphorIconData? phosphorIcon;
 }

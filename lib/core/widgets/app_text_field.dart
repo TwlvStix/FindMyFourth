@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/icon_size.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/border_radius.dart';
 import '../design_tokens/spacing.dart';
-import '../design_tokens/app_icons.dart';
+import '../design_tokens/app_phosphor_icons.dart';
 import 'app_icon.dart';
 
 enum AppTextFieldVariant {
@@ -42,8 +43,10 @@ class AppTextField extends StatefulWidget {
   final void Function(String)? onSubmitted;
   final IconData? prefixIcon;
   final String? prefixSvgPath;
+  final PhosphorIconData? prefixPhosphorIcon;
   final IconData? suffixIcon;
   final String? suffixSvgPath;
+  final PhosphorIconData? suffixPhosphorIcon;
   final VoidCallback? onSuffixIconTap;
 
   const AppTextField({
@@ -67,8 +70,10 @@ class AppTextField extends StatefulWidget {
     this.onSubmitted,
     this.prefixIcon,
     this.prefixSvgPath,
+    this.prefixPhosphorIcon,
     this.suffixIcon,
     this.suffixSvgPath,
+    this.suffixPhosphorIcon,
     this.onSuffixIconTap,
   });
 
@@ -155,6 +160,49 @@ class _AppTextFieldState extends State<AppTextField> {
     );
   }
 
+  /// Build prefix icon widget with priority: Phosphor > SVG > Material
+  Widget? _buildPrefixIcon() {
+    if (widget.prefixPhosphorIcon != null) {
+      return Padding(
+        padding: AppSpacing.allSm,
+        child: AppIcon(icon: widget.prefixPhosphorIcon!, color: AppColors.slate, size: AppIconSize.button),
+      );
+    }
+    if (widget.prefixSvgPath != null) {
+      return Padding(
+        padding: AppSpacing.allSm,
+        child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
+      );
+    }
+    if (widget.prefixIcon != null) {
+      return Icon(widget.prefixIcon, color: AppColors.slate);
+    }
+    return null;
+  }
+
+  /// Build suffix icon widget with priority: Phosphor > SVG > Material
+  Widget? _buildSuffixIcon() {
+    if (widget.suffixPhosphorIcon != null) {
+      return IconButton(
+        icon: AppIcon(icon: widget.suffixPhosphorIcon!, color: AppColors.slate, size: AppIconSize.button),
+        onPressed: widget.onSuffixIconTap,
+      );
+    }
+    if (widget.suffixSvgPath != null) {
+      return IconButton(
+        icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
+        onPressed: widget.onSuffixIconTap,
+      );
+    }
+    if (widget.suffixIcon != null) {
+      return IconButton(
+        icon: Icon(widget.suffixIcon, color: AppColors.slate),
+        onPressed: widget.onSuffixIconTap,
+      );
+    }
+    return null;
+  }
+
   InputDecoration _buildDecoration(bool hasError) {
     final borderColor = hasError
         ? AppColors.error
@@ -169,25 +217,8 @@ class _AppTextFieldState extends State<AppTextField> {
           hintStyle: AppTypography.bodyMedium.copyWith(
             color: AppColors.stone,
           ),
-          prefixIcon: widget.prefixSvgPath != null
-              ? Padding(
-                  padding: AppSpacing.allSm,
-                  child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
-                )
-              : widget.prefixIcon != null
-                  ? Icon(widget.prefixIcon, color: AppColors.slate)
-                  : null,
-          suffixIcon: widget.suffixSvgPath != null
-              ? IconButton(
-                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
-                  onPressed: widget.onSuffixIconTap,
-                )
-              : widget.suffixIcon != null
-                  ? IconButton(
-                      icon: Icon(widget.suffixIcon, color: AppColors.slate),
-                      onPressed: widget.onSuffixIconTap,
-                    )
-                  : null,
+          prefixIcon: _buildPrefixIcon(),
+          suffixIcon: _buildSuffixIcon(),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppBorderRadius.sm),
             borderSide: BorderSide(color: AppColors.cloud),
@@ -216,25 +247,8 @@ class _AppTextFieldState extends State<AppTextField> {
           hintStyle: AppTypography.bodyMedium.copyWith(
             color: AppColors.stone,
           ),
-          prefixIcon: widget.prefixSvgPath != null
-              ? Padding(
-                  padding: AppSpacing.allSm,
-                  child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
-                )
-              : widget.prefixIcon != null
-                  ? Icon(widget.prefixIcon, color: AppColors.slate)
-                  : null,
-          suffixIcon: widget.suffixSvgPath != null
-              ? IconButton(
-                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
-                  onPressed: widget.onSuffixIconTap,
-                )
-              : widget.suffixIcon != null
-                  ? IconButton(
-                      icon: Icon(widget.suffixIcon, color: AppColors.slate),
-                      onPressed: widget.onSuffixIconTap,
-                    )
-                  : null,
+          prefixIcon: _buildPrefixIcon(),
+          suffixIcon: _buildSuffixIcon(),
           filled: true,
           fillColor: AppColors.sand,
           border: OutlineInputBorder(
@@ -257,25 +271,8 @@ class _AppTextFieldState extends State<AppTextField> {
           hintStyle: AppTypography.bodyMedium.copyWith(
             color: AppColors.stone,
           ),
-          prefixIcon: widget.prefixSvgPath != null
-              ? Padding(
-                  padding: AppSpacing.allSm,
-                  child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
-                )
-              : widget.prefixIcon != null
-                  ? Icon(widget.prefixIcon, color: AppColors.slate)
-                  : null,
-          suffixIcon: widget.suffixSvgPath != null
-              ? IconButton(
-                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
-                  onPressed: widget.onSuffixIconTap,
-                )
-              : widget.suffixIcon != null
-                  ? IconButton(
-                      icon: Icon(widget.suffixIcon, color: AppColors.slate),
-                      onPressed: widget.onSuffixIconTap,
-                    )
-                  : null,
+          prefixIcon: _buildPrefixIcon(),
+          suffixIcon: _buildSuffixIcon(),
           border: UnderlineInputBorder(
             borderSide: BorderSide(color: AppColors.cloud),
           ),
@@ -298,19 +295,9 @@ class _AppTextFieldState extends State<AppTextField> {
           ),
           prefixIcon: Padding(
             padding: AppSpacing.allSm,
-            child: AppIcon(assetPath: AppIcons.search, color: AppColors.slate, size: AppIconSize.button),
+            child: AppIcon(icon: AppPhosphorIcons.search, color: AppColors.slate, size: AppIconSize.button),
           ),
-          suffixIcon: widget.suffixSvgPath != null
-              ? IconButton(
-                  icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
-                  onPressed: widget.onSuffixIconTap,
-                )
-              : widget.suffixIcon != null
-                  ? IconButton(
-                      icon: Icon(widget.suffixIcon, color: AppColors.slate),
-                      onPressed: widget.onSuffixIconTap,
-                    )
-                  : null,
+          suffixIcon: _buildSuffixIcon(),
           filled: true,
           fillColor: AppColors.sand,
           border: OutlineInputBorder(

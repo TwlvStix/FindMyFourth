@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/icon_size.dart';
@@ -137,7 +137,7 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                               Container(
                             color: AppColors.cloud,
                             child: AppIcon(
-                              assetPath: AppIcons.profile,
+                              icon: AppPhosphorIcons.profile,
                               size: AppIconSize.hero,
                               color: AppColors.stone,
                             ),
@@ -169,7 +169,7 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                             boxShadow: [AppElevation.glowGreen],
                           ),
                           child: AppIcon(
-                            assetPath: AppIcons.camera,
+                            icon: AppPhosphorIcons.camera,
                             color: Colors.white,
                             size: AppIconSize.md,
                           ),

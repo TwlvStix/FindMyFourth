@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/icon_size.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_text_field.dart';
 import '/core/widgets/app_icon.dart';
@@ -28,14 +29,14 @@ class GamesMultiSelect extends StatelessWidget {
   });
 
   static final List<Map<String, dynamic>> gameOptions = [
-    {'value': 'Skins', 'label': 'Skins', 'icon': Icons.workspace_premium_rounded, 'svgPath': AppIcons.skins},
-    {'value': 'Vegas', 'label': 'Vegas', 'icon': Icons.casino_rounded, 'svgPath': AppIcons.vegas},
-    {'value': 'Nassau', 'label': 'Nassau', 'icon': Icons.emoji_events_rounded, 'svgPath': AppIcons.nassau},
-    {'value': 'Wolf', 'label': 'Wolf', 'icon': Icons.pets_rounded, 'svgPath': AppIcons.wolf},
-    {'value': 'BBB', 'label': 'BBB', 'icon': Icons.sports_golf_rounded, 'svgPath': AppIcons.bbb},
-    {'value': '6-6-6', 'label': '6-6-6', 'icon': Icons.looks_6_rounded, 'svgPath': AppIcons.sixSixSix},
-    {'value': 'Dots', 'label': 'Dots', 'icon': Icons.fiber_manual_record_rounded, 'svgPath': AppIcons.dots},
-    {'value': 'Other', 'label': 'Other', 'icon': Icons.edit_note_rounded, 'svgPath': AppIcons.otherCustom},
+    {'value': 'Skins', 'label': 'Skins', 'icon': Icons.workspace_premium_rounded, 'phosphorIcon': AppPhosphorIcons.skins},
+    {'value': 'Vegas', 'label': 'Vegas', 'icon': Icons.casino_rounded, 'phosphorIcon': AppPhosphorIcons.vegas},
+    {'value': 'Nassau', 'label': 'Nassau', 'icon': Icons.emoji_events_rounded, 'phosphorIcon': AppPhosphorIcons.nassau},
+    {'value': 'Wolf', 'label': 'Wolf', 'icon': Icons.pets_rounded, 'phosphorIcon': AppPhosphorIcons.wolf},
+    {'value': 'BBB', 'label': 'BBB', 'icon': Icons.sports_golf_rounded, 'phosphorIcon': AppPhosphorIcons.bestBall},
+    {'value': '6-6-6', 'label': '6-6-6', 'icon': Icons.looks_6_rounded, 'phosphorIcon': AppPhosphorIcons.sixSixSix},
+    {'value': 'Dots', 'label': 'Dots', 'icon': Icons.fiber_manual_record_rounded, 'phosphorIcon': AppPhosphorIcons.dots},
+    {'value': 'Other', 'label': 'Other', 'icon': Icons.edit_note_rounded, 'phosphorIcon': AppPhosphorIcons.otherCustom},
   ];
 
   @override
@@ -120,7 +121,7 @@ class GamesMultiSelect extends StatelessWidget {
                       ),
                       child: Center(
                         child: AppIcon(
-                          assetPath: option['svgPath'] as String,
+                          icon: option['phosphorIcon'] as PhosphorIconData,
                           size: AppIconSize.xs,
                           color: AppColors.pure,
                         ),
@@ -153,7 +154,7 @@ class GamesMultiSelect extends StatelessWidget {
               hint: 'e.g., Chapman, Alternate Shot, etc.',
               controller: otherGameController,
               variant: AppTextFieldVariant.filled,
-              prefixIcon: Icons.edit_rounded,
+              prefixPhosphorIcon: AppPhosphorIcons.edit,
               maxLength: 40,
               onChanged: onOtherGameChanged,
             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/border_radius.dart';
 import '../design_tokens/icon_size.dart';
@@ -37,23 +38,20 @@ enum AppIconBadgeSize {
   large,
 }
 
-/// Standardized icon badge for status indicators, feature icons, and decorative elements
+/// Standardized icon badge for status indicators, feature icons, and decorative elements.
 ///
-/// Purpose: Replaces 25+ inline icon containers with consistent sizing and semantic variants.
+/// Supports Material [icon], SVG [svgPath], or Phosphor [phosphorIcon].
 ///
-/// Features:
-/// - 6 semantic color variants (primary, accent, success, error, subtle, ghost)
-/// - 3 size options (small, medium, large)
-/// - Design token integration
-/// - Optional tap interaction
+/// ⚠️ DESIGN NOTE: Use sparingly — only for trust badges, achievements,
+/// and premium indicators. For general info display, prefer plain [AppIcon]
+/// without a colored background.
 ///
-/// Example:
+/// Example (Phosphor):
 /// ```dart
 /// AppIconBadge(
-///   icon: Icons.golf_course,
+///   phosphorIcon: AppPhosphorIcons.trust,
 ///   variant: AppIconBadgeVariant.accent,
 ///   size: AppIconBadgeSize.medium,
-///   onTap: () => navigateToFeature(),
 /// )
 /// ```
 class AppIconBadge extends StatelessWidget {
@@ -61,16 +59,23 @@ class AppIconBadge extends StatelessWidget {
     super.key,
     this.icon,
     this.svgPath,
+    this.phosphorIcon,
     this.variant = AppIconBadgeVariant.primary,
     this.size = AppIconBadgeSize.medium,
     this.onTap,
-  }) : assert(icon != null || svgPath != null, 'Either icon or svgPath must be provided');
+  }) : assert(
+          icon != null || svgPath != null || phosphorIcon != null,
+          'Provide icon, svgPath, or phosphorIcon',
+        );
 
-  /// Icon to display in the badge (IconData)
+  /// Material icon to display (IconData)
   final IconData? icon;
 
-  /// SVG asset path to display in the badge (use AppIcons constants)
+  /// SVG asset path to display (use AppIcons constants)
   final String? svgPath;
+
+  /// Phosphor icon to display (use AppPhosphorIcons constants)
+  final PhosphorIconData? phosphorIcon;
 
   /// Visual style variant
   final AppIconBadgeVariant variant;
@@ -85,6 +90,7 @@ class AppIconBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final dimensions = _getDimensions();
     final colors = _getColors();
+    final iconSize = _getIconSize();
 
     Widget badge = Container(
       width: dimensions,
@@ -96,21 +102,11 @@ class AppIconBadge extends StatelessWidget {
             ? Border.all(color: colors.borderColor!, width: 1)
             : null,
       ),
-      child: svgPath != null
-          ? SvgPicture.asset(
-              svgPath!,
-              width: _getIconSize(),
-              height: _getIconSize(),
-              colorFilter: ColorFilter.mode(colors.iconColor, BlendMode.srcIn),
-            )
-          : Icon(
-              icon,
-              color: colors.iconColor,
-              size: _getIconSize(),
-            ),
+      child: Center(
+        child: _buildIcon(colors.iconColor, iconSize),
+      ),
     );
 
-    // Add tap interaction if onTap is provided
     if (onTap != null) {
       badge = GestureDetector(
         onTap: onTap,
@@ -119,6 +115,31 @@ class AppIconBadge extends StatelessWidget {
     }
 
     return badge;
+  }
+
+  /// Build the icon widget based on which source was provided.
+  /// Priority: phosphorIcon > svgPath > icon
+  Widget _buildIcon(Color color, double iconSize) {
+    if (phosphorIcon != null) {
+      return PhosphorIcon(
+        phosphorIcon!,
+        size: iconSize,
+        color: color,
+      );
+    }
+    if (svgPath != null) {
+      return SvgPicture.asset(
+        svgPath!,
+        width: iconSize,
+        height: iconSize,
+        colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+      );
+    }
+    return Icon(
+      icon,
+      color: color,
+      size: iconSize,
+    );
   }
 
   /// Get badge container dimensions based on size

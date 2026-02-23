@@ -21,6 +21,7 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/app_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/utils/app_util.dart';
@@ -627,7 +628,8 @@ class _NavBarPageState extends State<NavBarPage> {
           ),
           GButton(
             leading: AppNavIcon(
-              assetPath: AppIcons.myGames,
+              icon: AppPhosphorIcons.myGames,
+              iconFill: AppPhosphorIcons.myGamesFill,
               size: AppIconSize.lg,
               isActive: currentIndex == 1,
               activeColor: AppColors.navyDark,
@@ -638,7 +640,8 @@ class _NavBarPageState extends State<NavBarPage> {
           ),
           GButton(
             leading: AppNavIcon(
-              assetPath: AppIcons.golfers,
+              icon: AppPhosphorIcons.golfers,
+              iconFill: AppPhosphorIcons.golfersFill,
               size: AppIconSize.lg,
               isActive: currentIndex == 2,
               activeColor: AppColors.navyDark,
@@ -649,7 +652,8 @@ class _NavBarPageState extends State<NavBarPage> {
           ),
           GButton(
             leading: AppNavIcon(
-              assetPath: AppIcons.chat,
+              icon: AppPhosphorIcons.chat,
+              iconFill: AppPhosphorIcons.chatFill,
               size: AppIconSize.lg,
               isActive: currentIndex == 3,
               activeColor: AppColors.navyDark,
@@ -660,7 +664,8 @@ class _NavBarPageState extends State<NavBarPage> {
           ),
           GButton(
             leading: AppNavIcon(
-              assetPath: AppIcons.profile,
+              icon: AppPhosphorIcons.profile,
+              iconFill: AppPhosphorIcons.profileFill,
               size: AppIconSize.lg,
               isActive: currentIndex == 4,
               activeColor: AppColors.navyDark,

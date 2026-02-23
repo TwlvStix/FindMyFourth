@@ -1,5 +1,7 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/widgets/app_icon.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/app_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/elevation.dart';
@@ -943,19 +945,19 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       {
         'value': 'morning',
         'label': 'Morning',
-        'svgPath': AppIcons.morning,
+        'icon': AppPhosphorIcons.morning,
         'subtitle': 'Before 11am',
       },
       {
         'value': 'afternoon',
         'label': 'Afternoon',
-        'svgPath': AppIcons.afternoon,
+        'icon': AppPhosphorIcons.afternoon,
         'subtitle': '11am-3pm',
       },
       {
         'value': 'twilight',
         'label': 'Twilight',
-        'svgPath': AppIcons.twilight,
+        'icon': AppPhosphorIcons.twilight,
         'subtitle': 'After 3pm',
       },
     ];
@@ -1004,7 +1006,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 AppIcon(
-                  assetPath: time['svgPath'] as String,
+                  icon: time['icon'] as PhosphorIconData,
                   size: AppIconSize.lg,
                   color: AppColors.pure,
                 ),
@@ -1202,7 +1204,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         ),
 
                                         SectionHeader(
-                                          svgPath: AppIcons.calendarCheck,
+                                          phosphorIcon: AppPhosphorIcons.calendarCheck,
                                           title: 'Schedule',
                                           helpText:
                                               'Choose if you have a confirmed tee time or flexible availability.',
@@ -1389,7 +1391,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           _buildFlexibleTimeUI(),
                                         ],
                                         SectionHeader(
-                                          svgPath: AppIcons.visibility,
+                                          phosphorIcon: AppPhosphorIcons.publicVisibility,
                                           title: 'Visibility',
                                           helpText:
                                               'Choose whether your game is visible to friends only or everyone in your area.',
@@ -1425,7 +1427,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           ),
                                         ),
                                         SectionHeader(
-                                          svgPath: AppIcons.course,
+                                          phosphorIcon: AppPhosphorIcons.course,
                                           title: 'Course',
                                         ),
                                         Align(
@@ -1600,7 +1602,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             },
                                           ),
                                           SectionHeader(
-                                            svgPath: AppIcons.gameVibe,
+                                            phosphorIcon: AppPhosphorIcons.competitive,
                                             title: 'Game Vibe',
                                             helpText:
                                                 'Set the tone for your round. Competitive focuses on rules and pace, while Casual keeps it relaxed and friendly.',
@@ -1627,7 +1629,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             ),
                                           ),
                                           SectionHeader(
-                                            svgPath: AppIcons.betting,
+                                            phosphorIcon: AppPhosphorIcons.betting,
                                             title: 'Stakes',
                                             helpText:
                                                 'Playing for money or keeping it friendly? Choose your comfort level.',
@@ -1654,7 +1656,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             ),
                                           ),
                                           SectionHeader(
-                                            svgPath: AppIcons.gameType,
+                                            phosphorIcon: AppPhosphorIcons.gameType,
                                             title: 'Primary Format',
                                             helpText:
                                                 'Choose your core scoring format: Match Play (hole-by-hole), Stroke Play (total strokes), Stableford (points).',
@@ -1707,7 +1709,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           if (_is2v2) ...[
                                             SizedBox(height: AppSpacing.sm),
                                             SectionHeader(
-                                              svgPath: AppIcons.teams2v2,
+                                              phosphorIcon: AppPhosphorIcons.teams,
                                               title: 'Team Style',
                                             ),
                                             Padding(
@@ -1719,13 +1721,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                     'value': 'Best Ball',
                                                     'label': 'Best Ball',
                                                     'icon': Icons.star_rounded,
-                                                    'svgPath': AppIcons.bbb,
+                                                    'phosphorIcon': AppPhosphorIcons.bestBall,
                                                   },
                                                   {
                                                     'value': 'Scramble',
                                                     'label': 'Scramble',
                                                     'icon': Icons.groups_rounded,
-                                                    'svgPath': AppIcons.groups,
+                                                    'phosphorIcon': AppPhosphorIcons.groups,
                                                   },
                                                 ],
                                                 selectedValue: _teamStyle,
@@ -1744,7 +1746,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           ],
 
                                           SectionHeader(
-                                            svgPath: AppIcons.handicap,
+                                            phosphorIcon: AppPhosphorIcons.handicap,
                                             title: 'Handicap Use',
                                             helpText:
                                                 'Gross is total strokes. Net adjusts for handicap. Gross + Net tracks both scores.',
@@ -1774,7 +1776,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
 
                                           // Games Multi-Select Section
                                           SectionHeader(
-                                            svgPath: AppIcons.dots,
+                                            phosphorIcon: AppPhosphorIcons.dots,
                                             title: 'Games (Optional)',
                                             helpText:
                                                 'Add up to 3 side games to your round. These are played alongside your primary format.',

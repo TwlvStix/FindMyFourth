@@ -8,6 +8,7 @@ import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/app_icons.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_icon.dart';
@@ -376,7 +377,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               AppIcon(
-                                  assetPath: AppIcons.owner,
+                                  icon: AppPhosphorIcons.owner,
                                   color: AppColors.pure, size: AppIconSize.xs),
                               SizedBox(width: 4),
                               Text(
@@ -405,7 +406,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               AppIcon(
-                                  assetPath: AppIcons.joined,
+                                  icon: AppPhosphorIcons.joined,
                                   color: AppColors.pure, size: AppIconSize.xs),
                               SizedBox(width: 4),
                               Text(
@@ -437,7 +438,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                         ),
                         child: Center(
                           child: AppIcon(
-                            assetPath: AppIcons.course,
+                            icon: AppPhosphorIcons.course,
                             color: AppColors.pure,
                             size: AppIconSize.button,
                           ),
@@ -514,7 +515,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                               boxShadow: [AppElevation.md],
                             ),
                             child: AppIcon(
-                              assetPath: AppIcons.chat,
+                              icon: AppPhosphorIcons.chat,
                               color: AppColors.pure,
                               size: AppIconSize.button,
                             ),
@@ -543,7 +544,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           ),
                           child: Center(
                             child: AppIcon(
-                              assetPath: AppIcons.calendarCheck,
+                              icon: AppPhosphorIcons.calendarCheck,
                               color: AppColors.goldLight,
                               size: AppIconSize.xs,
                             ),
@@ -601,7 +602,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               AppIcon(
-                                assetPath: AppIcons.golfers,
+                                icon: AppPhosphorIcons.golfers,
                                 color: isFull ? AppColors.error : AppColors.pure,
                                 size: AppIconSize.xs,
                               ),
@@ -653,7 +654,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           AppIcon(
-                            assetPath: AppIcons.memberDiscount,
+                            icon: AppPhosphorIcons.memberDiscount,
                             color: AppColors.navyLight,
                             size: AppIconSize.xs,
                           ),
