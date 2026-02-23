@@ -57,7 +57,7 @@ class GameDetailsCard extends StatelessWidget {
               Text(
                 game.nameGame,
                 style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.gold,
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontWeight: FontWeight.w500,
                 ),
               ),

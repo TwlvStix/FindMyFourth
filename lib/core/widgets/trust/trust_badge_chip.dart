@@ -41,10 +41,11 @@ class BadgeTierStyle {
   static BadgeTierStyle fromTier(BadgeTier tier) {
     switch (tier) {
       case BadgeTier.newPlayer:
+        // NEW is informational, not earned — use subtle neutral tones
         return BadgeTierStyle(
           label: 'NEW',
-          accent: AppColors.trustGoldFg,
-          borderColor: AppColors.trustGoldBg,
+          accent: AppColors.textSecondary,
+          borderColor: AppColors.glassBorder,
         );
       case BadgeTier.confirmed:
         return BadgeTierStyle(

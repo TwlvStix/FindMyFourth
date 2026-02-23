@@ -38,8 +38,8 @@ class HostInfoSection extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               border: Border.all(
-                color: AppColors.gold,
-                width: 2,
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1.5,
               ),
             ),
             clipBehavior: Clip.antiAlias,

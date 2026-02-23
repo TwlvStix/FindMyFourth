@@ -1,10 +1,14 @@
 import '/backend/backend.dart';
+import '/backend/schema/trust_profile.dart';
 import '/core/exceptions/app_exceptions.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/core/widgets/fairway_background.dart';
-import '/core/widgets/premium_back_button.dart';
+import '/core/widgets/trust/luxury_player_card.dart';
+import '/main_function/game_joined_detailed/components/player_match_chip.dart';
+import '/main_function/game_joined_detailed/components/group_vibe_summary.dart';
+import '/main_function/game_joined_detailed/components/premium_app_bar.dart';
 import '/core/widgets/trust/restriction_banner.dart';
 import '/core/widgets/app_info_card.dart';
 import '/core/widgets/premium_section_header.dart';
@@ -38,8 +42,7 @@ import 'package:provider/provider.dart';
 import '/providers/chat_provider.dart';
 import 'components/game_details_card.dart';
 import 'components/host_info_section.dart';
-import 'components/player_slots_section.dart';
-import '../game_joined_detailed/components/quick_stats_row.dart';
+import 'components/available_game_stats_row.dart';
 
 class JoinGameDetailedWidget extends StatefulWidget {
   const JoinGameDetailedWidget({
@@ -444,71 +447,12 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
     return bMatch.displayScore.compareTo(aMatch.displayScore);
   }
 
-  Widget _buildPlayerMatchChip(String userId, String name) {
-    final match = _memberMatchesById[userId];
-    final scoreLabel = match == null
-        ? '--%'
-        : '${match.displayScore.round()}%';
-    final label = '$name $scoreLabel';
-
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 160),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xxs,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.navy.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(AppBorderRadius.full),
-          border: Border.all(
-            color: AppColors.navy.withValues(alpha: 0.3),
-          ),
-        ),
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppTypography.labelSmall.copyWith(
-            color: AppColors.navyDark,
-            letterSpacing: AppTypography.letterSpacingNormal,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PREMIUM APP BAR
-  // ═══════════════════════════════════════════════════════════════════════════
-  PreferredSizeWidget _buildPremiumAppBar(BuildContext context, String title) {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      automaticallyImplyLeading: false,
-      leading: PremiumBackButton(
-        onTap: () {
-          final router = GoRouter.of(context);
-          router.go('/gamesList');
-        },
-      ),
-      title: Text(
-        title,
-        style: AppTypography.headlineMediumSans.copyWith(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      centerTitle: false,
-      elevation: 0.0,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.gameRef == null) {
       return Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: _buildPremiumAppBar(context, 'Game'),
+        appBar: const PremiumAppBar(title: 'Game'),
         body: FairwayBackgroundDark(
           showOrganic: true,
           showTexture: true,
@@ -559,7 +503,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
     final gameRef = widget.gameRef;
     if (gameRef == null) {
       return Scaffold(
-        appBar: _buildPremiumAppBar(context, 'Game'),
+        appBar: const PremiumAppBar(title: 'Game'),
         body: Center(child: Text('Game not found')),
       );
     }
@@ -580,7 +524,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
           }
           return Scaffold(
             extendBodyBehindAppBar: true,
-            appBar: _buildPremiumAppBar(context, 'Game'),
+            appBar: const PremiumAppBar(title: 'Game'),
             body: FairwayBackgroundDark(
               showOrganic: true,
               showTexture: true,
@@ -626,7 +570,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
         if (!snapshot.hasData) {
           return Scaffold(
             extendBodyBehindAppBar: true,
-            appBar: _buildPremiumAppBar(context, 'Loading...'),
+            appBar: const PremiumAppBar(title: 'Loading...'),
             body: FairwayBackgroundDark(
               showOrganic: true,
               showTexture: true,
@@ -655,7 +599,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
         final gamesRecord = snapshot.data;
         if (gamesRecord == null) {
           return Scaffold(
-            appBar: _buildPremiumAppBar(context, 'Game'),
+            appBar: const PremiumAppBar(title: 'Game'),
             body: Center(child: Text('Game not found')),
           );
         }
@@ -674,7 +618,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
         return Scaffold(
           key: scaffoldKey,
           extendBodyBehindAppBar: true,
-          appBar: _buildPremiumAppBar(context, 'Available Game'),
+          appBar: const PremiumAppBar(title: 'Available Game'),
           body: FairwayBackgroundDark(
             showOrganic: true,
             showTexture: true,
@@ -699,11 +643,11 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Top padding for AppBar
-                      SizedBox(height: MediaQuery.of(context).padding.top + 56),
+                      SizedBox(height: MediaQuery.of(context).padding.top + 22),
 
                       // Premium Hero Section
                       Padding(
-                        padding: EdgeInsets.all(AppSpacing.md),
+                        padding: EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
                         child: joinGameDetailedGamesRecord.userRef == null
                           ? Container(
                               height: 200,
@@ -784,8 +728,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                 ),
                                 borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
                                 border: Border.all(
-                                  color: AppColors.glassSurface,
-                                  width: 1,
+                                  color: AppColors.gold.withValues(alpha: 0.3),
+                                  width: 2,
                                 ),
                                 boxShadow: [AppElevation.xl],
                               ),
@@ -800,7 +744,27 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                             );
                           },
                         )
-                      ),
+                      )
+                          .animate(target: _hasAnimated ? 1 : 0)
+                          .fadeIn(
+                            duration: ReducedMotionService.adjust(
+                              MotionTokens.routeEnter,
+                            ),
+                            curve: MotionTokens.curveEnter,
+                          )
+                          .scale(
+                            begin: ReducedMotionService.shouldScale
+                                ? Offset(
+                                    MotionTokens.pageScaleStart,
+                                    MotionTokens.pageScaleStart,
+                                  )
+                                : const Offset(1, 1),
+                            end: const Offset(1, 1),
+                            duration: ReducedMotionService.adjust(
+                              MotionTokens.routeEnter,
+                            ),
+                            curve: MotionTokens.curveEnter,
+                          ),
 
                       // Quick Stats Row (Date, Players, Spots)
                       // Content section 1 - Staggered reveal
@@ -808,9 +772,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                         sectionIndex: 0,
                         child: Padding(
                           padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                          child: QuickStatsRow(
+                          child: AvailableGameStatsRow(
                             game: joinGameDetailedGamesRecord,
-                            isOwner: false, // User is viewing a game to join, not their own game
                           ),
                         ),
                       ),
@@ -823,7 +786,10 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                         sectionIndex: 1,
                         child: Padding(
                           padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                          child: _buildPremiumGroupVibeSummary(),
+                          child: GroupVibeSummary(
+                            groupVibeMatch: _groupVibeMatch,
+                            onViewBreakdown: _openGroupVibeBreakdown,
+                          ),
                         ),
                       ),
 
@@ -861,31 +827,26 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                     icon: AppPhosphorIcons.betting,
                                     label: 'Betting',
                                     value: funOr(joinGameDetailedGamesRecord.styleGame),
-                                    isHighlighted: isFun && joinGameDetailedGamesRecord.styleGame.isEmpty,
                                   ),
                                   AppInfoCard(
                                     icon: AppPhosphorIcons.ruleStyle,
                                     label: 'Rule Style',
                                     value: funOr(joinGameDetailedGamesRecord.rulesSetting),
-                                    isHighlighted: isFun && joinGameDetailedGamesRecord.rulesSetting.isEmpty,
                                   ),
                                   AppInfoCard(
                                     icon: AppPhosphorIcons.gameType,
                                     label: 'Game Type',
                                     value: funOr(joinGameDetailedGamesRecord.gameType),
-                                    isHighlighted: isFun && joinGameDetailedGamesRecord.gameType.isEmpty,
                                   ),
                                   AppInfoCard(
                                     icon: AppPhosphorIcons.scoring,
                                     label: 'Scoring',
                                     value: funOr(joinGameDetailedGamesRecord.scoring),
-                                    isHighlighted: isFun && joinGameDetailedGamesRecord.scoring.isEmpty,
                                   ),
                                   AppInfoCard(
                                     icon: AppPhosphorIcons.memberDiscount,
                                     label: 'Member Discount',
                                     value: funOr(joinGameDetailedGamesRecord.memberDiscount),
-                                    isHighlighted: isFun && joinGameDetailedGamesRecord.memberDiscount.isEmpty,
                                   ),
                                   AppInfoCard(
                                     icon: AppPhosphorIcons.friendsOnly,
@@ -898,9 +859,25 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                             SizedBox(height: AppSpacing.lg),
 
                             // Players Section Header with gradient accent
-                            PlayerSlotsSectionHeader(
-                              currentCount: _getPlayerCount(joinGameDetailedGamesRecord),
-                              maxCount: 4,
+                            PremiumSectionHeader(
+                              title: 'Players',
+                              trailing: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.sm,
+                                  vertical: AppSpacing.xxs,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.navyLight.withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                                ),
+                                child: Text(
+                                  '${_getPlayerCount(joinGameDetailedGamesRecord)}/4',
+                                  style: AppTypography.labelSmall.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
                             ),
                             SizedBox(height: AppSpacing.md),
                           ],
@@ -952,7 +929,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
-                                    // Registered players
+                                    // Registered players - using LuxuryPlayerCard with trust badges
                                     ...List.generate(groupPlayers.length,
                                         (groupPlayersIndex) {
                                       final groupPlayersItem =
@@ -972,137 +949,89 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                       final photoUrl =
                                           friendRecord?.photoUrl ?? '';
 
-                                      return Padding(
-                                        padding:
-                                            EdgeInsets.only(bottom: AppSpacing.sm),
-                                        child: InkWell(
-                                          onTap: () {
-                                            context.pushNamed(
-                                              'ProfileUser',
-                                              extra: <String, dynamic>{
-                                                'userRef': userRef,
-                                                kTransitionInfoKey:
-                                                    TransitionStandards.detailTransition,
-                                              },
-                                            );
-                                          },
-                                          child: Container(
-                                            padding: EdgeInsets.all(AppSpacing.sm),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.navy
-                                                  .withValues(alpha: 0.3),
-                                              borderRadius:
-                                                  BorderRadius.circular(AppBorderRadius.md),
-                                              border: Border.all(
-                                                color: AppColors.navyLight
-                                                    .withValues(alpha: 0.3),
-                                                width: 1,
+                                      // Fetch trust profile for badge display
+                                      final trustProvider = context.read<TrustProvider>();
+                                      // Stagger delay: 24ms per card, max 8 cards animated
+                                      final staggerIndex = groupPlayersIndex < MotionTokens.staggerMaxItems
+                                          ? groupPlayersIndex
+                                          : MotionTokens.staggerMaxItems - 1;
+                                      final staggerDelay = ReducedMotionService.shouldStagger
+                                          ? MotionTokens.staggerDelay * staggerIndex
+                                          : Duration.zero;
+
+                                      return FutureBuilder<TrustProfile?>(
+                                        future: trustProvider.fetchTrustProfile(groupPlayersItem.id),
+                                        builder: (context, trustSnapshot) {
+                                          final trustProfile = trustSnapshot.data;
+                                          return Padding(
+                                            padding: EdgeInsets.only(
+                                              top: 8,
+                                              bottom: AppSpacing.sm,
+                                            ),
+                                            child: LuxuryPlayerCard(
+                                              name: displayName,
+                                              avatarUrl: photoUrl,
+                                              tier: trustProfile?.currentBadge ??
+                                                  BadgeTier.newPlayer,
+                                              isFavorite: isOwner,
+                                              status: 'Ready',
+                                              percentWidget: PlayerMatchChip(
+                                                name: displayName,
+                                                memberMatch: _memberMatchesById[
+                                                    groupPlayersItem.id],
+                                                onTap: null, // Non-member can't view detailed vibe page
                                               ),
+                                              trailingWidget: AppIcon(
+                                                icon: AppPhosphorIcons.joined,
+                                                color: AppColors.textSecondary,
+                                                size: AppIconSize.md,
+                                              ),
+                                              onTap: () {
+                                                context.pushNamed(
+                                                  'ProfileUser',
+                                                  extra: <String, dynamic>{
+                                                    'userRef': userRef,
+                                                    kTransitionInfoKey:
+                                                        TransitionStandards.detailTransition,
+                                                  },
+                                                );
+                                              },
                                             ),
-                                            child: Row(
-                                              children: [
-                                                // Avatar
-                                                Container(
-                                                  width: 48.0,
-                                                  height: 48.0,
-                                                  decoration: BoxDecoration(
-                                                    gradient: LinearGradient(
-                                                      colors: [AppColors.navyLight, AppColors.navy],
-                                                    ),
-                                                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                                                    border: Border.all(
-                                                      color: AppColors.glassBorder,
-                                                      width: 2,
-                                                    ),
-                                                  ),
-                                                  child: ClipRRect(
-                                                    borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-                                                    child: photoUrl.isNotEmpty
-                                                        ? Image.network(
-                                                            photoUrl,
-                                                            fit: BoxFit.cover,
-                                                            cacheWidth: 96,
-                                                            cacheHeight: 96,
-                                                            errorBuilder: (context, error, stackTrace) =>
-                                                                AppIcon(
-                                                              icon: AppPhosphorIcons.profile,
-                                                              color: AppColors.pure,
-                                                              size: AppIconSize.md,
-                                                            ),
-                                                          )
-                                                        : AppIcon(
-                                                            icon: AppPhosphorIcons.profile,
-                                                            color: AppColors.pure,
-                                                            size: AppIconSize.md,
-                                                          ),
-                                                  ),
+                                          )
+                                              .animate(target: _hasAnimated ? 1 : 0)
+                                              .fadeIn(
+                                                delay: staggerDelay,
+                                                duration: ReducedMotionService.adjust(
+                                                  MotionTokens.contentReveal,
                                                 ),
-                                                SizedBox(width: AppSpacing.sm),
-                                                // Name and ready status
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment.start,
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          Flexible(
-                                                            child: Text(
-                                                              displayName,
-                                                              style: AppTypography.bodyLarge.copyWith(
-                                                                color: AppColors.textPrimary,
-                                                                fontWeight: FontWeight.w500,
-                                                              ),
-                                                              maxLines: 1,
-                                                              overflow:
-                                                                  TextOverflow.ellipsis,
-                                                            ),
-                                                          ),
-                                                          if (isOwner) ...[
-                                                            SizedBox(width: 6),
-                                                            AppIcon(
-                                                              icon: AppPhosphorIcons.owner,
-                                                              color: AppColors.gold,
-                                                              size: AppIconSize.xs,
-                                                            ),
-                                                          ],
-                                                        ],
-                                                      ),
-                                                      SizedBox(height: AppSpacing.xxs),
-                                                      Text(
-                                                        'Ready',
-                                                        style: AppTypography.bodySmall.copyWith(
-                                                          color: AppColors.gold,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
+                                                curve: MotionTokens.curveEnter,
+                                              )
+                                              .slideY(
+                                                delay: staggerDelay,
+                                                begin: 0.1,
+                                                end: 0,
+                                                duration: ReducedMotionService.adjust(
+                                                  MotionTokens.contentReveal,
                                                 ),
-                                                Padding(
-                                                  padding: EdgeInsets.only(
-                                                    right: AppSpacing.sm,
-                                                  ),
-                                                  child: _buildPlayerMatchChip(
-                                                    groupPlayersItem.id,
-                                                    displayName,
-                                                  ),
-                                                ),
-                                                // Checkmark icon
-                                                AppIcon(
-                                                  icon: AppPhosphorIcons.joined,
-                                                  color: AppColors.gold,
-                                                  size: AppIconSize.md,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
+                                                curve: MotionTokens.curveEnter,
+                                              );
+                                        },
                                       );
                                     }),
-                                // Guest players
-                                ...guestPlayers.map(
-                                  (guestName) => Padding(
+                                // Guest players with stagger animation
+                                ...guestPlayers.asMap().entries.map((entry) {
+                                  final guestIndex = entry.key;
+                                  final guestName = entry.value;
+                                  // Continue stagger from registered players count
+                                  final combinedIndex = groupPlayers.length + guestIndex;
+                                  final staggerIndex = combinedIndex < MotionTokens.staggerMaxItems
+                                      ? combinedIndex
+                                      : MotionTokens.staggerMaxItems - 1;
+                                  final staggerDelay = ReducedMotionService.shouldStagger
+                                      ? MotionTokens.staggerDelay * staggerIndex
+                                      : Duration.zero;
+
+                                  return Padding(
                                     padding: EdgeInsets.only(bottom: AppSpacing.sm),
                                     child: Container(
                                       padding: EdgeInsets.all(AppSpacing.sm),
@@ -1127,7 +1056,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                                   .withValues(alpha: 0.5),
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color: AppColors.glassBorder,
+                                                color: Colors.white
+                                                    .withValues(alpha: 0.3),
                                                 width: 2.0,
                                               ),
                                             ),
@@ -1135,7 +1065,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                               child: Text(
                                                 'G',
                                                 style: AppTypography.titleMedium.copyWith(
-                                                  color: AppColors.textPrimary,
+                                                  color: Colors.white,
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
@@ -1152,7 +1082,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                                 Text(
                                                   guestName,
                                                   style: AppTypography.bodyLarge.copyWith(
-                                                    color: AppColors.textPrimary,
+                                                    color: Colors.white,
                                                     fontWeight: FontWeight.w500,
                                                   ),
                                                   maxLines: 1,
@@ -1162,7 +1092,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                                 Text(
                                                   'Guest',
                                                   style: AppTypography.bodySmall.copyWith(
-                                                    color: AppColors.glassTextSecondary,
+                                                    color: Colors.white.withValues(alpha: 0.7),
                                                   ),
                                                 ),
                                               ],
@@ -1171,8 +1101,25 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                         ],
                                       ),
                                     ),
-                                  ),
-                                ),
+                                  )
+                                      .animate(target: _hasAnimated ? 1 : 0)
+                                      .fadeIn(
+                                        delay: staggerDelay,
+                                        duration: ReducedMotionService.adjust(
+                                          MotionTokens.contentReveal,
+                                        ),
+                                        curve: MotionTokens.curveEnter,
+                                      )
+                                      .slideY(
+                                        delay: staggerDelay,
+                                        begin: 0.1,
+                                        end: 0,
+                                        duration: ReducedMotionService.adjust(
+                                          MotionTokens.contentReveal,
+                                        ),
+                                        curve: MotionTokens.curveEnter,
+                                      );
+                                }),
                               ],
                             );
                           },
@@ -1435,180 +1382,6 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
           duration: ReducedMotionService.adjust(MotionTokens.contentReveal),
           curve: MotionTokens.curveEnter,
         );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PREMIUM GROUP VIBE SUMMARY
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildPremiumGroupVibeSummary() {
-    final result = _groupVibeMatch;
-    final groupScore = result?.groupFitScore.round() ?? 0;
-    final hasResult = result != null;
-
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.navy.withValues(alpha: 0.4),
-            AppColors.navyDark.withValues(alpha: 0.3),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-        border: Border.all(color: AppColors.glassSurface),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.gold, AppColors.goldLight],
-                  ),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                ),
-                child: AppIcon(icon: AppPhosphorIcons.vibeMatch, color: AppColors.pure, size: AppIconSize.md),
-              ),
-              SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Group Vibe Match',
-                      style: AppTypography.titleSmall.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      hasResult ? 'Based on your preferences' : 'Calculating...',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.glassTextSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Score badge
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  gradient: hasResult
-                      ? LinearGradient(
-                          colors: groupScore >= 70
-                              ? [AppColors.navyLight, AppColors.navy]
-                              : groupScore >= 40
-                                  ? [AppColors.gold, AppColors.goldLight]
-                                  : [AppColors.error, AppColors.error],
-                        )
-                      : null,
-                  color: hasResult ? null : AppColors.glassSurface,
-                  borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-                ),
-                child: hasResult
-                    ? Text(
-                        '$groupScore%',
-                        style: AppTypography.titleSmall.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      )
-                    : SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.gold,
-                        ),
-                      ),
-              ),
-            ],
-          ),
-          if (hasResult) ...[
-            // Cohesion warning banner
-            if (result.hasCohesionIssue && result.cohesionWarning != null) ...[
-              SizedBox(height: AppSpacing.sm),
-              Container(
-                padding: EdgeInsets.all(AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                  border: Border.all(
-                    color: AppColors.error.withValues(alpha: 0.4),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    AppIcon(
-                      icon: AppPhosphorIcons.info,
-                      color: AppColors.pure,
-                      size: AppIconSize.button,
-                    ),
-                    SizedBox(width: AppSpacing.xs),
-                    Expanded(
-                      child: Text(
-                        result.cohesionWarning!,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-            SizedBox(height: AppSpacing.md),
-            GestureDetector(
-              onTap: _openGroupVibeBreakdown,
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.glassSurface,
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AppIcon(
-                      icon: AppPhosphorIcons.vibeMatch,
-                      color: AppColors.gold,
-                      size: AppIconSize.button,
-                    ),
-                    SizedBox(width: AppSpacing.xs),
-                    Text(
-                      'View Detailed Breakdown',
-                      style: AppTypography.labelMedium.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(width: AppSpacing.xs),
-                    AppIcon(
-                      icon: AppPhosphorIcons.chevronRight,
-                      color: AppColors.glassTextSecondary,
-                      size: AppIconSize.button,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
   }
 
 }

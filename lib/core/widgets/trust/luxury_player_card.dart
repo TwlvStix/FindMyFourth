@@ -268,10 +268,16 @@ class _PendantBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // NEW tier gets subtle treatment; earned tiers get full pendant
+    final isNewTier = tierStyle.label == 'NEW';
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs - 2),
       decoration: BoxDecoration(
-        color: AppColors.navy,
+        // Match card background for integration; solid for earned tiers
+        color: isNewTier
+            ? AppColors.navy.withValues(alpha: 0.5)
+            : AppColors.navy,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(AppBorderRadius.sm),
           bottomRight: Radius.circular(AppBorderRadius.sm),
@@ -281,7 +287,8 @@ class _PendantBadge extends StatelessWidget {
           right: BorderSide(color: tierStyle.borderColor, width: 1),
           bottom: BorderSide(color: tierStyle.borderColor, width: 1),
         ),
-        boxShadow: [AppElevation.lg],
+        // Remove shadow for NEW tier to reduce visual weight
+        boxShadow: isNewTier ? null : [AppElevation.lg],
       ),
       child: Text(
         tierStyle.label,
