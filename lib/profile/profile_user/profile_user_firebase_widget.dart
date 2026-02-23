@@ -11,6 +11,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/widgets/app_stat_card.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/navigation/app_router.dart';
 import '/core/widgets/fairway_background.dart';
@@ -398,107 +399,38 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
           Expanded(
-            child: _buildStatCard(
-              context,
+            child: AppStatCard(
               icon: AppPhosphorIcons.golf,
               value: handicap,
               label: 'Handicap',
-              gradient: [AppColors.gold, AppColors.goldLight],
+              variant: AppStatCardVariant.glass,
+              iconGradient: [AppColors.gold, AppColors.goldLight],
             ),
           ),
           SizedBox(width: AppSpacing.sm),
           Expanded(
-            child: _buildStatCard(
-              context,
+            child: AppStatCard(
               icon: AppPhosphorIcons.homeCourse,
               value: shortCourse,
               label: 'Home Course',
-              gradient: [AppColors.navyLight, AppColors.navy],
-              isText: true,
+              variant: AppStatCardVariant.glass,
+              iconGradient: [AppColors.navyLight, AppColors.navy],
+              isTextValue: true,
             ),
           ),
           SizedBox(width: AppSpacing.sm),
           Expanded(
             child: isSelf
-                ? _buildStatCard(
-                    context,
+                ? AppStatCard(
                     icon: AppPhosphorIcons.users,
                     value: friendsCount.toString(),
                     label: 'Friends',
-                    gradient: [AppColors.green, AppColors.greenLight],
+                    variant: AppStatCardVariant.glass,
+                    iconGradient: [AppColors.green, AppColors.greenLight],
                   )
                 : _buildFriendStatusButton(context, data),
           ),
         ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-    BuildContext context, {
-    required IconData icon,
-    required String value,
-    required String label,
-    required List<Color> gradient,
-    bool isText = false,
-    VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          vertical: AppSpacing.md,
-          horizontal: AppSpacing.xs,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.navy.withValues(alpha:0.3),
-          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-          border: Border.all(
-            color: AppColors.glassSurface,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: gradient),
-                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-              ),
-              child: Icon(
-                icon,
-                color: AppColors.pure,
-                size: AppIconSize.xs,
-              ),
-            ),
-            SizedBox(height: AppSpacing.xs),
-            Text(
-              value,
-              style: isText
-                  ? AppTypography.labelSmall.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    )
-                  : AppTypography.monoLarge.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: AppSpacing.xxs),
-            Text(
-              label,
-              style: AppTypography.labelSmall.copyWith(
-                color: AppColors.glassTextSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
         ),
       ),
     );

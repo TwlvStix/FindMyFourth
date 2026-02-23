@@ -50,6 +50,12 @@ class AppPhosphorIcons {
   static const notifications = PhosphorIconsRegular.bell;
   static const notificationsFill = PhosphorIconsFill.bell;
 
+  /// Muted / silenced — bell slash (for muted threads)
+  static const muted = PhosphorIconsRegular.bellSlash;
+
+  /// Digest / inbox — envelope simple (for digest mode)
+  static const digest = PhosphorIconsRegular.envelopeSimple;
+
   // ══════════════════════════════════════════════════════════════════════════
   // NAVIGATION ACTIONS
   // ══════════════════════════════════════════════════════════════════════════
@@ -354,6 +360,9 @@ class AppPhosphorIcons {
 
   /// Twilight — cloud sun
   static const twilight = PhosphorIconsRegular.cloudSun;
+
+  /// Moon — night, quiet hours, do not disturb
+  static const moon = PhosphorIconsRegular.moon;
 
   // ══════════════════════════════════════════════════════════════════════════
   // CHEVRONS & ARROWS

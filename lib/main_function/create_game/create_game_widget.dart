@@ -1610,6 +1610,22 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         ),
                                         SizedBox(height: AppSpacing.md),
                                         ToggleSwitch(
+                                          label: 'Member Guest Rate',
+                                          description:
+                                              'This game is created by a course member who can offer guest-rate pricing.',
+                                          value: memberDiscount,
+                                          onChanged: (val) {
+                                            if (mounted) {
+                                              setState(() {
+                                                memberDiscount = val;
+                                                memberValue =
+                                                    val ? 'Yes' : 'No';
+                                              });
+                                              _saveDraft();
+                                            }
+                                          },
+                                        ),
+                                        ToggleSwitch(
                                           label: 'Just for Fun',
                                           description:
                                               'Skip all the details. Just show up and play.',
@@ -1624,22 +1640,6 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           },
                                         ),
                                         if (!_isJustForFun) ...[
-                                          ToggleSwitch(
-                                            label: 'Member Guest Rate',
-                                            description:
-                                                'This game is created by a course member who can offer guest-rate pricing.',
-                                            value: memberDiscount,
-                                            onChanged: (val) {
-                                              if (mounted) {
-                                                setState(() {
-                                                  memberDiscount = val;
-                                                  memberValue =
-                                                      val ? 'Yes' : 'No';
-                                                });
-                                                _saveDraft();
-                                              }
-                                            },
-                                          ),
                                           SectionHeader(
                                             phosphorIcon: AppPhosphorIcons.competitive,
                                             title: 'Game Vibe',

@@ -683,7 +683,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   }
 
   Widget _buildNavigationRow({
-    required String emoji,
+    PhosphorIconData? phosphorIcon,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
@@ -697,8 +697,14 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
         ),
         child: Row(
           children: [
-            Text(emoji, style: TextStyle(fontSize: 24)),
-            SizedBox(width: AppSpacing.sm),
+            if (phosphorIcon != null) ...[
+              AppIcon(
+                icon: phosphorIcon,
+                size: AppIconSize.md,
+                color: AppColors.textSecondary,
+              ),
+              SizedBox(width: AppSpacing.sm),
+            ],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1138,7 +1144,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
                                   // Configure button
                                   _buildNavigationRow(
-                                    emoji: '⚙️',
+                                    phosphorIcon: AppPhosphorIcons.settings,
                                     title: 'Configure filters',
                                     subtitle: 'Set game vibe, stakes, format, courses, and more',
                                     onTap: _navigateToGameAlerts,
@@ -1202,7 +1208,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
                             // Quiet Hours
                             _buildSection(
-                              emoji: '🌙',
+                              phosphorIcon: AppPhosphorIcons.moon,
                               title: 'Quiet Hours',
                               subtitle: 'Pause notifications during specific hours',
                               children: [
@@ -1246,7 +1252,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
                             // Digest Mode
                             _buildSection(
-                              emoji: '📨',
+                              phosphorIcon: AppPhosphorIcons.digest,
                               title: 'Digest Mode',
                               subtitle: 'Control notification frequency',
                               children: [
@@ -1256,11 +1262,10 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
                             // Muted Threads
                             _buildSection(
-                              emoji: '🔇',
+                              phosphorIcon: AppPhosphorIcons.muted,
                               title: 'Muted Threads',
                               children: [
                                 _buildNavigationRow(
-                                  emoji: '',
                                   title: 'Muted threads',
                                   subtitle:
                                       '${_prefs!.mutedThreads.length} muted',

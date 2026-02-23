@@ -386,6 +386,8 @@ class GameCard extends StatelessWidget {
 ///   value: '24',
 /// )
 /// ```
+@Deprecated('Use AppStatCard with AppStatCardVariant.standard instead. '
+    'See lib/core/widgets/app_stat_card.dart')
 class StatCard extends StatelessWidget {
   const StatCard({
     super.key,

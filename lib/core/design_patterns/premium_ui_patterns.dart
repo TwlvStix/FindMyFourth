@@ -343,10 +343,12 @@ class _AnimatedAvatarRingState extends State<AnimatedAvatarRing>
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// STAT CARD
+// STAT CARD (DEPRECATED)
 // ═══════════════════════════════════════════════════════════════════════════
 
 /// A compact stat display card for metrics like handicap, friends count, etc.
+@Deprecated('Use AppStatCard with AppStatCardVariant.glass instead. '
+    'See lib/core/widgets/app_stat_card.dart')
 class StatCard extends StatelessWidget {
   final IconData icon;
   final String value;

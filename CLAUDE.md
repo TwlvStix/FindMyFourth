@@ -547,13 +547,84 @@ AnimatedContainer(duration: MotionTokens.microInteraction, curve: MotionTokens.c
 #### Known Design Debt
 
 - **SVG icon system (`AppIcons`)** is deprecated — Phosphor Icons (`AppPhosphorIcons`) is now the primary icon system. The SVG assets in `assets/icon/golf-app-icons/` and the `AppIcons` class in `app_icons.dart` are retained for gradual migration but should not be used for new code. Once all screens are migrated, remove the SVG assets, `flutter_svg` dependency (if no other SVGs remain), and `AppIcons` class.
-- **`premium_ui_patterns.dart`** has stale naming — `AppGradients` references old "Fairway Sunset" names (`sunsetGold`, `fairway`) instead of The Clubhouse vocabulary. Comments in the file also reference the old design language. Update when next modifying this file.
+- **`premium_ui_patterns.dart`** — `StatCard` class is deprecated; use `AppStatCard` from `app_stat_card.dart` instead.
 - **Remaining `withOpacity()` deprecation warnings** — use `Color.withValues(alpha: ...)` or the pre-computed glass/overlay constants in `AppColors` instead.
 - **Some files still use `AppTheme.of(context)`** with FlutterFlow naming instead of direct tokens.
-- **Deprecated typography helpers** (`text10`, `text11`, `text13`) still referenced in ~11 files — migrate to semantic tokens when touching these files.
+- **Deprecated typography helpers** (`text10`, `text11`, `text13`) are defined in `typography.dart` but no longer used — can be removed in future cleanup.
 - **`caption` token** still used in ~10 files alongside the standard `labelSmall` — consolidate to `labelSmall` when touching these files.
 - **54 hardcoded BoxShadow instances** remain (intentionally — upward shadows, animated glows, dynamic colors that don't map to tokens).
-- **Flutter analyze: ~55 remaining issues** (non-blocking: unused imports, deprecated API usage).
+- **Flutter analyze: ~5 remaining issues** (non-blocking: unnecessary imports).
+
+#### Microcopy & Content Guidelines (`lib/core/content/app_copy.dart`)
+
+**Voice**: Quiet confidence. Clear, composed, trustworthy. Not playful, not loud, not pretentious.
+
+**Tone Pillars**:
+1. **Clear over clever** — Always choose clarity over personality
+2. **Neutral emotional tone** — No exaggerated excitement or disappointment
+3. **Short, complete sentences** — No fragments unless for emphasis
+4. **Controlled warmth** — Professional but human, not cold
+5. **Trust first** — Matching involves vulnerability; copy must reduce anxiety
+
+**Formality**: Semi-formal. No slang, no "bro" energy, no corporate buzzwords.
+
+**Emoji Policy**:
+- System messages: No emoji
+- Errors: No emoji
+- Trust flows: No emoji
+- Marketing surfaces: Use sparingly and intentionally
+
+**Punctuation**:
+- Use periods in confirmations and instructions
+- Avoid exclamation marks in system flows
+- No ALL CAPS
+- Sentence case everywhere
+
+**Button Labels**: Max 3 words, clear action verbs.
+- Good: "Request spot", "Confirm round", "Leave round"
+- Bad: "Let's play", "Count me in"
+
+**Examples by Context**:
+
+| Context | Wrong | Correct |
+|---------|-------|---------|
+| Confirmation | "Awesome! You're in 🎉" | "You're confirmed for this round." |
+| Error | "Uh oh! Something went wrong." | "We couldn't load this round." |
+| Empty state | "No matches 😢" | "No compatible groups right now." |
+| Notification | "You've got a new golf buddy!" | "You have a new match." |
+
+**Trust-Sensitive Areas** (ratings, vibe scoring, cancellations, reports):
+- Tone must be neutral and procedural
+- Never imply blame: "This cancellation falls within the late window." not "You canceled too late."
+
+**Host vs Joiner Language**:
+- Hosts need control clarity: "You'll review player requests before confirming."
+- Joiners need reassurance clarity: "Your request will be reviewed by the host."
+
+**Voice Red Flags** — If copy feels cheesy, salesy, over-motivational, sarcastic, overly casual, or country club elitist, it's off brand.
+
+**Tone Calibration Test**: Does this reduce friction? Does this increase clarity? Would a serious 12-handicap trust this? Does this feel calm? If any answer is no, rewrite.
+
+**Empty State Patterns** — Empty states maintain trust when no content is present. They must feel calm, competent, and forward-looking.
+
+| Pattern | When to Use | Structure | Example |
+|---------|-------------|-----------|---------|
+| **A: Informational Neutral** | Low-stakes (notifications, saved items) | State only, no action | "No new notifications." |
+| **B: Informational + Forward** | User can change outcome | State + optional action | "No compatible groups for this time." / "Adjust your filters to see more options." |
+| **C: Time-Dependent** | Availability fluctuates | State + time cue | "No player requests yet." / "Requests will appear here as players apply." |
+| **D: Procedural** | Restricted/paused/system | Status + governing rule | "Profile review in progress." / "This usually takes up to 24 hours." |
+| **E: Early Lifecycle** | New user, first action | State + first action | "No rounds booked yet." / "Browse available groups to get started." |
+
+**Empty State Escalation**:
+- Low stakes (notifications, saved items): Pure informational tone
+- Medium stakes (search, booking): Neutral + optional forward action
+- High stakes (trust, suspensions): Procedural clarity only
+
+**Empty State Don'ts**: No emoji, no "Uh oh", no "Nothing here yet!", no "Be the first...", no "Let's get you...", no humor, no golf clichés.
+
+**Empty State Quality Check**: Does this imply failure? Does this sound promotional? Does this reduce uncertainty? Would a serious 12-handicap trust this?
+
+**Reusable Copy**: Use constants from `lib/core/content/app_copy.dart` for common messages (confirmations, errors, empty states, button labels, field labels).
 
 ### Data Models: Record Classes vs Model Classes
 
