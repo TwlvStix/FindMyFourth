@@ -27,7 +27,7 @@ class GameDetailsCard extends StatelessWidget {
           height: 44,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [AppColors.gold, AppColors.goldLight],
+              colors: [AppColors.navyLight, AppColors.navy],
             ),
             borderRadius: BorderRadius.circular(AppBorderRadius.md),
             boxShadow: [AppElevation.md],

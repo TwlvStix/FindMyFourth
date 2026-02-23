@@ -537,13 +537,13 @@ class _PremiumGameCardState extends State<PremiumGameCard>
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: AppColors.goldLight.withValues(alpha: 0.2),
+                color: AppColors.navyLight.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
               child: Center(
                 child: AppIcon(
                   icon: AppPhosphorIcons.calendarCheck,
-                  color: AppColors.goldLight,
+                  color: AppColors.textSecondary,
                   size: AppIconSize.xs,
                 ),
               ),
@@ -745,7 +745,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
       decoration: BoxDecoration(
         gradient: isUserGame
             ? null
-            : LinearGradient(colors: [AppColors.gold, AppColors.goldLight]),
+            : LinearGradient(colors: [AppColors.green, AppColors.greenLight]),
         border: isUserGame
             ? Border.all(
                 color: AppColors.glassBorder,
@@ -757,7 +757,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
             ? null
             : [
                 BoxShadow(
-                  color: AppColors.gold.withValues(alpha: 0.3),
+                  color: AppColors.green.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: Offset(0, 2),
                 ),

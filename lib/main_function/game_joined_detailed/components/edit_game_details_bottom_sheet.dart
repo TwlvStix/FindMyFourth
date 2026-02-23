@@ -157,18 +157,20 @@ class _EditGameDetailsBottomSheetState
                       color: AppColors.navy,
                       borderRadius: BorderRadius.circular(AppBorderRadius.md),
                       border: Border.all(
-                        color: AppColors.navyDark,
+                        color: AppColors.glassBorder,
                         width: 1.5,
                       ),
                     ),
                     child: Row(
                       children: [
                         AppIcon(icon: AppPhosphorIcons.teeTime,
-                            color: AppColors.navyDark, size: AppIconSize.md),
+                            color: AppColors.textSecondary, size: AppIconSize.md),
                         SizedBox(width: AppSpacing.sm),
                         Text(
                           dateTimeFormat("jm", _selectedDate),
-                          style: AppTypography.titleSmall,
+                          style: AppTypography.titleSmall.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
                         ),
                       ],
                     ),
@@ -227,16 +229,18 @@ class _EditGameDetailsBottomSheetState
                     },
                     width: 300.0,
                     height: 50.0,
-                    textStyle: AppTypography.bodyMedium,
+                    textStyle: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
                     hintText: 'Select a course',
                     icon: AppIcon(
                       icon: AppPhosphorIcons.chevronDown,
-                      color: AppColors.pure,
+                      color: AppColors.textSecondary,
                       size: AppIconSize.md,
                     ),
                     fillColor: AppColors.navy,
                     elevation: 2.0,
-                    borderColor: AppColors.navyDark,
+                    borderColor: AppColors.glassBorder,
                     borderWidth: 1.0,
                     borderRadius: 10.0,
                     margin: EdgeInsetsDirectional.only(start: 0),

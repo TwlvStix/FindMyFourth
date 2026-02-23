@@ -616,7 +616,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                         ),
                       ),
 
-                    SizedBox(height: AppSpacing.md),
+                    SizedBox(height: AppSpacing.lg),
 
                     // Group Vibe Summary
                     // Content section 4 - Staggered reveal
@@ -631,7 +631,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                       ),
                     ),
 
-                    SizedBox(height: AppSpacing.lg),
+                    SizedBox(height: AppSpacing.xl),
 
                     // Game Details Section
                     // Content section 5 - Staggered reveal
@@ -665,48 +665,36 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                                   icon: AppPhosphorIcons.betting,
                                   label: 'Betting',
                                   value: funOr(gameJoinedDetailedGamesRecord.styleGame),
-                                  useBadge: true,
-                                  badgeColors: [AppColors.gold, AppColors.goldLight],
                                   isHighlighted: isFun && gameJoinedDetailedGamesRecord.styleGame.isEmpty,
                                 ),
                                 AppInfoCard(
                                   icon: AppPhosphorIcons.ruleStyle,
                                   label: 'Rule Style',
                                   value: funOr(gameJoinedDetailedGamesRecord.rulesSetting),
-                                  useBadge: true,
-                                  badgeColors: [AppColors.navyLight, AppColors.navy],
                                   isHighlighted: isFun && gameJoinedDetailedGamesRecord.rulesSetting.isEmpty,
                                 ),
                                 AppInfoCard(
                                   icon: AppPhosphorIcons.gameType,
                                   label: 'Game Type',
                                   value: funOr(gameJoinedDetailedGamesRecord.gameType),
-                                  useBadge: true,
-                                  badgeColors: [AppColors.navyLight, AppColors.navy],
                                   isHighlighted: isFun && gameJoinedDetailedGamesRecord.gameType.isEmpty,
                                 ),
                                 AppInfoCard(
                                   icon: AppPhosphorIcons.scoring,
                                   label: 'Scoring',
                                   value: funOr(gameJoinedDetailedGamesRecord.scoring),
-                                  useBadge: true,
-                                  badgeColors: [AppColors.green, AppColors.greenLight],
                                   isHighlighted: isFun && gameJoinedDetailedGamesRecord.scoring.isEmpty,
                                 ),
                                 AppInfoCard(
                                   icon: AppPhosphorIcons.memberDiscount,
                                   label: 'Member Discount',
                                   value: funOr(gameJoinedDetailedGamesRecord.memberDiscount),
-                                  useBadge: true,
-                                  badgeColors: [AppColors.navyLight, AppColors.navy],
                                   isHighlighted: isFun && gameJoinedDetailedGamesRecord.memberDiscount.isEmpty,
                                 ),
                                 AppInfoCard(
                                   icon: AppPhosphorIcons.friendsOnly,
                                   label: 'Friends Only',
                                   value: gameJoinedDetailedGamesRecord.friendGame,
-                                  useBadge: true,
-                                  badgeColors: [AppColors.gold, AppColors.goldLight],
                                 ),
                               ],
                             );
@@ -722,13 +710,13 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                                 vertical: AppSpacing.xxs,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.gold.withValues(alpha: 0.2),
+                                color: AppColors.navyLight.withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(AppBorderRadius.md),
                               ),
                               child: Text(
                                 '${_getPlayerCount(gameJoinedDetailedGamesRecord)}/4',
                                 style: AppTypography.labelSmall.copyWith(
-                                  color: AppColors.gold,
+                                  color: AppColors.textPrimary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -1784,6 +1772,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
   }
 
   // Helper method to build destructive action buttons (Leave/Cancel)
+  // Reduced saturation to not compete with primary screen content
   Widget _buildDestructiveButton({
     required BuildContext context,
     required String text,
@@ -1796,8 +1785,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
-          color: AppColors.error.withValues(alpha: 0.5),
-          width: 2.0,
+          color: AppColors.error.withValues(alpha: 0.35),
+          width: 1.5,
         ),
       ),
       child: Material(
@@ -1809,7 +1798,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
             child: Text(
               text,
               style: AppTypography.bodyLarge.copyWith(
-                color: AppColors.error,
+                color: AppColors.error.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w600,
               ),
             ),

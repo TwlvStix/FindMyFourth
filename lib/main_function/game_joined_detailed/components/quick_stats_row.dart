@@ -106,35 +106,30 @@ class QuickStatsRow extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: isFull
-                ? AppColors.navyLight.withValues(alpha: 0.2)
-                : AppColors.gold.withValues(alpha: 0.2),
+            color: AppColors.navy.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-            border: Border.all(
-              color: isFull
-                  ? AppColors.navyLight.withValues(alpha: 0.3)
-                  : AppColors.gold.withValues(alpha: 0.3),
-            ),
+            border: Border.all(color: AppColors.glassBorder),
           ),
           child: Row(
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isFull
-                        ? [AppColors.navyLight, AppColors.navy]
-                        : [AppColors.gold, AppColors.goldLight],
-                  ),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-                ),
-                child: Center(
-                  child: isFull
-                      ? AppIcon(icon: AppPhosphorIcons.groups, color: AppColors.pure, size: AppIconSize.button)
-                      : AppIcon(icon: AppPhosphorIcons.addPlayer, color: AppColors.pure, size: AppIconSize.button),
-                ),
-              ),
+              // Icon - plain neutral, green only for 1 spot urgency
+              isFull
+                  ? AppIcon(icon: AppPhosphorIcons.groups, color: AppColors.textSecondary, size: AppIconSize.listItem)
+                  : spotsLeft == 1
+                      ? Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppColors.green, AppColors.greenLight],
+                            ),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                          ),
+                          child: Center(
+                            child: AppIcon(icon: AppPhosphorIcons.addPlayer, color: AppColors.pure, size: AppIconSize.button),
+                          ),
+                        )
+                      : AppIcon(icon: AppPhosphorIcons.addPlayer, color: AppColors.textSecondary, size: AppIconSize.listItem),
               SizedBox(width: AppSpacing.sm),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,7 +137,7 @@ class QuickStatsRow extends StatelessWidget {
                   Text(
                     isFull ? 'Full' : '$spotsLeft Spots',
                     style: AppTypography.titleSmall.copyWith(
-                      color: isFull ? AppColors.navyLight : AppColors.gold,
+                      color: spotsLeft == 1 ? AppColors.green : AppColors.textPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

@@ -44,16 +44,10 @@ class GroupVibeSummary extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.gold, AppColors.goldLight],
-                  ),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                ),
-                child: AppIcon(icon: AppPhosphorIcons.brain, color: AppColors.pure, size: AppIconSize.md),
+              AppIcon(
+                icon: AppPhosphorIcons.brain,
+                color: AppColors.textSecondary,
+                size: AppIconSize.section,
               ),
               SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -76,39 +70,38 @@ class GroupVibeSummary extends StatelessWidget {
                   ],
                 ),
               ),
-              // Score badge
+              // Score badge - analytical, not emotional
               Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: AppSpacing.md,
                   vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
-                  gradient: hasResult
-                      ? LinearGradient(
-                          colors: groupScore >= 70
-                              ? [AppColors.navyLight, AppColors.navy]
-                              : groupScore >= 40
-                                  ? [AppColors.gold, AppColors.goldLight]
-                                  : [AppColors.error, AppColors.error],
-                        )
-                      : null,
-                  color: hasResult ? null : Colors.white.withValues(alpha: 0.1),
+                  color: hasResult
+                      ? (groupScore >= 80
+                          ? AppColors.green.withValues(alpha: 0.15)
+                          : AppColors.navyLight.withValues(alpha: 0.3))
+                      : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                 ),
                 child: hasResult
                     ? Text(
                         '$groupScore%',
                         style: AppTypography.titleSmall.copyWith(
-                          color: Colors.white,
+                          color: groupScore >= 80
+                              ? AppColors.green
+                              : groupScore >= 40
+                                  ? AppColors.textPrimary
+                                  : AppColors.textSecondary,
                           fontWeight: FontWeight.w700,
                         ),
                       )
-                    : const SizedBox(
+                    : SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.gold,
+                          color: AppColors.textSecondary,
                         ),
                       ),
               ),
@@ -164,7 +157,7 @@ class GroupVibeSummary extends StatelessWidget {
                   children: [
                     AppIcon(
                       icon: AppPhosphorIcons.insights,
-                      color: AppColors.gold,
+                      color: AppColors.textSecondary,
                       size: AppIconSize.button,
                     ),
                     SizedBox(width: AppSpacing.xs),
