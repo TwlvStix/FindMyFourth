@@ -5,7 +5,6 @@ import '/core/design_tokens/border_radius.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '/utils/app_util.dart';
-import '../design_tokens/app_icons.dart';
 import 'app_icon.dart';
 
 class ChipData {

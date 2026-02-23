@@ -28,7 +28,6 @@ import '/main_function/games_list/games_list_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
 import '/models/game.dart';
 import '/models/vibe_profile.dart';
-import '/vibe/vibe_match_types.dart';
 import '/vibe/vibe_recommendation_rank.dart';
 import '/services/vibe_group_matcher.dart';
 import '/services/vibe_repository.dart';
@@ -36,10 +35,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '/auth/firebase_auth/auth_util.dart';
 import '/providers/chat_provider.dart';
 import '/services/vibe_match_explanation.dart';
 import '/services/vibe_matcher.dart';
@@ -1332,18 +1329,6 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
         );
       },
     );
-  }
-
-  String _stringValue(
-    Map<String, dynamic> data,
-    String key,
-    String fallback,
-  ) {
-    final value = data[key];
-    if (value is String && value.trim().isNotEmpty) {
-      return value;
-    }
-    return fallback;
   }
 
   /// Builds a content section with staggered fade-in animation.

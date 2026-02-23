@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_card.dart';
 import '/models/vibe_profile.dart';
 
@@ -153,8 +155,8 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
         ),
         title: Row(
           children: [
-            Icon(
-              Icons.block_rounded,
+            AppIcon(
+              icon: AppPhosphorIcons.blocked,
               color: AppColors.navy,
               size: AppIconSize.md,
             ),
@@ -322,8 +324,8 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
                   const SizedBox(width: AppSpacing.xs),
                   GestureDetector(
                     onTap: () => _showDealbreakerInfo(context),
-                    child: Icon(
-                      Icons.info_outline_rounded,
+                    child: AppIcon(
+                      icon: AppPhosphorIcons.info,
                       size: AppIconSize.button,
                       color: AppColors.stone,
                     ),
@@ -333,7 +335,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
               Switch.adaptive(
                 value: _currentDealbreaker,
                 onChanged: _handleDealbreakerChanged,
-                activeColor: AppColors.navy,
+                activeTrackColor: AppColors.navy,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ],

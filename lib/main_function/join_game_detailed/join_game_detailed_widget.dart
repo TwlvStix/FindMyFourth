@@ -22,7 +22,6 @@ import '/core/widgets/app_icon.dart';
 import '/providers/trust_provider.dart';
 import '/models/game.dart';
 import '/models/vibe_profile.dart';
-import '/vibe/vibe_match_types.dart';
 import '/vibe/vibe_recommendation_rank.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
@@ -32,7 +31,6 @@ import '/services/vibe_group_matcher.dart';
 import '/services/vibe_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
@@ -117,64 +115,6 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
     _hasLoggedAccessDenied = true;
     debugPrint(
       'JoinGameDetailed: access denied for game $gameId (likely friends-only). Error: $error',
-    );
-  }
-
-  Widget _buildAccessDeniedScaffold(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: _buildPremiumAppBar(context, 'Game'),
-      body: FairwayBackgroundDark(
-        showOrganic: true,
-        showTexture: true,
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    color: AppColors.navy.withValues(alpha: 0.35),
-                    shape: BoxShape.circle,
-                  ),
-                  child: AppIcon(
-                    icon: AppPhosphorIcons.lock,
-                    color: Colors.white.withValues(alpha: 0.7),
-                    size: AppIconSize.xxl,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.md),
-                Text(
-                  'Friends Only Game',
-                  style: AppTypography.titleSmall.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: AppSpacing.xs),
-                Text(
-                  'This game is visible to friends only. Add the host as a friend to view details.',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.7),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: AppSpacing.md),
-                AppButtonEnhanced(
-                  text: 'Go back',
-                  variant: AppButtonVariant.secondary,
-                  size: AppButtonSize.medium,
-                  onPressed: () => context.pop(),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -277,18 +217,6 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
         _isGroupVibeLoading = false;
       });
     }
-  }
-
-  String _stringValue(
-    Map<String, dynamic> data,
-    String key,
-    String fallback,
-  ) {
-    final value = data[key];
-    if (value is String && value.trim().isNotEmpty) {
-      return value;
-    }
-    return fallback;
   }
 
   void _openGroupVibeBreakdown() {
@@ -566,7 +494,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
       title: Text(
         title,
         style: AppTypography.headlineMediumSans.copyWith(
-          color: Colors.white,
+          color: AppColors.textPrimary,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -597,7 +525,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                   ),
                   child: AppIcon(
                     icon: AppPhosphorIcons.error,
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: AppColors.glassTextTertiary,
                     size: AppIconSize.xl,
                   ),
                 ),
@@ -605,7 +533,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                 Text(
                   'Game Unavailable',
                   style: AppTypography.titleSmall.copyWith(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -613,7 +541,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                 Text(
                   'This game is no longer available',
                   style: AppTypography.bodySmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: AppColors.glassTextSecondary,
                   ),
                 ),
               ],
@@ -669,7 +597,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                       ),
                       child: AppIcon(
                         icon: AppPhosphorIcons.error,
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: AppColors.glassTextTertiary,
                         size: AppIconSize.xl,
                       ),
                     ),
@@ -677,7 +605,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                     Text(
                       'Unable to load game',
                       style: AppTypography.titleSmall.copyWith(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -685,7 +613,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                     Text(
                       'Please try again later.',
                       style: AppTypography.bodySmall.copyWith(
-                        color: Colors.white.withValues(alpha: 0.6),
+                        color: AppColors.glassTextSecondary,
                       ),
                     ),
                   ],
@@ -714,7 +642,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                     Text(
                       'Loading game details...',
                       style: AppTypography.bodySmall.copyWith(
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: AppColors.glassTextSecondary,
                       ),
                     ),
                   ],
@@ -787,7 +715,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                 child: Text(
                                   'Host information unavailable',
                                   style: AppTypography.bodySmall.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.7),
+                                    color: AppColors.glassTextSecondary,
                                   ),
                                 ),
                               ),
@@ -812,14 +740,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                     children: [
                                       AppIcon(
                                         icon: AppPhosphorIcons.profile,
-                                        color: Colors.white.withValues(alpha: 0.5),
+                                        color: AppColors.glassTextTertiary,
                                         size: AppIconSize.xl,
                                       ),
                                       SizedBox(height: AppSpacing.sm),
                                       Text(
                                         'Host information unavailable',
                                         style: AppTypography.bodySmall.copyWith(
-                                          color: Colors.white.withValues(alpha: 0.7),
+                                          color: AppColors.glassTextSecondary,
                                         ),
                                       ),
                                     ],
@@ -856,7 +784,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                 ),
                                 borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
                                 border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.1),
+                                  color: AppColors.glassSurface,
                                   width: 1,
                                 ),
                                 boxShadow: [AppElevation.xl],
@@ -1095,7 +1023,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                                     ),
                                                     borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                                     border: Border.all(
-                                                      color: Colors.white.withValues(alpha: 0.2),
+                                                      color: AppColors.glassBorder,
                                                       width: 2,
                                                     ),
                                                   ),
@@ -1135,7 +1063,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                                             child: Text(
                                                               displayName,
                                                               style: AppTypography.bodyLarge.copyWith(
-                                                                color: Colors.white,
+                                                                color: AppColors.textPrimary,
                                                                 fontWeight: FontWeight.w500,
                                                               ),
                                                               maxLines: 1,
@@ -1211,8 +1139,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                                   .withValues(alpha: 0.5),
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color: Colors.white
-                                                    .withValues(alpha: 0.3),
+                                                color: AppColors.glassBorder,
                                                 width: 2.0,
                                               ),
                                             ),
@@ -1220,7 +1147,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                               child: Text(
                                                 'G',
                                                 style: AppTypography.titleMedium.copyWith(
-                                                  color: Colors.white,
+                                                  color: AppColors.textPrimary,
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
@@ -1237,7 +1164,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                                 Text(
                                                   guestName,
                                                   style: AppTypography.bodyLarge.copyWith(
-                                                    color: Colors.white,
+                                                    color: AppColors.textPrimary,
                                                     fontWeight: FontWeight.w500,
                                                   ),
                                                   maxLines: 1,
@@ -1247,7 +1174,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                                 Text(
                                                   'Guest',
                                                   style: AppTypography.bodySmall.copyWith(
-                                                    color: Colors.white.withValues(alpha: 0.7),
+                                                    color: AppColors.glassTextSecondary,
                                                   ),
                                                 ),
                                               ],
@@ -1542,7 +1469,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
           ],
         ),
         borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: AppColors.glassSurface),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1568,14 +1495,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                     Text(
                       'Group Vibe Match',
                       style: AppTypography.titleSmall.copyWith(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
                       hasResult ? 'Based on your preferences' : 'Calculating...',
                       style: AppTypography.labelSmall.copyWith(
-                        color: Colors.white.withValues(alpha: 0.6),
+                        color: AppColors.glassTextSecondary,
                       ),
                     ),
                   ],
@@ -1597,14 +1524,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                   : [AppColors.error, AppColors.error],
                         )
                       : null,
-                  color: hasResult ? null : Colors.white.withValues(alpha: 0.1),
+                  color: hasResult ? null : AppColors.glassSurface,
                   borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                 ),
                 child: hasResult
                     ? Text(
                         '$groupScore%',
                         style: AppTypography.titleSmall.copyWith(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontWeight: FontWeight.w700,
                         ),
                       )
@@ -1644,7 +1571,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                       child: Text(
                         result.cohesionWarning!,
                         style: AppTypography.bodySmall.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ),
@@ -1661,7 +1588,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                   vertical: AppSpacing.sm,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: AppColors.glassSurface,
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 child: Row(
@@ -1676,14 +1603,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                     Text(
                       'View Detailed Breakdown',
                       style: AppTypography.labelMedium.copyWith(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     SizedBox(width: AppSpacing.xs),
                     AppIcon(
                       icon: AppPhosphorIcons.chevronRight,
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: AppColors.glassTextSecondary,
                       size: AppIconSize.button,
                     ),
                   ],

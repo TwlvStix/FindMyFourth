@@ -807,7 +807,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   AppIcon(
-                    icon: option.phosphorIcon!,
+                    icon: option.phosphorIcon,
                     size: AppIconSize.button,
                     color: isSelected
                         ? AppColors.navyDark
@@ -1062,7 +1062,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                                 .openSystemSettings();
                                           },
                                           text: 'Open Settings',
-                                          trailingIcon: Icons.open_in_new,
+                                          trailingIcon: AppPhosphorIcons.externalLink,
                                           size: AppButtonSize.small,
                                           variant: AppButtonVariant.primary,
                                         ),

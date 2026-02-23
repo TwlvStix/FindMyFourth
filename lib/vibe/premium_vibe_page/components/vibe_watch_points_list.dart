@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:find_my_fourth/core/design_tokens/app_phosphor_icons.dart';
 import 'package:find_my_fourth/core/design_tokens/colors.dart';
 import 'package:find_my_fourth/core/design_tokens/spacing.dart';
 import 'package:find_my_fourth/core/design_tokens/typography.dart';
+import 'package:find_my_fourth/core/widgets/app_icon.dart';
 import 'package:find_my_fourth/services/vibe_match_explanation.dart';
 import 'package:find_my_fourth/vibe/premium_vibe_page/styles/premium_vibe_page_styles.dart';
 
@@ -79,7 +81,7 @@ class VibeWatchPointsList extends StatelessWidget {
         ? PremiumVibePageStyles.dealbreakerCardDecoration
         : PremiumVibePageStyles.watchPointCardDecoration;
 
-    final iconData = isDealbreaker ? Icons.warning_rounded : Icons.priority_high_rounded;
+    final iconData = isDealbreaker ? AppPhosphorIcons.warning : AppPhosphorIcons.priorityHigh;
 
     final iconColor = isDealbreaker
         ? PremiumVibePageStyles.dealbreakerIconColor
@@ -94,8 +96,8 @@ class VibeWatchPointsList extends StatelessWidget {
           // Category name with icon
           Row(
             children: [
-              Icon(
-                iconData,
+              AppIcon(
+                icon: iconData,
                 size: PremiumVibePageStyles.watchPointIconSize,
                 color: iconColor,
               ),

@@ -818,34 +818,6 @@ class _PlayerRow extends StatelessWidget {
   }
 }
 
-class _PlayerAvatar extends StatelessWidget {
-  final String name;
-  final Color color;
-
-  const _PlayerAvatar({required this.name, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Text(
-          name,
-          style: AppTypography.labelMedium.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 // ============================================================================
 // SLIDE 2: Right Group
 // ============================================================================

@@ -6,6 +6,8 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/navigation/app_router.dart';
 
 /// Host information section showing avatar, name, and view profile button
@@ -47,14 +49,14 @@ class HostInfoSection extends StatelessWidget {
                     fit: BoxFit.cover,
                     cacheWidth: 96,
                     cacheHeight: 96,
-                    errorBuilder: (_, __, ___) => Icon(
-                      Icons.person_rounded,
+                    errorBuilder: (_, __, ___) => AppIcon(
+                      icon: AppPhosphorIcons.profile,
                       color: AppColors.pure,
                       size: AppIconSize.md,
                     ),
                   )
-                : Icon(
-                    Icons.person_rounded,
+                : AppIcon(
+                    icon: AppPhosphorIcons.profile,
                     color: AppColors.pure,
                     size: AppIconSize.md,
                   ),
@@ -112,8 +114,8 @@ class HostInfoSection extends StatelessWidget {
                     ),
                   ),
                   AppSpacing.horizontalXxs,
-                  Icon(
-                    Icons.chevron_right_rounded,
+                  AppIcon(
+                    icon: AppPhosphorIcons.chevronRight,
                     color: Colors.white.withValues(alpha: 0.8),
                     size: AppIconSize.xs,
                   ),

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/widgets/app_button_enhanced.dart';
 
@@ -40,8 +42,8 @@ class CancellationWarningIcon extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         child: Padding(
           padding: AppSpacing.allXxs,
-          child: Icon(
-            Icons.warning_amber_rounded,
+          child: PhosphorIcon(
+            AppPhosphorIcons.warning,
             size: AppIconSize.sm,
             // Intentionally goldLight, NOT error — this is informational
             color: AppColors.goldLight,

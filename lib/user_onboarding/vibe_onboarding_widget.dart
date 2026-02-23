@@ -206,35 +206,6 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     }
   }
 
-  Future<void> _skipOnboarding() async {
-    setState(() {
-      _isCompleting = true;
-    });
-    try {
-      // Set defaults for both vibes and importance
-      await _repository.setDefaults();
-      // Set default importance (all normal)
-      final defaultImportance = {
-        for (final category in VibeCategory.values)
-          category: VibeImportance.normal,
-      };
-      await _repository.updateImportance(defaultImportance);
-      _goToNext();
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      showSnackbar(context, 'Unable to skip. Please try again.');
-    } finally {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _isCompleting = false;
-      });
-    }
-  }
-
   Future<void> _completeOnboarding() async {
     if (_isCompleting) {
       return;

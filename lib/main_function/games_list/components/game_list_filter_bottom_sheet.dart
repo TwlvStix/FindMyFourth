@@ -4,6 +4,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/form_field_controller.dart';
@@ -165,7 +166,7 @@ class _GameListFilterBottomSheetState
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
-                        icon: Icon(Icons.close, size: AppIconSize.md),
+                        icon: Icon(AppPhosphorIcons.close, size: AppIconSize.md),
                         color: AppColors.onyx,
                         padding: EdgeInsets.zero,
                         constraints: BoxConstraints(),

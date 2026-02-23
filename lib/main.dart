@@ -583,8 +583,8 @@ class _NavBarPageState extends State<NavBarPage> {
               },
               backgroundColor: AppColors.navyDark,
               elevation: 8.0,
-              child: Icon(
-                Icons.add,
+              child: AppIcon(
+                icon: AppPhosphorIcons.add,
                 color: AppColors.pure,
                 size: AppIconSize.lg,
               ),
@@ -623,7 +623,7 @@ class _NavBarPageState extends State<NavBarPage> {
               activeColor: AppColors.navyDark,
               inactiveColor: AppColors.stone,
             ),
-            icon: Icons.golf_course, // Fallback (hidden)
+            icon: AppPhosphorIcons.games, // Fallback (hidden)
             iconSize: 0, // Hide default icon
           ),
           GButton(
@@ -635,7 +635,7 @@ class _NavBarPageState extends State<NavBarPage> {
               activeColor: AppColors.navyDark,
               inactiveColor: AppColors.stone,
             ),
-            icon: Icons.calendar_today_outlined, // Fallback (hidden)
+            icon: AppPhosphorIcons.myGames, // Fallback (hidden)
             iconSize: 0, // Hide default icon
           ),
           GButton(
@@ -647,7 +647,7 @@ class _NavBarPageState extends State<NavBarPage> {
               activeColor: AppColors.navyDark,
               inactiveColor: AppColors.stone,
             ),
-            icon: Icons.people_outline, // Fallback (hidden)
+            icon: AppPhosphorIcons.golfers, // Fallback (hidden)
             iconSize: 0, // Hide default icon
           ),
           GButton(
@@ -659,7 +659,7 @@ class _NavBarPageState extends State<NavBarPage> {
               activeColor: AppColors.navyDark,
               inactiveColor: AppColors.stone,
             ),
-            icon: Icons.chat_bubble_outline, // Fallback (hidden)
+            icon: AppPhosphorIcons.chat, // Fallback (hidden)
             iconSize: 0, // Hide default icon
           ),
           GButton(
@@ -671,7 +671,7 @@ class _NavBarPageState extends State<NavBarPage> {
               activeColor: AppColors.navyDark,
               inactiveColor: AppColors.stone,
             ),
-            icon: Icons.person_outline, // Fallback (hidden)
+            icon: AppPhosphorIcons.profile, // Fallback (hidden)
             iconSize: 0, // Hide default icon
           )
         ],

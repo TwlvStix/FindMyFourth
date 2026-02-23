@@ -232,7 +232,7 @@ class _VibeSliderCardState extends State<VibeSliderCard> {
               Switch.adaptive(
                 value: _currentDealbreaker,
                 onChanged: _handleDealbreakerChanged,
-                activeColor: AppColors.navy,
+                activeTrackColor: AppColors.navy,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ],

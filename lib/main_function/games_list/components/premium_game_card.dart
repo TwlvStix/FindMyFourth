@@ -153,8 +153,8 @@ class _PremiumGameCardState extends State<PremiumGameCard>
           borderRadius: BorderRadius.circular(AppBorderRadius.xl),
           border: Border.all(
             color: isUserGame
-                ? Colors.white.withValues(alpha: 0.12)
-                : Colors.white.withValues(alpha: 0.1),
+                ? AppColors.glassSurface
+                : AppColors.glassSurface,
             width: 1.0,
           ),
           boxShadow: null,
@@ -223,7 +223,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                 vertical: AppSpacing.xxs,
               ),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.12),
+                color: AppColors.glassSurface,
                 borderRadius: BorderRadius.circular(AppBorderRadius.xl),
               ),
               child: Row(
@@ -232,13 +232,13 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                   AppIcon(
                     icon: AppPhosphorIcons.lock,
                     size: AppIconSize.xs,
-                    color: Colors.white.withValues(alpha: 0.85),
+                    color: AppColors.textPrimary,
                   ),
                   SizedBox(width: 4),
                   Text(
                     'Friends Only',
                     style: AppTypography.labelSmall.copyWith(
-                      color: Colors.white.withValues(alpha: 0.85),
+                      color: AppColors.textPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -275,7 +275,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                   Text(
                     'Just for Fun',
                     style: AppTypography.labelSmall.copyWith(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -313,7 +313,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
               child: Text(
                 widget.game.gameType,
                 style: AppTypography.labelSmall.copyWith(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -421,7 +421,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
             Text(
               'Owner',
               style: AppTypography.labelSmall.copyWith(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -450,7 +450,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
             Text(
               'Joined',
               style: AppTypography.labelSmall.copyWith(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -495,7 +495,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                 Text(
                   widget.game.coursePlay.isEmpty ? 'Course TBD' : widget.game.coursePlay,
                   style: AppTypography.titleSmall.copyWith(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                     fontStyle:
                         widget.game.coursePlay.isEmpty ? FontStyle.italic : FontStyle.normal,
@@ -565,7 +565,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                     Text(
                       '${dateTimeFormat("EEEE", widget.game.date)}, ${dateTimeFormat("MMM d", widget.game.date)}',
                       style: AppTypography.bodySmall.copyWith(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.w500,
                       ),
                       maxLines: 1,
@@ -612,7 +612,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                   Text(
                     '${widget.game.joinedPlayers.length + widget.game.guestPlayers.length}/${widget.game.maxPlayers}',
                     style: AppTypography.labelSmall.copyWith(
-                      color: isFull ? AppColors.error : Colors.white,
+                      color: isFull ? AppColors.error : AppColors.textPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -727,7 +727,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
               Text(
                 'Add Friend',
                 style: AppTypography.labelSmall.copyWith(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -748,7 +748,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
             : LinearGradient(colors: [AppColors.gold, AppColors.goldLight]),
         border: isUserGame
             ? Border.all(
-                color: Colors.white.withValues(alpha: 0.25),
+                color: AppColors.glassBorder,
                 width: 1.5,
               )
             : null,
@@ -788,7 +788,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
           Text(
             isUserGame ? 'View Details' : (isFull ? 'Full' : 'Join Game'),
             style: AppTypography.labelSmall.copyWith(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
           ),

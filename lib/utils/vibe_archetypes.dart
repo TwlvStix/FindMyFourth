@@ -537,6 +537,6 @@ class VibeArchetypes {
     final compatibilityScore =
         100 * (1 - (bestDistance / maxPossibleDistance)).clamp(0.0, 1.0);
 
-    return bestMatch!.withScore(compatibilityScore);
+    return bestMatch.withScore(compatibilityScore);
   }
 }

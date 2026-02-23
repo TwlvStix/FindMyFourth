@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/design_tokens/colors.dart';
@@ -8,6 +8,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_avatar.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -186,7 +187,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.check_circle_rounded,
+                  PhosphorIcon(AppPhosphorIcons.successFill,
                       color: AppColors.navyDark, size: AppIconSize.hero),
                   SizedBox(height: AppSpacing.lg),
                   Text(
@@ -220,7 +221,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.pure),
+          icon: PhosphorIcon(AppPhosphorIcons.back, color: AppColors.pure),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),

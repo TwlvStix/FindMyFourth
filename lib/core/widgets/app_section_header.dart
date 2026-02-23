@@ -3,7 +3,6 @@ import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/spacing.dart';
 import '../design_tokens/icon_size.dart';
-import '../design_tokens/app_icons.dart';
 import 'app_icon.dart';
 
 /// Standardized section header with title, optional subtitle, and optional action button

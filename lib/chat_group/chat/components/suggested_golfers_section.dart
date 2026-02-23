@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '/backend/backend.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
+import '/core/widgets/app_icon.dart';
 import '/models/vibe_profile.dart';
 import '/services/vibe_matcher.dart';
 import '/services/vibe_repository.dart';
@@ -293,8 +295,8 @@ class _SuggestedGolferCard extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right_rounded,
+            AppIcon(
+              icon: AppPhosphorIcons.chevronRight,
               color: AppColors.glassTextTertiary,
               size: AppIconSize.button,
             ),
@@ -342,14 +344,14 @@ class _Avatar extends StatelessWidget {
                 fit: BoxFit.cover,
                 cacheWidth: 88,
                 cacheHeight: 88,
-                errorBuilder: (context, error, stackTrace) => Icon(
-                  Icons.person_rounded,
+                errorBuilder: (context, error, stackTrace) => AppIcon(
+                  icon: AppPhosphorIcons.person,
                   color: AppColors.pure,
                   size: AppIconSize.md,
                 ),
               )
-            : Icon(
-                Icons.person_rounded,
+            : AppIcon(
+                icon: AppPhosphorIcons.person,
                 color: AppColors.pure,
                 size: AppIconSize.md,
               ),

@@ -42,7 +42,7 @@ class CardGrid extends StatelessWidget {
       children: options.map((option) {
         final isSelected = selectedValue == option['value'];
         return SelectionCard(
-          icon: option['icon'] as IconData,
+          icon: option['icon'] as IconData?,
           label: option['label'] as String,
           emoji: option['emoji'] as String?,
           svgPath: option['svgPath'] as String?,

@@ -3,7 +3,6 @@ import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/border_radius.dart';
 import '../design_tokens/spacing.dart';
-import '../design_tokens/app_icons.dart';
 import 'app_icon.dart';
 
 enum AppBadgeVariant {

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:find_my_fourth/core/design_tokens/app_phosphor_icons.dart';
 import 'package:find_my_fourth/core/design_tokens/colors.dart';
 import 'package:find_my_fourth/core/design_tokens/spacing.dart';
 import 'package:find_my_fourth/core/design_tokens/typography.dart';
 import 'package:find_my_fourth/core/design_tokens/icon_size.dart';
+import 'package:find_my_fourth/core/widgets/app_icon.dart';
 import 'package:find_my_fourth/utils/vibe_archetypes.dart';
 import 'package:find_my_fourth/vibe/premium_vibe_page/styles/premium_vibe_page_styles.dart';
 
@@ -206,8 +208,8 @@ class _ExpandableArchetypeCardState extends State<_ExpandableArchetypeCard> {
                           Positioned(
                             right: 4,
                             bottom: 2,
-                            child: Icon(
-                              Icons.expand_more,
+                            child: AppIcon(
+                              icon: AppPhosphorIcons.expandMore,
                               size: AppIconSize.xs,
                               color: AppColors.stone.withValues(alpha:0.5),
                             ),
@@ -223,8 +225,8 @@ class _ExpandableArchetypeCardState extends State<_ExpandableArchetypeCard> {
                     right: 4,
                     bottom: 2,
                     child: IgnorePointer(
-                      child: Icon(
-                        Icons.expand_less,
+                      child: AppIcon(
+                        icon: AppPhosphorIcons.expandLess,
                         size: AppIconSize.xs,
                         color: AppColors.stone.withValues(alpha:0.5),
                       ),

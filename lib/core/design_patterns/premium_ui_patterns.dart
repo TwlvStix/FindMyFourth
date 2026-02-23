@@ -703,8 +703,8 @@ class InfoRow extends StatelessWidget {
               ),
             ),
             if (onTap != null)
-              Icon(
-                Icons.chevron_right_rounded,
+              AppIcon(
+                icon: AppPhosphorIcons.chevronRight,
                 color: AppColors.stone,
                 size: AppIconSize.md,
               ),

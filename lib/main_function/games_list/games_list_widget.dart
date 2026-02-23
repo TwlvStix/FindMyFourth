@@ -538,7 +538,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
           title: Text(
             'Game List',
             style: AppTypography.headlineMediumSans.copyWith(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -814,8 +814,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 child: AppIcon(
                                                   assetPath: AppIcons.games,
                                                   size: AppIconSize.hero,
-                                                  color: Colors.white
-                                                      .withValues(alpha:0.5),
+                                                  color: AppColors.glassTextTertiary,
                                                 ),
                                               ),
                                             ),
@@ -825,7 +824,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 'No games match these filters',
                                                 style: AppTypography.titleMedium
                                                     .copyWith(
-                                                  color: Colors.white,
+                                                  color: AppColors.textPrimary,
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                                 textAlign: TextAlign.center,
@@ -835,8 +834,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 'Try adjusting or clearing your filters.',
                                                 style: AppTypography.bodyMedium
                                                     .copyWith(
-                                                  color: Colors.white
-                                                      .withValues(alpha:0.7),
+                                                  color: AppColors.glassTextSecondary,
                                                 ),
                                                 textAlign: TextAlign.center,
                                               ),
@@ -864,7 +862,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 'No joinable games right now',
                                                 style: AppTypography.titleMedium
                                                     .copyWith(
-                                                  color: Colors.white,
+                                                  color: AppColors.textPrimary,
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                                 textAlign: TextAlign.center,
@@ -874,8 +872,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 'There are friends-only games you can view below.',
                                                 style: AppTypography.bodyMedium
                                                     .copyWith(
-                                                  color: Colors.white
-                                                      .withValues(alpha:0.7),
+                                                  color: AppColors.glassTextSecondary,
                                                 ),
                                                 textAlign: TextAlign.center,
                                               ),
@@ -904,7 +901,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 'No games yet',
                                                 style: AppTypography.titleMedium
                                                     .copyWith(
-                                                  color: Colors.white,
+                                                  color: AppColors.textPrimary,
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                                 textAlign: TextAlign.center,
@@ -914,8 +911,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 'Be the first to create a game.',
                                                 style: AppTypography.bodyMedium
                                                     .copyWith(
-                                                  color: Colors.white
-                                                      .withValues(alpha:0.7),
+                                                  color: AppColors.glassTextSecondary,
                                                 ),
                                                 textAlign: TextAlign.center,
                                               ),
@@ -987,7 +983,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                       color: AppColors.navy.withValues(alpha:0.2),
                                       borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                                       border: Border.all(
-                                        color: Colors.white.withValues(alpha:0.08),
+                                        color: AppColors.glassSurface,
                                       ),
                                     ),
                                     child: Column(
@@ -1000,15 +996,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                               width: 32,
                                               height: 32,
                                               decoration: BoxDecoration(
-                                                color: Colors.white
-                                                    .withValues(alpha:0.12),
+                                                color: AppColors.glassSurface,
                                                 borderRadius:
                                                     BorderRadius.circular(AppBorderRadius.sm),
                                               ),
                                               child: AppIcon(
                                                 icon: AppPhosphorIcons.lock,
-                                                color: Colors.white
-                                                    .withValues(alpha:0.8),
+                                                color: AppColors.textPrimary,
                                                 size: AppIconSize.button,
                                               ),
                                             ),
@@ -1018,7 +1012,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 'Friends-only games',
                                                 style: AppTypography.titleSmall
                                                     .copyWith(
-                                                  color: Colors.white,
+                                                  color: AppColors.textPrimary,
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),

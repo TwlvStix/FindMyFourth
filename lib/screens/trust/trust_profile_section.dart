@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/backend/schema/users_record.dart';
 import '/core/design_tokens/colors.dart';
@@ -8,7 +9,9 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/elevation.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/motion/motion_helpers.dart';
+import '/core/widgets/app_icon.dart';
 
 /// TrustProfileSection
 ///
@@ -77,7 +80,7 @@ class TrustProfileSection extends StatelessWidget {
               ),
             ],
           ),
-          child: Icon(Icons.shield_rounded, color: AppColors.pure, size: AppIconSize.xs),
+          child: AppIcon(icon: AppPhosphorIcons.shield, color: AppColors.pure, size: AppIconSize.xs),
         ),
         SizedBox(width: AppSpacing.sm),
         Text(
@@ -148,7 +151,7 @@ class TrustProfileSection extends StatelessWidget {
                     width: 1.5,
                   ),
                 ),
-                child: Icon(info.icon, color: AppColors.pure, size: AppIconSize.md),
+                child: PhosphorIcon(info.icon, color: AppColors.pure, size: AppIconSize.md),
               ),
               SizedBox(width: AppSpacing.md),
               Expanded(
@@ -239,7 +242,7 @@ class TrustProfileSection extends StatelessWidget {
               children: [
                 Expanded(
                   child: _buildStatTileCompact(
-                    icon: Icons.check_circle_outline_rounded,
+                    icon: AppPhosphorIcons.success,
                     iconGradient: [AppColors.success, AppColors.navyLight],
                     value: '${user.verifiedRoundCount}',
                     label: 'ROUNDS',
@@ -248,7 +251,7 @@ class TrustProfileSection extends StatelessWidget {
                 SizedBox(width: AppSpacing.xs),
                 Expanded(
                   child: _buildStatTileCompact(
-                    icon: Icons.group_outlined,
+                    icon: AppPhosphorIcons.users,
                     iconGradient: [AppColors.navyLight, AppColors.navy],
                     value: '${user.uniqueCoPlayers.length}',
                     label: 'CO-PLAYERS',
@@ -257,7 +260,7 @@ class TrustProfileSection extends StatelessWidget {
                 SizedBox(width: AppSpacing.xs),
                 Expanded(
                   child: _buildStatTileCompact(
-                    icon: Icons.sports_golf_outlined,
+                    icon: AppPhosphorIcons.golf,
                     iconGradient: [AppColors.green, AppColors.greenLight],
                     value: '${user.gamesHosted}',
                     label: 'HOSTED',
@@ -273,7 +276,7 @@ class TrustProfileSection extends StatelessWidget {
 
   /// Compact stat tile for use inside unified card
   Widget _buildStatTileCompact({
-    required IconData icon,
+    required PhosphorIconData icon,
     required List<Color> iconGradient,
     required String value,
     required String label,
@@ -310,7 +313,7 @@ class TrustProfileSection extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(icon, color: AppColors.pure, size: AppIconSize.xs),
+            child: PhosphorIcon(icon, color: AppColors.pure, size: AppIconSize.xs),
           ),
           SizedBox(height: AppSpacing.xs),
           Text(
@@ -397,7 +400,7 @@ class TrustProfileSection extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(Icons.check_circle_rounded,
+                child: PhosphorIcon(AppPhosphorIcons.successFill,
                     color: AppColors.pure, size: AppIconSize.button),
               ),
               SizedBox(width: AppSpacing.md),
@@ -487,7 +490,7 @@ class TrustProfileSection extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Icon(Icons.warning_amber_rounded,
+              child: PhosphorIcon(AppPhosphorIcons.warning,
                   color: AppColors.pure, size: AppIconSize.button),
             ),
             SizedBox(width: AppSpacing.md),
@@ -512,8 +515,8 @@ class TrustProfileSection extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right_rounded,
+            PhosphorIcon(
+              AppPhosphorIcons.chevronRight,
               color: AppColors.stone,
               size: AppIconSize.button,
             ),
@@ -671,7 +674,7 @@ class TrustProfileSection extends StatelessWidget {
   ({
     String label,
     String description,
-    IconData icon,
+    PhosphorIconData icon,
     Color gradientStart,
     Color gradientEnd,
   }) _badgeInfo(String badgeLevel) {
@@ -682,7 +685,7 @@ class TrustProfileSection extends StatelessWidget {
         return (
           label: 'Anchor',
           description: 'Cornerstone of the community',
-          icon: Icons.anchor_rounded,
+          icon: AppPhosphorIcons.anchor,
           gradientStart: AppColors.navyDark,
           gradientEnd: AppColors.navy,
         );
@@ -690,7 +693,7 @@ class TrustProfileSection extends StatelessWidget {
         return (
           label: 'Starter',
           description: 'Trusted regular golfer',
-          icon: Icons.flag_rounded,
+          icon: AppPhosphorIcons.games, // flag icon
           gradientStart: AppColors.navy,
           gradientEnd: AppColors.navyLight,
         );
@@ -698,7 +701,7 @@ class TrustProfileSection extends StatelessWidget {
         return (
           label: 'Regular',
           description: 'Established member',
-          icon: Icons.sports_golf_rounded,
+          icon: AppPhosphorIcons.golf,
           gradientStart: AppColors.navyLight,
           gradientEnd: AppColors.green,
         );
@@ -706,7 +709,7 @@ class TrustProfileSection extends StatelessWidget {
         return (
           label: 'Confirmed',
           description: 'Verified by the community',
-          icon: Icons.verified_rounded,
+          icon: AppPhosphorIcons.verified,
           gradientStart: AppColors.green,
           gradientEnd: AppColors.greenLight,
         );
@@ -715,7 +718,7 @@ class TrustProfileSection extends StatelessWidget {
         return (
           label: 'First Tee',
           description: 'Your story begins here',
-          icon: Icons.golf_course_rounded,
+          icon: AppPhosphorIcons.golfCourse,
           gradientStart: AppColors.greenLight,
           gradientEnd: AppColors.green,
         );
@@ -771,7 +774,7 @@ class _WarningDetailSheet extends StatelessWidget {
           SizedBox(height: AppSpacing.lg),
           Row(
             children: [
-              Icon(Icons.warning_amber_rounded,
+              PhosphorIcon(AppPhosphorIcons.warning,
                   color: AppColors.warning, size: AppIconSize.md),
               SizedBox(width: AppSpacing.sm),
               Text(

@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '/models/chat_message.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/widgets/app_icon.dart';
 
 /// Chat input bar component with message field and send button.
 ///
@@ -110,8 +112,8 @@ class ChatInputBar extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(
-                      Icons.close,
+                    icon: AppIcon(
+                      icon: AppPhosphorIcons.close,
                       size: AppIconSize.button,
                       color: AppColors.pure.withValues(alpha: 0.6),
                     ),
@@ -128,8 +130,8 @@ class ChatInputBar extends StatelessWidget {
                 onTap: (enabled && onAttachImage != null) ? onAttachImage : null,
                 child: Padding(
                   padding: EdgeInsets.only(right: AppSpacing.sm),
-                  child: Icon(
-                    Icons.image_rounded,
+                  child: AppIcon(
+                    icon: AppPhosphorIcons.image,
                     size: AppIconSize.md,
                     color: (enabled && onAttachImage != null)
                         ? AppColors.navyDark
@@ -196,8 +198,8 @@ class ChatInputBar extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: Icon(
-                        Icons.send_rounded,
+                      icon: AppIcon(
+                        icon: AppPhosphorIcons.send,
                         size: AppIconSize.md,
                         color: enabled && hasText
                             ? AppColors.pure

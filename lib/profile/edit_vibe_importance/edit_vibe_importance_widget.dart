@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
-import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/fairway_background.dart';
@@ -386,12 +387,12 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
                   ],
                 ),
               ),
-              Icon(
-                isTop
-                    ? Icons.arrow_upward_rounded
+              AppIcon(
+                icon: isTop
+                    ? AppPhosphorIcons.arrowUp
                     : isBottom
-                        ? Icons.arrow_downward_rounded
-                        : Icons.radio_button_unchecked_rounded,
+                        ? AppPhosphorIcons.arrowDown
+                        : AppPhosphorIcons.circle,
                 color: isTop || isBottom ? AppColors.pure : AppColors.stone,
                 size: AppIconSize.md,
               ),

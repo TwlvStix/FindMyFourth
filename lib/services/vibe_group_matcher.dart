@@ -261,17 +261,6 @@ class GroupVibeMatcher {
     return total / others.length;
   }
 
-  static double _averageThreshold(
-    VibeCategory category,
-    List<GroupVibeMember> others,
-  ) {
-    final total = others.fold<double>(
-      0,
-      (sum, member) => sum + member.profile.preferenceFor(category).threshold,
-    );
-    return total / others.length;
-  }
-
   static List<GroupVibeDifference> _topDifferences(
     List<GroupVibeDifference> differences,
   ) {
@@ -293,48 +282,6 @@ class GroupVibeMatcher {
     return false;
   }
 
-  static double _groupImportanceMultiplier(
-    VibeCategory category,
-    VibeProfile mine,
-    List<GroupVibeMember> others,
-  ) {
-    final myMult = importanceMultiplier(mine.importanceFor(category));
-    final theirMult = others.isEmpty
-        ? myMult
-        : _averageImportanceMultiplier(category, others);
-    return ((myMult + theirMult) / 2).toDouble();
-  }
-
-  static double _averageImportanceMultiplier(
-    VibeCategory category,
-    List<GroupVibeMember> others,
-  ) {
-    if (others.isEmpty) {
-      return VibeTuning.importanceNormalMultiplier;
-    }
-    final total = others.fold<double>(
-      0,
-      (sum, member) =>
-          sum + importanceMultiplier(member.profile.importanceFor(category)),
-    );
-    return total / others.length;
-  }
-
-  static List<GroupVibeMemberResult> _memberResults(
-    VibeProfile mine,
-    List<GroupVibeMember> others,
-  ) {
-    return others.map((member) {
-      final matchResult = VibeMatcher.score(mine, member.profile);
-      final displayScore = matchResult.finalScorePercent;
-      return GroupVibeMemberResult(
-        member: member,
-        matchResult: matchResult,
-        displayScore: displayScore,
-      );
-    }).toList();
-  }
-
   static GroupVibeMemberResult? _lowestMatch(
     List<GroupVibeMemberResult> results,
   ) {
@@ -344,52 +291,6 @@ class GroupVibeMatcher {
     return results.reduce(
       (a, b) => a.displayScore <= b.displayScore ? a : b,
     );
-  }
-
-  static List<_PairwiseMatch> _pairwiseResults(
-    VibeProfile mine,
-    List<GroupVibeMember> others,
-  ) {
-    final results = <_PairwiseMatch>[];
-    final me = _PairwiseMember(id: 'me', name: 'You', profile: mine, isSelf: true);
-    for (final other in others) {
-      results.add(
-        _PairwiseMatch(
-          a: me,
-          b: _PairwiseMember(
-            id: other.id,
-            name: other.name,
-            profile: other.profile,
-            isSelf: false,
-          ),
-          result: VibeMatcher.score(mine, other.profile),
-        ),
-      );
-    }
-    for (var i = 0; i < others.length; i++) {
-      for (var j = i + 1; j < others.length; j++) {
-        final a = others[i];
-        final b = others[j];
-        results.add(
-          _PairwiseMatch(
-            a: _PairwiseMember(
-              id: a.id,
-              name: a.name,
-              profile: a.profile,
-              isSelf: false,
-            ),
-            b: _PairwiseMember(
-              id: b.id,
-              name: b.name,
-              profile: b.profile,
-              isSelf: false,
-            ),
-            result: VibeMatcher.score(a.profile, b.profile),
-          ),
-        );
-      }
-    }
-    return results;
   }
 
   static List<GroupVibeConflict> _collectConflicts(
@@ -440,19 +341,6 @@ class GroupVibeMatcher {
     final sorted = List<VibeSoftRisk>.from(risks)
       ..sort((a, b) => b.severity01.compareTo(a.severity01));
     return sorted.take(3).toList();
-  }
-
-  static double _averageScore(Iterable<double> scores) {
-    var count = 0;
-    var sum = 0.0;
-    for (final score in scores) {
-      sum += score;
-      count += 1;
-    }
-    if (count == 0) {
-      return 0;
-    }
-    return (sum / count).toDouble();
   }
 
   static String _pairLabel(_PairwiseMember a, _PairwiseMember b) {

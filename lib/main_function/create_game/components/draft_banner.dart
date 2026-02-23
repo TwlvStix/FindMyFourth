@@ -4,6 +4,8 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 
 /// Draft continuation banner for game creation
 ///
@@ -46,8 +48,8 @@ class DraftBanner extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(AppBorderRadius.md),
             ),
-            child: Icon(
-              Icons.restore_rounded,
+            child: AppIcon(
+              icon: AppPhosphorIcons.refresh,
               color: AppColors.pure,
               size: AppIconSize.md,
             ),

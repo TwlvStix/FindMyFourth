@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
-import '/core/motion/motion_helpers.dart';
 import '/core/navigation/app_router.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/premium_back_button.dart';
@@ -166,7 +165,7 @@ class _PremiumVibePageWidgetState extends State<PremiumVibePageWidget> {
         variant: AppButtonVariant.primary,
         size: AppButtonSize.large,
         fullWidth: true,
-        leadingIcon: Icons.chat_bubble_outline_rounded,
+        leadingIcon: AppPhosphorIcons.chat,
         onPressed: () => _openChatWithUser(context, data.userRef),
       ),
     );

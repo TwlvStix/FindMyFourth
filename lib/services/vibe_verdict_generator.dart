@@ -11,7 +11,6 @@ String generateVibeVerdict(
   VibeMatchResult result,
   MatchExplanation explanation,
 ) {
-  final score = result.myFitPercent.round();
   final recommendation = result.recommendation;
   final confidence = result.confidence;
 

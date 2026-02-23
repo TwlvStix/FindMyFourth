@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/models/game.dart';
@@ -180,7 +182,7 @@ class _EarlyState extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.check_circle_outline_rounded,
+              PhosphorIcon(AppPhosphorIcons.success,
                   color: AppColors.success, size: AppIconSize.button),
               SizedBox(width: AppSpacing.xs),
               Expanded(
@@ -245,7 +247,7 @@ class _LateState extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.warning_amber_rounded,
+                  PhosphorIcon(AppPhosphorIcons.warning,
                       color: AppColors.goldLight, size: AppIconSize.button),
                   SizedBox(width: AppSpacing.xs),
                   Expanded(
@@ -324,7 +326,7 @@ class _DayOfState extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.error_outline_rounded,
+                  PhosphorIcon(AppPhosphorIcons.error,
                       color: AppColors.error, size: AppIconSize.button),
                   SizedBox(width: AppSpacing.xs),
                   Expanded(

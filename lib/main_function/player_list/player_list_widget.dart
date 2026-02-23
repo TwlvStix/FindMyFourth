@@ -292,7 +292,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               builder: (_, scrollController) {
                 return Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.pure,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(AppBorderRadius.xl),
                       topRight: Radius.circular(AppBorderRadius.xl),
@@ -605,7 +605,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                     color: AppColors.navyLight,
                     borderRadius: BorderRadius.circular(AppBorderRadius.md),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.3),
+                      color: AppColors.glassBorder,
                       width: 1.5,
                     ),
                   ),
@@ -805,7 +805,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 color: AppColors.navyLight,
                 borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.3),
+                  color: AppColors.glassBorder,
                   width: 1.5,
                 ),
               ),
@@ -870,7 +870,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: AppColors.glassSurface,
                 borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
               child: AppIcon(
@@ -996,7 +996,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                             Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: AppColors.pure,
                                 borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                                 boxShadow: [AppElevation.lg],
                               ),
@@ -1310,7 +1310,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                 width: double.infinity,
                                 padding: EdgeInsets.all(AppSpacing.md),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: AppColors.pure,
                                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                   border: Border.all(
                                     color: AppColors.greenDark

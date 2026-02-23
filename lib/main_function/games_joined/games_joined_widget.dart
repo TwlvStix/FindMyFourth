@@ -686,8 +686,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.visibility_rounded,
+                        AppIcon(
+                          icon: AppPhosphorIcons.eye,
                           color: AppColors.pure,
                           size: AppIconSize.xs,
                         ),

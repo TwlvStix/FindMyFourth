@@ -193,21 +193,6 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
     });
   }
 
-  Future<bool> _ensureNotificationPermission() async {
-    AppLog.d('📱 [GameAlerts] Requesting notification permission (user action)');
-    final status =
-        await NotificationPermissionService().requestPermissionAndRegister();
-
-    // Trigger rebuild to update UI with new cached status
-    if (mounted) {
-      setState(() {});
-    }
-
-    AppLog.d('📱 [GameAlerts] Permission result: $status');
-    return status == NotificationPermissionStatus.granted ||
-        status == NotificationPermissionStatus.provisional;
-  }
-
   void _showCoursesPicker() async {
     final selected = await showModalBottomSheet<List<Course>>(
       context: context,
@@ -694,7 +679,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                                 .openSystemSettings();
                                           },
                                           text: 'Open Settings',
-                                          trailingIcon: Icons.open_in_new,
+                                          trailingIcon: AppPhosphorIcons.externalLink,
                                           size: AppButtonSize.small,
                                           variant: AppButtonVariant.primary,
                                         ),

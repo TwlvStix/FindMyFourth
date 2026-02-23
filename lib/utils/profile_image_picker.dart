@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 
 /// Shows a bottom sheet asking the user to pick Camera or Gallery,
 /// then opens the crop screen. Returns the cropped file path, or null
@@ -13,12 +15,12 @@ Future<String?> showProfileImageSourceSheet(BuildContext context) async {
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
-            leading: const Icon(Icons.camera_alt_rounded),
+            leading: AppIcon(icon: AppPhosphorIcons.camera),
             title: const Text('Camera'),
             onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
           ),
           ListTile(
-            leading: const Icon(Icons.photo_library_rounded),
+            leading: AppIcon(icon: AppPhosphorIcons.imageGallery),
             title: const Text('Photo Library'),
             onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
           ),

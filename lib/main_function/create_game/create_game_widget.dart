@@ -620,7 +620,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         SnackBar(
           content: Text(
             'Failed to create game: $errorMsg',
-            style: AppTypography.bodyMedium.copyWith(color: Colors.white),
+            style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
           ),
           duration: Duration(milliseconds: 6000),
           backgroundColor: AppColors.error,
@@ -692,7 +692,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: AppColors.glassBorder,
                   shape: BoxShape.circle,
                 ),
                 child: AppIcon(
@@ -706,7 +706,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 title,
                 style: AppTypography.headlineMediumSans.copyWith(
                   fontSize: 22,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -714,7 +714,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               Text(
                 message,
                 style: AppTypography.bodySmall.copyWith(
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -753,9 +753,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         Container(
           padding: EdgeInsets.all(AppSpacing.sm),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: AppColors.glassSurface,
             borderRadius: BorderRadius.circular(AppBorderRadius.md),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+            border: Border.all(color: AppColors.glassBorder),
           ),
           child: Row(
             children: [
@@ -766,7 +766,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                   'No tee time yet? Pick when you\'re available — lock it in once you have your group.',
                   style: AppTypography.bodySmall.copyWith(
                     fontSize: 13,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -816,7 +816,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                   child: Text(
                     _buildFlexibleSummary(),
                     style: AppTypography.labelMedium.copyWith(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -830,7 +830,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
 
   TextStyle _labelStyle() => AppTypography.labelSmall.copyWith(
         fontSize: 13,
-        color: Colors.white.withValues(alpha: 0.7),
+        color: AppColors.glassTextSecondary,
       );
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -964,9 +964,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               day['label'] as String,
               style: AppTypography.labelSmall.copyWith(
                 fontSize: 13,
-                color: isSelected
-                    ? Colors.white
-                    : AppColors.pure,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
@@ -1033,7 +1031,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               border: Border.all(
                 color: isSelected
                     ? AppColors.gold
-                    : Colors.white.withValues(alpha: 0.1),
+                    : AppColors.glassSurface,
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -1050,7 +1048,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                   time['label'] as String,
                   style: AppTypography.labelSmall.copyWith(
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -1059,7 +1057,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                   time['subtitle'] as String,
                   style: AppTypography.labelMicro.copyWith(
                     fontWeight: FontWeight.w400,
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: AppColors.glassTextSecondary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -1138,7 +1136,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               title: Text(
                 'Create Game',
                 style: AppTypography.headlineMediumSans.copyWith(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1163,7 +1161,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                               'Loading...',
                               style: AppTypography.bodyMedium.copyWith(
                                 fontWeight: FontWeight.w500,
-                                color: Colors.white,
+                                color: AppColors.textPrimary,
                               ),
                             ),
                           ],
@@ -1264,13 +1262,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               {
                                                 'value': 'confirmed',
                                                 'label': 'I Have a Tee Time',
-                                                'icon': Icons.event_available_rounded,
                                                 'phosphorIcon': AppPhosphorIcons.calendarCheck,
                                               },
                                               {
                                                 'value': 'flexible',
                                                 'label': 'Flexible Time',
-                                                'icon': Icons.event_note_rounded,
                                                 'phosphorIcon': AppPhosphorIcons.calendarNote,
                                               },
                                             ],
@@ -1420,7 +1416,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                     child: Text(
                                                       '${dateTimeFormat("EEEE, MMM d", datePicked)} at ${dateTimeFormat("jm", datePicked)}',
                                                       style: AppTypography.labelMedium.copyWith(
-                                                        color: Colors.white,
+                                                        color: AppColors.textPrimary,
                                                       ),
                                                     ),
                                                   ),
@@ -1452,13 +1448,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               {
                                                 'value': 'Friends',
                                                 'label': 'Friends',
-                                                'icon': Icons.people_rounded,
                                                 'phosphorIcon': AppPhosphorIcons.people,
                                               },
                                               {
                                                 'value': 'Public',
                                                 'label': 'Public',
-                                                'icon': Icons.public_rounded,
                                                 'phosphorIcon': AppPhosphorIcons.publicVisibility,
                                               },
                                             ],
@@ -1539,9 +1533,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                         AppIcon(
                                                           icon: AppPhosphorIcons.golfCourse,
                                                           size: AppIconSize.xl,
-                                                          color: Colors.white
-                                                              .withValues(
-                                                                  alpha: 0.4),
+                                                          color: AppColors.textMuted,
                                                         ),
                                                         SizedBox(
                                                             height:
@@ -1549,7 +1541,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                         Text(
                                                           'No courses available',
                                                           style: AppTypography.bodySmall.copyWith(
-                                                            color: Colors.white.withValues(alpha: 0.7),
+                                                            color: AppColors.glassTextSecondary,
                                                           ),
                                                         ),
                                                       ],
@@ -1767,13 +1759,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   {
                                                     'value': 'Best Ball',
                                                     'label': 'Best Ball',
-                                                    'icon': Icons.star_rounded,
                                                     'phosphorIcon': AppPhosphorIcons.bestBall,
                                                   },
                                                   {
                                                     'value': 'Scramble',
                                                     'label': 'Scramble',
-                                                    'icon': Icons.groups_rounded,
                                                     'phosphorIcon': AppPhosphorIcons.groups,
                                                   },
                                                 ],
@@ -1914,7 +1904,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                       style: AppTypography.labelSmall.copyWith(
                                                         fontSize: 13,
                                                         fontWeight: FontWeight.w500,
-                                                        color: Colors.white.withValues(alpha: 0.7),
+                                                        color: AppColors.glassTextSecondary,
                                                       ),
                                                     ),
                                                     SizedBox(
@@ -1922,7 +1912,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                     Text(
                                                       _buildGameSummary(),
                                                       style: AppTypography.labelMedium.copyWith(
-                                                        color: Colors.white,
+                                                        color: AppColors.textPrimary,
                                                         height: 1.4,
                                                       ),
                                                     ),

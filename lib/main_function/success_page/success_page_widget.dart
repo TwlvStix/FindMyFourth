@@ -5,6 +5,8 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -63,8 +65,8 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                         alignment: AlignmentDirectional(0.0, 0.0),
                         child: Padding(
                           padding: EdgeInsets.all(AppSpacing.xl + 6.0),
-                          child: Icon(
-                            Icons.check_rounded,
+                          child: AppIcon(
+                            icon: AppPhosphorIcons.check,
                             color: AppColors.pure,
                             size: AppIconSize.hero,
                           ),

@@ -85,8 +85,8 @@ class QuickStatsRow extends StatelessWidget {
                 if (isOwner && !game.isFlexible && onEditPressed != null) ...[
                   SizedBox(width: AppSpacing.xs),
                   AppIconButton(
-                    icon: Icon(
-                      Icons.edit_rounded,
+                    icon: AppIcon(
+                      icon: AppPhosphorIcons.edit,
                       color: AppColors.gold,
                       size: AppIconSize.button,
                     ),
@@ -131,7 +131,7 @@ class QuickStatsRow extends StatelessWidget {
                 ),
                 child: Center(
                   child: isFull
-                      ? Icon(Icons.groups_rounded, color: AppColors.pure, size: AppIconSize.button)
+                      ? AppIcon(icon: AppPhosphorIcons.groups, color: AppColors.pure, size: AppIconSize.button)
                       : AppIcon(icon: AppPhosphorIcons.addPlayer, color: AppColors.pure, size: AppIconSize.button),
                 ),
               ),

@@ -4,6 +4,8 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/services/vibe_group_matcher.dart';
 
 /// Group vibe match visualization displaying overall group compatibility score
@@ -51,7 +53,7 @@ class GroupVibeSummary extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
-                child: Icon(Icons.psychology_rounded, color: AppColors.pure, size: AppIconSize.md),
+                child: AppIcon(icon: AppPhosphorIcons.brain, color: AppColors.pure, size: AppIconSize.md),
               ),
               SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -127,8 +129,8 @@ class GroupVibeSummary extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.info_outline_rounded,
+                    AppIcon(
+                      icon: AppPhosphorIcons.info,
                       color: AppColors.pure,
                       size: AppIconSize.button,
                     ),
@@ -160,8 +162,8 @@ class GroupVibeSummary extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.insights_rounded,
+                    AppIcon(
+                      icon: AppPhosphorIcons.insights,
                       color: AppColors.gold,
                       size: AppIconSize.button,
                     ),
@@ -174,8 +176,8 @@ class GroupVibeSummary extends StatelessWidget {
                       ),
                     ),
                     SizedBox(width: AppSpacing.xs),
-                    Icon(
-                      Icons.chevron_right_rounded,
+                    AppIcon(
+                      icon: AppPhosphorIcons.chevronRight,
                       color: Colors.white.withValues(alpha: 0.6),
                       size: AppIconSize.button,
                     ),

@@ -10,6 +10,8 @@ import '/models/course.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/form_field_controller.dart';
 import '/utils/app_util.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -137,7 +139,7 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.access_time_rounded,
+                        AppIcon(icon: AppPhosphorIcons.teeTime,
                           color: AppColors.navyDark, size: AppIconSize.md),
                         SizedBox(width: AppSpacing.sm),
                         Text(
@@ -202,8 +204,8 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                     height: 50.0,
                     textStyle: AppTypography.bodyMedium,
                     hintText: 'Select a course',
-                    icon: Icon(
-                      Icons.keyboard_arrow_down_rounded,
+                    icon: AppIcon(
+                      icon: AppPhosphorIcons.chevronDown,
                       color: AppColors.pure,
                       size: AppIconSize.md,
                     ),

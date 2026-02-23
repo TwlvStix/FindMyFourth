@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:find_my_fourth/core/design_tokens/app_phosphor_icons.dart';
 import 'package:find_my_fourth/core/design_tokens/colors.dart';
 import 'package:find_my_fourth/core/design_tokens/spacing.dart';
 import 'package:find_my_fourth/core/design_tokens/typography.dart';
+import 'package:find_my_fourth/core/widgets/app_icon.dart';
 import 'package:find_my_fourth/services/vibe_match_explanation.dart';
 import 'package:find_my_fourth/vibe/premium_vibe_page/styles/premium_vibe_page_styles.dart';
 
@@ -58,8 +60,8 @@ class VibeStrengthsList extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.check_circle,
+          AppIcon(
+            icon: AppPhosphorIcons.successFill,
             size: PremiumVibePageStyles.chipIconSize,
             color: PremiumVibePageStyles.alignedIconColor,
           ),

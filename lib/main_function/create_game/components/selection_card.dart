@@ -26,7 +26,7 @@ import '/core/widgets/app_icon.dart';
 class SelectionCard extends StatelessWidget {
   const SelectionCard({
     super.key,
-    required this.icon,
+    this.icon,
     required this.label,
     required this.isSelected,
     required this.onTap,
@@ -35,7 +35,8 @@ class SelectionCard extends StatelessWidget {
     this.phosphorIcon,
   });
 
-  final IconData icon;
+  /// Material icon (fallback only). Use phosphorIcon instead for new code.
+  final IconData? icon;
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
@@ -112,7 +113,9 @@ class SelectionCard extends StatelessWidget {
                           ? Center(
                               child: Text(emoji!, style: AppTypography.bodyLarge.copyWith(fontSize: 18)),
                             )
-                          : Icon(icon, color: AppColors.pure, size: AppIconSize.button),
+                          : icon != null
+                              ? Icon(icon, color: AppColors.pure, size: AppIconSize.button)
+                              : const SizedBox.shrink(),
             ),
             SizedBox(height: AppSpacing.xxs),
             Flexible(

@@ -1,8 +1,10 @@
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/premium_back_button.dart';
@@ -215,8 +217,8 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(
-                                        Icons.emoji_events_rounded,
+                                      AppIcon(
+                                        icon: AppPhosphorIcons.trophy,
                                         size: AppIconSize.button,
                                         color: AppColors.gold,
                                       ),
@@ -286,8 +288,8 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                         AppColors.navyLight.withValues(alpha:0.2),
                                     borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                   ),
-                                  child: Icon(
-                                    Icons.star_rounded,
+                                  child: AppIcon(
+                                    icon: AppPhosphorIcons.star,
                                     color: AppColors.navy,
                                     size: AppIconSize.button,
                                   ),
@@ -316,8 +318,8 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                     ],
                                   ),
                                 ),
-                                Icon(
-                                  Icons.arrow_forward_ios_rounded,
+                                AppIcon(
+                                  icon: AppPhosphorIcons.chevronRight,
                                   color: AppColors.stone,
                                   size: AppIconSize.xs,
                                 ),
@@ -423,7 +425,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                         ),
                         AppButtonEnhanced(
                           text: 'Confirm my vibes',
-                          leadingIcon: Icons.check_circle_rounded,
+                          leadingIcon: AppPhosphorIcons.successFill,
                           variant: AppButtonVariant.primary,
                           size: AppButtonSize.large,
                           fullWidth: true,

@@ -2,9 +2,11 @@ import 'package:collection/collection.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 
 import '../form_field_controller.dart';
+import '../design_tokens/app_phosphor_icons.dart';
 import '../design_tokens/border_radius.dart';
 import '../design_tokens/icon_size.dart';
 import '../design_tokens/spacing.dart';
+import '../widgets/app_icon.dart';
 import 'package:flutter/material.dart';
 
 class AppDropDown<T> extends StatefulWidget {
@@ -261,9 +263,9 @@ class _AppDropDownState<T> extends State<AppDropDown<T>> {
                     child: Row(
                       children: [
                         if (isSelected)
-                          Icon(Icons.check_box_outlined, size: AppIconSize.md)
+                          AppIcon(icon: AppPhosphorIcons.checkboxCheckedFill, size: AppIconSize.md)
                         else
-                          Icon(Icons.check_box_outline_blank, size: AppIconSize.md),
+                          AppIcon(icon: AppPhosphorIcons.checkboxUnchecked, size: AppIconSize.md),
                         AppSpacing.horizontalMdBox,
                         Expanded(
                           child: Text(

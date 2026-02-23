@@ -11,11 +11,13 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/profile_hero_section.dart';
 import '/core/widgets/profile_card_section.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/form_field_controller.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/profile/change_photo/change_photo_widget.dart';
@@ -24,7 +26,6 @@ import '/user_onboarding/vibe_onboarding_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '/core/design_tokens/app_phosphor_icons.dart';
 import 'package:provider/provider.dart';
 
 class CreateProfileWidget extends StatefulWidget {
@@ -620,8 +621,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                   color: AppColors.onyx,
                                 ),
                                 hintText: 'Select Home Course',
-                                icon: Icon(
-                                  Icons.golf_course_rounded,
+                                icon: AppIcon(
+                                  icon: AppPhosphorIcons.golfHole,
                                   color: AppColors.navy,
                                   size: AppIconSize.md,
                                 ),
@@ -653,14 +654,14 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                             label: 'Handicap',
                             iconColor: AppColors.navy,
                             valueWidget: AppCountController(
-                              decrementIconBuilder: (enabled) => Icon(
-                                Icons.remove_rounded,
+                              decrementIconBuilder: (enabled) => AppIcon(
+                                icon: AppPhosphorIcons.minus,
                                 color:
                                     enabled ? AppColors.navy : AppColors.cloud,
                                 size: AppIconSize.button,
                               ),
-                              incrementIconBuilder: (enabled) => Icon(
-                                Icons.add_rounded,
+                              incrementIconBuilder: (enabled) => AppIcon(
+                                icon: AppPhosphorIcons.add,
                                 color:
                                     enabled ? AppColors.navy : AppColors.cloud,
                                 size: AppIconSize.button,
@@ -703,7 +704,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                       ),
                       child: AppButtonEnhanced(
                         text: 'Create Profile',
-                        leadingIcon: Icons.check_circle_rounded,
+                        leadingIcon: AppPhosphorIcons.successFill,
                         variant: AppButtonVariant.primary,
                         size: AppButtonSize.large,
                         fullWidth: true,

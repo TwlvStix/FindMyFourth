@@ -133,6 +133,9 @@ class AppPhosphorIcons {
   /// Golf course / golf hole
   static const golfCourse = PhosphorIconsRegular.golf;
 
+  /// Golf hole — alias for golfCourse
+  static const golfHole = PhosphorIconsRegular.golf;
+
   /// People / friends (group context)
   static const people = PhosphorIconsRegular.users;
 
@@ -242,6 +245,12 @@ class AppPhosphorIcons {
   /// Standing (alias for trust)
   static const standing = PhosphorIconsRegular.shieldCheck;
 
+  /// Shield — generic protection/trust icon
+  static const shield = PhosphorIconsRegular.shield;
+
+  /// Anchor — cornerstone/established badge tier
+  static const anchor = PhosphorIconsRegular.anchor;
+
   /// Verified — seal check
   static const verified = PhosphorIconsRegular.sealCheck;
 
@@ -276,9 +285,14 @@ class AppPhosphorIcons {
 
   /// Success / joined — check circle
   static const success = PhosphorIconsRegular.checkCircle;
+  static const successFill = PhosphorIconsFill.checkCircle;
 
   /// Joined indicator — check circle (alias for success)
   static const joined = PhosphorIconsRegular.checkCircle;
+
+  /// Cancel / dismissed — x circle
+  static const cancel = PhosphorIconsRegular.xCircle;
+  static const cancelFill = PhosphorIconsFill.xCircle;
 
   /// Error — warning circle
   static const error = PhosphorIconsRegular.warningCircle;
@@ -463,6 +477,12 @@ class AppPhosphorIcons {
   /// Handshake — social / meet
   static const handshake = PhosphorIconsRegular.handshake;
 
+  /// Brain — AI / psychology / matching
+  static const brain = PhosphorIconsRegular.brain;
+
+  /// Insights / analytics — chart line up (for detailed breakdown)
+  static const insights = PhosphorIconsRegular.chartLineUp;
+
   // ══════════════════════════════════════════════════════════════════════════
   // CHAT & MESSAGING
   // ══════════════════════════════════════════════════════════════════════════
@@ -507,4 +527,29 @@ class AppPhosphorIcons {
 
   /// Tune / adjust — sliders (alias for filter/tune contexts)
   static const tune = PhosphorIconsRegular.slidersHorizontal;
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // ADDITIONAL ALIASES & ICONS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Person / user — alias for profile in avatar/person contexts
+  static const person = PhosphorIconsRegular.user;
+
+  /// Trophy — alias for competitive in achievement contexts
+  static const trophy = PhosphorIconsRegular.trophy;
+
+  /// External link / open in new — for "open settings" etc.
+  static const externalLink = PhosphorIconsRegular.arrowSquareOut;
+
+  /// Priority high / exclamation — for watch points
+  static const priorityHigh = PhosphorIconsRegular.warningCircle;
+
+  /// Expand less / chevron up — for collapsible sections
+  static const expandLess = PhosphorIconsRegular.caretUp;
+
+  /// Expand more / chevron down — for collapsible sections
+  static const expandMore = PhosphorIconsRegular.caretDown;
+
+  /// Hero size icon for empty states (alias for larger contexts)
+  static const hero = PhosphorIconsRegular.warningCircle;
 }

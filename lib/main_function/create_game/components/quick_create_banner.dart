@@ -4,6 +4,8 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
 
 /// Quick create banner for game creation
@@ -47,8 +49,8 @@ class QuickCreateBanner extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(AppBorderRadius.md),
             ),
-            child: Icon(
-              Icons.flash_on_rounded,
+            child: AppIcon(
+              icon: AppPhosphorIcons.lightning,
               color: AppColors.pure,
               size: AppIconSize.md,
             ),

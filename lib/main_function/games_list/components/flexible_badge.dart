@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_badge.dart';
 
 class FlexibleBadge extends StatelessWidget {
@@ -10,7 +11,7 @@ class FlexibleBadge extends StatelessWidget {
       label: 'Flexible',
       variant: AppBadgeVariant.warning,
       size: AppBadgeSize.small,
-      icon: Icons.event_note_rounded,
+      icon: AppPhosphorIcons.calendarNote,
     );
   }
 }

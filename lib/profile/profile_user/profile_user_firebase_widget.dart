@@ -349,7 +349,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         Text(
           name,
           style: AppTypography.headlineMedium.copyWith(
-            color: Colors.white,
+            color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -479,11 +479,11 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               value,
               style: isText
                   ? AppTypography.labelSmall.copyWith(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontWeight: FontWeight.w600,
                     )
                   : AppTypography.monoLarge.copyWith(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontWeight: FontWeight.w700,
                     ),
               textAlign: TextAlign.center,
@@ -602,7 +602,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                   content: Text(
                     'Friend request sent!',
                     style: AppTypography.bodySmall.copyWith(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   duration: Duration(milliseconds: 1500),
@@ -616,7 +616,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                   content: Text(
                     'Unable to send request.',
                     style: AppTypography.bodySmall.copyWith(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   backgroundColor: AppColors.error,
@@ -1060,7 +1060,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                               SizedBox(height: AppSpacing.md),
                               Text(
                                 'Unable to load profile',
-                                style: AppTypography.titleMedium.copyWith(color: Colors.white),
+                                style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimary),
                                 textAlign: TextAlign.center,
                               ),
                               SizedBox(height: AppSpacing.xs),
@@ -1095,9 +1095,9 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                         child: PremiumBackButton(onTap: () => Navigator.of(context).pop()),
                       ),
                     ),
-                    const Expanded(
+                    Expanded(
                       child: Center(
-                        child: CircularProgressIndicator(color: Colors.white),
+                        child: CircularProgressIndicator(color: AppColors.textPrimary),
                       ),
                     ),
                   ],

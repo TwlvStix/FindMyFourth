@@ -5,6 +5,8 @@ import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 
 class FirmItUpBanner extends StatelessWidget {
   final VoidCallback onPressed;
@@ -43,8 +45,8 @@ class FirmItUpBanner extends StatelessWidget {
                   color: AppColors.gold.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                 ),
-                child: Icon(
-                  Icons.event_available_rounded,
+                child: AppIcon(
+                  icon: AppPhosphorIcons.calendarCheck,
                   color: AppColors.gold,
                   size: AppIconSize.md,
                 ),

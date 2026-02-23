@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/design_tokens/colors.dart';
@@ -7,6 +8,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_button_enhanced.dart';
 
@@ -101,8 +103,8 @@ class _FallbackConfirmationScreenState
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    _answered! ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                  PhosphorIcon(
+                    _answered! ? AppPhosphorIcons.successFill : AppPhosphorIcons.cancelFill,
                     color: _answered! ? AppColors.navyDark : AppColors.pure,
                     size: AppIconSize.hero,
                   ),
@@ -137,7 +139,7 @@ class _FallbackConfirmationScreenState
         title: Text('Round Check-in', style: AppTypography.titleMedium),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.pure),
+          icon: PhosphorIcon(AppPhosphorIcons.back, color: AppColors.pure),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -148,8 +150,8 @@ class _FallbackConfirmationScreenState
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Icon(
-                Icons.golf_course_rounded,
+              PhosphorIcon(
+                AppPhosphorIcons.golfCourse,
                 color: AppColors.navyDark,
                 size: AppIconSize.xxl,
               ),
@@ -183,7 +185,7 @@ class _FallbackConfirmationScreenState
                   Expanded(
                     child: _YesNoButton(
                       label: 'Yes',
-                      icon: Icons.check_rounded,
+                      icon: AppPhosphorIcons.check,
                       color: AppColors.navyDark,
                       onTap: _submitting ? null : () => _submit(true),
                     ),
@@ -192,7 +194,7 @@ class _FallbackConfirmationScreenState
                   Expanded(
                     child: _YesNoButton(
                       label: 'No',
-                      icon: Icons.close_rounded,
+                      icon: AppPhosphorIcons.close,
                       color: AppColors.pure,
                       onTap: _submitting ? null : () => _submit(false),
                     ),
@@ -216,7 +218,7 @@ class _YesNoButton extends StatelessWidget {
   });
 
   final String label;
-  final IconData icon;
+  final PhosphorIconData icon;
   final Color color;
   final VoidCallback? onTap;
 
@@ -237,7 +239,7 @@ class _YesNoButton extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: color, size: AppIconSize.lg),
+              PhosphorIcon(icon, color: color, size: AppIconSize.lg),
               AppSpacing.verticalXsBox,
               Text(
                 label,

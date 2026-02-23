@@ -289,12 +289,6 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     return type == 'game_created' || type == 'game_alert';
   }
 
-  bool _isDisputeNotification(String type) {
-    return type == 'attendance_dispute' ||
-        type == 'dispute_resolved_cleared' ||
-        type == 'dispute_resolved_upheld';
-  }
-
   bool _isTrustGameNotification(String type) {
     return const {
       'host_checkin_due',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/backend/schema/trust_profile.dart';
 import '/core/design_tokens/colors.dart';
@@ -6,6 +7,7 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_avatar.dart';
 import '/core/widgets/trust/cancellation_warning_icon.dart';
 import '/core/widgets/trust/trust_badge_chip.dart';
@@ -137,8 +139,8 @@ class TrustPlayerCard extends StatelessWidget {
 
             // Chevron
             if (onTap != null)
-              Icon(
-                Icons.chevron_right_rounded,
+              PhosphorIcon(
+                AppPhosphorIcons.chevronRight,
                 color: AppColors.stone,
                 size: AppIconSize.button,
               ),
