@@ -6,6 +6,7 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/models/vibe_profile.dart';
 import '/services/vibe_matcher.dart';
 
@@ -76,7 +77,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
-                        icon: Icon(Icons.close),
+                        icon: Icon(AppPhosphorIcons.close),
                         color: AppColors.onyx,
                         iconSize: AppIconSize.md,
                         padding: EdgeInsets.zero,
@@ -335,7 +336,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
       ),
       child: Row(
         children: [
-          Icon(Icons.golf_course_rounded, color: AppColors.navy, size: AppIconSize.button),
+          Icon(AppPhosphorIcons.golfCourse, color: AppColors.navy, size: AppIconSize.button),
           SizedBox(width: AppSpacing.sm),
           Expanded(
             child: TextField(
@@ -364,7 +365,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
         _buildFilterToggle(
           'Has Golf Canada number',
           _filters.hasGolfCanadaNumber,
-          Icons.badge_rounded,
+          AppPhosphorIcons.badge,
           (value) {
             setState(() {
               _filters.hasGolfCanadaNumber = value;
@@ -424,7 +425,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
             ),
             if (value)
               Icon(
-                Icons.check_circle_rounded,
+                AppPhosphorIcons.success,
                 color: AppColors.navy,
                 size: AppIconSize.button,
               ),

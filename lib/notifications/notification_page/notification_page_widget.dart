@@ -9,7 +9,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/utils/app_log.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
@@ -59,7 +59,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
     _DigestOption(value: 'instant', label: 'Instant', phosphorIcon: AppPhosphorIcons.notifications),
     _DigestOption(value: 'hourly', label: 'Hourly', phosphorIcon: AppPhosphorIcons.teeTime),
     _DigestOption(value: 'daily', label: 'Daily', phosphorIcon: AppPhosphorIcons.calendarCheck),
-    _DigestOption(value: 'off', label: 'Off', icon: Icons.do_not_disturb),
+    _DigestOption(value: 'off', label: 'Off', phosphorIcon: AppPhosphorIcons.blocked),
   ];
 
   @override
@@ -70,7 +70,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
   Future<void> _loadData() async {
     try {
-      debugPrint('[NotificationSettings] Loading data for user: $currentUserUid');
+      AppLog.d('📱 [NotificationSettings] Loading data for user: $currentUserUid');
 
       // Load notification preferences and alert subscription
       NotificationPreferences? prefs;
@@ -78,17 +78,17 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
       try {
         prefs = await _loadNotificationPrefs();
-        debugPrint('[NotificationSettings] Loaded notification prefs: ${prefs.toFirestore()}');
+        AppLog.d('📱 [NotificationSettings] Loaded notification prefs: ${prefs.toFirestore()}');
       } catch (e) {
-        debugPrint('[NotificationSettings] Error loading prefs, using defaults: $e');
+        AppLog.d('📱 [NotificationSettings] Error loading prefs, using defaults: $e');
         prefs = NotificationPreferences.defaults();
       }
 
       try {
         alertSub = await AlertSubscriptionService.loadSubscription(currentUserUid);
-        debugPrint('[NotificationSettings] Loaded alert subscription: ${alertSub != null ? "exists" : "null"}');
+        AppLog.d('📱 [NotificationSettings] Loaded alert subscription: ${alertSub != null ? "exists" : "null"}');
       } catch (e) {
-        debugPrint('[NotificationSettings] Error loading alert sub, using defaults: $e');
+        AppLog.d('📱 [NotificationSettings] Error loading alert sub, using defaults: $e');
         alertSub = null;
       }
 
@@ -97,7 +97,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
       if (alertSub == null) {
         final defaultSub = AlertSubscription.defaults(currentUserUid);
         AlertSubscriptionService.saveSubscription(defaultSub).catchError((e) {
-          debugPrint('[NotificationSettings] Failed to auto-save default alertSub: $e');
+          AppLog.d('📱 [NotificationSettings] Failed to auto-save default alertSub: $e');
         });
         alertSub = defaultSub;
       }
@@ -109,10 +109,10 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
         _hasChanges = false;
       });
 
-      debugPrint('[NotificationSettings] Successfully loaded all settings');
+      AppLog.d('📱 [NotificationSettings] Successfully loaded all settings');
     } catch (e, stackTrace) {
-      debugPrint('[NotificationSettings] Critical error loading settings: $e');
-      debugPrint('[NotificationSettings] Stack trace: $stackTrace');
+      AppLog.d('📱 [NotificationSettings] Critical error loading settings: $e');
+      AppLog.d('📱 [NotificationSettings] Stack trace: $stackTrace');
 
       // Try to set defaults so user can at least use the page
       setState(() {
@@ -125,34 +125,34 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   }
 
   Future<NotificationPreferences> _loadNotificationPrefs() async {
-    debugPrint('[NotificationSettings] Loading notification prefs...');
+    AppLog.d('📱 [NotificationSettings] Loading notification prefs...');
 
     if (currentUserReference == null) {
-      debugPrint('[NotificationSettings] currentUserReference is null');
+      AppLog.d('📱 [NotificationSettings] currentUserReference is null');
       return NotificationPreferences.defaults();
     }
 
     try {
       final userDoc = await currentUserReference!.get();
-      debugPrint('[NotificationSettings] User doc exists: ${userDoc.exists}');
+      AppLog.d('📱 [NotificationSettings] User doc exists: ${userDoc.exists}');
 
       if (userDoc.exists) {
         final userData = userDoc.data() as Map<String, dynamic>?;
-        debugPrint('[NotificationSettings] User data keys: ${userData?.keys.toList()}');
+        AppLog.d('📱 [NotificationSettings] User data keys: ${userData?.keys.toList()}');
 
         final prefsData = userData?['notification_prefs'] as Map<String, dynamic>?;
-        debugPrint('[NotificationSettings] Prefs data exists: ${prefsData != null}');
+        AppLog.d('📱 [NotificationSettings] Prefs data exists: ${prefsData != null}');
 
         if (prefsData != null) {
           return NotificationPreferences.fromMap(prefsData);
         }
       }
     } catch (e) {
-      debugPrint('[NotificationSettings] Error in _loadNotificationPrefs: $e');
+      AppLog.d('📱 [NotificationSettings] Error in _loadNotificationPrefs: $e');
       throw e;
     }
 
-    debugPrint('[NotificationSettings] Returning default prefs');
+    AppLog.d('📱 [NotificationSettings] Returning default prefs');
     return NotificationPreferences.defaults();
   }
 
@@ -339,9 +339,9 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
     // This ensures the Game Alerts page loads the correct enabled state
     try {
       await AlertSubscriptionService.saveSubscription(_alertSub!);
-      debugPrint('[NotificationSettings] Saved alert subscription before navigation');
+      AppLog.d('📱 [NotificationSettings] Saved alert subscription before navigation');
     } catch (e) {
-      debugPrint('[NotificationSettings] Error saving alert sub before navigation: $e');
+      AppLog.d('📱 [NotificationSettings] Error saving alert sub before navigation: $e');
       // Continue anyway - Game Alerts page will handle gracefully
     }
 
@@ -353,15 +353,15 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
     // If subscription was returned (user saved), use it directly
     // This avoids race conditions with Firestore sync
     if (updatedSub != null) {
-      debugPrint('[NotificationSettings] Received updated subscription: enabled=${updatedSub.enabled}, filters=${updatedSub.getSummary()}');
+      AppLog.d('📱 [NotificationSettings] Received updated subscription: enabled=${updatedSub.enabled}, filters=${updatedSub.getSummary()}');
       if (mounted) {
         setState(() {
           _alertSub = updatedSub;
         });
-        debugPrint('[NotificationSettings] Updated alert subscription from navigation result');
+        AppLog.d('📱 [NotificationSettings] Updated alert subscription from navigation result');
       }
     } else {
-      debugPrint('[NotificationSettings] No subscription returned, reloading from Firestore');
+      AppLog.d('📱 [NotificationSettings] No subscription returned, reloading from Firestore');
       // User navigated back without saving, reload from Firestore
       if (mounted) {
         await _reloadAlertSubscription();
@@ -377,15 +377,15 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
       setState(() {
         _alertSub = alertSub ?? AlertSubscription.defaults(currentUserUid);
       });
-      debugPrint('[NotificationSettings] Reloaded alert subscription');
+      AppLog.d('📱 [NotificationSettings] Reloaded alert subscription');
     } catch (e) {
-      debugPrint('[NotificationSettings] Error reloading alert sub: $e');
+      AppLog.d('📱 [NotificationSettings] Error reloading alert sub: $e');
       // Don't update state if reload fails - keep existing data
     }
   }
 
   Future<bool> _ensureNotificationPermission() async {
-    debugPrint('[NotificationSettings] Requesting notification permission (user action)');
+    AppLog.d('📱 [NotificationSettings] Requesting notification permission (user action)');
     final status =
         await NotificationPermissionService().requestPermissionAndRegister();
 
@@ -394,7 +394,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
       setState(() {});
     }
 
-    debugPrint('[NotificationSettings] Permission result: $status');
+    AppLog.d('📱 [NotificationSettings] Permission result: $status');
     return status == NotificationPermissionStatus.granted ||
         status == NotificationPermissionStatus.provisional;
   }
@@ -511,14 +511,14 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                       valueColor: AlwaysStoppedAnimation<Color>(AppColors.pure),
                     ),
                   ),
-                  SizedBox(width: 8),
+                  SizedBox(width: AppSpacing.xs),
                 ] else ...[
-                  Icon(
-                    Icons.check_rounded,
+                  AppIcon(
+                    icon: AppPhosphorIcons.check,
                     size: AppIconSize.button,
                     color: AppColors.pure,
                   ),
-                  SizedBox(width: 8),
+                  SizedBox(width: AppSpacing.xs),
                 ],
                 Text(
                   _isSaving ? 'Saving...' : 'Save Settings',
@@ -719,9 +719,9 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: AppColors.pure.withValues(alpha: 0.5),
+            AppIcon(
+              icon: AppPhosphorIcons.chevronRight,
+              color: AppColors.textMuted,
               size: AppIconSize.md,
             ),
           ],
@@ -759,10 +759,10 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               ),
             ),
             SizedBox(width: AppSpacing.xs),
-            Icon(
-              Icons.chevron_right,
-              color: Colors.white.withValues(alpha: 0.5),
-              size: 20,
+            AppIcon(
+              icon: AppPhosphorIcons.chevronRight,
+              color: AppColors.textMuted,
+              size: AppIconSize.button,
             ),
           ],
         ),
@@ -806,29 +806,20 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (option.svgPath != null)
-                    AppIcon(
-                      assetPath: option.svgPath!,
-                      size: AppIconSize.button,
-                      color: isSelected
-                          ? AppColors.navyDark
-                          : Colors.white.withValues(alpha: 0.7),
-                    )
-                  else
-                    Icon(
-                      option.icon,
-                      size: AppIconSize.button,
-                      color: isSelected
-                          ? AppColors.navyDark
-                          : Colors.white.withValues(alpha: 0.7),
-                    ),
+                  AppIcon(
+                    icon: option.phosphorIcon!,
+                    size: AppIconSize.button,
+                    color: isSelected
+                        ? AppColors.navyDark
+                        : AppColors.textSecondary,
+                  ),
                   SizedBox(width: AppSpacing.xs),
                   Text(
                     option.label,
                     style: AppTypography.labelMedium.copyWith(
                       color: isSelected
                           ? AppColors.navyDark
-                          : Colors.white.withValues(alpha: 0.9),
+                          : AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -888,8 +879,8 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.error_outline,
+                            AppIcon(
+                              icon: AppPhosphorIcons.error,
                               size: AppIconSize.hero,
                               color: AppColors.error,
                             ),
@@ -979,8 +970,11 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                 ),
                                 child: Row(
                                   children: [
-                                    Icon(Icons.error_outline,
-                                        color: AppColors.error),
+                                    AppIcon(
+                                      icon: AppPhosphorIcons.error,
+                                      color: AppColors.error,
+                                      size: AppIconSize.md,
+                                    ),
                                     SizedBox(width: AppSpacing.sm),
                                     Expanded(
                                       child: Text(
@@ -1037,8 +1031,11 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                     ),
                                     child: Column(
                                       children: [
-                                        Icon(Icons.settings,
-                                            size: AppIconSize.xl, color: AppColors.warning),
+                                        AppIcon(
+                                          icon: AppPhosphorIcons.settings,
+                                          size: AppIconSize.xl,
+                                          color: AppColors.warning,
+                                        ),
                                         SizedBox(height: AppSpacing.sm),
                                         Text(
                                           'Notification permission required',
@@ -1080,7 +1077,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
 
                             // SUBMASTER: Game Alerts
                             _buildSection(
-                              svgPath: AppIcons.games,
+                              phosphorIcon: AppPhosphorIcons.games,
                               title: 'Game Alerts',
                               subtitle: 'Get notified when games match your preferences',
                               disabled: !_prefs!.pushEnabled,
@@ -1107,8 +1104,8 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                       children: [
                                         Row(
                                           children: [
-                                            Icon(
-                                              Icons.info_outline,
+                                            AppIcon(
+                                              icon: AppPhosphorIcons.info,
                                               color: AppColors.gold,
                                               size: AppIconSize.xs,
                                             ),
@@ -1116,7 +1113,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                                             Text(
                                               'Current filters',
                                               style: AppTypography.labelSmall.copyWith(
-                                                color: Colors.white.withValues(alpha: 0.6),
+                                                color: AppColors.textMuted,
                                               ),
                                             ),
                                           ],
@@ -1324,14 +1321,10 @@ class _DigestOption {
   const _DigestOption({
     required this.value,
     required this.label,
-    this.icon,
-    this.svgPath,
-    this.phosphorIcon,
-  }) : assert(icon != null || svgPath != null || phosphorIcon != null);
+    required this.phosphorIcon,
+  });
 
   final String value;
   final String label;
-  final IconData? icon;
-  final String? svgPath;
-  final PhosphorIconData? phosphorIcon;
+  final PhosphorIconData phosphorIcon;
 }

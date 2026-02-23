@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
@@ -7,6 +8,7 @@ import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/widgets/app_icon.dart';
 
 /// A generic segmented control widget for binary or multi-option selections.
 ///
@@ -82,13 +84,22 @@ class SegmentedControl extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          option['icon'] as IconData,
-                          color: isSelected
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.6),
-                          size: iconSize,
-                        ),
+                        if (option['phosphorIcon'] != null)
+                          AppIcon(
+                            icon: option['phosphorIcon'] as PhosphorIconData,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.white.withValues(alpha: 0.6),
+                            size: iconSize,
+                          )
+                        else
+                          Icon(
+                            option['icon'] as IconData,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.white.withValues(alpha: 0.6),
+                            size: iconSize,
+                          ),
                         SizedBox(width: spacing),
                         Flexible(
                           child: Text(

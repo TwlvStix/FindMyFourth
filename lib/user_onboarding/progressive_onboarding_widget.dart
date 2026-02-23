@@ -20,7 +20,7 @@ import '/user_auth/sign_in/sign_in_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 
 class ProgressiveOnboardingWidget extends StatefulWidget {
   const ProgressiveOnboardingWidget({super.key});
@@ -425,19 +425,19 @@ class _ProgressiveOnboardingWidgetState
               mainAxisSize: MainAxisSize.max,
               children: [
                 _OnboardingFeature(
-                  icon: Icons.golf_course_rounded,
+                  icon: AppPhosphorIcons.golfCourse,
                   title: 'Find games near you',
                   description:
                       'Browse available tee times and join rounds in your area.',
                 ),
                 _OnboardingFeature(
-                  icon: Icons.people_alt_rounded,
+                  icon: AppPhosphorIcons.golfers,
                   title: 'Connect with players',
                   description:
                       'Meet new golfers and build your network on the course.',
                 ),
                 _OnboardingFeature(
-                  icon: Icons.chat_bubble_outline,
+                  icon: AppPhosphorIcons.chat,
                   title: 'Group messaging',
                   description:
                       'Coordinate games with built-in chat for every round.',
@@ -489,14 +489,14 @@ class _ProgressiveOnboardingWidgetState
                 labelStyle: AppTypography.labelMedium,
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: AppColors.cloud,
-                    width: 2.0,
+                    color: AppColors.inputBorderIdle,
+                    width: 1.5,
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: AppColors.navyDark,
+                    color: AppColors.inputBorderFocused,
                     width: 2.0,
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
@@ -516,7 +516,7 @@ class _ProgressiveOnboardingWidgetState
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 filled: true,
-                fillColor: AppColors.navy,
+                fillColor: AppColors.inputBackground,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -537,14 +537,14 @@ class _ProgressiveOnboardingWidgetState
                 labelStyle: AppTypography.labelMedium,
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: AppColors.cloud,
-                    width: 2.0,
+                    color: AppColors.inputBorderIdle,
+                    width: 1.5,
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: AppColors.navyDark,
+                    color: AppColors.inputBorderFocused,
                     width: 2.0,
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
@@ -564,7 +564,7 @@ class _ProgressiveOnboardingWidgetState
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 filled: true,
-                fillColor: AppColors.navy,
+                fillColor: AppColors.inputBackground,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -585,14 +585,14 @@ class _ProgressiveOnboardingWidgetState
                 labelStyle: AppTypography.labelMedium,
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: AppColors.cloud,
-                    width: 2.0,
+                    color: AppColors.inputBorderIdle,
+                    width: 1.5,
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: AppColors.navyDark,
+                    color: AppColors.inputBorderFocused,
                     width: 2.0,
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
@@ -612,7 +612,7 @@ class _ProgressiveOnboardingWidgetState
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 filled: true,
-                fillColor: AppColors.navy,
+                fillColor: AppColors.inputBackground,
               ),
               validator: _validateUsername,
             ),
@@ -630,20 +630,20 @@ class _ProgressiveOnboardingWidgetState
                 labelStyle: AppTypography.labelMedium,
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: AppColors.cloud,
-                    width: 2.0,
+                    color: AppColors.inputBorderIdle,
+                    width: 1.5,
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: AppColors.navyDark,
+                    color: AppColors.inputBorderFocused,
                     width: 2.0,
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 filled: true,
-                fillColor: AppColors.navy,
+                fillColor: AppColors.inputBackground,
               ),
             ),
             SizedBox(height: AppSpacing.md),
@@ -659,14 +659,14 @@ class _ProgressiveOnboardingWidgetState
                 labelStyle: AppTypography.labelMedium,
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: AppColors.cloud,
-                    width: 2.0,
+                    color: AppColors.inputBorderIdle,
+                    width: 1.5,
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: AppColors.navyDark,
+                    color: AppColors.inputBorderFocused,
                     width: 2.0,
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
@@ -686,7 +686,7 @@ class _ProgressiveOnboardingWidgetState
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 filled: true,
-                fillColor: AppColors.navy,
+                fillColor: AppColors.inputBackground,
               ),
               validator: _validateEmail,
             ),
@@ -747,11 +747,11 @@ class _ProgressiveOnboardingWidgetState
                 textStyle: AppTypography.bodyMedium,
                 hintText: 'Select your home course',
                 icon: Icon(
-                  Icons.keyboard_arrow_down_rounded,
+                  AppPhosphorIcons.chevronDown,
                   color: AppColors.pure,
                   size: AppIconSize.md,
                 ),
-                fillColor: AppColors.navy,
+                fillColor: AppColors.inputBackground,
                 elevation: 2.0,
                 borderColor: AppColors.cloud,
                 borderWidth: 2.0,
@@ -787,14 +787,14 @@ class _ProgressiveOnboardingWidgetState
               padding: EdgeInsets.all(AppSpacing.md),
               child: AppCountController(
                 decrementIconBuilder: (enabled) => Icon(
-                  FontAwesomeIcons.minus,
+                  AppPhosphorIcons.minus,
                   color: enabled
                       ? AppColors.navyDark
                       : AppColors.pure,
                   size: AppIconSize.button,
                 ),
                 incrementIconBuilder: (enabled) => Icon(
-                  FontAwesomeIcons.plus,
+                  AppPhosphorIcons.plus,
                   color: enabled
                       ? AppColors.navyDark
                       : AppColors.pure,
@@ -846,28 +846,28 @@ class _ProgressiveOnboardingWidgetState
           SizedBox(height: AppSpacing.xl),
           _buildPreferenceControl(
             'Music on the course',
-            FontAwesomeIcons.music,
+            AppPhosphorIcons.music,
             _musicValue,
             (count) => setState(() => _musicValue = count),
           ),
           SizedBox(height: AppSpacing.lg),
           _buildPreferenceControl(
             'Drinks while playing',
-            FontAwesomeIcons.beerMugEmpty,
+            AppPhosphorIcons.drinks,
             _drinksValue,
             (count) => setState(() => _drinksValue = count),
           ),
           SizedBox(height: AppSpacing.lg),
           _buildPreferenceControl(
             'Play for money',
-            FontAwesomeIcons.dollarSign,
+            AppPhosphorIcons.betting,
             _playMoneyValue,
             (count) => setState(() => _playMoneyValue = count),
           ),
           SizedBox(height: AppSpacing.lg),
           _buildPreferenceControl(
             'Pace of play',
-            FontAwesomeIcons.gaugeHigh,
+            AppPhosphorIcons.pace,
             _paceValue,
             (count) => setState(() => _paceValue = count),
           ),
@@ -916,14 +916,14 @@ class _ProgressiveOnboardingWidgetState
             padding: EdgeInsets.all(AppSpacing.md),
             child: AppCountController(
               decrementIconBuilder: (enabled) => Icon(
-                FontAwesomeIcons.minus,
+                AppPhosphorIcons.minus,
                 color: enabled
                     ? AppColors.navyDark
                     : AppColors.pure,
                 size: AppIconSize.button,
               ),
               incrementIconBuilder: (enabled) => Icon(
-                FontAwesomeIcons.plus,
+                AppPhosphorIcons.plus,
                 color: enabled
                     ? AppColors.navyDark
                     : AppColors.pure,

@@ -4,6 +4,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 
 /// Empty state widget for friends page
 /// Shows contextual illustrations and CTAs based on the tab
@@ -120,15 +121,15 @@ class _FriendsEmptyStateState extends State<FriendsEmptyState>
 
     switch (widget.type) {
       case FriendsEmptyStateType.noSearchResults:
-        iconData = Icons.search_off_rounded;
+        iconData = AppPhosphorIcons.searchOff;
         gradientColors = [AppColors.stone, AppColors.cloud];
         break;
       case FriendsEmptyStateType.noFriendRequests:
-        iconData = Icons.inbox_rounded;
+        iconData = AppPhosphorIcons.inbox;
         gradientColors = [AppColors.navy, AppColors.navyLight];
         break;
       case FriendsEmptyStateType.noFriends:
-        iconData = Icons.people_outline_rounded;
+        iconData = AppPhosphorIcons.people;
         gradientColors = [AppColors.green, AppColors.greenLight];
         break;
     }

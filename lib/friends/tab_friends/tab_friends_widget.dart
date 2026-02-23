@@ -8,8 +8,9 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/widgets/app_icon.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -305,7 +306,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                       Text(
                         'Golfers',
                         style: AppTypography.headlineMediumSans.copyWith(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -322,9 +323,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                               width: 1,
                             ),
                           ),
-                          child: Icon(
-                            Icons.settings_outlined,
-                            color: AppColors.pure.withValues(alpha: 0.7),
+                          child: AppIcon(
+                            icon: AppPhosphorIcons.settings,
+                            color: AppColors.textSecondary,
                             size: AppIconSize.md,
                           ),
                         ),
@@ -482,22 +483,22 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                   final hasPending = isOutgoingPending || isIncomingPending;
 
                   String actionLabel;
-                  IconData actionIcon;
+                  PhosphorIconData actionIcon;
                   bool showActionButton;
 
                   if (isFriend) {
                     actionLabel = 'Friends';
-                    actionIcon = Icons.people_rounded; // Keep Material - represents status
+                    actionIcon = AppPhosphorIcons.golfers;
                     showActionButton = true;
                   } else if (hasPending) {
                     actionLabel = isOutgoingPending ? 'Cancel' : 'Pending';
                     actionIcon = isOutgoingPending
-                        ? Icons.close_rounded
-                        : Icons.pending_rounded; // Keep Material - represents status
+                        ? AppPhosphorIcons.close
+                        : AppPhosphorIcons.pending;
                     showActionButton = true;
                   } else {
                     actionLabel = 'Add';
-                    actionIcon = Icons.person_add_rounded; // Keep Material - PremiumFriendCard uses IconData
+                    actionIcon = AppPhosphorIcons.addPlayer;
                     showActionButton = true;
                   }
 
@@ -655,7 +656,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                         user: user,
                         currentUser: currentUserDocument,
                         messageLabel: '+Add',
-                        messageIcon: Icons.person_add_rounded,
+                        messageIcon: AppPhosphorIcons.addPlayer,
                         onViewProfile: () {
                           context.pushNamed(
                             'ProfileUser',
@@ -671,7 +672,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                           await _denyFriendRequest(user);
                         },
                         actionLabel: 'Deny',
-                        actionIcon: Icons.close_rounded,
+                        actionIcon: AppPhosphorIcons.close,
                         actionColor: AppColors.stone,
                         showActionButton: true,
                       );

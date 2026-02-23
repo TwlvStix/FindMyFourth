@@ -78,7 +78,7 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
           ),
           title: AppText.screenTitle(
             'Recover Password',
-            color: AppColors.navyDark,
+            color: AppColors.textPrimary,
             textAlign: TextAlign.center,
           ),
           actions: [],

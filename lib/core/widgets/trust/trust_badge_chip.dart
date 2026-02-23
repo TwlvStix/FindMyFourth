@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/backend/schema/trust_profile.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/widgets/app_icon.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Mode
@@ -109,7 +112,7 @@ class TrustBadgeChip extends StatelessWidget {
         return _BadgeConfig(
           label: 'New',
           descriptor: 'Welcome! Play your first rounds to build your reputation.',
-          icon: Icons.golf_course_rounded,
+          icon: AppPhosphorIcons.golfCourse,
           backgroundColor: AppColors.greenLight.withValues(alpha:0.12),
           borderColor: AppColors.greenLight.withValues(alpha:0.4),
           textColor: AppColors.greenLight,
@@ -119,7 +122,7 @@ class TrustBadgeChip extends StatelessWidget {
         return _BadgeConfig(
           label: 'Confirmed',
           descriptor: "You've been verified by the community.",
-          icon: Icons.check_circle_outline_rounded,
+          icon: AppPhosphorIcons.success,
           backgroundColor: AppColors.info.withValues(alpha:0.12),
           borderColor: AppColors.info.withValues(alpha:0.4),
           textColor: AppColors.info,
@@ -128,7 +131,7 @@ class TrustBadgeChip extends StatelessWidget {
         return _BadgeConfig(
           label: 'Regular',
           descriptor: 'A reliable player on the platform.',
-          icon: Icons.sports_golf_rounded,
+          icon: AppPhosphorIcons.golfCourse,
           backgroundColor: AppColors.success.withValues(alpha:0.12),
           borderColor: AppColors.success.withValues(alpha:0.4),
           textColor: AppColors.success,
@@ -137,7 +140,7 @@ class TrustBadgeChip extends StatelessWidget {
         return _BadgeConfig(
           label: 'Starter',
           descriptor: 'An active host and trusted player.',
-          icon: Icons.flag_rounded,
+          icon: AppPhosphorIcons.games,
           backgroundColor: AppColors.navy.withValues(alpha:0.12),
           borderColor: AppColors.navy.withValues(alpha:0.4),
           textColor: AppColors.navy,
@@ -146,7 +149,7 @@ class TrustBadgeChip extends StatelessWidget {
         return _BadgeConfig(
           label: 'Anchor',
           descriptor: 'A cornerstone of the community.',
-          icon: Icons.verified_rounded,
+          icon: AppPhosphorIcons.verified,
           backgroundColor: AppColors.green.withValues(alpha:0.12),
           borderColor: AppColors.green.withValues(alpha:0.4),
           textColor: AppColors.green,
@@ -182,7 +185,7 @@ class _StandardBadgeChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(config.icon, color: config.textColor, size: AppIconSize.xs),
+              AppIcon(icon: config.icon, color: config.textColor, size: AppIconSize.xs),
               AppSpacing.horizontalXxs,
               Text(
                 config.label,
@@ -234,7 +237,7 @@ class _AnchorBadgeChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(config.icon, color: config.textColor, size: AppIconSize.xs),
+              AppIcon(icon: config.icon, color: config.textColor, size: AppIconSize.xs),
               AppSpacing.horizontalXxs,
               Text(
                 config.label,
@@ -276,7 +279,7 @@ class _BadgeConfig {
 
   final String label;
   final String descriptor;
-  final IconData icon;
+  final PhosphorIconData icon;
   final Color backgroundColor;
   final Color borderColor;
   final Color textColor;

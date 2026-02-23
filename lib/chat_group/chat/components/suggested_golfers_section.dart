@@ -281,7 +281,7 @@ class _SuggestedGolferCard extends StatelessWidget {
                     ),
                     child: Text(
                       'VIBE $score%',
-                      style: AppTypography.text11.copyWith(
+                      style: AppTypography.labelSmall.copyWith(
                         color: recommendation == VibeRecommendation.recommended
                             ? Colors.white
                             : AppColors.glassTextSecondary,

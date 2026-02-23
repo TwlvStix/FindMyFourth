@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/friends/components/premium_friend_card.dart';
 import '/friends/components/friend_section_header.dart';
 import '/friends/components/swipeable_friend_card.dart';
@@ -134,7 +135,7 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                   child: FriendSectionHeader(
-                    icon: Icons.star_rounded,
+                    icon: AppPhosphorIcons.star,
                     title: 'Favorites',
                     count: favorites.length,
                     color: AppColors.gold,
@@ -169,8 +170,8 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
       onSwipeLeft: () => widget.onRemove(friend),
       swipeRightLabel: 'Message',
       swipeLeftLabel: 'Remove',
-      swipeRightIcon: Icons.message_rounded,
-      swipeLeftIcon: Icons.person_remove_rounded,
+      swipeRightIcon: AppPhosphorIcons.message,
+      swipeLeftIcon: AppPhosphorIcons.removePlayer,
       swipeRightColor: AppColors.navy,
       swipeLeftColor: AppColors.stone,
       child: PremiumFriendCard(
@@ -180,7 +181,7 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
         onMessage: () => widget.onMessage(friend),
         onAction: () => widget.onRemove(friend),
         actionLabel: 'Remove',
-        actionIcon: Icons.person_remove_rounded,
+        actionIcon: AppPhosphorIcons.removePlayer,
         actionColor: AppColors.stone,
         showActionButton: true,
       ),

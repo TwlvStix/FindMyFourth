@@ -5,6 +5,8 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/utils/formatting_utils.dart';
 import '/models/chat_message.dart';
 
@@ -89,9 +91,9 @@ class ChatMessageBubble extends StatelessWidget {
             ? Alignment.centerRight
             : Alignment.centerLeft,
         padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: Icon(
-          Icons.reply_rounded,
-          color: AppColors.navyDark,
+        child: AppIcon(
+          icon: AppPhosphorIcons.reply,
+          color: AppColors.textSecondary,
           size: AppIconSize.md,
         ),
       ),
@@ -123,10 +125,10 @@ class ChatMessageBubble extends StatelessWidget {
                             ? NetworkImage(senderPhotoUrl!)
                             : null,
                         child: senderPhotoUrl == null || senderPhotoUrl!.isEmpty
-                            ? Icon(
-                                Icons.person,
+                            ? AppIcon(
+                                icon: AppPhosphorIcons.profile,
                                 size: AppIconSize.button,
-                                color: AppColors.pure.withValues(alpha: 0.7),
+                                color: AppColors.textSecondary,
                               )
                             : null,
                       )
@@ -152,10 +154,9 @@ class ChatMessageBubble extends StatelessWidget {
                       ),
                       child: Text(
                         senderName!,
-                        style: AppTypography.text11.copyWith(
-                          color: Colors.white.withValues(alpha: 0.6),
+                        style: AppTypography.labelMicro.copyWith(
+                          color: AppColors.textMuted,
                           fontWeight: FontWeight.w500,
-                          letterSpacing: 0.0,
                         ),
                       ),
                     ),
@@ -244,8 +245,8 @@ class ChatMessageBubble extends StatelessWidget {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              Icon(
-                                                Icons.broken_image_outlined,
+                                              AppIcon(
+                                                icon: AppPhosphorIcons.imageBroken,
                                                 color: textColor
                                                     .withValues(alpha: 0.6),
                                                 size: AppIconSize.xl,
@@ -253,11 +254,10 @@ class ChatMessageBubble extends StatelessWidget {
                                               AppSpacing.verticalXsBox,
                                               Text(
                                                 'Failed to load',
-                                                style: AppTypography.text11
+                                                style: AppTypography.labelMicro
                                                     .copyWith(
                                                   color: textColor
                                                       .withValues(alpha: 0.6),
-                                                  letterSpacing: 0.0,
                                                 ),
                                               ),
                                             ],
@@ -285,20 +285,20 @@ class ChatMessageBubble extends StatelessWidget {
                               children: [
                                 Text(
                                   dateTimeFormat('jm', timestamp!),
-                                  style: AppTypography.text10.copyWith(
+                                  style: AppTypography.labelMicro.copyWith(
                                     color: textColor.withValues(alpha: 0.6),
                                   ),
                                 ),
                                 // Read receipts for sent messages
                                 if (isSentByCurrentUser) ...[
                                   AppSpacing.horizontalXxs,
-                                  Icon(
-                                    message.readBy.length > 1
-                                        ? Icons.done_all
-                                        : Icons.done,
+                                  AppIcon(
+                                    icon: message.readBy.length > 1
+                                        ? AppPhosphorIcons.checks
+                                        : AppPhosphorIcons.check,
                                     size: AppIconSize.xs,
                                     color: message.readBy.length > 1
-                                        ? AppColors.stone
+                                        ? AppColors.green
                                         : textColor.withValues(alpha: 0.6),
                                   ),
                                 ],
@@ -358,9 +358,8 @@ class ChatMessageBubble extends StatelessWidget {
                                     AppSpacing.horizontalXxs,
                                     Text(
                                       '${users.length}',
-                                      style: AppTypography.text11.copyWith(
-                                        color:
-                                            Colors.white.withValues(alpha: 0.8),
+                                      style: AppTypography.labelMicro.copyWith(
+                                        color: AppColors.textSecondary,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),

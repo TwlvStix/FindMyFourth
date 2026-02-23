@@ -1,9 +1,13 @@
 import '/backend/backend.dart';
 import '/core/exceptions/app_exceptions.dart';
 import '/core/motion/motion_helpers.dart';
+import '/core/motion/motion_tokens.dart';
+import '/core/motion/reduced_motion.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/trust/restriction_banner.dart';
+import '/core/widgets/app_info_card.dart';
+import '/core/widgets/premium_section_header.dart';
 import '/utils/app_util.dart';
 import '/core/utils/firebase_error_utils.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -29,8 +33,8 @@ import '/services/vibe_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
@@ -54,7 +58,8 @@ class JoinGameDetailedWidget extends StatefulWidget {
   State<JoinGameDetailedWidget> createState() => _JoinGameDetailedWidgetState();
 }
 
-class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
+class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
+    with SingleTickerProviderStateMixin {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final VibeRepository _vibeRepository = VibeRepository();
   GroupVibeMatchResult? _groupVibeMatch;
@@ -63,6 +68,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
   String _groupVibeKey = '';
   bool _hasLoggedAccessDenied = false;
   bool _hasShownAccessDeniedDialog = false;
+
+  // Animation state - triggers once when content loads
+  bool _hasAnimated = false;
 
   @override
   void initState() {
@@ -587,8 +595,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                     color: AppColors.navy.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.error_outline_rounded,
+                  child: AppIcon(
+                    icon: AppPhosphorIcons.error,
                     color: Colors.white.withValues(alpha: 0.5),
                     size: AppIconSize.xl,
                   ),
@@ -659,10 +667,10 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                         color: AppColors.navy.withValues(alpha: 0.3),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
-                        Icons.error_outline_rounded,
+                      child: AppIcon(
+                        icon: AppPhosphorIcons.error,
                         color: Colors.white.withValues(alpha: 0.5),
-                        size: 40,
+                        size: AppIconSize.xl,
                       ),
                     ),
                     SizedBox(height: AppSpacing.md),
@@ -725,6 +733,15 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
         }
         final joinGameDetailedGamesRecord = Game.fromRecord(gamesRecord);
         _ensureGroupVibeMatch(joinGameDetailedGamesRecord, currentUserRef);
+
+        // Trigger entrance animation once when content first loads
+        if (!_hasAnimated) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && !_hasAnimated) {
+              setState(() => _hasAnimated = true);
+            }
+          });
+        }
 
         return Scaffold(
           key: scaffoldKey,
@@ -793,10 +810,10 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(
-                                        Icons.person_outline_rounded,
+                                      AppIcon(
+                                        icon: AppPhosphorIcons.profile,
                                         color: Colors.white.withValues(alpha: 0.5),
-                                        size: 40,
+                                        size: AppIconSize.xl,
                                       ),
                                       SizedBox(height: AppSpacing.sm),
                                       Text(
@@ -858,112 +875,110 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                       ),
 
                       // Quick Stats Row (Date, Players, Spots)
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                        child: QuickStatsRow(
-                          game: joinGameDetailedGamesRecord,
-                          isOwner: false, // User is viewing a game to join, not their own game
+                      // Content section 1 - Staggered reveal
+                      _buildAnimatedSection(
+                        sectionIndex: 0,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                          child: QuickStatsRow(
+                            game: joinGameDetailedGamesRecord,
+                            isOwner: false, // User is viewing a game to join, not their own game
+                          ),
                         ),
                       ),
 
                       SizedBox(height: AppSpacing.md),
 
                       // Group Vibe Summary
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                        child: _buildPremiumGroupVibeSummary(),
+                      // Content section 2 - Staggered reveal
+                      _buildAnimatedSection(
+                        sectionIndex: 1,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                          child: _buildPremiumGroupVibeSummary(),
+                        ),
                       ),
 
                       SizedBox(height: AppSpacing.lg),
 
                       // Game Details Section
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                        child: Column(
+                      // Content section 3 - Staggered reveal
+                      _buildAnimatedSection(
+                        sectionIndex: 2,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                          child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Section Header with gradient accent
-                            Row(
-                              children: [
-                                Container(
-                                  width: 4,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [AppColors.gold, AppColors.goldLight],
-                                    ),
-                                    borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
-                                  ),
-                                ),
-                                SizedBox(width: AppSpacing.sm),
-                                Text(
-                                  'Game Details',
-                                  style: AppTypography.titleMedium.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            PremiumSectionHeader(title: 'Game Details'),
                             SizedBox(height: AppSpacing.sm),
 
                             // Premium Info Grid
-                            GridView.count(
-                              crossAxisCount: 2,
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              padding: EdgeInsets.zero,
-                              crossAxisSpacing: AppSpacing.sm,
-                              mainAxisSpacing: AppSpacing.sm,
-                              childAspectRatio: 3.0,
-                              children: [
-                                _buildPremiumInfoCard(
-                                  context,
-                                  icon: Icons.attach_money_rounded,
-                                  iconColors: [AppColors.gold, AppColors.goldLight],
-                                  label: 'Betting',
-                                  value: joinGameDetailedGamesRecord.styleGame,
-                                ),
-                                _buildPremiumInfoCard(
-                                  context,
-                                  icon: Icons.rule_rounded,
-                                  iconColors: [AppColors.navyLight, AppColors.navy],
-                                  label: 'Rule Style',
-                                  value: joinGameDetailedGamesRecord.rulesSetting,
-                                ),
-                                _buildPremiumInfoCard(
-                                  context,
-                                  icon: Icons.sports_golf_rounded,
-                                  iconColors: [AppColors.navyLight, AppColors.navy],
-                                  label: 'Game Type',
-                                  value: joinGameDetailedGamesRecord.gameType,
-                                ),
-                                _buildPremiumInfoCard(
-                                  context,
-                                  icon: Icons.scoreboard_rounded,
-                                  iconColors: [AppColors.green, AppColors.greenLight],
-                                  label: 'Scoring',
-                                  value: joinGameDetailedGamesRecord.scoring,
-                                ),
-                                _buildPremiumInfoCard(
-                                  context,
-                                  phosphorIcon: AppPhosphorIcons.memberDiscount,
-                                  iconColors: [AppColors.navyLight, AppColors.navy],
-                                  label: 'Member Discount',
-                                  value: joinGameDetailedGamesRecord.memberDiscount,
-                                ),
-                                _buildPremiumInfoCard(
-                                  context,
-                                  phosphorIcon: AppPhosphorIcons.groups,
-                                  iconColors: [AppColors.gold, AppColors.goldLight],
-                                  label: 'Friends Only',
-                                  value: joinGameDetailedGamesRecord.friendGame,
-                                ),
-                              ],
-                            ),
+                            Builder(builder: (context) {
+                              final isFun = joinGameDetailedGamesRecord.isFunGame;
+                              String funOr(String val) =>
+                                  isFun && val.isEmpty ? 'Just for Fun' : val;
+                              return GridView.count(
+                                crossAxisCount: 2,
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                padding: EdgeInsets.zero,
+                                crossAxisSpacing: AppSpacing.sm,
+                                mainAxisSpacing: AppSpacing.sm,
+                                childAspectRatio: 3.0,
+                                children: [
+                                  AppInfoCard(
+                                    icon: AppPhosphorIcons.betting,
+                                    label: 'Betting',
+                                    value: funOr(joinGameDetailedGamesRecord.styleGame),
+                                    useBadge: true,
+                                    badgeColors: [AppColors.gold, AppColors.goldLight],
+                                    isHighlighted: isFun && joinGameDetailedGamesRecord.styleGame.isEmpty,
+                                  ),
+                                  AppInfoCard(
+                                    icon: AppPhosphorIcons.ruleStyle,
+                                    label: 'Rule Style',
+                                    value: funOr(joinGameDetailedGamesRecord.rulesSetting),
+                                    useBadge: true,
+                                    badgeColors: [AppColors.navyLight, AppColors.navy],
+                                    isHighlighted: isFun && joinGameDetailedGamesRecord.rulesSetting.isEmpty,
+                                  ),
+                                  AppInfoCard(
+                                    icon: AppPhosphorIcons.gameType,
+                                    label: 'Game Type',
+                                    value: funOr(joinGameDetailedGamesRecord.gameType),
+                                    useBadge: true,
+                                    badgeColors: [AppColors.navyLight, AppColors.navy],
+                                    isHighlighted: isFun && joinGameDetailedGamesRecord.gameType.isEmpty,
+                                  ),
+                                  AppInfoCard(
+                                    icon: AppPhosphorIcons.scoring,
+                                    label: 'Scoring',
+                                    value: funOr(joinGameDetailedGamesRecord.scoring),
+                                    useBadge: true,
+                                    badgeColors: [AppColors.green, AppColors.greenLight],
+                                    isHighlighted: isFun && joinGameDetailedGamesRecord.scoring.isEmpty,
+                                  ),
+                                  AppInfoCard(
+                                    icon: AppPhosphorIcons.memberDiscount,
+                                    label: 'Member Discount',
+                                    value: funOr(joinGameDetailedGamesRecord.memberDiscount),
+                                    useBadge: true,
+                                    badgeColors: [AppColors.navyLight, AppColors.navy],
+                                    isHighlighted: isFun && joinGameDetailedGamesRecord.memberDiscount.isEmpty,
+                                  ),
+                                  AppInfoCard(
+                                    icon: AppPhosphorIcons.friendsOnly,
+                                    label: 'Friends Only',
+                                    value: joinGameDetailedGamesRecord.friendGame,
+                                    useBadge: true,
+                                    badgeColors: [AppColors.gold, AppColors.goldLight],
+                                  ),
+                                ],
+                              );
+                            }),
                             SizedBox(height: AppSpacing.lg),
 
                             // Players Section Header with gradient accent
@@ -974,11 +989,15 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                             SizedBox(height: AppSpacing.md),
                           ],
                         ),
+                        ),
                       ),
                       // Players vertical cards
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                        child: Builder(
+                      // Content section 4 - Staggered reveal
+                      _buildAnimatedSection(
+                        sectionIndex: 3,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                          child: Builder(
                           builder: (context) {
                             final groupPlayers = joinGameDetailedGamesRecord
                                 .joinedPlayers
@@ -1089,14 +1108,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                                                             cacheWidth: 96,
                                                             cacheHeight: 96,
                                                             errorBuilder: (context, error, stackTrace) =>
-                                                                Icon(
-                                                              Icons.person_rounded,
+                                                                AppIcon(
+                                                              icon: AppPhosphorIcons.profile,
                                                               color: AppColors.pure,
                                                               size: AppIconSize.md,
                                                             ),
                                                           )
-                                                        : Icon(
-                                                            Icons.person_rounded,
+                                                        : AppIcon(
+                                                            icon: AppPhosphorIcons.profile,
                                                             color: AppColors.pure,
                                                             size: AppIconSize.md,
                                                           ),
@@ -1245,7 +1264,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                         );
                       },
                       ),
-                    ),
+                        ),
+                      ),
 
                       SizedBox(height: AppSpacing.md),
 
@@ -1479,6 +1499,30 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
 
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // ANIMATED SECTION HELPER
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildAnimatedSection({
+    required int sectionIndex,
+    required Widget child,
+  }) {
+    // Calculate stagger delay based on section index (max 8 sections animated)
+    final clampedIndex = sectionIndex < MotionTokens.staggerMaxItems
+        ? sectionIndex
+        : MotionTokens.staggerMaxItems - 1;
+    final staggerDelay = ReducedMotionService.shouldStagger
+        ? MotionTokens.staggerDelay * clampedIndex
+        : Duration.zero;
+
+    return child
+        .animate(target: _hasAnimated ? 1 : 0)
+        .fadeIn(
+          delay: staggerDelay,
+          duration: ReducedMotionService.adjust(MotionTokens.contentReveal),
+          curve: MotionTokens.curveEnter,
+        );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // PREMIUM GROUP VIBE SUMMARY
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildPremiumGroupVibeSummary() {
@@ -1514,7 +1558,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
-                child: Icon(Icons.psychology_rounded, color: AppColors.pure, size: AppIconSize.md),
+                child: AppIcon(icon: AppPhosphorIcons.vibeMatch, color: AppColors.pure, size: AppIconSize.md),
               ),
               SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -1590,8 +1634,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.info_outline_rounded,
+                    AppIcon(
+                      icon: AppPhosphorIcons.info,
                       color: AppColors.pure,
                       size: AppIconSize.button,
                     ),
@@ -1623,8 +1667,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.insights_rounded,
+                    AppIcon(
+                      icon: AppPhosphorIcons.vibeMatch,
                       color: AppColors.gold,
                       size: AppIconSize.button,
                     ),
@@ -1637,8 +1681,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
                       ),
                     ),
                     SizedBox(width: AppSpacing.xs),
-                    Icon(
-                      Icons.chevron_right_rounded,
+                    AppIcon(
+                      icon: AppPhosphorIcons.chevronRight,
                       color: Colors.white.withValues(alpha: 0.6),
                       size: AppIconSize.button,
                     ),
@@ -1652,81 +1696,4 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget> {
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PREMIUM INFO CARD
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildPremiumInfoCard(
-    BuildContext context, {
-    IconData? icon,
-    String? svgPath,
-    PhosphorIconData? phosphorIcon,
-    required List<Color> iconColors,
-    required String label,
-    required String value,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: AppColors.navy.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: iconColors),
-              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-              boxShadow: [
-                BoxShadow(
-                  color: iconColors.first.withValues(alpha: 0.3),
-                  blurRadius: 6,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: phosphorIcon != null
-                ? AppIcon(icon: phosphorIcon, color: AppColors.pure, size: AppIconSize.button)
-                : svgPath != null
-                    ? AppIcon(assetPath: svgPath, color: AppColors.pure, size: AppIconSize.button)
-                    : Icon(icon, color: AppColors.pure, size: AppIconSize.button),
-          ),
-          SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: AppTypography.labelSmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    height: 1.0,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 2),
-                Text(
-                  value.isNotEmpty ? value : '--',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    height: 1.0,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

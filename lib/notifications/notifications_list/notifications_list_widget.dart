@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
@@ -9,6 +11,8 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/app_empty_state.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
@@ -318,29 +322,29 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     return const {'badge_earned', 'badge_progress'}.contains(type);
   }
 
-  IconData _iconForType(String type) {
-    if (type == 'chat_message') return Icons.chat_bubble_outline;
-    if (_isGameNotification(type)) return Icons.sports_golf;
-    if (type == 'attendance_dispute') return Icons.info_outline_rounded;
-    if (type == 'dispute_resolved_cleared') return Icons.check_circle_rounded;
-    if (type == 'dispute_resolved_upheld') return Icons.warning_amber_rounded;
+  PhosphorIconData _iconForType(String type) {
+    if (type == 'chat_message') return AppPhosphorIcons.chat;
+    if (_isGameNotification(type)) return AppPhosphorIcons.games;
+    if (type == 'attendance_dispute') return AppPhosphorIcons.info;
+    if (type == 'dispute_resolved_cleared') return AppPhosphorIcons.success;
+    if (type == 'dispute_resolved_upheld') return AppPhosphorIcons.warning;
     // Trust System types
     if (type == 'host_checkin_due' ||
         type == 'host_checkin_fallback' ||
         type == 'player_fallback_confirm') {
-      return Icons.fact_check;
+      return AppPhosphorIcons.calendarCheck;
     }
-    if (type == 'player_rate_due') return Icons.rate_review;
+    if (type == 'player_rate_due') return AppPhosphorIcons.star;
     if (type == 'game_spot_opened' || type == 'game_cancelled') {
-      return Icons.sports_golf;
+      return AppPhosphorIcons.games;
     }
     if (_isTrustAccountNotification(type)) {
       return type == 'dispute_resolved' || type == 'restriction_ended'
-          ? Icons.shield
-          : Icons.warning_amber;
+          ? AppPhosphorIcons.trust
+          : AppPhosphorIcons.warning;
     }
-    if (_isBadgeNotification(type)) return Icons.emoji_events;
-    return Icons.notifications_none;
+    if (_isBadgeNotification(type)) return AppPhosphorIcons.badge;
+    return AppPhosphorIcons.notifications;
   }
 
   Color _iconBgColorForType(BuildContext context, String type) {
@@ -510,9 +514,10 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                     },
                   ),
                   PopupMenuButton<String>(
-                    icon: Icon(
-                      Icons.more_vert,
+                    icon: AppIcon(
+                      icon: AppPhosphorIcons.more,
                       color: Colors.white,
+                      size: AppIconSize.md,
                     ),
                     color: AppColors.navy,
                     onSelected: (value) {
@@ -525,15 +530,15 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                         value: 'delete_all',
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.delete_sweep,
+                            AppIcon(
+                              icon: AppPhosphorIcons.trash,
                               color: AppColors.error,
                               size: AppIconSize.button,
                             ),
                             SizedBox(width: AppSpacing.sm),
                             Text(
                               'Delete all',
-                              style: TextStyle(
+                              style: AppTypography.bodyMedium.copyWith(
                                 color: AppColors.error,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -584,13 +589,10 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                     }
                     final docs = snapshot.data?.docs ?? [];
                     if (docs.isEmpty) {
-                      return Center(
-                        child: Text(
-                          'No notifications yet.',
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.pure,
-                          ),
-                        ),
+                      return AppEmptyState(
+                        icon: AppPhosphorIcons.notifications,
+                        title: 'No notifications yet',
+                        message: 'When you receive notifications, they\'ll appear here.',
                       );
                     }
                     return NotificationListener<ScrollNotification>(
@@ -636,8 +638,8 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                 color: AppColors.error,
                                 borderRadius: BorderRadius.circular(AppBorderRadius.md),
                               ),
-                              child: Icon(
-                                Icons.delete_outline,
+                              child: AppIcon(
+                                icon: AppPhosphorIcons.trash,
                                 color: AppColors.pure,
                                 size: AppIconSize.md,
                               ),
@@ -686,17 +688,19 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         ListTile(
-                                          leading: Icon(
-                                            Icons.mark_email_unread,
-                                            color: AppColors.navyDark,
+                                          leading: AppIcon(
+                                            icon: AppPhosphorIcons.notifications,
+                                            color: AppColors.textSecondary,
+                                            size: AppIconSize.md,
                                           ),
                                           title: Text('Mark as unread'),
                                           onTap: () => Navigator.of(dialogContext).pop('unread'),
                                         ),
                                         ListTile(
-                                          leading: Icon(
-                                            Icons.delete_outline,
+                                          leading: AppIcon(
+                                            icon: AppPhosphorIcons.trash,
                                             color: AppColors.error,
+                                            size: AppIconSize.md,
                                           ),
                                           title: Text('Delete'),
                                           onTap: () => Navigator.of(dialogContext).pop('delete'),
@@ -722,11 +726,10 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               } : null,
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color:
-                                      AppColors.navy,
+                                  color: AppColors.navy,
                                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                   border: Border.all(
-                                    color: AppColors.cloud,
+                                    color: AppColors.navyLight,
                                     width: 1.0,
                                   ),
                                   boxShadow: [AppElevation.xs],
@@ -736,17 +739,18 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Container(
-                                      width: 36.0,
-                                      height: 36.0,
+                                      width: AppIconSize.xl,
+                                      height: AppIconSize.xl,
                                       decoration: BoxDecoration(
                                         color: _iconBgColorForType(context, type),
                                         shape: BoxShape.circle,
                                       ),
-                                      child: Icon(
-                                        _iconForType(type),
-                                        color:
-                                            AppColors.pure,
-                                        size: AppIconSize.button,
+                                      child: Center(
+                                        child: AppIcon(
+                                          icon: _iconForType(type),
+                                          color: AppColors.pure,
+                                          size: AppIconSize.button,
+                                        ),
                                       ),
                                     ),
                                     SizedBox(width: AppSpacing.sm),
@@ -764,7 +768,9 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                       : _titleFallback(type),
                                                   maxLines: 1,
                                                   overflow: TextOverflow.ellipsis,
-                                                  style: AppTypography.bodyLarge,
+                                                  style: AppTypography.bodyLarge.copyWith(
+                                                    color: AppColors.textPrimary,
+                                                  ),
                                                 ),
                                               ),
                                               if (timeLabel.isNotEmpty)
@@ -776,7 +782,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                   child: Text(
                                                     timeLabel,
                                                     style: AppTypography.labelSmall.copyWith(
-                                                      color: AppColors.slate,
+                                                      color: AppColors.textMuted,
                                                     ),
                                                   ),
                                                 ),
@@ -789,8 +795,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                   width: 8.0,
                                                   height: 8.0,
                                                   decoration: BoxDecoration(
-                                                    color:
-                                                        AppColors.navyDark,
+                                                    color: AppColors.green,
                                                     shape: BoxShape.circle,
                                                   ),
                                                 ),
@@ -806,7 +811,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                 maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: AppTypography.bodyMedium.copyWith(
-                                                  color: AppColors.onyx,
+                                                  color: AppColors.textSecondary,
                                                 ),
                                               ),
                                             ),

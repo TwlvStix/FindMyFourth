@@ -661,7 +661,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           SizedBox(width: 4),
                           Text(
                             'Discount',
-                            style: AppTypography.text10.copyWith(
+                            style: AppTypography.labelMicro.copyWith(
                               color: AppColors.navyLight,
                               fontWeight: FontWeight.w500,
                             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/backend/backend.dart';
@@ -7,7 +8,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon.dart';
 import '/services/vibe_matcher.dart';
@@ -28,10 +29,10 @@ class PremiumFriendCard extends StatefulWidget {
   final VoidCallback? onMessage;
   final VoidCallback? onAction;
   final String messageLabel;
-  final IconData? messageIcon;
+  final PhosphorIconData? messageIcon;
   final String? messageSvgPath;
   final String actionLabel;
-  final IconData? actionIcon;
+  final PhosphorIconData? actionIcon;
   final String? actionSvgPath;
   final Color actionColor;
   final bool showActionButton;
@@ -49,10 +50,10 @@ class PremiumFriendCard extends StatefulWidget {
     this.onMessage,
     this.onAction,
     this.messageLabel = 'Chat',
-    this.messageIcon = Icons.message_rounded,
+    this.messageIcon = AppPhosphorIcons.chat,
     this.messageSvgPath,
     this.actionLabel = 'Add',
-    this.actionIcon = Icons.person_add_rounded,
+    this.actionIcon = AppPhosphorIcons.addPlayer,
     this.actionSvgPath,
     this.actionColor = AppColors.navy,
     this.showActionButton = true,
@@ -217,8 +218,8 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   Widget _buildAvatarFallback() {
     return Container(
       color: Colors.white.withValues(alpha: 0.04),
-      child: Icon(
-        Icons.person_rounded,
+      child: AppIcon(
+        icon: AppPhosphorIcons.profile,
         color: PremiumFriendCard.textMuted,
         size: AppIconSize.md,
       ),
@@ -280,8 +281,8 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.favorite,
+          AppIcon(
+            icon: AppPhosphorIcons.heartFill,
             size: 10,
             color: PremiumFriendCard.goldAccent,
           ),
@@ -359,7 +360,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   }
 
   Widget _buildIconOnlyButton({
-    IconData? icon,
+    PhosphorIconData? icon,
     String? svgPath,
     required VoidCallback? onPressed,
     required bool isPrimary,
@@ -404,8 +405,8 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
                         size: AppIconSize.button,
                         color: PremiumFriendCard.textPrimary,
                       )
-                    : Icon(
-                        icon,
+                    : AppIcon(
+                        icon: icon,
                         size: AppIconSize.button,
                         color: PremiumFriendCard.textPrimary,
                       ),

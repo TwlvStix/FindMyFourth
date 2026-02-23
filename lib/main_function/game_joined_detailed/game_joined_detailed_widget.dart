@@ -3,7 +3,10 @@ import '/backend/schema/trust_profile.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/trust/luxury_player_card.dart';
 import '/core/motion/motion_helpers.dart';
+import '/core/motion/motion_tokens.dart';
+import '/core/motion/reduced_motion.dart';
 import '/utils/app_util.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
@@ -18,6 +21,8 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon_button.dart';
+import '/core/widgets/app_info_card.dart';
+import '/core/widgets/premium_section_header.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
@@ -73,13 +78,17 @@ class GameJoinedDetailedWidget extends StatefulWidget {
       _GameJoinedDetailedWidgetState();
 }
 
-class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
+class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
+    with SingleTickerProviderStateMixin {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final VibeRepository _vibeRepository = VibeRepository();
   GroupVibeMatchResult? _groupVibeMatch;
   Map<String, GroupVibeMemberResult> _memberMatchesById = {};
   bool _isGroupVibeLoading = false;
   String _groupVibeKey = '';
+
+  // Animation state - triggers once when content loads
+  bool _hasAnimated = false;
 
   @override
   void initState() {
@@ -213,8 +222,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                     color: AppColors.navy.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.error_outline_rounded,
+                  child: AppIcon(
+                    icon: AppPhosphorIcons.error,
                     color: AppColors.pure.withValues(alpha: 0.5),
                     size: AppIconSize.xl,
                   ),
@@ -275,10 +284,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                         color: AppColors.navy.withValues(alpha: 0.3),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
-                        Icons.error_outline_rounded,
+                      child: AppIcon(
+                        icon: AppPhosphorIcons.error,
                         color: Colors.white.withValues(alpha: 0.5),
-                        size: 40,
+                        size: AppIconSize.xl,
                       ),
                     ),
                     SizedBox(height: AppSpacing.md),
@@ -342,6 +351,17 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
         final gameJoinedDetailedGamesRecord = Game.fromRecord(gamesRecord);
         _ensureGroupVibeMatch(gameJoinedDetailedGamesRecord, currentUserRef);
 
+        // Trigger entrance animations once when content first loads
+        if (!_hasAnimated) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && !_hasAnimated) {
+              setState(() {
+                _hasAnimated = true;
+              });
+            }
+          });
+        }
+
         return Scaffold(
           key: scaffoldKey,
           extendBodyBehindAppBar: true,
@@ -360,22 +380,45 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                     // Top padding for AppBar
                     SizedBox(height: MediaQuery.of(context).padding.top + 56),
 
-                    // Premium Hero Section
+                    // Premium Hero Section - Fade + Scale entrance
                     Padding(
                       padding: EdgeInsets.all(AppSpacing.md),
                       child: PremiumHeroSection(
                         game: gameJoinedDetailedGamesRecord,
                       ),
-                    ),
+                    )
+                        .animate(target: _hasAnimated ? 1 : 0)
+                        .fadeIn(
+                          duration: ReducedMotionService.adjust(
+                            MotionTokens.routeEnter,
+                          ),
+                          curve: MotionTokens.curveEnter,
+                        )
+                        .scale(
+                          begin: ReducedMotionService.shouldScale
+                              ? Offset(
+                                  MotionTokens.pageScaleStart,
+                                  MotionTokens.pageScaleStart,
+                                )
+                              : const Offset(1, 1),
+                          end: const Offset(1, 1),
+                          duration: ReducedMotionService.adjust(
+                            MotionTokens.routeEnter,
+                          ),
+                          curve: MotionTokens.curveEnter,
+                        ),
 
                     // Firm It Up Banner (only for flexible games created by current user)
+                    // Content section 1 - Staggered reveal
                     if (gameJoinedDetailedGamesRecord.scheduleType == 'flexible' &&
                         FirebaseAuth.instance.currentUser != null &&
                         gameJoinedDetailedGamesRecord.userRef ==
                             FirebaseFirestore.instance
                                 .collection('users')
                                 .doc(FirebaseAuth.instance.currentUser!.uid))
-                      FirmItUpBanner(
+                      _buildAnimatedSection(
+                        sectionIndex: 0,
+                        child: FirmItUpBanner(
                         onPressed: () async {
                           final result = await showModalBottomSheet<Map<String, dynamic>?>(
                             context: context,
@@ -468,27 +511,35 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             }
                           }
                         },
+                        ),
                       ),
 
                     // Quick Stats Row (Date, Players, Chat)
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      child: QuickStatsRow(
-                        game: gameJoinedDetailedGamesRecord,
-                        isOwner: gameJoinedDetailedGamesRecord.userRef == currentUserRef,
-                        onEditPressed: gameJoinedDetailedGamesRecord.userRef == currentUserRef
-                            ? () => _handleEditGameDetails(context, gameJoinedDetailedGamesRecord)
-                            : null,
+                    // Content section 2 - Staggered reveal
+                    _buildAnimatedSection(
+                      sectionIndex: 1,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                        child: QuickStatsRow(
+                          game: gameJoinedDetailedGamesRecord,
+                          isOwner: gameJoinedDetailedGamesRecord.userRef == currentUserRef,
+                          onEditPressed: gameJoinedDetailedGamesRecord.userRef == currentUserRef
+                              ? () => _handleEditGameDetails(context, gameJoinedDetailedGamesRecord)
+                              : null,
+                        ),
                       ),
                     ),
 
                     SizedBox(height: AppSpacing.md),
 
                     // Premium Message Group Button
+                    // Content section 3 - Staggered reveal
                     if (gameJoinedDetailedGamesRecord.chatRef != null)
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                        child: GestureDetector(
+                      _buildAnimatedSection(
+                        sectionIndex: 2,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                          child: GestureDetector(
                           onTap: () async {
                             HapticFeedback.lightImpact();
                             final chatRef = gameJoinedDetailedGamesRecord.chatRef;
@@ -565,53 +616,38 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                             ),
                           ),
                         ),
+                        ),
                       ),
 
                     SizedBox(height: AppSpacing.md),
 
                     // Group Vibe Summary
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      child: GroupVibeSummary(
-                        groupVibeMatch: _groupVibeMatch,
-                        onViewBreakdown: _openGroupVibeBreakdown,
+                    // Content section 4 - Staggered reveal
+                    _buildAnimatedSection(
+                      sectionIndex: 3,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                        child: GroupVibeSummary(
+                          groupVibeMatch: _groupVibeMatch,
+                          onViewBreakdown: _openGroupVibeBreakdown,
+                        ),
                       ),
                     ),
 
                     SizedBox(height: AppSpacing.lg),
 
                     // Game Details Section
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    // Content section 5 - Staggered reveal
+                    _buildAnimatedSection(
+                      sectionIndex: 4,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Section Header with gradient accent
-                          Row(
-                            children: [
-                              Container(
-                                width: 4,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [AppColors.gold, AppColors.goldLight],
-                                  ),
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
-                                ),
-                              ),
-                              SizedBox(width: AppSpacing.sm),
-                              Text(
-                                'Game Details',
-                                style: AppTypography.titleMedium.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
+                          PremiumSectionHeader(title: 'Game Details'),
                           SizedBox(height: AppSpacing.sm),
 
                           // Premium Info Grid
@@ -628,52 +664,52 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                               mainAxisSpacing: AppSpacing.sm,
                               childAspectRatio: 3.0,
                               children: [
-                                _buildPremiumInfoCard(
-                                  context,
-                                  icon: Icons.attach_money_rounded,
-                                  iconColors: [AppColors.gold, AppColors.goldLight],
+                                AppInfoCard(
+                                  icon: AppPhosphorIcons.betting,
                                   label: 'Betting',
                                   value: funOr(gameJoinedDetailedGamesRecord.styleGame),
-                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.styleGame.isEmpty,
+                                  useBadge: true,
+                                  badgeColors: [AppColors.gold, AppColors.goldLight],
+                                  isHighlighted: isFun && gameJoinedDetailedGamesRecord.styleGame.isEmpty,
                                 ),
-                                _buildPremiumInfoCard(
-                                  context,
-                                  icon: Icons.rule_rounded,
-                                  iconColors: [AppColors.navyLight, AppColors.navy],
+                                AppInfoCard(
+                                  icon: AppPhosphorIcons.ruleStyle,
                                   label: 'Rule Style',
                                   value: funOr(gameJoinedDetailedGamesRecord.rulesSetting),
-                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.rulesSetting.isEmpty,
+                                  useBadge: true,
+                                  badgeColors: [AppColors.navyLight, AppColors.navy],
+                                  isHighlighted: isFun && gameJoinedDetailedGamesRecord.rulesSetting.isEmpty,
                                 ),
-                                _buildPremiumInfoCard(
-                                  context,
-                                  icon: Icons.sports_golf_rounded,
-                                  iconColors: [AppColors.navyLight, AppColors.navy],
+                                AppInfoCard(
+                                  icon: AppPhosphorIcons.gameType,
                                   label: 'Game Type',
                                   value: funOr(gameJoinedDetailedGamesRecord.gameType),
-                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.gameType.isEmpty,
+                                  useBadge: true,
+                                  badgeColors: [AppColors.navyLight, AppColors.navy],
+                                  isHighlighted: isFun && gameJoinedDetailedGamesRecord.gameType.isEmpty,
                                 ),
-                                _buildPremiumInfoCard(
-                                  context,
-                                  icon: Icons.scoreboard_rounded,
-                                  iconColors: [AppColors.green, AppColors.greenLight],
+                                AppInfoCard(
+                                  icon: AppPhosphorIcons.scoring,
                                   label: 'Scoring',
                                   value: funOr(gameJoinedDetailedGamesRecord.scoring),
-                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.scoring.isEmpty,
+                                  useBadge: true,
+                                  badgeColors: [AppColors.green, AppColors.greenLight],
+                                  isHighlighted: isFun && gameJoinedDetailedGamesRecord.scoring.isEmpty,
                                 ),
-                                _buildPremiumInfoCard(
-                                  context,
-                                  icon: Icons.discount_rounded,
-                                  iconColors: [AppColors.navyLight, AppColors.navy],
+                                AppInfoCard(
+                                  icon: AppPhosphorIcons.memberDiscount,
                                   label: 'Member Discount',
                                   value: funOr(gameJoinedDetailedGamesRecord.memberDiscount),
-                                  isFunBadge: isFun && gameJoinedDetailedGamesRecord.memberDiscount.isEmpty,
+                                  useBadge: true,
+                                  badgeColors: [AppColors.navyLight, AppColors.navy],
+                                  isHighlighted: isFun && gameJoinedDetailedGamesRecord.memberDiscount.isEmpty,
                                 ),
-                                _buildPremiumInfoCard(
-                                  context,
-                                  icon: Icons.group_rounded,
-                                  iconColors: [AppColors.gold, AppColors.goldLight],
+                                AppInfoCard(
+                                  icon: AppPhosphorIcons.friendsOnly,
                                   label: 'Friends Only',
                                   value: gameJoinedDetailedGamesRecord.friendGame,
+                                  useBadge: true,
+                                  badgeColors: [AppColors.gold, AppColors.goldLight],
                                 ),
                               ],
                             );
@@ -681,53 +717,32 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                           SizedBox(height: AppSpacing.lg),
 
                           // Players Section Header with gradient accent
-                          Row(
-                            children: [
-                              Container(
-                                width: 4,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [AppColors.gold, AppColors.goldLight],
-                                  ),
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
-                                ),
+                          PremiumSectionHeader(
+                            title: 'Players',
+                            trailing: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppSpacing.sm,
+                                vertical: AppSpacing.xxs,
                               ),
-                              SizedBox(width: AppSpacing.sm),
-                              Text(
-                                'Players',
-                                style: AppTypography.titleMedium.copyWith(
-                                  color: Colors.white,
+                              decoration: BoxDecoration(
+                                color: AppColors.gold.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                              ),
+                              child: Text(
+                                '${_getPlayerCount(gameJoinedDetailedGamesRecord)}/4',
+                                style: AppTypography.labelSmall.copyWith(
+                                  color: AppColors.gold,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              SizedBox(width: AppSpacing.sm),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.sm,
-                                  vertical: AppSpacing.xxs,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.gold.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                                ),
-                                child: Text(
-                                  '${_getPlayerCount(gameJoinedDetailedGamesRecord)}/4',
-                                  style: AppTypography.labelSmall.copyWith(
-                                    color: AppColors.gold,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                           SizedBox(height: AppSpacing.md),
                         ],
+                        ),
                       ),
                     ),
-                  // Players horizontal cards
+                  // Players horizontal cards - With stagger animation
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                     child: Builder(
@@ -784,6 +799,13 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
 
                                   // Fetch trust profile for badge display
                                   final trustProvider = context.read<TrustProvider>();
+                                  // Stagger delay: 24ms per card, max 8 cards animated
+                                  final staggerIndex = groupPlayersIndex < MotionTokens.staggerMaxItems
+                                      ? groupPlayersIndex
+                                      : MotionTokens.staggerMaxItems - 1;
+                                  final staggerDelay = ReducedMotionService.shouldStagger
+                                      ? MotionTokens.staggerDelay * staggerIndex
+                                      : Duration.zero;
                                   return FutureBuilder<TrustProfile?>(
                                     future: trustProvider.fetchTrustProfile(groupPlayersItem.id),
                                     builder: (context, trustSnapshot) {
@@ -818,8 +840,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                                       .userRef ==
                                                   currentUserRef
                                               ? AppIconButton(
-                                                  icon: Icon(
-                                                    Icons.remove_circle_outline,
+                                                  icon: AppIcon(
+                                                    icon: AppPhosphorIcons.remove,
                                                     color: AppColors.error,
                                                     size: AppIconSize.md,
                                                   ),
@@ -854,13 +876,41 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                         );
                                       },
                                     ),
-                                  );
+                                  )
+                                      .animate(target: _hasAnimated ? 1 : 0)
+                                      .fadeIn(
+                                        delay: staggerDelay,
+                                        duration: ReducedMotionService.adjust(
+                                          MotionTokens.contentReveal,
+                                        ),
+                                        curve: MotionTokens.curveEnter,
+                                      )
+                                      .slideY(
+                                        delay: staggerDelay,
+                                        begin: 0.1,
+                                        end: 0,
+                                        duration: ReducedMotionService.adjust(
+                                          MotionTokens.contentReveal,
+                                        ),
+                                        curve: MotionTokens.curveEnter,
+                                      );
                                     },
                                   );
                                 }),
-                            // Guest players
-                            ...guestPlayers.map(
-                              (guestName) => Padding(
+                            // Guest players with stagger animation
+                            ...guestPlayers.asMap().entries.map((entry) {
+                              final guestIndex = entry.key;
+                              final guestName = entry.value;
+                              // Continue stagger from registered players count
+                              final combinedIndex = groupPlayers.length + guestIndex;
+                              final staggerIndex = combinedIndex < MotionTokens.staggerMaxItems
+                                  ? combinedIndex
+                                  : MotionTokens.staggerMaxItems - 1;
+                              final staggerDelay = ReducedMotionService.shouldStagger
+                                  ? MotionTokens.staggerDelay * staggerIndex
+                                  : Duration.zero;
+
+                              return Padding(
                                 padding: EdgeInsets.only(bottom: AppSpacing.sm),
                                 child: Container(
                                   padding: EdgeInsets.all(AppSpacing.sm),
@@ -930,10 +980,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                       // Remove button for owner
                                       if (gameJoinedDetailedGamesRecord.userRef == currentUserRef)
                                         AppIconButton(
-                                          icon: Icon(
-                                            Icons.remove_circle_outline,
+                                          icon: AppIcon(
+                                            icon: AppPhosphorIcons.remove,
                                             color: AppColors.error,
-                                            size: 24.0,
+                                            size: AppIconSize.md,
                                           ),
                                           borderRadius: 20.0,
                                           buttonSize: 40.0,
@@ -951,8 +1001,25 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                                     ],
                                   ),
                                 ),
-                              ),
-                            ),
+                              )
+                                  .animate(target: _hasAnimated ? 1 : 0)
+                                  .fadeIn(
+                                    delay: staggerDelay,
+                                    duration: ReducedMotionService.adjust(
+                                      MotionTokens.contentReveal,
+                                    ),
+                                    curve: MotionTokens.curveEnter,
+                                  )
+                                  .slideY(
+                                    delay: staggerDelay,
+                                    begin: 0.1,
+                                    end: 0,
+                                    duration: ReducedMotionService.adjust(
+                                      MotionTokens.contentReveal,
+                                    ),
+                                    curve: MotionTokens.curveEnter,
+                                  );
+                            }),
                           ],
                         );
                       },
@@ -968,7 +1035,11 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       child: AppButtonEnhanced(
                         text: 'Add Players',
-                        leadingIcon: Icons.person_add,
+                        leadingWidget: AppIcon(
+                          icon: AppPhosphorIcons.addPlayer,
+                          size: AppIconSize.button,
+                          color: AppColors.textPrimary,
+                        ),
                         variant: AppButtonVariant.secondary,
                         size: AppButtonSize.medium,
                         fullWidth: true,
@@ -1273,6 +1344,31 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
       return value;
     }
     return fallback;
+  }
+
+  /// Builds a content section with staggered fade-in animation.
+  ///
+  /// Uses MotionTokens.contentReveal (160ms) timing with 24ms stagger delay
+  /// per section index. Respects reduced motion preferences.
+  Widget _buildAnimatedSection({
+    required int sectionIndex,
+    required Widget child,
+  }) {
+    // Calculate stagger delay based on section index (max 8 sections animated)
+    final clampedIndex = sectionIndex < MotionTokens.staggerMaxItems
+        ? sectionIndex
+        : MotionTokens.staggerMaxItems - 1;
+    final staggerDelay = ReducedMotionService.shouldStagger
+        ? MotionTokens.staggerDelay * clampedIndex
+        : Duration.zero;
+
+    return child
+        .animate(target: _hasAnimated ? 1 : 0)
+        .fadeIn(
+          delay: staggerDelay,
+          duration: ReducedMotionService.adjust(MotionTokens.contentReveal),
+          curve: MotionTokens.curveEnter,
+        );
   }
 
   void _openGroupVibeBreakdown() {
@@ -1734,84 +1830,6 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PREMIUM INFO CARD
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildPremiumInfoCard(
-    BuildContext context, {
-    required IconData icon,
-    required List<Color> iconColors,
-    required String label,
-    required String value,
-    bool isFunBadge = false,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: isFunBadge
-            ? AppColors.navy.withValues(alpha: 0.4)
-            : AppColors.navy.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        border: Border.all(
-          color: isFunBadge
-              ? AppColors.gold.withValues(alpha: 0.4)
-              : Colors.white.withValues(alpha: 0.1),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: iconColors),
-              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-              boxShadow: [
-                BoxShadow(
-                  color: iconColors.first.withValues(alpha: 0.3),
-                  blurRadius: 6,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Icon(icon, color: AppColors.pure, size: AppIconSize.button),
-          ),
-          SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: AppTypography.labelSmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    height: 1.0,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 2),
-                Text(
-                  value.isNotEmpty ? value : '--',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: isFunBadge ? AppColors.gold : Colors.white,
-                    fontWeight: FontWeight.w600,
-                    height: 1.0,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/utils/app_log.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
@@ -60,10 +61,10 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
       AlertSubscription? subscription;
       try {
         subscription = await AlertSubscriptionService.loadSubscription(currentUserUid);
-        debugPrint('[GameAlertsPage] Loaded subscription: ${subscription != null ? 'exists' : 'null'}');
+        AppLog.d('📱 [GameAlertsPage] Loaded subscription: ${subscription != null ? 'exists' : 'null'}');
       } catch (e) {
         // Handle permission errors gracefully - use defaults
-        debugPrint('[GameAlertsPage] Error loading subscription (using defaults): $e');
+        AppLog.d('📱 [GameAlertsPage] Error loading subscription (using defaults): $e');
         subscription = null;
       }
 
@@ -99,7 +100,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
 
       return snapshot.docs.map((doc) => Course.fromDoc(doc)).toList();
     } catch (e) {
-      debugPrint('Error loading courses: $e');
+      AppLog.d('❌ Error loading courses: $e');
       return [];
     }
   }
@@ -121,7 +122,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
       });
 
       if (mounted) {
-        debugPrint('[GameAlertsPage] Saving complete. Returning subscription: enabled=${_subscription!.enabled}, filters=${_subscription!.getSummary()}');
+        AppLog.d('📱 [GameAlertsPage] Saving complete. Returning subscription: enabled=${_subscription!.enabled}, filters=${_subscription!.getSummary()}');
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -193,7 +194,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
   }
 
   Future<bool> _ensureNotificationPermission() async {
-    debugPrint('[GameAlerts] Requesting notification permission (user action)');
+    AppLog.d('📱 [GameAlerts] Requesting notification permission (user action)');
     final status =
         await NotificationPermissionService().requestPermissionAndRegister();
 
@@ -202,7 +203,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
       setState(() {});
     }
 
-    debugPrint('[GameAlerts] Permission result: $status');
+    AppLog.d('📱 [GameAlerts] Permission result: $status');
     return status == NotificationPermissionStatus.granted ||
         status == NotificationPermissionStatus.provisional;
   }
@@ -299,14 +300,14 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                       valueColor: AlwaysStoppedAnimation<Color>(AppColors.pure),
                     ),
                   ),
-                  SizedBox(width: 8),
+                  SizedBox(width: AppSpacing.xs),
                 ] else ...[
-                  Icon(
-                    Icons.check_rounded,
+                  AppIcon(
+                    icon: AppPhosphorIcons.check,
                     size: AppIconSize.button,
                     color: AppColors.pure,
                   ),
-                  SizedBox(width: 8),
+                  SizedBox(width: AppSpacing.xs),
                 ],
                 Text(
                   _isSaving ? 'Saving...' : 'Save Settings',
@@ -618,8 +619,11 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                 ),
                                 child: Row(
                                   children: [
-                                    Icon(Icons.error_outline,
-                                        color: AppColors.error),
+                                    AppIcon(
+                                      icon: AppPhosphorIcons.error,
+                                      color: AppColors.error,
+                                      size: AppIconSize.md,
+                                    ),
                                     SizedBox(width: AppSpacing.sm),
                                     Expanded(
                                       child: Text(
@@ -659,8 +663,11 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                     ),
                                     child: Column(
                                       children: [
-                                        Icon(Icons.settings,
-                                            size: AppIconSize.xl, color: AppColors.warning),
+                                        AppIcon(
+                                          icon: AppPhosphorIcons.settings,
+                                          size: AppIconSize.xl,
+                                          color: AppColors.warning,
+                                        ),
                                         SizedBox(height: AppSpacing.sm),
                                         Text(
                                           'Notification permission required',
@@ -829,7 +836,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                         text: _selectedCourses.isEmpty
                                             ? 'Select Courses'
                                             : 'Edit Courses (${_selectedCourses.length})',
-                                        leadingIcon: Icons.golf_course_rounded,
+                                        leadingIcon: AppPhosphorIcons.golfCourse,
                                         size: AppButtonSize.medium,
                                         variant: AppButtonVariant.secondary,
                                         onPressed: _showCoursesPicker,
@@ -930,8 +937,8 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(
-                                        Icons.info_outline,
+                                      AppIcon(
+                                        icon: AppPhosphorIcons.info,
                                         color: AppColors.gold,
                                         size: AppIconSize.button,
                                       ),
@@ -940,8 +947,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                         'Summary',
                                         style:
                                             AppTypography.labelSmall.copyWith(
-                                          color: Colors.white
-                                              .withValues(alpha: 0.7),
+                                          color: AppColors.textMuted,
                                         ),
                                       ),
                                     ],
@@ -1097,9 +1103,10 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                 hintStyle: AppTypography.bodyMedium.copyWith(
                   color: Colors.white.withValues(alpha: 0.5),
                 ),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Colors.white.withValues(alpha: 0.5),
+                prefixIcon: AppIcon(
+                  icon: AppPhosphorIcons.search,
+                  color: AppColors.textMuted,
+                  size: AppIconSize.md,
                 ),
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.1),
@@ -1160,13 +1167,14 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                           ),
                           child: Row(
                             children: [
-                              Icon(
-                                isSelected
-                                    ? Icons.check_circle
-                                    : Icons.radio_button_unchecked,
+                              AppIcon(
+                                icon: isSelected
+                                    ? AppPhosphorIcons.success
+                                    : AppPhosphorIcons.circle,
                                 color: isSelected
                                     ? AppColors.gold
-                                    : Colors.white.withValues(alpha: 0.3),
+                                    : AppColors.textMuted,
+                                size: AppIconSize.md,
                               ),
                               SizedBox(width: AppSpacing.md),
                               Expanded(

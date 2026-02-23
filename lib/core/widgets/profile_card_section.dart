@@ -103,7 +103,7 @@ class ProfilePreferenceItem extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: AppTypography.text13.copyWith(
+          style: AppTypography.labelSmall.copyWith(
             fontWeight: FontWeight.w500,
             color: AppColors.stone,
             letterSpacing: 0.1,

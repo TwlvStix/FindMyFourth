@@ -22,6 +22,8 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
@@ -226,15 +228,15 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.error_outline,
-                              color: AppColors.pure,
+                            AppIcon(
+                              icon: AppPhosphorIcons.error,
+                              color: AppColors.textPrimary,
                               size: AppIconSize.xxl,
                             ),
                             SizedBox(height: 16),
                             Text(
                               'Failed to load image',
-                              style: TextStyle(color: AppColors.pure),
+                              style: TextStyle(color: AppColors.textPrimary),
                             ),
                           ],
                         ),
@@ -247,7 +249,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                 top: 10,
                 right: 10,
                 child: IconButton(
-                  icon: Icon(Icons.close, color: AppColors.pure, size: AppIconSize.md),
+                  icon: AppIcon(icon: AppPhosphorIcons.close, color: AppColors.textPrimary, size: AppIconSize.md),
                   tooltip: 'Close image',
                   onPressed: () => Navigator.of(context).pop(),
                 ),
@@ -491,9 +493,9 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
 
   PopupMenuButton<String> _buildDeleteMenu() {
     return PopupMenuButton<String>(
-      icon: Icon(
-        Icons.more_vert,
-        color: AppColors.pure,
+      icon: AppIcon(
+        icon: AppPhosphorIcons.more,
+        color: AppColors.textPrimary,
         size: AppIconSize.md,
       ),
       tooltip: 'More options',
@@ -507,8 +509,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
           value: 'delete',
           child: Row(
             children: [
-              Icon(
-                Icons.delete_outline,
+              AppIcon(
+                icon: AppPhosphorIcons.trash,
                 color: AppColors.error,
                 size: AppIconSize.button,
               ),
@@ -732,8 +734,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: Icon(Icons.photo_library_rounded,
-                    color: AppColors.navyDark),
+                leading: AppIcon(icon: AppPhosphorIcons.imageGallery,
+                    color: AppColors.textPrimary, size: AppIconSize.md),
                 title: const Text('Photo Library'),
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
@@ -741,8 +743,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                 },
               ),
               ListTile(
-                leading: Icon(Icons.camera_alt_rounded,
-                    color: AppColors.navyDark),
+                leading: AppIcon(icon: AppPhosphorIcons.camera,
+                    color: AppColors.textPrimary, size: AppIconSize.md),
                 title: const Text('Take Photo'),
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
@@ -1087,9 +1089,9 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: AppColors.navyDark,
+                          AppIcon(
+                            icon: AppPhosphorIcons.info,
+                            color: AppColors.textSecondary,
                             size: AppIconSize.button,
                           ),
                           SizedBox(width: AppSpacing.sm),
@@ -1517,9 +1519,9 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                           borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                           child: Padding(
                             padding: EdgeInsets.all(12),
-                            child: Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: AppColors.pure,
+                            child: AppIcon(
+                              icon: AppPhosphorIcons.arrowDown,
+                              color: AppColors.textPrimary,
                               size: AppIconSize.md,
                             ),
                           ),

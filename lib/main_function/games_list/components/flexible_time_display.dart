@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/models/game.dart';
 
 /// Displays flexible time information with week range and selected day pills
@@ -78,8 +81,8 @@ class FlexibleTimeDisplay extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  _getTimeOfDayIcon(game.flexibleTimeOfDay),
+                AppIcon(
+                  icon: _getTimeOfDayIcon(game.flexibleTimeOfDay),
                   color: Colors.white.withValues(alpha: 0.9),
                   size: AppIconSize.xs,
                 ),
@@ -87,7 +90,7 @@ class FlexibleTimeDisplay extends StatelessWidget {
                 Text(
                   timeOfDayLabel,
                   style: (compact
-                          ? AppTypography.text10
+                          ? AppTypography.labelMicro
                           : AppTypography.labelSmall)
                       .copyWith(
                     color: Colors.white.withValues(alpha: 0.9),
@@ -117,7 +120,7 @@ class FlexibleTimeDisplay extends StatelessWidget {
       ),
       child: Text(
         day,
-        style: (compact ? AppTypography.text10 : AppTypography.labelSmall)
+        style: (compact ? AppTypography.labelMicro : AppTypography.labelSmall)
             .copyWith(
           color: Colors.white,
           fontWeight: FontWeight.w700,
@@ -161,16 +164,16 @@ class FlexibleTimeDisplay extends StatelessWidget {
     }
   }
 
-  IconData _getTimeOfDayIcon(String? timeOfDay) {
+  PhosphorIconData _getTimeOfDayIcon(String? timeOfDay) {
     switch (timeOfDay) {
       case 'morning':
-        return Icons.wb_sunny_rounded;
+        return AppPhosphorIcons.morning;
       case 'afternoon':
-        return Icons.wb_sunny_outlined;
+        return AppPhosphorIcons.afternoon;
       case 'twilight':
-        return Icons.nights_stay_rounded;
+        return AppPhosphorIcons.twilight;
       default:
-        return Icons.access_time_rounded;
+        return AppPhosphorIcons.afternoon;
     }
   }
 }

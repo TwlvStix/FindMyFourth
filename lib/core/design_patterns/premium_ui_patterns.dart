@@ -16,6 +16,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
@@ -26,42 +27,42 @@ import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_icon.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// GRADIENT PRESETS
+// GRADIENT PRESETS - "The Clubhouse" Design Language
 // ═══════════════════════════════════════════════════════════════════════════
 
 class AppGradients {
   AppGradients._();
 
-  /// Primary gold gradient for CTAs and highlights
+  /// Prestige Gold gradient for trust badges, achievements, premium CTAs
   static const gold = LinearGradient(
     colors: [AppColors.gold, AppColors.goldLight],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// Social accent gradient for friends/community elements
-  static const socialAccent = LinearGradient(
+  /// Fairway Green accent gradient for interactive highlights
+  static const fairwayAccent = LinearGradient(
     colors: [AppColors.green, AppColors.greenLight],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// Green gradient for golf/nature elements
+  /// Fairway Green gradient for primary interactive elements
   static const green = LinearGradient(
     colors: [AppColors.greenLight, AppColors.green],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// Navy gradient for backgrounds
+  /// Deep Teal-Navy gradient for structural backgrounds
   static const navy = LinearGradient(
     colors: [AppColors.navy, AppColors.navyDark],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
-  /// Full spectrum sweep for animated rings - green-centric with navy depth
-  static const accentSweep = SweepGradient(
+  /// Premium sweep gradient for animated rings - Fairway Green with navy depth
+  static const prestigeSweep = SweepGradient(
     colors: [
       AppColors.green,
       AppColors.greenLight,
@@ -70,6 +71,16 @@ class AppGradients {
       AppColors.green,
     ],
   );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Legacy aliases (deprecated - use new names)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  @Deprecated('Use fairwayAccent instead')
+  static const socialAccent = fairwayAccent;
+
+  @Deprecated('Use prestigeSweep instead')
+  static const accentSweep = prestigeSweep;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -256,7 +267,7 @@ class _AnimatedAvatarRingState extends State<AnimatedAvatarRing>
                 height: ringSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: AppGradients.accentSweep,
+                  gradient: AppGradients.prestigeSweep,
                 ),
               ),
             );
@@ -406,12 +417,36 @@ class StatCard extends StatelessWidget {
 // QUICK ACTION CARD
 // ═══════════════════════════════════════════════════════════════════════════
 
-/// A tappable action card with gradient icon
-/// Used for quick navigation to common actions
+/// A tappable action card with gradient icon in a centered column layout.
+///
+/// **Use case:** Quick navigation shortcuts displayed in a grid on light backgrounds.
+/// Think: profile page shortcut tiles, dashboard action grid.
+///
+/// **Visual:** Centered icon box with gradient fill, label below.
+/// Light background (`AppColors.sand`), rounded corners.
+///
+/// **For list-style action rows with chevrons** (settings, navigation lists),
+/// use [AppActionCard] instead.
+///
+/// ```dart
+/// QuickActionCard(
+///   icon: AppPhosphorIcons.games,
+///   label: 'Find Games',
+///   gradientColors: [AppColors.green, AppColors.greenLight],
+///   onTap: () => context.go('/games'),
+/// )
+/// ```
 class QuickActionCard extends StatelessWidget {
+  /// The icon displayed in a gradient box.
   final IconData icon;
+
+  /// Label text displayed below the icon.
   final String label;
+
+  /// Gradient colors for the icon box background.
   final List<Color> gradientColors;
+
+  /// Callback when the card is tapped.
   final VoidCallback onTap;
 
   const QuickActionCard({
@@ -458,17 +493,146 @@ class QuickActionCard extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// APP ACTION CARD
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// A tappable row-style action card for settings and navigation lists.
+///
+/// **Use case:** Settings rows, navigation destinations, list-style actions.
+/// Think: settings screen rows, profile options, modal action lists.
+///
+/// **Visual:** Row layout with icon, title/subtitle, and trailing chevron.
+/// Dark background (`AppColors.navy`), follows the Card Pattern Family spec.
+///
+/// **For centered grid-style shortcuts with gradient icons**, use [QuickActionCard] instead.
+///
+/// ```dart
+/// AppActionCard(
+///   icon: AppPhosphorIcons.settings,
+///   label: 'Account Settings',
+///   subtitle: 'Manage your profile and preferences',
+///   onTap: () => context.go('/settings/account'),
+/// )
+/// ```
+///
+/// **Design Spec (from Card Pattern Family):**
+/// ```
+/// ┌─────────────────────────────────────────────────┐
+/// │  [Icon]  [Title]                            [›] │
+/// │          [Subtitle]                             │
+/// └─────────────────────────────────────────────────┘
+/// ```
+/// - Icon: `AppIconSize.listItem` (24px), `AppColors.textSecondary`
+/// - Title: `AppTypography.bodyMedium`, `AppColors.textPrimary`
+/// - Subtitle: `AppTypography.labelSmall`, `AppColors.textMuted`
+/// - Chevron: `AppColors.textMuted`
+class AppActionCard extends StatelessWidget {
+  /// The Phosphor icon displayed on the leading edge.
+  final PhosphorIconData icon;
+
+  /// Primary label text.
+  final String label;
+
+  /// Optional secondary text displayed below the label.
+  final String? subtitle;
+
+  /// Callback when the card is tapped.
+  final VoidCallback onTap;
+
+  /// Whether to show a trailing chevron. Defaults to `true`.
+  final bool showChevron;
+
+  const AppActionCard({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.subtitle,
+    this.showChevron = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      child: Container(
+        padding: AppSpacing.card,
+        decoration: BoxDecoration(
+          color: AppColors.navy,
+          borderRadius: BorderRadius.circular(AppBorderRadius.card),
+          border: Border.all(color: AppColors.navyLight),
+        ),
+        child: Row(
+          children: [
+            // Leading icon
+            AppIcon(
+              icon: icon,
+              size: AppIconSize.listItem,
+              color: AppColors.textSecondary,
+            ),
+            SizedBox(width: AppSpacing.sm),
+            // Title and subtitle
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            // Trailing chevron
+            if (showChevron)
+              AppIcon(
+                icon: AppPhosphorIcons.chevronRight,
+                size: AppIconSize.button,
+                color: AppColors.textMuted,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // INFO ROW
 // ═══════════════════════════════════════════════════════════════════════════
 
-/// A labeled info row with colored icon badge
+/// A labeled info row with optional icon badge
+///
 /// Used for displaying user details like email, phone, etc.
+///
+/// **Design Principle: "Badges Are Earned"**
+/// - By default (`useBadge: false`), renders a plain icon with `AppColors.textSecondary`
+/// - Set `useBadge: true` ONLY for trust/achievement/prestige contexts
+/// - When `useBadge: true`, renders a colored icon badge container
 class InfoRow extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final String label;
   final String value;
   final VoidCallback? onTap;
+
+  /// When false (default): plain icon with AppColors.textSecondary
+  /// When true: colored badge container (use only for trust/achievement contexts)
+  final bool useBadge;
 
   const InfoRow({
     super.key,
@@ -477,6 +641,7 @@ class InfoRow extends StatelessWidget {
     required this.label,
     required this.value,
     this.onTap,
+    this.useBadge = false,
   });
 
   @override
@@ -492,15 +657,29 @@ class InfoRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: iconColor.withValues(alpha:0.15),
-                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+            // Icon: plain or badge based on useBadge flag
+            if (useBadge)
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha:0.15),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                ),
+                child: Icon(icon, color: iconColor, size: AppIconSize.button),
+              )
+            else
+              SizedBox(
+                width: 40,
+                height: 40,
+                child: Center(
+                  child: Icon(
+                    icon,
+                    color: AppColors.textSecondary,
+                    size: AppIconSize.listItem,
+                  ),
+                ),
               ),
-              child: Icon(icon, color: iconColor, size: AppIconSize.button),
-            ),
             SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
@@ -555,7 +734,7 @@ class NotificationBadge extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs - 2, vertical: AppSpacing.xxs - 1),
       decoration: BoxDecoration(
-        gradient: AppGradients.socialAccent,
+        gradient: AppGradients.fairwayAccent,
         borderRadius: BorderRadius.circular(AppBorderRadius.sm),
         boxShadow: [
           BoxShadow(

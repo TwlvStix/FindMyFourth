@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
@@ -26,6 +25,7 @@ import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon.dart';
+import '/core/widgets/app_stat_card.dart';
 import '/screens/trust/trust_profile_section.dart';
 import '/screens/trust/your_standing_screen.dart';
 
@@ -180,7 +180,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               child: Text(
                                 badgeText,
                                 style: AppTypography.labelSmall.copyWith(
-                                  color: Colors.white,
+                                  color: AppColors.pure,
                                   fontWeight: AppTypography.bold,
                                 ),
                               ),
@@ -381,8 +381,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
                           color: AppColors.sand,
-                          child: Icon(
-                            Icons.person_rounded,
+                          child: AppIcon(
+                            icon: AppPhosphorIcons.profile,
                             size: iconSize,
                             color: AppColors.stone,
                           ),
@@ -433,7 +433,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           builder: (context) => Text(
             '${valueOrDefault(currentUserDocument?.firstName, '')} ${valueOrDefault(currentUserDocument?.lastName, '')}',
             style: AppTypography.headlineMedium.copyWith(
-              color: Colors.white,
+              color: AppColors.pure,
             ),
           ),
         ),
@@ -475,14 +475,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           // Handicap
           Expanded(
             child: AuthUserStreamWidget(
-              builder: (context) => _buildStatCard(
-                context,
-                icon: FontAwesomeIcons.golfBall,
+              builder: (context) => AppStatCard(
+                variant: AppStatCardVariant.glass,
+                icon: AppPhosphorIcons.handicap,
                 value: formatHandicap(
                   valueOrDefault(currentUserDocument?.handicap, 0),
                 ),
                 label: 'Handicap',
-                gradient: [AppColors.green, AppColors.greenLight],
+                iconGradient: [AppColors.green, AppColors.greenLight],
               ),
             ),
           ),
@@ -497,13 +497,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 final shortCourse = course.length > 12
                     ? '${course.substring(0, 10)}...'
                     : course;
-                return _buildStatCard(
-                  context,
-                  icon: FontAwesomeIcons.mapMarkerAlt,
+                return AppStatCard(
+                  variant: AppStatCardVariant.glass,
+                  icon: AppPhosphorIcons.homeCourse,
                   value: shortCourse,
                   label: 'Home Course',
-                  gradient: [AppColors.navyLight, AppColors.navy],
-                  isText: true,
+                  iconGradient: [AppColors.navyLight, AppColors.navy],
+                  isTextValue: true,
                 );
               },
             ),
@@ -515,14 +515,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             child: AuthUserStreamWidget(
               builder: (context) {
                 final friendsCount = currentUserDocument?.friends.length ?? 0;
-                return _buildStatCard(
-                  context,
-                  icon: FontAwesomeIcons.userFriends,
+                return AppStatCard(
+                  variant: AppStatCardVariant.glass,
+                  icon: AppPhosphorIcons.friends,
                   value: friendsCount.toString(),
                   label: 'Friends',
-                  gradient: [AppColors.green, AppColors.greenLight],
+                  iconGradient: [AppColors.green, AppColors.greenLight],
                   onTap: () {
-                    HapticFeedback.lightImpact();
                     _pushNamed(TabFriendsWidget.routeName);
                   },
                 );
@@ -530,70 +529,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-    BuildContext context, {
-    required IconData icon,
-    required String value,
-    required String label,
-    required List<Color> gradient,
-    bool isText = false,
-    VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-            vertical: AppSpacing.md, horizontal: AppSpacing.xs),
-        decoration: BoxDecoration(
-          color: AppColors.navy.withValues(alpha:0.3),
-          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-          border: Border.all(
-            color: AppColors.glassSurface,
-          ),
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: gradient),
-                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-              ),
-              child: Icon(
-                icon,
-                color: AppColors.pure,
-                size: AppIconSize.xs,
-              ),
-            ),
-            SizedBox(height: AppSpacing.xs),
-            Text(
-              value,
-              style: isText
-                  ? AppTypography.labelSmall.copyWith(
-                      color: Colors.white,
-                    )
-                  : AppTypography.monoLarge.copyWith(
-                      color: Colors.white,
-                    ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: AppSpacing.xxs),
-            Text(
-              label,
-              style: AppTypography.labelSmall.copyWith(
-                color: AppColors.glassTextSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -656,8 +591,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ),
                       borderRadius: BorderRadius.circular(AppBorderRadius.md),
                     ),
-                    child: Icon(
-                      Icons.tune_rounded,
+                    child: AppIcon(
+                      icon: AppPhosphorIcons.golfVibes,
                       color: AppColors.pure,
                       size: AppIconSize.md,
                     ),
@@ -683,8 +618,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
+                  AppIcon(
+                    icon: AppPhosphorIcons.chevronRight,
                     color: AppColors.green,
                     size: AppIconSize.button,
                   ),
@@ -718,7 +653,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     Expanded(
                       child: _buildQuickActionCard(
                         context,
-                        icon: Icons.person_outline_rounded,
+                        icon: AppPhosphorIcons.editProfile,
                         label: 'Edit Profile',
                         gradient: [AppColors.navyLight, AppColors.navy],
                         onTap: () {
@@ -742,7 +677,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     Expanded(
                       child: _buildQuickActionCard(
                         context,
-                        icon: Icons.tune_rounded,
+                        icon: AppPhosphorIcons.golfVibes,
                         label: 'Golf Vibes',
                         gradient: [AppColors.green, AppColors.greenLight],
                         onTap: () {
@@ -773,7 +708,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 Expanded(
                   child: _buildQuickActionCard(
                     context,
-                    icon: Icons.person_outline_rounded,
+                    icon: AppPhosphorIcons.editProfile,
                     label: 'Edit Profile',
                     gradient: [AppColors.navyLight, AppColors.navy],
                     onTap: () {
@@ -797,7 +732,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 Expanded(
                   child: _buildQuickActionCard(
                     context,
-                    icon: Icons.tune_rounded,
+                    icon: AppPhosphorIcons.golfVibes,
                     label: 'Golf Vibes',
                     gradient: [AppColors.green, AppColors.greenLight],
                     onTap: () {
@@ -827,7 +762,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   Widget _buildQuickActionCard(
     BuildContext context, {
-    required IconData icon,
+    required PhosphorIconData icon,
     required String label,
     required List<Color> gradient,
     required VoidCallback onTap,
@@ -859,8 +794,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ),
                 ],
               ),
-              child: Icon(
-                icon,
+              child: AppIcon(
+                icon: icon,
                 color: AppColors.pure,
                 size: AppIconSize.md,
               ),
@@ -895,7 +830,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           Text(
             'Golf Info',
             style: AppTypography.titleLarge.copyWith(
-              fontSize: 18,
               color: AppColors.onyx,
             ),
           ),
@@ -905,7 +839,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           AuthUserStreamWidget(
             builder: (context) => _buildInfoRow(
               context,
-              icon: Icons.verified_rounded,
+              phosphorIcon: AppPhosphorIcons.verified,
               iconColor: AppColors.navy,
               label: 'Golf Canada #',
               value: valueOrDefault(
@@ -945,9 +879,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   Widget _buildInfoRow(
     BuildContext context, {
-    IconData? icon,
-    String? svgPath,
-    PhosphorIconData? phosphorIcon,
+    required PhosphorIconData phosphorIcon,
     required Color iconColor,
     required String label,
     required String value,
@@ -968,11 +900,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               color: iconColor.withValues(alpha:0.15),
               borderRadius: BorderRadius.circular(AppBorderRadius.sm),
             ),
-            child: phosphorIcon != null
-                ? AppIcon(icon: phosphorIcon, color: iconColor, size: AppIconSize.button)
-                : svgPath != null
-                    ? AppIcon(assetPath: svgPath, color: iconColor, size: AppIconSize.button)
-                    : Icon(icon, color: iconColor, size: AppIconSize.button),
+            child: AppIcon(
+              icon: phosphorIcon,
+              color: iconColor,
+              size: AppIconSize.button,
+            ),
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
@@ -1014,7 +946,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           Text(
             'Settings',
             style: AppTypography.titleLarge.copyWith(
-              fontSize: 18,
               color: AppColors.onyx,
             ),
           ),
@@ -1174,9 +1105,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   Widget _buildSettingsRow(
     BuildContext context, {
-    IconData? icon,
-    String? svgPath,
-    PhosphorIconData? phosphorIcon,
+    required PhosphorIconData phosphorIcon,
     required String label,
     required VoidCallback onTap,
     bool isDestructive = false,
@@ -1191,11 +1120,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         padding: EdgeInsets.all(AppSpacing.md),
         child: Row(
           children: [
-            phosphorIcon != null
-                ? AppIcon(icon: phosphorIcon, color: color, size: AppIconSize.md)
-                : svgPath != null
-                    ? AppIcon(assetPath: svgPath, color: color, size: AppIconSize.md)
-                    : Icon(icon, color: color, size: AppIconSize.md),
+            AppIcon(
+              icon: phosphorIcon,
+              color: color,
+              size: AppIconSize.md,
+            ),
             SizedBox(width: AppSpacing.md),
             Expanded(
               child: Text(
@@ -1211,8 +1140,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               trailing,
               SizedBox(width: AppSpacing.xs),
             ],
-            Icon(
-              Icons.chevron_right_rounded,
+            AppIcon(
+              icon: AppPhosphorIcons.chevronRight,
               color: AppColors.stone,
               size: AppIconSize.md,
             ),

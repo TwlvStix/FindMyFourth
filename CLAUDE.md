@@ -213,10 +213,201 @@ Sans-serif headline tokens exist for contexts where Manrope is needed at headlin
 - **Scale**: `xs` (16px), `sm` (20px), `md` (24px), `lg` (32px), `xl` (40px), `xxl` (48px)
 - **Semantic**: `AppIconSize.nav` (24px), `button` (20px), `listItem` (24px), `section` (32px), `feature` (40px), `avatar` (48px)
 
-**App Icons** (`app_icons.dart`) — SVG icon asset paths:
-- Unified icon system using custom SVGs with 1.75px stroke weight, round caps/joins, 24x24 grid
-- Usage: `AppIcon(assetPath: AppIcons.games, size: AppIconSize.md, color: AppColors.navy)`
-- All icons use `currentColor` for dynamic theming via `colorFilter`
+**App Icons** (`app_phosphor_icons.dart`) — Phosphor icon library:
+- Unified icon system using [Phosphor Icons](https://phosphoricons.com) via `phosphor_flutter` package
+- **Weight convention**: `PhosphorIconsRegular` everywhere; `PhosphorIconsFill` only for active nav states
+- **Naming**: Icons are named by concept, not shape (e.g., `betting` not `currencyDollar`) — swap the underlying icon without changing call sites
+- Usage: `AppIcon(icon: AppPhosphorIcons.games, size: AppIconSize.md, color: AppColors.textSecondary)`
+- **Icon color rules**:
+  - Passive/informational icons: `AppColors.textSecondary`
+  - Active/selected states: `AppColors.green`
+  - Trust/achievement badges: `AppColors.gold`
+  - Navigation inactive: `AppColors.textMuted`
+
+**App Icons (Legacy)** (`app_icons.dart`) — SVG icon asset paths:
+- Custom SVGs with 1.75px stroke weight, round caps/joins, 24x24 grid
+- **Deprecated**: Use `AppPhosphorIcons` for new code; SVG system retained for gradual migration
+- Legacy usage: `AppIcon(assetPath: AppIcons.games, size: AppIconSize.md, color: AppColors.navy)`
+
+#### Visual Patterns
+
+These patterns ensure visual consistency while allowing intentional variation. The guiding principle: **color is earned, not sprinkled**.
+
+**What Makes Premium Feel Premium:**
+
+Premium perception comes from deliberate craft in these areas — not from adding more color:
+
+| Premium Driver | How We Achieve It | Token System |
+|----------------|-------------------|--------------|
+| **Typography Contrast** | Fraunces (serif) for display, Manrope (sans) for body, DM Mono for data — weight and size variation creates hierarchy without color | `AppTypography.*` |
+| **Motion Choreography** | Staggered reveals, enter/exit curves, micro-interactions on high-impact moments — not scattered animation | `MotionTokens.*` |
+| **Restrained Depth** | Subtle elevation on interactive elements, accent glows reserved for success/premium moments | `AppElevation.*` |
+| **Generous Space** | Breathing room signals confidence; cramped layouts feel desperate | `AppSpacing.*` |
+| **Quiet Surfaces** | Navy/dark backgrounds let content and CTAs stand out; busy backgrounds compete | `AppColors.navy*` |
+
+When a screen feels "off," check these drivers before reaching for color.
+
+**Icon Coloring — Complete State Reference:**
+
+| Icon State | Color Token | Application Notes |
+|------------|-------------|-------------------|
+| **Informational** (default) | `AppColors.textSecondary` | Icons next to text in cards, stats, labels |
+| **Interactive/Active** | `AppColors.green` | Tappable elements, selected states, toggle "on" |
+| **Prestige** | `AppColors.gold` | Trust badges, achievements, premium features |
+| **Navigation (inactive)** | `AppColors.textMuted` | Bottom nav icons when not selected |
+| **Navigation (active)** | `AppColors.green` | Selected nav icon (use `*Fill` variant) |
+| **Disabled** | `AppColors.textMuted` + `AppOpacity.disabled` | Non-interactive, unavailable actions |
+| **Warning** | `AppColors.warning` | Caution states, expiring items |
+| **Error** | `AppColors.error` | Validation failures, blocked actions |
+| **Inverse** (on colored bg) | `AppColors.textPrimary` or white | Icons inside green/gold buttons or badges |
+| **Marketing/Illustrative** | Gradient fills, `AppIconSize.feature`+ | Onboarding heroes, empty states, promotional |
+
+```dart
+// Decision tree:
+// 1. Is it disabled? → textMuted + opacity
+// 2. Is it an error/warning state? → error/warning
+// 3. Is it on a colored background? → textPrimary (inverse)
+// 4. Is it interactive/tappable? → green
+// 5. Is it active/selected? → green
+// 6. Is it trust/achievement? → gold
+// 7. Is it inactive navigation? → textMuted
+// 8. DEFAULT → textSecondary
+```
+
+**Icon Badge Rule — Badges Are Earned:**
+
+Do NOT wrap informational icons in colored containers. Reserve `AppIconBox` for exactly three contexts:
+
+| Context | Background | Icon Color | Example |
+|---------|------------|------------|---------|
+| Trust/Achievement | `AppColors.trustGoldBg` | `AppColors.trustGoldFg` | Trust profile badge |
+| Feature Highlight | `AppColors.navy` | `AppColors.textPrimary` | Empty state hero icons |
+| Prominent CTA | `AppColors.green` | `AppColors.textPrimary` | Floating action buttons |
+
+```dart
+// ❌ WRONG: Colored badge on informational icon
+Container(
+  decoration: BoxDecoration(color: AppColors.green.withOpacity(0.2)),
+  child: AppIcon(icon: AppPhosphorIcons.betting, color: AppColors.green),
+)
+
+// ✅ CORRECT: Plain icon, let the card provide structure
+AppIcon(
+  icon: AppPhosphorIcons.betting,
+  size: AppIconSize.listItem,
+  color: AppColors.textSecondary,
+)
+```
+
+**Card Pattern Family — Consistency With Variation:**
+
+Three card variants share a foundation but serve different purposes:
+
+| Variant | Purpose | Visual Treatment |
+|---------|---------|------------------|
+| **Info Card** | Dense attribute grids (game details) | Icon + label/value, compact, no elevation |
+| **Stat Card** | Hero metrics (handicap, rounds) | Large value, small label, subtle glow on premium stats |
+| **Action Card** | Tappable destinations (settings, navigation) | Chevron trail, hover/press state, slight elevation |
+
+*Shared Foundation (all variants):*
+```
+- Background: AppColors.navy
+- Border: 1px AppColors.navyLight
+- Radius: AppBorderRadius.card (12px)
+- Padding: AppSpacing.cardPadding (20px)
+- Icon: AppColors.textSecondary (unless interactive)
+- Gap (icon→text): AppSpacing.sm (12px)
+```
+
+*Info Card (game details, profile attributes):*
+```
+┌─────────────────────────────────────────────────┐
+│  [Icon]  [Label]                                │
+│          [Value]                                │
+└─────────────────────────────────────────────────┘
+- Icon: AppIconSize.listItem (24px)
+- Label: AppTypography.labelSmall, AppColors.textMuted
+- Value: AppTypography.bodyMedium, AppColors.textPrimary, w600
+- No elevation, no hover state
+```
+
+*Stat Card (profile hero stats, dashboard metrics):*
+```
+┌─────────────────────────────────────────────────┐
+│              [Large Value]                      │
+│              [Label]                            │
+│              [Icon]                             │
+└─────────────────────────────────────────────────┘
+- Value: AppTypography.headlineMediumSans or monoDisplay, AppColors.textPrimary
+- Label: AppTypography.labelSmall, AppColors.textMuted
+- Icon: AppIconSize.section (32px), AppColors.textSecondary
+- Optional: AppElevation.glowGold for trust-related stats
+- Centered layout, more vertical padding
+```
+
+*Action Card (settings rows, navigation destinations):*
+```
+┌─────────────────────────────────────────────────┐
+│  [Icon]  [Title]                            [›] │
+│          [Subtitle]                             │
+└─────────────────────────────────────────────────┘
+- Icon: AppIconSize.listItem (24px)
+- Title: AppTypography.bodyMedium, AppColors.textPrimary
+- Subtitle: AppTypography.labelSmall, AppColors.textMuted
+- Chevron: AppPhosphorIcons.chevronRight, AppColors.textMuted
+- Hover: background → AppColors.navyLight
+- Press: background → AppColors.navyHovered
+- Elevation: AppElevation.xs on hover
+```
+
+**Color Intent — Diagnostic Questions:**
+
+Instead of rigid percentages, ask these questions when adding color:
+
+| Question | If Yes | If No |
+|----------|--------|-------|
+| Is this the primary action on the screen? | Green is appropriate | Should probably be neutral |
+| Does this represent trust, achievement, or premium? | Gold is appropriate | Should probably be neutral |
+| Am I adding color because it "looks nice"? | Stop — that's decoration | Continue if functional |
+| Would a new user understand why this is colored? | Color is justified | Remove the color |
+| Is there already a green CTA on this screen? | Consider if this competes | Green may be appropriate |
+
+*Guardrail (not a law):* Most screens work best with 1-2 green elements (primary CTA + active state) and 0-1 gold elements (trust badge if relevant). Exceptions: onboarding, celebrations, marketing screens may need more emphasis — justify the intent.
+
+**Screen-Specific Guidance:**
+
+| Screen | Primary CTA (green) | Prestige (gold) | Watch Out For |
+|--------|---------------------|-----------------|---------------|
+| Game Details | "Join Game" button | Host trust badge | Info icons should be neutral, not colored per-category |
+| Profile | "Edit Profile" button | Trust tier, milestones | Stat icons neutral; gold only on earned achievements |
+| Game List | "Create Game" FAB | None typically | Card icons neutral; don't color-code game types |
+| Create Game | "Post Game" button | None | Selection states use green; unselected stays neutral |
+| Onboarding | Next/Continue buttons | Premium feature callouts | More color acceptable here for energy and guidance |
+
+**Pre-Ship Checklist:**
+
+Before shipping any screen, verify:
+- [ ] Premium drivers are working (typography contrast, spacing, motion) before adding color
+- [ ] Informational icons use `AppColors.textSecondary`
+- [ ] Icon badges only appear for trust/FAB/empty-state contexts
+- [ ] Color is justified by function, not decoration
+- [ ] Green appears only on primary CTA and active states
+- [ ] Gold appears only for earned achievements/trust (often 0 per screen)
+- [ ] Cards use the appropriate variant (info/stat/action) from the family
+- [ ] Text hierarchy flows: `textPrimary` → `textSecondary` → `textMuted`
+- [ ] Disabled states use `textMuted` + `AppOpacity.disabled`
+- [ ] Error/warning states use semantic colors, not ad-hoc reds/yellows
+
+**Implementation Priority:**
+
+*Phase 1 — Establish Reference:*
+Pick one screen (Game Details recommended), apply all patterns, screenshot as the "gold standard."
+
+*Phase 2 — Propagate:*
+Apply to Profile, Create Game, Settings — using the same card family and icon color rules.
+
+*Phase 3 — Audit & Lock:*
+Grep for `AppIconBox` usage and verify each is justified. Add screenshots to design documentation.
 
 #### Motion System (`lib/core/motion/motion_tokens.dart`)
 
@@ -258,7 +449,7 @@ Prefixed with `app_` and built on design tokens:
 - `app_loading_state.dart` — Loading state pattern
 - `app_list_tile.dart` — Consistent list item
 - `app_choice_chips.dart` — Chip group selection
-- `app_icon.dart` — Icon wrapper with `AppIconSize` and SVG support
+- `app_icon.dart` — Icon wrapper supporting both Phosphor icons (`icon:`) and legacy SVGs (`assetPath:`); includes `AppNavIcon` for navigation with active/inactive states and `AppIconBox` for badge-style icons
 - `app_icon_badge.dart` — Icon with notification badge
 - `app_info_grid.dart` — Grid layout for info display
 - `premium_back_button.dart` — Styled back navigation
@@ -325,7 +516,18 @@ Container(decoration: BoxDecoration(boxShadow: [AppElevation.card]))
 // Border radius
 Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(AppBorderRadius.card)))
 
-// Icons (SVG)
+// Icons (Phosphor — preferred)
+AppIcon(icon: AppPhosphorIcons.games, size: AppIconSize.md, color: AppColors.textSecondary)
+AppIcon(icon: AppPhosphorIcons.betting, size: AppIconSize.listItem, color: AppColors.textSecondary)
+
+// Navigation icons (with active/inactive states)
+AppNavIcon(
+  icon: AppPhosphorIcons.games,
+  iconFill: AppPhosphorIcons.gamesFill,
+  isActive: _currentIndex == 0,
+)
+
+// Icons (SVG — legacy, still supported)
 AppIcon(assetPath: AppIcons.games, size: AppIconSize.md, color: AppColors.navy)
 
 // Motion
@@ -344,6 +546,7 @@ AnimatedContainer(duration: MotionTokens.microInteraction, curve: MotionTokens.c
 
 #### Known Design Debt
 
+- **SVG icon system (`AppIcons`)** is deprecated — Phosphor Icons (`AppPhosphorIcons`) is now the primary icon system. The SVG assets in `assets/icon/golf-app-icons/` and the `AppIcons` class in `app_icons.dart` are retained for gradual migration but should not be used for new code. Once all screens are migrated, remove the SVG assets, `flutter_svg` dependency (if no other SVGs remain), and `AppIcons` class.
 - **`premium_ui_patterns.dart`** has stale naming — `AppGradients` references old "Fairway Sunset" names (`sunsetGold`, `fairway`) instead of The Clubhouse vocabulary. Comments in the file also reference the old design language. Update when next modifying this file.
 - **Remaining `withOpacity()` deprecation warnings** — use `Color.withValues(alpha: ...)` or the pre-computed glass/overlay constants in `AppColors` instead.
 - **Some files still use `AppTheme.of(context)`** with FlutterFlow naming instead of direct tokens.
@@ -409,7 +612,7 @@ Key collections:
 - **Naming**: Files use `snake_case`. Classes use `PascalCase`. Route names match widget class names.
 - **Logging**: Use `AppLog.d()` from `lib/core/utils/app_log.dart` for all logging in services AND providers. Do not use `print()` or `debugPrint()`.
 - **Emoji in logs**: Use emoji prefixes for log readability: ✅ success, ❌ error, 📖 info, 📱 chat operations, 🔵 stream events, 💬 chat UI, 🔥 cache warming, 🆕 new fetches
-- **Icons**: Always use `AppIcon` with `AppIconSize` tokens. Do not use raw `Icon()` with hardcoded sizes. When no SVG equivalent exists in `AppIcons`, use `Icon()` but always pair with `AppIconSize` for the size parameter. See `docs/icon-size-mapping-reference.md` for which token to use in which context.
+- **Icons**: Always use `AppIcon` with `AppPhosphorIcons` and `AppIconSize` tokens. For new code, use `AppIcon(icon: AppPhosphorIcons.xxx)`. Do not use raw `Icon()` or `PhosphorIcon()` with hardcoded sizes. For navigation with active/inactive states, use `AppNavIcon` with both `icon` and `iconFill` variants. See `docs/icon-size-mapping-reference.md` for which token to use in which context.
 
 ### Provider Pattern
 Providers follow a consistent structure:
@@ -488,6 +691,7 @@ Environment configuration is handled via Dart compile-time constants (`--dart-de
 - **Auth providers**: `google_sign_in` 7.2.0, `sign_in_with_apple` 7.0.1
 - **Reactive streams**: `rxdart` 0.28.0, `stream_transform` 2.1.1
 - **UI**: `flutter_animate` 4.5.2, `flutter_spinkit` 5.2.2, `cached_network_image` 3.4.1, `auto_size_text` 3.0.0
+- **Icons**: `phosphor_flutter` (Phosphor Icons — primary icon system)
 - **Cloud Functions runtime**: Node.js 20
 
 ## File Creation Conventions
@@ -516,7 +720,9 @@ When adding a new feature, the typical file set is:
 - **`lib/custom_code/`** is excluded from analysis and contains legacy/generated code — avoid modifying or depending on it for new features
 - **`lib/app_state.dart`** is legacy — it only holds SharedPreferences-backed cancelled game state. Do not add new state here; use the appropriate domain provider instead.
 - **Don't use hardcoded icon sizes** — use `AppIconSize` tokens (e.g., `AppIconSize.button`, `AppIconSize.listItem`). Literal pixel values on icons bypass the design system and create visual inconsistency.
-- **Don't use raw `Icon()` when an `AppIcons` SVG exists** — use `AppIcon(assetPath: AppIcons.xxx)` to stay within the unified icon system. Check `app_icons.dart` before reaching for Material Icons.
+- **Don't use raw `Icon()`, `PhosphorIcon()`, or Material Icons** — use `AppIcon(icon: AppPhosphorIcons.xxx)` to stay within the unified icon system. Check `app_phosphor_icons.dart` for available icons. The centralized mapping allows icon changes without touching call sites.
+- **Don't use SVG icons (`AppIcons`) for new code** — use `AppPhosphorIcons` instead. The SVG system is deprecated but retained for gradual migration.
+- **Don't mix icon weights** — use `PhosphorIconsRegular` everywhere except active navigation states, which use `PhosphorIconsFill`.
 - **Don't hardcode `fontFamily`, `fontSize`, or `fontWeight`** — use `AppTypography` tokens. If no token matches exactly, use the closest token with `.copyWith()`. Never use raw `TextStyle(fontFamily: 'Manrope', ...)`.
 - **Don't hardcode `BorderRadius.circular()` values** — use `AppBorderRadius` tokens. Map to nearest token: 8→sm, 12→md, 16→lg, 20→xl, 24→xxl, 999→full.
 - **Don't hardcode spacing values** — use `AppSpacing` tokens and shortcuts. Use `AppSpacing.allMd` instead of `EdgeInsets.all(16)`, and `AppSpacing.verticalSmBox` instead of `SizedBox(height: 12)`.

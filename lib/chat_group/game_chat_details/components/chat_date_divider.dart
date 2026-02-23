@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/utils/formatting_utils.dart';
@@ -47,7 +48,7 @@ class ChatDateDivider extends StatelessWidget {
         children: [
           Expanded(
             child: Divider(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: AppColors.glassBorder,
               thickness: 1,
             ),
           ),
@@ -55,16 +56,15 @@ class ChatDateDivider extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
             child: Text(
               _getDateLabel(),
-              style: AppTypography.text10.copyWith(
-                color: Colors.white.withValues(alpha: 0.6),
+              style: AppTypography.labelMicro.copyWith(
+                color: AppColors.textMuted,
                 fontWeight: FontWeight.w500,
-                letterSpacing: 0.0,
               ),
             ),
           ),
           Expanded(
             child: Divider(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: AppColors.glassBorder,
               thickness: 1,
             ),
           ),

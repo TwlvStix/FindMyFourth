@@ -1,12 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/app_icon.dart';
 
 /// Premium tee time picker with iOS-style wheel picker
 class TeeTimePicker extends StatefulWidget {
@@ -188,7 +190,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close, color: AppColors.pure, size: AppIconSize.md),
+                    icon: AppIcon(icon: AppPhosphorIcons.close, color: AppColors.pure, size: AppIconSize.md),
                     onPressed: () => Navigator.pop(context),
                     padding: EdgeInsets.zero,
                     constraints: BoxConstraints(),
@@ -495,7 +497,7 @@ class _TeeTimePickerState extends State<TeeTimePicker> {
         ),
         child: Text(
           label,
-          style: AppTypography.caption.copyWith(
+          style: AppTypography.labelSmall.copyWith(
             fontWeight: FontWeight.w500,
             color: AppColors.pure,
           ),

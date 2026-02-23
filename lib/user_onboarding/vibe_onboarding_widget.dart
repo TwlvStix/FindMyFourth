@@ -3,6 +3,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/models/vibe_profile.dart';
@@ -314,7 +315,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                 Row(
                   children: [
                     Icon(
-                      Icons.emoji_events_rounded,
+                      AppPhosphorIcons.competitive,
                       size: AppIconSize.button,
                       color: AppColors.gold,
                     ),
@@ -498,10 +499,10 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
               ),
               Icon(
                 isTop
-                    ? Icons.arrow_upward_rounded
+                    ? AppPhosphorIcons.arrowUp
                     : isBottom
-                        ? Icons.arrow_downward_rounded
-                        : Icons.radio_button_unchecked_rounded,
+                        ? AppPhosphorIcons.arrowDown
+                        : AppPhosphorIcons.circle,
                 color: isTop || isBottom ? AppColors.pure : AppColors.stone,
                 size: AppIconSize.md,
               ),
@@ -682,7 +683,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                                   child: Row(
                                     children: [
                                       Icon(
-                                        Icons.lightbulb_outline_rounded,
+                                        AppPhosphorIcons.lightbulb,
                                         size: AppIconSize.button,
                                         color: AppColors.navy,
                                       ),
@@ -752,8 +753,8 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                             ? 'Finish'
                             : 'Next',
                         leadingIcon: _currentIndex == _categories.length
-                            ? Icons.check_circle_rounded
-                            : Icons.arrow_forward_rounded,
+                            ? AppPhosphorIcons.success
+                            : AppPhosphorIcons.arrowRight,
                         variant: AppButtonVariant.primary,
                         size: AppButtonSize.large,
                         isLoading: _isCompleting,

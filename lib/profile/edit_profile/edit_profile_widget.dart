@@ -20,7 +20,7 @@ import '/user_auth/sign_in/sign_in_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import 'package:provider/provider.dart';
 
 class EditProfileWidget extends StatefulWidget {
@@ -396,7 +396,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
                     color: AppColors.sand,
-                    child: Icon(Icons.person_rounded,
+                    child: Icon(AppPhosphorIcons.profile,
                         size: AppIconSize.hero, color: AppColors.stone),
                   ),
                 ),
@@ -446,7 +446,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                       shape: BoxShape.circle,
                       boxShadow: [AppElevation.glowGreen],
                     ),
-                    child: Icon(Icons.camera_alt_rounded,
+                    child: Icon(AppPhosphorIcons.camera,
                         color: AppColors.pure, size: AppIconSize.md),
                   ),
                 ),
@@ -513,7 +513,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         controller: firstNameTextController!,
                         focusNode: firstNameFocusNode!,
                         label: 'First Name',
-                        icon: Icons.person_outline_rounded,
+                        icon: AppPhosphorIcons.profile,
                       ),
                     ),
                     SizedBox(width: AppSpacing.sm),
@@ -522,7 +522,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         controller: lastNameTextController!,
                         focusNode: lastNameFocusNode!,
                         label: 'Last Name',
-                        icon: Icons.person_outline_rounded,
+                        icon: AppPhosphorIcons.profile,
                       ),
                     ),
                   ],
@@ -534,7 +534,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                   controller: usernameTextController!,
                   focusNode: usernameFocusNode!,
                   label: 'Display Name',
-                  icon: Icons.alternate_email_rounded,
+                  icon: AppPhosphorIcons.atSign,
                   readOnly: true,
                 ),
                 SizedBox(height: AppSpacing.md),
@@ -544,7 +544,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                   controller: phoneNumTextController!,
                   focusNode: phoneNumFocusNode!,
                   label: 'Phone',
-                  icon: Icons.phone_outlined,
+                  icon: AppPhosphorIcons.phone,
                   keyboardType: TextInputType.phone,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 ),
@@ -555,7 +555,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                   controller: emailTextController!,
                   focusNode: emailFocusNode!,
                   label: 'Email',
-                  icon: Icons.email_outlined,
+                  icon: AppPhosphorIcons.email,
                   readOnly: true,
                 ),
               ],
@@ -633,7 +633,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         ),
                         hintText: 'Select Home Course',
                         icon: Icon(
-                          Icons.golf_course_rounded,
+                          AppPhosphorIcons.golfCourse,
                           color: AppColors.navy,
                           size: AppIconSize.md,
                         ),
@@ -668,7 +668,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                           borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                         ),
                         child: Icon(
-                          FontAwesomeIcons.flagCheckered,
+                          AppPhosphorIcons.flagCheckered,
                           color: AppColors.gold,
                           size: AppIconSize.button,
                         ),
@@ -705,7 +705,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                           ),
                           child: Icon(
-                            Icons.remove_rounded,
+                            AppPhosphorIcons.minus,
                             color:
                                 enabled ? AppColors.navy : AppColors.stone,
                             size: AppIconSize.button,
@@ -721,7 +721,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                           ),
                           child: Icon(
-                            Icons.add_rounded,
+                            AppPhosphorIcons.plus,
                             color:
                                 enabled ? AppColors.navy : AppColors.stone,
                             size: AppIconSize.button,
@@ -759,7 +759,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                   controller: golfCanadaTextController!,
                   focusNode: golfCanadaFocusNode!,
                   label: 'Golf Canada #',
-                  icon: Icons.verified_rounded,
+                  icon: AppPhosphorIcons.verified,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 ),
@@ -792,7 +792,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check_circle_rounded, color: AppColors.pure, size: AppIconSize.md),
+              Icon(AppPhosphorIcons.success, color: AppColors.pure, size: AppIconSize.md),
               SizedBox(width: AppSpacing.xs),
               Text(
                 'Save Changes',
@@ -898,7 +898,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.delete_outline_rounded,
+              Icon(AppPhosphorIcons.trash,
                   color: AppColors.error, size: AppIconSize.md),
               SizedBox(width: AppSpacing.xs),
               Text(

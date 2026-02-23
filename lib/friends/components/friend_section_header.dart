@@ -6,7 +6,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
-import '/core/design_tokens/app_icons.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon.dart';
 
@@ -192,7 +192,7 @@ class _FriendSectionHeaderState extends State<FriendSectionHeader>
                   duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
                   curve: MotionTokens.curveEnter,
                   child: Icon(
-                    Icons.keyboard_arrow_down_rounded,
+                    AppPhosphorIcons.chevronDown,
                     color: widget.color,
                     size: AppIconSize.md,
                   ),

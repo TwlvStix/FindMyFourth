@@ -15,7 +15,7 @@ import '/user_auth/recover_password/recover_password_widget.dart';
 import '/user_auth/sign_up_account/sign_up_account_widget.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 
 class SignInWidget extends StatefulWidget {
   const SignInWidget({super.key});
@@ -237,8 +237,8 @@ class _SignInWidgetState extends State<SignInWidget> {
                                             passwordVisibilityIconFocusNode,
                                         child: Icon(
                                           passwordVisibility
-                                              ? Icons.visibility_outlined
-                                              : Icons.visibility_off_outlined,
+                                              ? AppPhosphorIcons.eye
+                                              : AppPhosphorIcons.eyeSlash,
                                           color: AppColors.textMuted,
                                           size: AppIconSize.md,
                                         ),
@@ -382,7 +382,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                   },
                                   text: 'Continue with Google',
                                   leadingWidget: const GoogleLogo(size: 20),
-                                  variant: AppButtonVariant.google,
+                                  variant: AppButtonVariant.secondary,
                                   size: AppButtonSize.large,
                                   fullWidth: true,
                                 ),
@@ -431,7 +431,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                           );
                                         },
                                         text: 'Continue with Apple',
-                                        leadingIcon: FontAwesomeIcons.apple,
+                                        leadingIcon: AppPhosphorIcons.appleLogo,
                                         variant: AppButtonVariant.navyFilled,
                                         size: AppButtonSize.large,
                                         fullWidth: true,
@@ -618,7 +618,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                   shape: BoxShape.circle,
                                                 ),
                                                 child: Icon(
-                                                  Icons.person,
+                                                  AppPhosphorIcons.profile,
                                                   color: AppColors.navyDark,
                                                   size: AppIconSize.md,
                                                 ),
@@ -652,7 +652,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                   ),
                                                 ),
                                                 Icon(
-                                                  Icons.star_rounded,
+                                                  AppPhosphorIcons.starFill,
                                                   color: AppColors.navyDark,
                                                   size: AppIconSize.button,
                                                 ),

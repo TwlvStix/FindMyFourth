@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
@@ -88,8 +89,8 @@ class SectionHeader extends StatelessWidget {
                   color: AppColors.gold.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.help_outline_rounded,
+                child: AppIcon(
+                  icon: AppPhosphorIcons.help,
                   color: AppColors.gold,
                   size: AppIconSize.xs,
                 ),

@@ -9,6 +9,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/friends/components/empty_state.dart';
 import '/friends/components/friend_card_skeleton.dart';
@@ -288,7 +289,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                           borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                         ),
                         prefixIcon: Icon(
-                          Icons.search_rounded,
+                          AppPhosphorIcons.search,
                           color: AppColors.pure,
                         ),
                       ),
@@ -314,7 +315,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                           : Colors.transparent,
                       tooltip: 'Filters',
                       icon: Icon(
-                        Icons.tune_rounded,
+                        AppPhosphorIcons.tune,
                         color: widget.friendFilters?.hasActiveFilters == true
                             ? AppColors.navy
                             : AppColors.pure,
@@ -333,7 +334,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                     buttonSize: 44.0,
                     tooltip: 'Clear search',
                     icon: Icon(
-                      Icons.clear_sharp,
+                      AppPhosphorIcons.close,
                       color: AppColors.pure,
                       size: AppIconSize.md,
                     ),

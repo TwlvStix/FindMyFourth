@@ -106,6 +106,9 @@ class AppPhosphorIcons {
   /// Add player — user plus
   static const addPlayer = PhosphorIconsRegular.userPlus;
 
+  /// Remove player — user minus
+  static const removePlayer = PhosphorIconsRegular.userMinus;
+
   /// Public visibility — globe
   static const publicVisibility = PhosphorIconsRegular.globe;
 
@@ -117,6 +120,21 @@ class AppPhosphorIcons {
 
   /// Calendar check
   static const calendarCheck = PhosphorIconsRegular.calendarCheck;
+
+  /// Calendar (pick a date)
+  static const calendar = PhosphorIconsRegular.calendar;
+
+  /// Calendar note / event note
+  static const calendarNote = PhosphorIconsRegular.calendarBlank;
+
+  /// Label / tag (for game name, etc)
+  static const label = PhosphorIconsRegular.tag;
+
+  /// Golf course / golf hole
+  static const golfCourse = PhosphorIconsRegular.golf;
+
+  /// People / friends (group context)
+  static const people = PhosphorIconsRegular.users;
 
   // ══════════════════════════════════════════════════════════════════════════
   // GAME FORMATS & MODES
@@ -237,6 +255,15 @@ class AppPhosphorIcons {
   /// Rounds completed — golf icon
   static const rounds = PhosphorIconsRegular.golf;
 
+  /// Golf ball / handicap — golf icon (alias for profile stats)
+  static const golf = PhosphorIconsRegular.golf;
+
+  /// Flag checkered — for handicap/finish line contexts
+  static const flagCheckered = PhosphorIconsRegular.flagCheckered;
+
+  /// Users — alias for social contexts (friends count, etc.)
+  static const users = PhosphorIconsRegular.users;
+
   /// Hosted — flag pennant
   static const hosted = PhosphorIconsRegular.flagPennant;
 
@@ -259,6 +286,9 @@ class AppPhosphorIcons {
   /// Info
   static const info = PhosphorIconsRegular.info;
 
+  /// Help — question mark
+  static const help = PhosphorIconsRegular.question;
+
   /// Warning — triangle
   static const warning = PhosphorIconsRegular.warning;
 
@@ -276,6 +306,12 @@ class AppPhosphorIcons {
 
   /// Add / plus
   static const add = PhosphorIconsRegular.plus;
+
+  /// Plain plus sign (for counters)
+  static const plus = PhosphorIconsRegular.plus;
+
+  /// Plain minus sign (for counters)
+  static const minus = PhosphorIconsRegular.minus;
 
   /// Remove / minus circle
   static const remove = PhosphorIconsRegular.minusCircle;
@@ -320,6 +356,18 @@ class AppPhosphorIcons {
 
   /// Chevron up — collapse
   static const chevronUp = PhosphorIconsRegular.caretUp;
+
+  /// Arrow up — priority up, rank up
+  static const arrowUp = PhosphorIconsRegular.arrowUp;
+
+  /// Arrow right — forward navigation
+  static const arrowRight = PhosphorIconsRegular.arrowRight;
+
+  /// Lightbulb — tips, hints, ideas
+  static const lightbulb = PhosphorIconsRegular.lightbulb;
+
+  /// Circle — empty state, unchecked radio
+  static const circle = PhosphorIconsRegular.circle;
 
   // ══════════════════════════════════════════════════════════════════════════
   // CHECKBOX (replaces Material checkbox icons)
@@ -381,6 +429,22 @@ class AppPhosphorIcons {
   static const image = PhosphorIconsRegular.image;
 
   // ══════════════════════════════════════════════════════════════════════════
+  // BRAND LOGOS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Apple logo — for Sign in with Apple
+  static const appleLogo = PhosphorIconsRegular.appleLogo;
+
+  /// Music notes — for music preference
+  static const music = PhosphorIconsRegular.musicNotes;
+
+  /// Drinks — for drinking preference (martini glass)
+  static const drinks = PhosphorIconsRegular.martini;
+
+  /// Speed / pace — speedometer
+  static const pace = PhosphorIconsRegular.gauge;
+
+  // ══════════════════════════════════════════════════════════════════════════
   // SOCIAL / FEEDBACK
   // ══════════════════════════════════════════════════════════════════════════
 
@@ -398,4 +462,49 @@ class AppPhosphorIcons {
 
   /// Handshake — social / meet
   static const handshake = PhosphorIconsRegular.handshake;
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // CHAT & MESSAGING
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Reply — arrow bend up left
+  static const reply = PhosphorIconsRegular.arrowBendUpLeft;
+
+  /// Read receipt — double check / checks
+  static const checks = PhosphorIconsRegular.checks;
+
+  /// Broken image — failed to load
+  static const imageBroken = PhosphorIconsRegular.imageBroken;
+
+  /// Arrow down — scroll to bottom
+  static const arrowDown = PhosphorIconsRegular.arrowDown;
+
+  /// Photo library / gallery — images
+  static const imageGallery = PhosphorIconsRegular.images;
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // EMPTY STATES
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Search off / no results — magnifying glass with minus
+  static const searchOff = PhosphorIconsRegular.magnifyingGlassMinus;
+
+  /// Inbox / tray — empty inbox state
+  static const inbox = PhosphorIconsRegular.tray;
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // ADDITIONAL PROFILE & FORM ICONS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// At sign / username — @
+  static const atSign = PhosphorIconsRegular.at;
+
+  /// Sparkle / auto-awesome — magic/AI features
+  static const sparkle = PhosphorIconsRegular.sparkle;
+
+  /// Message — alias for chat (direct messaging context)
+  static const message = PhosphorIconsRegular.chatCircle;
+
+  /// Tune / adjust — sliders (alias for filter/tune contexts)
+  static const tune = PhosphorIconsRegular.slidersHorizontal;
 }

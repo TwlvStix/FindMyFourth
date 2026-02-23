@@ -1,14 +1,16 @@
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/design_tokens/app_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_text_field.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/motion/motion_helpers.dart';
+import '/core/motion/motion_tokens.dart';
+import '/core/motion/reduced_motion.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
@@ -100,6 +102,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   // Draft & Loading state
   bool _isLoading = true;
   bool _hasDraft = false;
+
+  // Animation state - triggers once when content loads
+  bool _hasAnimated = false;
   static const String _draftKey = 'create_game_draft';
   final TextEditingController _gameNameController = TextEditingController();
 
@@ -171,6 +176,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       if (mounted) {
         setState(() {
           _isLoading = false;
+        });
+        // Trigger entrance animation after a brief delay
+        Future.delayed(const Duration(milliseconds: 50), () {
+          if (mounted && !_hasAnimated) {
+            setState(() => _hasAnimated = true);
+          }
         });
       }
     });
@@ -381,7 +392,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           SnackBar(
             content: Text('Please select a date and time.'),
             duration: Duration(milliseconds: 4000),
-            backgroundColor: AppColors.navyDark,
+            backgroundColor: AppColors.error,
           ),
         );
         return;
@@ -410,7 +421,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           SnackBar(
             content: Text('Please select a team style for 2v2 games.'),
             duration: Duration(milliseconds: 4000),
-            backgroundColor: AppColors.navyDark,
+            backgroundColor: AppColors.error,
           ),
         );
         return;
@@ -423,7 +434,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           SnackBar(
             content: Text('Please describe the other game.'),
             duration: Duration(milliseconds: 4000),
-            backgroundColor: AppColors.navyDark,
+            backgroundColor: AppColors.error,
           ),
         );
         return;
@@ -450,7 +461,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           SnackBar(
             content: Text('Please sign in to create a game.'),
             duration: Duration(milliseconds: 4000),
-            backgroundColor: AppColors.navyDark,
+            backgroundColor: AppColors.error,
           ),
         );
         return;
@@ -580,12 +591,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               content: Text(
                 'You have created a game!',
                 style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.navy,
+                  color: AppColors.pure,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               duration: Duration(milliseconds: 4000),
-              backgroundColor: AppColors.navyDark,
+              backgroundColor: AppColors.success,
             ),
           );
         }),
@@ -684,8 +695,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                   color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.help_outline_rounded,
+                child: AppIcon(
+                  icon: AppPhosphorIcons.help,
                   color: AppColors.pure,
                   size: AppIconSize.lg,
                 ),
@@ -748,7 +759,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           ),
           child: Row(
             children: [
-              Icon(Icons.info_outline_rounded, color: AppColors.pure, size: AppIconSize.button),
+              AppIcon(icon: AppPhosphorIcons.info, color: AppColors.pure, size: AppIconSize.button),
               SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
@@ -799,7 +810,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             ),
             child: Row(
               children: [
-                Icon(Icons.event_note_rounded, color: AppColors.pure, size: AppIconSize.button),
+                AppIcon(icon: AppPhosphorIcons.calendarNote, color: AppColors.pure, size: AppIconSize.button),
                 SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
@@ -821,6 +832,30 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         fontSize: 13,
         color: Colors.white.withValues(alpha: 0.7),
       );
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ANIMATED SECTION HELPER
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildAnimatedSection({
+    required int sectionIndex,
+    required Widget child,
+  }) {
+    // Calculate stagger delay based on section index (max 8 sections animated)
+    final clampedIndex = sectionIndex < MotionTokens.staggerMaxItems
+        ? sectionIndex
+        : MotionTokens.staggerMaxItems - 1;
+    final staggerDelay = ReducedMotionService.shouldStagger
+        ? MotionTokens.staggerDelay * clampedIndex
+        : Duration.zero;
+
+    return child
+        .animate(target: _hasAnimated ? 1 : 0)
+        .fadeIn(
+          delay: staggerDelay,
+          duration: ReducedMotionService.adjust(MotionTokens.contentReveal),
+          curve: MotionTokens.curveEnter,
+        );
+  }
 
   Widget _buildWeekChips() {
     final weeks = [
@@ -1022,8 +1057,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 SizedBox(height: 2),
                 Text(
                   time['subtitle'] as String,
-                  style: AppTypography.caption.copyWith(
-                    fontSize: 10,
+                  style: AppTypography.labelMicro.copyWith(
+                    fontWeight: FontWeight.w400,
                     color: Colors.white.withValues(alpha: 0.7),
                   ),
                   textAlign: TextAlign.center,
@@ -1180,15 +1215,18 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        SectionHeader(
-                                          svgPath: AppIcons.games,
-                                          title: 'Game Name',
-                                          helpText:
-                                              'Auto-generated for you. Edit here if you want a custom name.',
-                                          onHelpTap: () => _showHelpDialog(
-                                              context,
-                                              'Game Name',
-                                              'Auto-generated for you. Edit here if you want a custom name.'),
+                                        _buildAnimatedSection(
+                                          sectionIndex: 0,
+                                          child: SectionHeader(
+                                            phosphorIcon: AppPhosphorIcons.games,
+                                            title: 'Game Name',
+                                            helpText:
+                                                'Auto-generated for you. Edit here if you want a custom name.',
+                                            onHelpTap: () => _showHelpDialog(
+                                                context,
+                                                'Game Name',
+                                                'Auto-generated for you. Edit here if you want a custom name.'),
+                                          ),
                                         ),
                                         Padding(
                                           padding: EdgeInsets.only(
@@ -1198,20 +1236,23 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             hint: 'Auto-generated',
                                             controller: _gameNameController,
                                             variant: AppTextFieldVariant.filled,
-                                            prefixIcon: Icons.label_rounded,
+                                            prefixPhosphorIcon: AppPhosphorIcons.label,
                                             onChanged: (_) => _saveDraft(),
                                           ),
                                         ),
 
-                                        SectionHeader(
-                                          phosphorIcon: AppPhosphorIcons.calendarCheck,
-                                          title: 'Schedule',
-                                          helpText:
-                                              'Choose if you have a confirmed tee time or flexible availability.',
-                                          onHelpTap: () => _showHelpDialog(
-                                              context,
-                                              'Schedule',
-                                              'Choose if you have a confirmed tee time or flexible availability.'),
+                                        _buildAnimatedSection(
+                                          sectionIndex: 1,
+                                          child: SectionHeader(
+                                            phosphorIcon: AppPhosphorIcons.calendarCheck,
+                                            title: 'Schedule',
+                                            helpText:
+                                                'Choose if you have a confirmed tee time or flexible availability.',
+                                            onHelpTap: () => _showHelpDialog(
+                                                context,
+                                                'Schedule',
+                                                'Choose if you have a confirmed tee time or flexible availability.'),
+                                          ),
                                         ),
 
                                         // Schedule Type Selector
@@ -1223,13 +1264,14 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               {
                                                 'value': 'confirmed',
                                                 'label': 'I Have a Tee Time',
-                                                'icon': Icons
-                                                    .event_available_rounded
+                                                'icon': Icons.event_available_rounded,
+                                                'phosphorIcon': AppPhosphorIcons.calendarCheck,
                                               },
                                               {
                                                 'value': 'flexible',
                                                 'label': 'Flexible Time',
-                                                'icon': Icons.event_note_rounded
+                                                'icon': Icons.event_note_rounded,
+                                                'phosphorIcon': AppPhosphorIcons.calendarNote,
                                               },
                                             ],
                                             selectedValue: _scheduleType,
@@ -1304,8 +1346,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                 ),
                                                 child: Row(
                                                   children: [
-                                                    Icon(
-                                                      Icons.access_time_rounded,
+                                                    AppIcon(
+                                                      icon: AppPhosphorIcons.teeTime,
                                                       color: AppColors.navyDark,
                                                       size: AppIconSize.md,
                                                     ),
@@ -1319,7 +1361,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                         children: [
                                                           Text(
                                                             'Tee Time',
-                                                            style: AppTypography.caption.copyWith(
+                                                            style: AppTypography.labelSmall.copyWith(
                                                               fontWeight: FontWeight.w500,
                                                               color: AppColors.slate,
                                                             ),
@@ -1335,10 +1377,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                         ],
                                                       ),
                                                     ),
-                                                    Icon(
-                                                      Icons.edit_rounded,
-                                                      color:
-                                                          AppColors.slate,
+                                                    AppIcon(
+                                                      icon: AppPhosphorIcons.edit,
+                                                      color: AppColors.slate,
                                                       size: AppIconSize.button,
                                                     ),
                                                   ],
@@ -1368,8 +1409,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               ),
                                               child: Row(
                                                 children: [
-                                                  Icon(
-                                                    Icons.golf_course_rounded,
+                                                  AppIcon(
+                                                    icon: AppPhosphorIcons.golfCourse,
                                                     color: AppColors.pure,
                                                     size: AppIconSize.button,
                                                   ),
@@ -1390,15 +1431,18 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         ] else ...[
                                           _buildFlexibleTimeUI(),
                                         ],
-                                        SectionHeader(
-                                          phosphorIcon: AppPhosphorIcons.publicVisibility,
-                                          title: 'Visibility',
-                                          helpText:
-                                              'Choose whether your game is visible to friends only or everyone in your area.',
-                                          onHelpTap: () => _showHelpDialog(
-                                              context,
-                                              'Visibility',
-                                              'Choose whether your game is visible to friends only or everyone in your area.'),
+                                        _buildAnimatedSection(
+                                          sectionIndex: 2,
+                                          child: SectionHeader(
+                                            phosphorIcon: AppPhosphorIcons.publicVisibility,
+                                            title: 'Visibility',
+                                            helpText:
+                                                'Choose whether your game is visible to friends only or everyone in your area.',
+                                            onHelpTap: () => _showHelpDialog(
+                                                context,
+                                                'Visibility',
+                                                'Choose whether your game is visible to friends only or everyone in your area.'),
+                                          ),
                                         ),
                                         Padding(
                                           padding: EdgeInsets.only(
@@ -1408,12 +1452,14 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               {
                                                 'value': 'Friends',
                                                 'label': 'Friends',
-                                                'icon': Icons.people_rounded
+                                                'icon': Icons.people_rounded,
+                                                'phosphorIcon': AppPhosphorIcons.people,
                                               },
                                               {
                                                 'value': 'Public',
                                                 'label': 'Public',
-                                                'icon': Icons.public_rounded
+                                                'icon': Icons.public_rounded,
+                                                'phosphorIcon': AppPhosphorIcons.publicVisibility,
                                               },
                                             ],
                                             selectedValue: friendsValue,
@@ -1426,9 +1472,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             },
                                           ),
                                         ),
-                                        SectionHeader(
-                                          phosphorIcon: AppPhosphorIcons.course,
-                                          title: 'Course',
+                                        _buildAnimatedSection(
+                                          sectionIndex: 3,
+                                          child: SectionHeader(
+                                            phosphorIcon: AppPhosphorIcons.course,
+                                            title: 'Course',
+                                          ),
                                         ),
                                         Align(
                                           alignment:
@@ -1487,9 +1536,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                     ),
                                                     child: Column(
                                                       children: [
-                                                        Icon(
-                                                          Icons
-                                                              .golf_course_rounded,
+                                                        AppIcon(
+                                                          icon: AppPhosphorIcons.golfCourse,
                                                           size: AppIconSize.xl,
                                                           color: Colors.white
                                                               .withValues(
@@ -1544,9 +1592,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                       'Where are you playing?',
                                                   searchHintText:
                                                       'Find your course',
-                                                  icon: Icon(
-                                                    Icons
-                                                        .keyboard_arrow_down_rounded,
+                                                  icon: AppIcon(
+                                                    icon: AppPhosphorIcons.chevronDown,
                                                     color: AppColors.slate,
                                                     size: AppIconSize.md,
                                                   ),

@@ -4,6 +4,8 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 
 /// Slim, persistent search bar for the Golfers page.
 /// Stays pinned at the top and filters all views (Discover, Requests, Friends).
@@ -38,9 +40,9 @@ class GolferSearchBar extends StatelessWidget {
       child: Row(
         children: [
           AppSpacing.horizontalMdBox,
-          Icon(
-            Icons.search_rounded,
-            color: AppColors.pure.withValues(alpha: 0.5),
+          AppIcon(
+            icon: AppPhosphorIcons.search,
+            color: AppColors.textMuted,
             size: AppIconSize.md,
           ),
           AppSpacing.horizontalSmBox,
@@ -49,18 +51,14 @@ class GolferSearchBar extends StatelessWidget {
               controller: controller,
               focusNode: focusNode,
               onChanged: onChanged,
-              style: AppTypography.bodySmall.copyWith(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textPrimary,
               ),
               cursorColor: AppColors.gold,
               decoration: InputDecoration(
                 hintText: 'Search golfers...',
-                hintStyle: AppTypography.bodySmall.copyWith(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withValues(alpha: 0.4),
+                hintStyle: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textMuted,
                 ),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
@@ -81,11 +79,11 @@ class GolferSearchBar extends StatelessWidget {
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
-              child: Icon(
-                Icons.tune_rounded,
+              child: AppIcon(
+                icon: AppPhosphorIcons.filter,
                 color: hasActiveFilters
-                    ? AppColors.pure.withValues(alpha: 0.9)
-                    : AppColors.pure.withValues(alpha: 0.5),
+                    ? AppColors.textPrimary
+                    : AppColors.textMuted,
                 size: AppIconSize.button,
               ),
             ),

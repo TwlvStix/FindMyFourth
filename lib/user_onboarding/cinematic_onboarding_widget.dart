@@ -12,6 +12,7 @@ import '../core/design_tokens/typography.dart';
 import '../core/design_tokens/icon_size.dart';
 import '../core/widgets/app_button_enhanced.dart';
 import '../core/widgets/fairway_background.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 
 class CinematicOnboardingWidget extends StatefulWidget {
   const CinematicOnboardingWidget({super.key});
@@ -420,7 +421,7 @@ class _VibeMatchSection extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  Icons.location_on,
+                  AppPhosphorIcons.course,
                   size: AppIconSize.xs,
                   color: AppColors.pure,
                 ),
@@ -472,7 +473,7 @@ class _VibeMatchSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.insights,
+                AppPhosphorIcons.vibeMatch,
                 size: AppIconSize.xs,
                 color: AppColors.glassTextSecondary,
               ),
@@ -532,7 +533,7 @@ class _GameDetailsGrid extends StatelessWidget {
           children: [
             Expanded(
               child: _DetailCell(
-                icon: Icons.attach_money,
+                icon: AppPhosphorIcons.betting,
                 label: 'Betting',
                 value: '\$2 Vegas',
               ),
@@ -540,7 +541,7 @@ class _GameDetailsGrid extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: _DetailCell(
-                icon: Icons.tune,
+                icon: AppPhosphorIcons.ruleStyle,
                 label: 'Rule Style',
                 value: 'Competitive',
               ),
@@ -553,7 +554,7 @@ class _GameDetailsGrid extends StatelessWidget {
           children: [
             Expanded(
               child: _DetailCell(
-                icon: Icons.flag,
+                icon: AppPhosphorIcons.gameType,
                 label: 'Game Type',
                 value: 'Match Play',
               ),
@@ -561,7 +562,7 @@ class _GameDetailsGrid extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: _DetailCell(
-                icon: Icons.grid_4x4,
+                icon: AppPhosphorIcons.scoring,
                 label: 'Scoring',
                 value: 'Gross',
               ),
@@ -574,7 +575,7 @@ class _GameDetailsGrid extends StatelessWidget {
           children: [
             Expanded(
               child: _DetailCell(
-                icon: Icons.card_membership,
+                icon: AppPhosphorIcons.memberDiscount,
                 label: 'Member Disc.',
                 value: 'Yes',
               ),
@@ -582,7 +583,7 @@ class _GameDetailsGrid extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: _DetailCell(
-                icon: Icons.people,
+                icon: AppPhosphorIcons.people,
                 label: 'Friends Only',
                 value: 'Public',
               ),
@@ -722,7 +723,7 @@ class _PlayersSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.add_circle_outline,
+                AppPhosphorIcons.plusCircle,
                 size: AppIconSize.button,
                 color: AppColors.glassTextSecondary,
               ),
@@ -808,7 +809,7 @@ class _PlayerRow extends StatelessWidget {
         const SizedBox(width: 6),
         // Checkmark
         Icon(
-          Icons.check_circle,
+          AppPhosphorIcons.success,
           size: AppIconSize.xs,
           color: AppColors.success,
         ),
@@ -1296,7 +1297,7 @@ class _AppNotificationBanner extends StatelessWidget {
               ),
               child: Center(
                 child: Icon(
-                  Icons.golf_course_rounded,
+                  AppPhosphorIcons.golfCourse,
                   color: AppColors.pure,
                   size: AppIconSize.button,
                 ),
@@ -1381,7 +1382,7 @@ class _FoursomeCompleteToast extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.check,
+                AppPhosphorIcons.check,
                 size: AppIconSize.button,
                 color: AppColors.navy,
               ),

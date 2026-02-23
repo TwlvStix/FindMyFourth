@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '/backend/schema/player_standing.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
@@ -10,6 +12,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_card.dart';
+import '/core/widgets/app_icon.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // RestrictionBanner
@@ -58,7 +61,7 @@ class RestrictionBanner extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(config.icon, color: config.accentColor, size: AppIconSize.md),
+              AppIcon(icon: config.icon, color: config.accentColor, size: AppIconSize.md),
               SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(
@@ -114,8 +117,8 @@ class RestrictionBanner extends StatelessWidget {
     switch (type) {
       case RestrictionType.cooldown24h:
         return _RestrictionConfig(
-          accentColor: AppColors.goldLight,
-          icon: Icons.hourglass_top_rounded,
+          accentColor: AppColors.warning,
+          icon: AppPhosphorIcons.pending,
           title: '24-Hour Cooldown',
           body: (r) => r.endsAt != null
               ? 'You can join games again after ${_formatTime(r.endsAt!)}.'
@@ -124,7 +127,7 @@ class RestrictionBanner extends StatelessWidget {
       case RestrictionType.restricted7d:
         return _RestrictionConfig(
           accentColor: AppColors.error,
-          icon: Icons.pause_circle_outline_rounded,
+          icon: AppPhosphorIcons.paused,
           title: '7-Day Restriction',
           body: (r) => r.endsAt != null
               ? "You can't join or create games until ${_formatDate(r.endsAt!)}.\n"
@@ -134,7 +137,7 @@ class RestrictionBanner extends StatelessWidget {
       case RestrictionType.restricted30d:
         return _RestrictionConfig(
           accentColor: AppColors.error,
-          icon: Icons.block_rounded,
+          icon: AppPhosphorIcons.blocked,
           title: '30-Day Restriction',
           body: (r) => r.endsAt != null
               ? 'Your account is restricted until ${_formatDate(r.endsAt!)} and has been flagged for review.'
@@ -143,7 +146,7 @@ class RestrictionBanner extends StatelessWidget {
       case RestrictionType.suspended:
         return _RestrictionConfig(
           accentColor: AppColors.error,
-          icon: Icons.gpp_bad_rounded,
+          icon: AppPhosphorIcons.securityWarning,
           title: 'Account Suspended',
           body: (_) =>
               'Your account is under review. Contact support for reinstatement.',
@@ -241,8 +244,8 @@ class _ComebackBannerState extends State<ComebackBanner> {
               ),
               GestureDetector(
                 onTap: _dismiss,
-                child: Icon(
-                  Icons.close_rounded,
+                child: AppIcon(
+                  icon: AppPhosphorIcons.close,
                   size: AppIconSize.button,
                   color: AppColors.stone,
                 ),
@@ -274,7 +277,7 @@ class _RestrictionConfig {
   });
 
   final Color accentColor;
-  final IconData icon;
+  final PhosphorIconData icon;
   final String title;
   final String Function(Restriction) body;
 }

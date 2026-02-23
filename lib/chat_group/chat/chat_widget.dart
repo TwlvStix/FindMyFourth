@@ -10,6 +10,8 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
 import '/backend/backend.dart';
@@ -108,20 +110,20 @@ class _ChatWidgetState extends State<ChatWidget> {
                         width: 50,
                         height: 50,
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => Icon(
-                          Icons.person_rounded,
-                          color: AppColors.pure,
+                        placeholder: (context, url) => AppIcon(
+                          icon: AppPhosphorIcons.profile,
+                          color: AppColors.textPrimary,
                           size: AppIconSize.md,
                         ),
-                        errorWidget: (context, url, error) => Icon(
-                          Icons.person_rounded,
-                          color: AppColors.pure,
+                        errorWidget: (context, url, error) => AppIcon(
+                          icon: AppPhosphorIcons.profile,
+                          color: AppColors.textPrimary,
                           size: AppIconSize.md,
                         ),
                       )
-                    : Icon(
-                        Icons.person_rounded,
-                        color: AppColors.pure,
+                    : AppIcon(
+                        icon: AppPhosphorIcons.profile,
+                        color: AppColors.textPrimary,
                         size: AppIconSize.md,
                       ),
               ),
@@ -138,7 +140,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                         child: Text(
                           displayName,
                           style: AppTypography.titleSmall.copyWith(
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -163,8 +165,8 @@ class _ChatWidgetState extends State<ChatWidget> {
                           child: Text(
                             unreadCount > 99 ? '99+' : '$unreadCount',
                             textAlign: TextAlign.center,
-                            style: AppTypography.text11.copyWith(
-                              color: Colors.white,
+                            style: AppTypography.labelMicro.copyWith(
+                              color: AppColors.textPrimary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -193,8 +195,8 @@ class _ChatWidgetState extends State<ChatWidget> {
               ),
             ),
             // Arrow
-            Icon(
-              Icons.chevron_right_rounded,
+            AppIcon(
+              icon: AppPhosphorIcons.chevronRight,
               color: AppColors.glassTextTertiary,
               size: AppIconSize.button,
             ),
@@ -293,7 +295,7 @@ class _ChatWidgetState extends State<ChatWidget> {
           title: Text(
             'My Chats',
             style: AppTypography.headlineMediumSans.copyWith(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -435,8 +437,8 @@ class _ChatWidgetState extends State<ChatWidget> {
                       color: AppColors.navy.withValues(alpha:0.3),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      Icons.mark_chat_unread_outlined,
+                    child: AppIcon(
+                      icon: AppPhosphorIcons.chat,
                       color: AppColors.glassTextTertiary,
                       size: AppIconSize.xl,
                     ),
@@ -445,7 +447,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                   Text(
                     'No Chats Yet',
                     style: AppTypography.titleSmall.copyWith(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

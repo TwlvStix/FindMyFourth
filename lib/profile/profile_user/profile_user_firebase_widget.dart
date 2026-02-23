@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import 'package:provider/provider.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
@@ -336,7 +336,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: AppColors.sand,
                   child: Icon(
-                    Icons.person_rounded,
+                    AppPhosphorIcons.profile,
                     size: AppIconSize.hero,
                     color: AppColors.stone,
                   ),
@@ -400,7 +400,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           Expanded(
             child: _buildStatCard(
               context,
-              icon: FontAwesomeIcons.golfBall,
+              icon: AppPhosphorIcons.golf,
               value: handicap,
               label: 'Handicap',
               gradient: [AppColors.gold, AppColors.goldLight],
@@ -410,7 +410,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           Expanded(
             child: _buildStatCard(
               context,
-              icon: FontAwesomeIcons.mapMarkerAlt,
+              icon: AppPhosphorIcons.homeCourse,
               value: shortCourse,
               label: 'Home Course',
               gradient: [AppColors.navyLight, AppColors.navy],
@@ -422,7 +422,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             child: isSelf
                 ? _buildStatCard(
                     context,
-                    icon: FontAwesomeIcons.userFriends,
+                    icon: AppPhosphorIcons.users,
                     value: friendsCount.toString(),
                     label: 'Friends',
                     gradient: [AppColors.green, AppColors.greenLight],
@@ -556,7 +556,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
 
         if (isFriend) {
           // Friends: premium checkmark with green gradient
-          icon = Icons.check_rounded;
+          icon = AppPhosphorIcons.check;
           label = 'FRIENDS';
           gradientColors = [AppColors.navyDark, AppColors.navy];
           boxShadow = [
@@ -568,7 +568,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           ];
         } else if (hasPending) {
           // Pending: premium hourglass with warm golden gradient
-          icon = Icons.hourglass_top_rounded;
+          icon = AppPhosphorIcons.pending;
           label = 'PENDING';
           gradientColors = [AppColors.gold, AppColors.goldLight];
           boxShadow = [
@@ -580,7 +580,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           ];
         } else {
           // Add Friend: premium person-add with warm accent gradient
-          icon = Icons.person_add_alt_1_rounded;
+          icon = AppPhosphorIcons.addPlayer;
           label = 'ADD';
           gradientColors = [AppColors.gold, AppColors.goldLight];
           boxShadow = [
@@ -725,7 +725,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                   boxShadow: [AppElevation.lg],
                 ),
                 child: Icon(
-                  Icons.people_alt_rounded,
+                  AppPhosphorIcons.people,
                   color: AppColors.pure,
                   size: AppIconSize.md,
                 ),
@@ -778,13 +778,13 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                         friend.photoUrl,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Icon(
-                          Icons.person,
+                          AppPhosphorIcons.profile,
                           size: AppIconSize.button,
                           color: AppColors.navy,
                         ),
                       )
                     : Icon(
-                        Icons.person,
+                        AppPhosphorIcons.profile,
                         size: AppIconSize.button,
                         color: AppColors.navy,
                       ),
@@ -814,7 +814,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         Expanded(
           child: _buildQuickActionCard(
             context,
-            icon: Icons.chat_bubble_outline_rounded,
+            icon: AppPhosphorIcons.chat,
             label: 'Message',
             gradient: [AppColors.navyLight, AppColors.navy],
             onTap: () => _openChatWithUser(widget.userRef),
@@ -824,7 +824,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         Expanded(
           child: _buildQuickActionCard(
             context,
-            icon: Icons.auto_awesome_rounded,
+            icon: AppPhosphorIcons.sparkle,
             label: vibeLabel,
             gradient: [AppColors.gold, AppColors.goldLight],
             onTap: canOpenVibe ? _openVibePage : null,
@@ -942,7 +942,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           SizedBox(height: AppSpacing.md),
           _buildInfoRow(
             context,
-            icon: Icons.verified_rounded,
+            icon: AppPhosphorIcons.verified,
             iconColor: AppColors.navy,
             label: 'Golf Canada #',
             value: golfCanadaNumber,
@@ -951,7 +951,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             SizedBox(height: AppSpacing.sm),
             _buildInfoRow(
               context,
-              icon: Icons.email_outlined,
+              icon: AppPhosphorIcons.email,
               iconColor: AppColors.goldLight,
               label: 'Email',
               value: email,
@@ -961,7 +961,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             SizedBox(height: AppSpacing.sm),
             _buildInfoRow(
               context,
-              icon: Icons.phone_outlined,
+              icon: AppPhosphorIcons.phone,
               iconColor: AppColors.gold,
               label: 'Phone',
               value: phone,
@@ -1056,7 +1056,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.error_outline, color: AppColors.glassTextTertiary, size: AppIconSize.xxl),
+                              Icon(AppPhosphorIcons.error, color: AppColors.glassTextTertiary, size: AppIconSize.xxl),
                               SizedBox(height: AppSpacing.md),
                               Text(
                                 'Unable to load profile',
@@ -1390,13 +1390,13 @@ class MutualFriendsSheet extends StatelessWidget {
                                     friend.photoUrl,
                                     fit: BoxFit.cover,
                                     errorBuilder: (_, __, ___) => Icon(
-                                      Icons.person,
+                                      AppPhosphorIcons.profile,
                                       color: AppColors.navy,
                                       size: AppIconSize.md,
                                     ),
                                   )
                                 : Icon(
-                                    Icons.person,
+                                    AppPhosphorIcons.profile,
                                     color: AppColors.navy,
                                     size: AppIconSize.md,
                                   ),
@@ -1450,7 +1450,7 @@ class MutualFriendsSheet extends StatelessWidget {
                         ),
                         SizedBox(width: AppSpacing.xs),
                         Icon(
-                          Icons.chevron_right_rounded,
+                          AppPhosphorIcons.chevronRight,
                           color: AppColors.stone,
                           size: AppIconSize.button,
                         ),

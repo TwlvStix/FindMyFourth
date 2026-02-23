@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/cloud_functions/cloud_functions.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/fairway_background.dart';
 
 /// YourStandingScreen
@@ -119,8 +122,11 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
                 color: AppColors.glassSurface,
                 borderRadius: BorderRadius.circular(AppBorderRadius.md),
               ),
-              child: Icon(Icons.arrow_back_ios_new_rounded,
-                  color: AppColors.pure, size: AppIconSize.button),
+              child: AppIcon(
+                icon: AppPhosphorIcons.back,
+                color: AppColors.pure,
+                size: AppIconSize.button,
+              ),
             ),
           ),
           SizedBox(width: AppSpacing.md),
@@ -141,7 +147,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
   Widget _buildLoader() {
     return const Center(
       child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold),
+        valueColor: AlwaysStoppedAnimation<Color>(AppColors.green),
       ),
     );
   }
@@ -153,8 +159,11 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded,
-                color: AppColors.glassTextTertiary, size: AppIconSize.xxl),
+            AppIcon(
+              icon: AppPhosphorIcons.error,
+              color: AppColors.glassTextTertiary,
+              size: AppIconSize.xxl,
+            ),
             SizedBox(height: AppSpacing.md),
             Text(
               _error!,
@@ -188,8 +197,8 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
                 color: AppColors.glassSurface,
                 borderRadius: BorderRadius.circular(AppBorderRadius.xl),
               ),
-              child: Icon(
-                Icons.sports_golf_rounded,
+              child: AppIcon(
+                icon: AppPhosphorIcons.golfCourse,
                 color: AppColors.pure,
                 size: AppIconSize.lg,
               ),
@@ -285,7 +294,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
                   color: AppColors.glassBorder,
                   borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                 ),
-                child: Icon(info.icon, color: AppColors.pure, size: AppIconSize.md),
+                child: AppIcon(icon: info.icon, color: AppColors.pure, size: AppIconSize.md),
               ),
               SizedBox(width: AppSpacing.md),
               Expanded(
@@ -398,9 +407,11 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.bolt_rounded,
-                  color: activeCount > 0 ? AppColors.warning : AppColors.success,
-                  size: AppIconSize.button),
+              AppIcon(
+                icon: AppPhosphorIcons.lightning,
+                color: activeCount > 0 ? AppColors.warning : AppColors.success,
+                size: AppIconSize.button,
+              ),
               SizedBox(width: AppSpacing.sm),
               Text(
                 'Active Strikes',
@@ -479,7 +490,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
           child: _SectionCard(
             child: _buildRateTile(
               label: 'Show-Up Rate',
-              icon: Icons.check_circle_rounded,
+              icon: AppPhosphorIcons.success,
               rate: showUpRate,
               denominator: showUpDenom,
               highIsGood: true,
@@ -491,7 +502,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
           child: _SectionCard(
             child: _buildRateTile(
               label: 'Cancel Rate',
-              icon: Icons.cancel_outlined,
+              icon: AppPhosphorIcons.xCircle,
               rate: cancelRate,
               numerator: cancelNum,
               denominator: cancelDenom,
@@ -505,7 +516,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
 
   Widget _buildRateTile({
     required String label,
-    required IconData icon,
+    required PhosphorIconData icon,
     required double? rate,
     int? numerator,
     required int denominator,
@@ -533,7 +544,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
       children: [
         Row(
           children: [
-            Icon(icon, color: color, size: AppIconSize.xs),
+            AppIcon(icon: icon, color: color, size: AppIconSize.xs),
             SizedBox(width: AppSpacing.xxs),
             Expanded(
               child: Text(
@@ -601,7 +612,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
         children: [
           Row(
             children: [
-              Icon(nextInfo.icon, color: AppColors.gold, size: AppIconSize.button),
+              AppIcon(icon: nextInfo.icon, color: AppColors.green, size: AppIconSize.button),
               SizedBox(width: AppSpacing.sm),
               Text(
                 'Next: ${nextInfo.label}',
@@ -659,8 +670,8 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
   }) {
     return Row(
       children: [
-        Icon(
-          met ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+        AppIcon(
+          icon: met ? AppPhosphorIcons.success : AppPhosphorIcons.circle,
           color: met ? AppColors.success : AppColors.cloud,
           size: AppIconSize.button,
         ),
@@ -693,8 +704,8 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
     final maxPct = '${(maxCancelRate * 100).toStringAsFixed(0)}%';
     return Row(
       children: [
-        Icon(
-          met ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+        AppIcon(
+          icon: met ? AppPhosphorIcons.success : AppPhosphorIcons.circle,
           color: met ? AppColors.success : AppColors.cloud,
           size: AppIconSize.button,
         ),
@@ -720,7 +731,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
 
   ({
     String label,
-    IconData icon,
+    PhosphorIconData icon,
     Color gradientStart,
     Color gradientEnd,
   }) _badgeInfo(String badgeLevel) {
@@ -728,36 +739,36 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
       case 'anchor':
         return (
           label: 'Anchor',
-          icon: Icons.anchor_rounded,
+          icon: AppPhosphorIcons.standing,
           gradientStart: AppColors.navyDark,
           gradientEnd: AppColors.navy,
         );
       case 'starter':
         return (
           label: 'Starter',
-          icon: Icons.flag_rounded,
+          icon: AppPhosphorIcons.games,
           gradientStart: AppColors.navy,
           gradientEnd: AppColors.navyLight,
         );
       case 'regular':
         return (
           label: 'Regular',
-          icon: Icons.sports_golf_rounded,
+          icon: AppPhosphorIcons.golfCourse,
           gradientStart: AppColors.navyLight,
-          gradientEnd: AppColors.gold,
+          gradientEnd: AppColors.green,
         );
       case 'confirmed':
         return (
           label: 'Confirmed',
-          icon: Icons.verified_rounded,
-          gradientStart: AppColors.gold,
-          gradientEnd: AppColors.goldLight,
+          icon: AppPhosphorIcons.verified,
+          gradientStart: AppColors.green,
+          gradientEnd: AppColors.greenLight,
         );
       case 'new':
       default:
         return (
           label: 'New Member',
-          icon: Icons.person_outline_rounded,
+          icon: AppPhosphorIcons.profile,
           gradientStart: AppColors.stone,
           gradientEnd: AppColors.slate,
         );
@@ -791,8 +802,11 @@ class _StrikeRow extends StatelessWidget {
         children: [
           Padding(
             padding: EdgeInsets.only(top: 2),
-            child: Icon(Icons.bolt_rounded,
-                color: AppColors.warning, size: AppIconSize.xs),
+            child: AppIcon(
+              icon: AppPhosphorIcons.lightning,
+              color: AppColors.warning,
+              size: AppIconSize.xs,
+            ),
           ),
           SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -893,13 +907,13 @@ class _RetryButton extends StatelessWidget {
         padding: EdgeInsets.symmetric(
             horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
         decoration: BoxDecoration(
-          color: AppColors.gold,
+          color: AppColors.green,
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
         ),
         child: Text(
           'Try Again',
           style: AppTypography.labelLarge.copyWith(
-            color: AppColors.onyx,
+            color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
           ),
         ),
