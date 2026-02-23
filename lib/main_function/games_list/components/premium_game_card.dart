@@ -5,7 +5,6 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/design_tokens/app_icons.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/motion/motion_tokens.dart';
@@ -145,19 +144,16 @@ class _PremiumGameCardState extends State<PremiumGameCard>
         }
       },
       child: Container(
+        clipBehavior: Clip.antiAlias,
         width: double.infinity,
         decoration: BoxDecoration(
-          color: isUserGame
-              ? AppColors.navy.withValues(alpha: 0.15)
-              : AppColors.navy.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+          color: AppColors.navy,
+          borderRadius: BorderRadius.circular(AppBorderRadius.card),
           border: Border.all(
-            color: isUserGame
-                ? AppColors.glassSurface
-                : AppColors.glassSurface,
+            color: AppColors.navyLight,
             width: 1.0,
           ),
-          boxShadow: null,
+          boxShadow: [AppElevation.card],
         ),
         child: Column(
           children: [
@@ -257,33 +253,23 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                 vertical: AppSpacing.xxs,
               ),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppColors.navyLight, AppColors.navy],
+                color: AppColors.navy,
+                borderRadius: BorderRadius.circular(AppBorderRadius.chip),
+                border: Border.all(
+                  color: AppColors.navyLight,
+                  width: 1.0,
                 ),
-                borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-                boxShadow: [AppElevation.md],
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppIcon(
-                    assetPath: AppIcons.games,
-                    color: AppColors.pure,
-                    size: AppIconSize.xs,
-                  ),
-                  SizedBox(width: 4),
-                  Text(
-                    'Just for Fun',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+              child: Text(
+                'Just for Fun',
+                style: AppTypography.labelSmall.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           )
-        // Game Type Badge with gradient
+        // Game Type Badge
         else if (widget.game.gameType.isNotEmpty)
           Opacity(
             opacity: isUserGame ? 0.65 : 1.0,
@@ -293,27 +279,17 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                 vertical: AppSpacing.xxs,
               ),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: widget.game.styleGame == 'Money Game'
-                      ? [AppColors.gold, AppColors.goldLight]
-                      : [AppColors.navyLight, AppColors.navy],
+                color: AppColors.navy,
+                borderRadius: BorderRadius.circular(AppBorderRadius.chip),
+                border: Border.all(
+                  color: AppColors.navyLight,
+                  width: 1.0,
                 ),
-                borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-                boxShadow: [
-                  BoxShadow(
-                    color: (widget.game.styleGame == 'Money Game'
-                            ? AppColors.gold
-                            : AppColors.navy)
-                        .withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  ),
-                ],
               ),
               child: Text(
                 widget.game.gameType,
                 style: AppTypography.labelSmall.copyWith(
-                  color: AppColors.textPrimary,
+                  color: AppColors.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -474,15 +450,13 @@ class _PremiumGameCardState extends State<PremiumGameCard>
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.navyLight, AppColors.navy],
-              ),
+              color: AppColors.navyLight,
               borderRadius: BorderRadius.circular(AppBorderRadius.sm),
             ),
             child: Center(
               child: AppIcon(
                 icon: AppPhosphorIcons.course,
-                color: AppColors.pure,
+                color: AppColors.textSecondary,
                 size: AppIconSize.button,
               ),
             ),
@@ -506,7 +480,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                 Text(
                   valueOrDefault<String>(widget.game.nameGame, 'Game Name'),
                   style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.gold,
+                    color: AppColors.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -587,17 +561,18 @@ class _PremiumGameCardState extends State<PremiumGameCard>
             Container(
               padding: EdgeInsets.symmetric(
                 horizontal: AppSpacing.sm,
-                vertical: AppSpacing.xs,
+                vertical: AppSpacing.xxs,
               ),
               decoration: BoxDecoration(
                 color: isFull
                     ? AppColors.error.withValues(alpha: 0.2)
-                    : AppColors.navyLight.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+                    : AppColors.navy,
+                borderRadius: BorderRadius.circular(AppBorderRadius.chip),
                 border: Border.all(
                   color: isFull
-                      ? AppColors.error.withValues(alpha: 0.3)
-                      : AppColors.glassSurface,
+                      ? AppColors.error.withValues(alpha: 0.4)
+                      : AppColors.navyLight,
+                  width: 1.0,
                 ),
               ),
               child: Row(
@@ -605,14 +580,14 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                 children: [
                   AppIcon(
                     icon: AppPhosphorIcons.golfers,
-                    color: isFull ? AppColors.error : AppColors.pure,
+                    color: isFull ? AppColors.error : AppColors.textSecondary,
                     size: AppIconSize.xs,
                   ),
                   SizedBox(width: 4),
                   Text(
                     '${widget.game.joinedPlayers.length + widget.game.guestPlayers.length}/${widget.game.maxPlayers}',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: isFull ? AppColors.error : AppColors.textPrimary,
+                    style: AppTypography.labelMicro.copyWith(
+                      color: isFull ? AppColors.error : AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -639,44 +614,31 @@ class _PremiumGameCardState extends State<PremiumGameCard>
       decoration: BoxDecoration(
         color: AppColors.glassSurface,
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(AppBorderRadius.xl),
-          bottomRight: Radius.circular(AppBorderRadius.xl),
+          bottomLeft: Radius.circular(AppBorderRadius.card),
+          bottomRight: Radius.circular(AppBorderRadius.card),
         ),
       ),
       child: Row(
         children: [
-          // Member discount badge
+          // Member discount badge (plain, informational)
           if (widget.game.memberDiscount == 'Yes')
-            Opacity(
-              opacity: isUserGame ? 0.65 : 1.0,
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xs,
-                  vertical: AppSpacing.xxs,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppIcon(
+                  icon: AppPhosphorIcons.memberDiscount,
+                  color: AppColors.textPrimary,
+                  size: AppIconSize.xs,
                 ),
-                decoration: BoxDecoration(
-                  color: AppColors.navyLight.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                SizedBox(width: 4),
+                Text(
+                  'Discount',
+                  style: AppTypography.labelMicro.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AppIcon(
-                      icon: AppPhosphorIcons.memberDiscount,
-                      color: AppColors.navyLight,
-                      size: AppIconSize.xs,
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      'Discount',
-                      style: AppTypography.labelMicro.copyWith(
-                        color: AppColors.pure,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ),
           Spacer(),
           // Action button
@@ -769,7 +731,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
           if (isUserGame)
             AppIcon(
               icon: AppPhosphorIcons.eye,
-              color: AppColors.pure,
+              color: AppColors.textSecondary,
               size: AppIconSize.xs,
             )
           else if (isFull)
