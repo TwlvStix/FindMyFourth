@@ -34,6 +34,11 @@ enum AppCardVariant {
   /// Usage: Modal overlays, floating panels, translucent surfaces
   /// Golf aesthetic: Like the modern glass walls of the clubhouse
   glass,
+
+  /// Dark surface card for use on dark backgrounds (FairwayBackgroundDark)
+  /// Usage: Vibe sliders, settings on dark screens, immersive overlays
+  /// Golf aesthetic: Like a premium leather scorecard holder
+  darkSurface,
 }
 
 /// Enhanced card component with variants and micro-interactions
@@ -301,6 +306,17 @@ class _AppCardState extends State<AppCard>
             color: AppColors.cloud.withValues(alpha: AppOpacity.light),
             width: 1,
           ),
+        );
+
+      case AppCardVariant.darkSurface:
+        return BoxDecoration(
+          color: widget.backgroundColor ?? AppColorsDark.navyLight,
+          borderRadius: BorderRadius.circular(borderRadius),
+          border: Border.all(
+            color: widget.borderColor ?? AppColorsDark.glassBorder,
+            width: widget.borderWidth ?? 1,
+          ),
+          boxShadow: [AppElevation.sm],
         );
     }
   }

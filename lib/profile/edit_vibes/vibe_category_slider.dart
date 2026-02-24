@@ -1,16 +1,20 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/motion/motion_helpers.dart';
+import '/core/motion/motion_tokens.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_card.dart';
+import '/core/widgets/vibe_toggle.dart';
+import '/core/widgets/vibe_slider_theme.dart';
 import '/models/vibe_profile.dart';
 
 /// Clean, scannable vibe category slider used exclusively on Edit Vibes page
@@ -149,7 +153,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
     showAppDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.sand,
+        backgroundColor: AppColorsDark.navy,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         ),
@@ -157,14 +161,14 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
           children: [
             AppIcon(
               icon: AppPhosphorIcons.blocked,
-              color: AppColors.navy,
+              color: AppColorsDark.gold,
               size: AppIconSize.md,
             ),
             const SizedBox(width: AppSpacing.sm),
             Text(
               'Dealbreakers',
               style: AppTypography.titleMedium.copyWith(
-                color: AppColors.onyx,
+                color: AppColorsDark.textPrimary,
               ),
             ),
           ],
@@ -176,14 +180,14 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
             Text(
               "When you mark something as a dealbreaker, we'll warn you before you join a group with players who have very different preferences.",
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.onyx,
+                color: AppColorsDark.textSecondary,
               ),
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
               "Use this for preferences that truly matter to your experience. It helps ensure you're matched with compatible groups.",
               style: AppTypography.bodySmall.copyWith(
-                color: AppColors.stone,
+                color: AppColorsDark.textMuted,
               ),
             ),
           ],
@@ -194,7 +198,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
             child: Text(
               'Got it',
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.navy,
+                color: AppColorsDark.green,
                 fontWeight: AppTypography.semiBold,
               ),
             ),
@@ -207,80 +211,76 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
   @override
   Widget build(BuildContext context) {
     final title = VibeLabels.titleFor(widget.category);
-    final description = _VibeCategoryConfig.descriptionFor(widget.category);
     final minLabel = _VibeCategoryConfig.minLabelFor(widget.category);
     final maxLabel = _VibeCategoryConfig.maxLabelFor(widget.category);
     final currentLabel = VibeLabels.labelFor(widget.category, _currentValue) ??
         _currentValue.toString();
 
     return AppCard(
-      variant: AppCardVariant.outlined,
+      variant: AppCardVariant.darkSurface,
       margin: widget.margin,
-      padding: AppSpacing.card,
+      backgroundColor: AppColorsDark.navy.withValues(alpha: 0.4),
+      borderColor: AppColorsDark.glassBorder,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title
+          // Title (no description - cleaner)
           Text(
             title,
             style: AppTypography.titleMedium.copyWith(
-              color: AppColors.onyx,
+              color: AppColorsDark.textPrimary,
+              fontWeight: AppTypography.semiBold,
             ),
           ),
-          const SizedBox(height: AppSpacing.xxs),
+          const SizedBox(height: AppSpacing.xs),
 
-          // One-line description (unique per category)
-          Text(
-            description,
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.stone,
+          // Animated current selection badge
+          AnimatedSwitcher(
+            duration: MotionTokens.microInteraction,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: child,
             ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-
-          // Current selection badge
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: AppSpacing.xxs,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.navyLight.withValues(alpha:0.15),
-              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-              border: Border.all(
-                color: AppColors.navy.withValues(alpha:0.3),
-                width: 1,
+            child: Container(
+              key: ValueKey(currentLabel),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xxs,
+              ),
+              decoration: BoxDecoration(
+                color: AppColorsDark.green.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                border: Border.all(
+                  color: AppColorsDark.green.withValues(alpha: 0.3),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                currentLabel,
+                style: AppTypography.labelMedium.copyWith(
+                  color: AppColorsDark.textPrimary,
+                  fontWeight: AppTypography.medium,
+                ),
               ),
             ),
-            child: Text(
-              currentLabel,
-              style: AppTypography.labelMedium.copyWith(
-                color: AppColors.navyDark,
-                fontWeight: AppTypography.medium,
-              ),
-            ),
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.sm),
 
-          // Slider
+          // Enhanced slider with custom theme (no divisions)
           SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              activeTrackColor: AppColors.navy,
-              inactiveTrackColor: AppColors.cloud,
-              thumbColor: AppColors.gold,
-              overlayColor: AppColors.gold.withValues(alpha: 0.2),
-              trackHeight: 5,
-              showValueIndicator: ShowValueIndicator.never,
-              thumbShape: const RoundSliderThumbShape(
-                enabledThumbRadius: 10,
-              ),
-            ),
+            data: VibeSliderTheme.darkTheme,
             child: Slider(
               value: _currentValue.toDouble(),
               min: VibePreference.minValue.toDouble(),
               max: VibePreference.maxValue.toDouble(),
-              divisions: VibePreference.maxValue - VibePreference.minValue,
-              onChanged: _handleValueChanged,
+              onChanged: (value) {
+                HapticFeedback.selectionClick();
+                _handleValueChanged(value);
+              },
               onChangeEnd: _handleValueChangeEnd,
             ),
           ),
@@ -294,51 +294,69 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
                 Text(
                   minLabel,
                   style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.stone,
+                    color: AppColorsDark.textMuted,
                   ),
                 ),
                 Text(
                   maxLabel,
                   style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.stone,
+                    color: AppColorsDark.textMuted,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.md),
 
-          // Dealbreaker toggle with info icon
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    'Dealbreaker for me',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.onyx,
-                      fontWeight: AppTypography.medium,
+          // Compact dealbreaker row with highlight when active
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xs,
+            ),
+            decoration: BoxDecoration(
+              color: _currentDealbreaker
+                  ? AppColorsDark.gold.withValues(alpha: 0.1)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+              border: _currentDealbreaker
+                  ? Border.all(
+                      color: AppColorsDark.gold.withValues(alpha: 0.3),
+                    )
+                  : null,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Dealbreaker',
+                      style: AppTypography.labelLarge.copyWith(
+                        color: _currentDealbreaker
+                            ? AppColorsDark.gold
+                            : AppColorsDark.textSecondary,
+                        fontWeight: AppTypography.medium,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  GestureDetector(
-                    onTap: () => _showDealbreakerInfo(context),
-                    child: AppIcon(
-                      icon: AppPhosphorIcons.info,
-                      size: AppIconSize.button,
-                      color: AppColors.stone,
+                    const SizedBox(width: AppSpacing.xs),
+                    GestureDetector(
+                      onTap: () => _showDealbreakerInfo(context),
+                      child: AppIcon(
+                        icon: AppPhosphorIcons.info,
+                        size: AppIconSize.sm,
+                        color: AppColorsDark.textMuted,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              Switch.adaptive(
-                value: _currentDealbreaker,
-                onChanged: _handleDealbreakerChanged,
-                activeTrackColor: AppColors.navy,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ],
+                  ],
+                ),
+                VibeToggle(
+                  value: _currentDealbreaker,
+                  onChanged: _handleDealbreakerChanged,
+                  activeColor: AppColorsDark.gold,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -348,24 +366,6 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
 
 /// Configuration for category-specific copy
 class _VibeCategoryConfig {
-  /// Unique one-line description per category
-  static String descriptionFor(VibeCategory category) {
-    switch (category) {
-      case VibeCategory.chat:
-        return 'Set your preferred conversation level';
-      case VibeCategory.music:
-        return 'Set your music preference';
-      case VibeCategory.drinking:
-        return 'Set your alcohol comfort level';
-      case VibeCategory.pace:
-        return 'Set your preferred pace';
-      case VibeCategory.money:
-        return 'Set your gambling preference';
-      case VibeCategory.competitive:
-        return 'Set your competitive intensity';
-    }
-  }
-
   /// Left endpoint label (prefer less/none)
   static String minLabelFor(VibeCategory category) {
     switch (category) {

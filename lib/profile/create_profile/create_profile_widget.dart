@@ -8,16 +8,15 @@ import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/app_text_field.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/profile_hero_section.dart';
-import '/core/widgets/profile_card_section.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
-import '/core/widgets/app_icon.dart';
 import '/core/form_field_controller.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/profile/change_photo/change_photo_widget.dart';
@@ -412,67 +411,23 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
 
   Widget _buildTextField({
     required TextEditingController controller,
-    required FocusNode focusNode,
     required String label,
-    TextInputAction? textInputAction,
+    required IconData icon,
     String? Function(BuildContext, String?)? validator,
     bool readOnly = false,
     TextInputType? keyboardType,
     List<TextInputFormatter>? inputFormatters,
   }) {
-    return TextFormField(
+    return AppTextField(
+      label: label,
       controller: controller,
-      focusNode: focusNode,
-      textInputAction: textInputAction ?? TextInputAction.next,
+      variant: AppTextFieldVariant.filledDark,
+      prefixIcon: icon,
       readOnly: readOnly,
+      enabled: !readOnly,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
-      style: AppTypography.bodyMedium.copyWith(
-        color: AppColors.onyx,
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: AppTypography.labelMedium.copyWith(
-          color: AppColors.stone,
-        ),
-        filled: true,
-        fillColor: Colors.white,
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          borderSide: BorderSide(
-            color: AppColors.cloud,
-            width: 1.5,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          borderSide: BorderSide(
-            color: AppColors.navy,
-            width: 2.0,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          borderSide: BorderSide(
-            color: AppColors.error,
-            width: 1.5,
-          ),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          borderSide: BorderSide(
-            color: AppColors.error,
-            width: 2.0,
-          ),
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.md,
-        ),
-      ),
-      validator: validator != null
-          ? (val) => validator(context, val)
-          : null,
+      validator: validator != null ? (val) => validator(context, val) : null,
     );
   }
 
@@ -494,6 +449,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
             key: formKey,
             autovalidateMode: AutovalidateMode.disabled,
             child: SingleChildScrollView(
+              physics: BouncingScrollPhysics(),
               child: Column(
                 children: [
                   // Hero Section with Avatar
@@ -526,194 +482,348 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                     ),
                   ),
 
-                  SizedBox(height: AppSpacing.lg),
-
-                  // Personal Information Card
-                  FadeTransition(
-                    opacity: _fadeAnimations[0],
-                    child: ProfileCardSection(
-                      title: 'Personal Information',
-                      child: Column(
-                        children: [
-                          // First & Last Name Row
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildTextField(
-                                  controller: firstNameTextController!,
-                                  focusNode: firstNameFocusNode!,
-                                  label: 'First Name',
-                                ),
-                              ),
-                              SizedBox(width: AppSpacing.md),
-                              Expanded(
-                                child: _buildTextField(
-                                  controller: lastNameTextController!,
-                                  focusNode: lastNameFocusNode!,
-                                  label: 'Last Name',
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: AppSpacing.md),
-
-                          // Display Name & Phone Row
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildTextField(
-                                  controller: usernameTextController!,
-                                  focusNode: usernameFocusNode!,
-                                  label: 'Display Name',
-                                  validator: _validateUsername,
-                                ),
-                              ),
-                              SizedBox(width: AppSpacing.md),
-                              Expanded(
-                                child: _buildTextField(
-                                  controller: phoneNumTextController!,
-                                  focusNode: phoneNumFocusNode!,
-                                  label: 'Phone',
-                                  keyboardType: TextInputType.phone,
-                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: AppSpacing.md),
-
-                          // Email
-                          _buildTextField(
-                            controller: emailTextController!,
-                            focusNode: emailFocusNode!,
-                            label: 'Email',
-                            validator: _validateEmail,
-                            readOnly: true,
-                          ),
-                          SizedBox(height: AppSpacing.md),
-
-                          // Home Course Dropdown
-                          StreamBuilder<List<CourseRecord>>(
-                            stream: queryCourseRecord(),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return Container(
-                                  height: 56,
-                                  alignment: Alignment.center,
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.navy,
-                                  ),
-                                );
-                              }
-
-                              List<CourseRecord> courses = snapshot.data!..sort((a, b) => a.name.compareTo(b.name));
-                              return AppDropDown<String>(
-                                controller: coursesValueController ??=
-                                    FormFieldController<String>(null),
-                                options: courses
-                                    .map((c) => c.name)
-                                    .toList(),
-                                onChanged: (val) =>
-                                    setState(() => coursesValue = val),
-                                width: double.infinity,
-                                height: 56,
-                                textStyle: AppTypography.bodyMedium.copyWith(
-                                  color: AppColors.onyx,
-                                ),
-                                hintText: 'Select Home Course',
-                                icon: AppIcon(
-                                  icon: AppPhosphorIcons.golfHole,
-                                  color: AppColors.navy,
-                                  size: AppIconSize.md,
-                                ),
-                                fillColor: Colors.white,
-                                elevation: 2,
-                                borderColor: AppColors.cloud,
-                                borderWidth: 1.5,
-                                borderRadius: 12,
-                                margin: EdgeInsetsDirectional.only(start: AppSpacing.md),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: AppSpacing.md),
-
-                  // Golf Profile Card
-                  FadeTransition(
-                    opacity: _fadeAnimations[1],
-                    child: ProfileCardSection(
-                      title: 'Golf Profile',
-                      child: Column(
-                        children: [
-                          ProfilePreferenceItem(
-                            icon: AppPhosphorIcons.flagCheckered,
-                            label: 'Handicap',
-                            iconColor: AppColors.navy,
-                            valueWidget: AppCountController(
-                              decrementIconBuilder: (enabled) => AppIcon(
-                                icon: AppPhosphorIcons.minus,
-                                color:
-                                    enabled ? AppColors.navy : AppColors.cloud,
-                                size: AppIconSize.button,
-                              ),
-                              incrementIconBuilder: (enabled) => AppIcon(
-                                icon: AppPhosphorIcons.add,
-                                color:
-                                    enabled ? AppColors.navy : AppColors.cloud,
-                                size: AppIconSize.button,
-                              ),
-                              countBuilder: (count) => Text(
-                                count < 0 ? '+${count.abs()}' : count.toString(),
-                                style: AppTypography.headlineMedium.copyWith(
-                                  color: AppColors.onyx,
-                                ),
-                              ),
-                              count: handicapValue ?? 0,
-                              updateCount: (count) =>
-                                  setState(() => handicapValue = count),
-                              stepSize: 1,
-                              minimum: -5,
-                              maximum: 54,
-                            ),
-                          ),
-                          SizedBox(height: AppSpacing.lg),
-                          _buildTextField(
-                            controller: golfCanadaTextController!,
-                            focusNode: golfCanadaFocusNode!,
-                            label: 'Golf Canada #',
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                          ),
-                        ],
+                  // Change Photo text link
+                  GestureDetector(
+                    onTap: () async {
+                      await showAppBottomSheet(
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        enableDrag: false,
+                        context: context,
+                        builder: (context) => Padding(
+                          padding: MediaQuery.viewInsetsOf(context),
+                          child: ChangePhotoWidget(),
+                        ),
+                      ).then((value) {
+                        if (mounted) setState(() {});
+                      });
+                    },
+                    child: Text(
+                      'Change Photo',
+                      style: AppTypography.labelMedium.copyWith(
+                        color: AppColors.gold,
                       ),
                     ),
                   ),
 
                   SizedBox(height: AppSpacing.xl),
 
-                  // Save Button
-                  FadeTransition(
-                    opacity: _fadeAnimations[2],
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
+                  // Main Content Container
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.navyDark,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(AppBorderRadius.xxl),
+                        topRight: Radius.circular(AppBorderRadius.xxl),
                       ),
-                      child: AppButtonEnhanced(
-                        text: 'Create Profile',
-                        leadingIcon: AppPhosphorIcons.successFill,
-                        variant: AppButtonVariant.primary,
-                        size: AppButtonSize.large,
-                        fullWidth: true,
-                        onPressed: _handleSaveProfile,
-                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.overlayDark,
+                          blurRadius: 30,
+                          offset: Offset(0, -10),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        // Drag handle
+                        Container(
+                          margin: EdgeInsets.only(top: AppSpacing.sm),
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: AppColors.navyLight,
+                            borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
+                          ),
+                        ),
+
+                        SizedBox(height: AppSpacing.lg),
+
+                        // Personal Information Section
+                        FadeTransition(
+                          opacity: _fadeAnimations[0],
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Personal Information',
+                                  style: AppTypography.titleMedium.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(height: AppSpacing.md),
+
+                                // First & Last Name Row
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildTextField(
+                                        controller: firstNameTextController!,
+                                        label: 'First Name',
+                                        icon: AppPhosphorIcons.profile,
+                                      ),
+                                    ),
+                                    SizedBox(width: AppSpacing.sm),
+                                    Expanded(
+                                      child: _buildTextField(
+                                        controller: lastNameTextController!,
+                                        label: 'Last Name',
+                                        icon: AppPhosphorIcons.profile,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: AppSpacing.md),
+
+                                // Display Name
+                                _buildTextField(
+                                  controller: usernameTextController!,
+                                  label: 'Display Name',
+                                  icon: AppPhosphorIcons.atSign,
+                                  validator: _validateUsername,
+                                ),
+                                SizedBox(height: AppSpacing.md),
+
+                                // Phone
+                                _buildTextField(
+                                  controller: phoneNumTextController!,
+                                  label: 'Phone',
+                                  icon: AppPhosphorIcons.phone,
+                                  keyboardType: TextInputType.phone,
+                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                ),
+                                SizedBox(height: AppSpacing.md),
+
+                                // Email
+                                _buildTextField(
+                                  controller: emailTextController!,
+                                  label: 'Email',
+                                  icon: AppPhosphorIcons.email,
+                                  validator: _validateEmail,
+                                  readOnly: true,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Golf Profile Section
+                        FadeTransition(
+                          opacity: _fadeAnimations[1],
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Golf Profile',
+                                  style: AppTypography.titleMedium.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(height: AppSpacing.md),
+
+                                // Home Course Dropdown
+                                StreamBuilder<List<CourseRecord>>(
+                                  stream: queryCourseRecord(),
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasData) {
+                                      return Container(
+                                        height: 56,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.inputBackground,
+                                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                                          border: Border.all(color: AppColors.inputBorderIdle),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.textPrimary,
+                                          strokeWidth: 2,
+                                        ),
+                                      );
+                                    }
+
+                                    List<CourseRecord> courses = snapshot.data!..sort((a, b) => a.name.compareTo(b.name));
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        color: AppColors.inputBackground,
+                                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                                        border: Border.all(color: AppColors.inputBorderIdle),
+                                      ),
+                                      child: AppDropDown<String>(
+                                        controller: coursesValueController ??=
+                                            FormFieldController<String>(null),
+                                        options: courses.map((c) => c.name).toList(),
+                                        onChanged: (val) =>
+                                            setState(() => coursesValue = val),
+                                        width: double.infinity,
+                                        height: 56,
+                                        textStyle: AppTypography.bodyMedium.copyWith(
+                                          color: AppColors.textPrimary,
+                                        ),
+                                        hintText: 'Select Home Course',
+                                        icon: Icon(
+                                          AppPhosphorIcons.golfCourse,
+                                          color: AppColors.textMuted,
+                                          size: AppIconSize.md,
+                                        ),
+                                        fillColor: AppColors.inputBackground,
+                                        elevation: 0,
+                                        borderColor: Colors.transparent,
+                                        borderWidth: 0,
+                                        borderRadius: 12,
+                                        margin: EdgeInsetsDirectional.only(start: AppSpacing.md),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                SizedBox(height: AppSpacing.md),
+
+                                // Handicap
+                                Container(
+                                  padding: EdgeInsets.all(AppSpacing.md),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.inputBackground,
+                                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                                    border: Border.all(color: AppColors.inputBorderIdle),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [AppColors.gold, AppColors.goldLight],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                          borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                                        ),
+                                        child: Icon(
+                                          AppPhosphorIcons.flagCheckered,
+                                          color: AppColors.pure,
+                                          size: AppIconSize.button,
+                                        ),
+                                      ),
+                                      SizedBox(width: AppSpacing.md),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Handicap',
+                                              style: AppTypography.labelSmall.copyWith(
+                                                color: AppColors.textMuted,
+                                              ),
+                                            ),
+                                            SizedBox(height: AppSpacing.xxs),
+                                            Text(
+                                              'Your official handicap index',
+                                              style: AppTypography.bodySmall.copyWith(
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      AppCountController(
+                                        decrementIconBuilder: (enabled) => Container(
+                                          width: 32,
+                                          height: 32,
+                                          decoration: BoxDecoration(
+                                            color: enabled
+                                                ? AppColors.navyLight
+                                                : AppColors.navyLight.withValues(alpha: 0.5),
+                                            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                                          ),
+                                          child: Icon(
+                                            AppPhosphorIcons.minus,
+                                            color: enabled ? AppColors.textPrimary : AppColors.textMuted,
+                                            size: AppIconSize.button,
+                                          ),
+                                        ),
+                                        incrementIconBuilder: (enabled) => Container(
+                                          width: 32,
+                                          height: 32,
+                                          decoration: BoxDecoration(
+                                            color: enabled
+                                                ? AppColors.navyLight
+                                                : AppColors.navyLight.withValues(alpha: 0.5),
+                                            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                                          ),
+                                          child: Icon(
+                                            AppPhosphorIcons.plus,
+                                            color: enabled ? AppColors.textPrimary : AppColors.textMuted,
+                                            size: AppIconSize.button,
+                                          ),
+                                        ),
+                                        countBuilder: (count) => Container(
+                                          constraints: BoxConstraints(minWidth: 56),
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            count < 0 ? '+${count.abs()}' : count.toString(),
+                                            maxLines: 1,
+                                            softWrap: false,
+                                            overflow: TextOverflow.clip,
+                                            textAlign: TextAlign.center,
+                                            style: AppTypography.monoLarge.copyWith(
+                                              color: AppColors.textPrimary,
+                                            ),
+                                          ),
+                                        ),
+                                        count: handicapValue ?? 0,
+                                        updateCount: (count) =>
+                                            setState(() => handicapValue = count),
+                                        stepSize: 1,
+                                        minimum: -5,
+                                        maximum: 54,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: AppSpacing.md),
+
+                                // Golf Canada #
+                                _buildTextField(
+                                  controller: golfCanadaTextController!,
+                                  label: 'Golf Canada #',
+                                  icon: AppPhosphorIcons.verified,
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: AppSpacing.md),
+
+                        // Create Profile Button
+                        FadeTransition(
+                          opacity: _fadeAnimations[2],
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                            child: AppButtonEnhanced(
+                              text: 'Create Profile',
+                              leadingIcon: AppPhosphorIcons.successFill,
+                              variant: AppButtonVariant.primary,
+                              size: AppButtonSize.large,
+                              fullWidth: true,
+                              onPressed: _handleSaveProfile,
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: AppSpacing.xxxl),
+                      ],
                     ),
                   ),
-
-                  SizedBox(height: AppSpacing.xxl),
                 ],
               ),
             ),

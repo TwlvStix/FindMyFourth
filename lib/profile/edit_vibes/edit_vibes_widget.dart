@@ -4,6 +4,9 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/elevation.dart';
+import '/core/design_patterns/premium_ui_patterns.dart';
+import '/core/motion/motion_tokens.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_text.dart';
@@ -35,8 +38,23 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
   final VibeRepository _repository = VibeRepository();
 
   VibeProfile _profile = VibeProfile.defaults();
+  VibeProfile _originalProfile = VibeProfile.defaults();
   bool _isLoading = true;
   bool _isConfirming = false;
+  bool _archetypeExpanded = false;
+
+  /// Check if user has made changes from the original profile
+  bool get _hasChanges {
+    for (final category in VibeCategory.values) {
+      final current = _profile.preferenceFor(category);
+      final original = _originalProfile.preferenceFor(category);
+      if (current.value != original.value ||
+          current.dealbreaker != original.dealbreaker) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   @override
   void initState() {
@@ -55,6 +73,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
       }
       setState(() {
         _profile = profile;
+        _originalProfile = profile;
       });
     } catch (error) {
       if (!mounted) {
@@ -198,56 +217,105 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Vibe Archetype Display
+                        // Vibe Archetype Display - tap to expand description
                         Builder(
                           builder: (context) {
                             final archetypeMatch =
                                 VibeArchetypes.classifyProfile(_profile);
-                            return Container(
-                              padding: const EdgeInsets.all(AppSpacing.md),
-                              decoration: BoxDecoration(
-                                color: AppColors.gold.withValues(alpha:0.15),
-                                borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                                border: Border.all(
-                                  color: AppColors.gold.withValues(alpha:0.3),
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      AppIcon(
-                                        icon: AppPhosphorIcons.trophy,
-                                        size: AppIconSize.button,
-                                        color: AppColors.gold,
-                                      ),
-                                      const SizedBox(width: AppSpacing.sm),
-                                      Text(
-                                        'Your vibe style',
-                                        style: AppTypography.bodySmall.copyWith(
-                                          color: AppColors.sand,
-                                          fontWeight: AppTypography.medium,
+                            return GestureDetector(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setState(() =>
+                                    _archetypeExpanded = !_archetypeExpanded);
+                              },
+                              child: GlassCard(
+                                padding: const EdgeInsets.all(AppSpacing.md),
+                                opacity: 0.25,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Icon container
+                                    Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
+                                        color: AppColorsDark.navyLight,
+                                        borderRadius: BorderRadius.circular(
+                                            AppBorderRadius.md),
+                                        border: Border.all(
+                                          color: AppColorsDark.glassBorder,
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: AppSpacing.xs),
-                                  Text(
-                                    archetypeMatch.name,
-                                    style: AppTypography.titleMedium.copyWith(
-                                      color: AppColors.pure,
-                                      fontWeight: AppTypography.bold,
+                                      child: Center(
+                                        child: AppIcon(
+                                          icon: AppPhosphorIcons.trophy,
+                                          size: AppIconSize.md,
+                                          color: AppColorsDark.gold,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: AppSpacing.xs),
-                                  Text(
-                                    archetypeMatch.description,
-                                    style: AppTypography.bodySmall.copyWith(
-                                      color: AppColors.sand,
+                                    const SizedBox(width: AppSpacing.md),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Your vibe style',
+                                            style:
+                                                AppTypography.labelSmall.copyWith(
+                                              color: AppColorsDark.textMuted,
+                                              letterSpacing:
+                                                  AppTypography.letterSpacingWide,
+                                            ),
+                                          ),
+                                          const SizedBox(height: AppSpacing.xxs),
+                                          Text(
+                                            archetypeMatch.name,
+                                            style:
+                                                AppTypography.titleMedium.copyWith(
+                                              color: AppColorsDark.textPrimary,
+                                              fontWeight: AppTypography.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: AppSpacing.xxs),
+                                          AnimatedCrossFade(
+                                            duration: MotionTokens.microInteraction,
+                                            crossFadeState: _archetypeExpanded
+                                                ? CrossFadeState.showSecond
+                                                : CrossFadeState.showFirst,
+                                            firstChild: Text(
+                                              archetypeMatch.description,
+                                              style: AppTypography.bodySmall
+                                                  .copyWith(
+                                                color: AppColorsDark.textSecondary,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            secondChild: Text(
+                                              archetypeMatch.description,
+                                              style: AppTypography.bodySmall
+                                                  .copyWith(
+                                                color: AppColorsDark.textSecondary,
+                                              ),
+                                            ),
+                                          ),
+                                          if (!_archetypeExpanded) ...[
+                                            const SizedBox(height: AppSpacing.xs),
+                                            Text(
+                                              'Tap to read more',
+                                              style: AppTypography.labelSmall
+                                                  .copyWith(
+                                                color: AppColorsDark.textMuted,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             );
                           },
@@ -269,42 +337,36 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                               EditVibeImportanceWidget.routeName,
                             );
                           },
-                          child: Container(
+                          child: GlassCard(
                             padding: const EdgeInsets.all(AppSpacing.md),
-                            decoration: BoxDecoration(
-                              color: AppColors.sand,
-                              borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-                              border: Border.all(
-                                color: AppColors.cloud,
-                              ),
-                            ),
+                            opacity: 0.25,
                             child: Row(
                               children: [
                                 Container(
                                   width: 40,
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    color:
-                                        AppColors.navyLight.withValues(alpha:0.2),
-                                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                                    color: AppColorsDark.navyLight,
+                                    borderRadius:
+                                        BorderRadius.circular(AppBorderRadius.md),
                                   ),
-                                  child: AppIcon(
-                                    icon: AppPhosphorIcons.star,
-                                    color: AppColors.navy,
-                                    size: AppIconSize.button,
+                                  child: Center(
+                                    child: AppIcon(
+                                      icon: AppPhosphorIcons.star,
+                                      color: AppColorsDark.gold,
+                                      size: AppIconSize.button,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: AppSpacing.md),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Set your priorities',
-                                        style:
-                                            AppTypography.bodyMedium.copyWith(
-                                          color: AppColors.onyx,
+                                        style: AppTypography.bodyMedium.copyWith(
+                                          color: AppColorsDark.textPrimary,
                                           fontWeight: AppTypography.semiBold,
                                         ),
                                       ),
@@ -312,7 +374,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                       Text(
                                         'Pick the 2 things that matter most',
                                         style: AppTypography.bodySmall.copyWith(
-                                          color: AppColors.stone,
+                                          color: AppColorsDark.textSecondary,
                                         ),
                                       ),
                                     ],
@@ -320,18 +382,25 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                 ),
                                 AppIcon(
                                   icon: AppPhosphorIcons.chevronRight,
-                                  color: AppColors.stone,
+                                  color: AppColorsDark.textMuted,
                                   size: AppIconSize.xs,
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.lg),
+                        const SizedBox(height: AppSpacing.xl),
                         Text(
                           'Social Vibes',
                           style: AppTypography.headlineSmall.copyWith(
-                            color: AppColors.pure,
+                            color: AppColorsDark.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xxs),
+                        Text(
+                          'How you connect on the course',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColorsDark.textMuted,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.sm),
@@ -345,7 +414,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                           onDealbreakerChanged: (value) =>
                               _handleDealbreakerChanged(
                                   VibeCategory.chat, value),
-                          margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                         ),
                         VibeCategorySlider(
                           category: VibeCategory.music,
@@ -359,7 +428,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                             VibeCategory.music,
                             value,
                           ),
-                          margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                         ),
                         VibeCategorySlider(
                           category: VibeCategory.drinking,
@@ -373,12 +442,20 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                             VibeCategory.drinking,
                             value,
                           ),
-                          margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                         ),
+                        const SizedBox(height: AppSpacing.md),
                         Text(
                           'Play Style',
                           style: AppTypography.headlineSmall.copyWith(
-                            color: AppColors.pure,
+                            color: AppColorsDark.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xxs),
+                        Text(
+                          'Your approach to the game',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColorsDark.textMuted,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.sm),
@@ -392,7 +469,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                           onDealbreakerChanged: (value) =>
                               _handleDealbreakerChanged(
                                   VibeCategory.pace, value),
-                          margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                         ),
                         VibeCategorySlider(
                           category: VibeCategory.money,
@@ -404,7 +481,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                           onDealbreakerChanged: (value) =>
                               _handleDealbreakerChanged(
                                   VibeCategory.money, value),
-                          margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                         ),
                         VibeCategorySlider(
                           category: VibeCategory.competitive,
@@ -423,13 +500,25 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                           ),
                           margin: const EdgeInsets.only(bottom: AppSpacing.lg),
                         ),
-                        AppButtonEnhanced(
-                          text: 'Confirm my vibes',
-                          leadingIcon: AppPhosphorIcons.successFill,
-                          variant: AppButtonVariant.primary,
-                          size: AppButtonSize.large,
-                          fullWidth: true,
-                          onPressed: _isConfirming ? null : _confirmVibes,
+                        // Confirm button with glow when changes pending
+                        AnimatedContainer(
+                          duration: MotionTokens.microInteraction,
+                          decoration: BoxDecoration(
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.lg),
+                            boxShadow: _hasChanges && !_isConfirming
+                                ? [AppElevation.glowGreen]
+                                : null,
+                          ),
+                          child: AppButtonEnhanced(
+                            text: 'Confirm my vibes',
+                            leadingIcon: AppPhosphorIcons.successFill,
+                            variant: AppButtonVariant.primary,
+                            size: AppButtonSize.large,
+                            fullWidth: true,
+                            enabled: _hasChanges && !_isConfirming,
+                            onPressed: _confirmVibes,
+                          ),
                         ),
                       ],
                     ),

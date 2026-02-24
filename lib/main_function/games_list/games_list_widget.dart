@@ -6,6 +6,7 @@ import '/core/design_tokens/app_icons.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon.dart';
+import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/trust/restriction_banner.dart';
 import '/providers/trust_provider.dart';
 import '/core/design_patterns/premium_ui_patterns.dart';
@@ -25,6 +26,7 @@ import '/notifications/notifications_list/notifications_list_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 
 enum CancelledGameHandling {
@@ -499,22 +501,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   }
 
   Future<void> _showFriendsOnlyDialog() async {
-    await showDialog<void>(
+    await showPremiumDialog(
       context: context,
-      builder: (alertDialogContext) {
-        return AlertDialog(
-          title: Text('Friends Only Game'),
-          content: Text(
-            'This game is visible to friends only. Add the host as a friend to view details.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(alertDialogContext),
-              child: Text('Ok'),
-            ),
-          ],
-        );
-      },
+      variant: PremiumDialogVariant.informational,
+      icon: PhosphorIconsRegular.lock,
+      title: 'Friends Only Game',
+      body: 'This game is visible to friends only. Add the host as a friend to view details.',
+      actionLabel: 'Got It',
     );
   }
 

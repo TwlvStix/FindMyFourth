@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/widgets/app_premium_dialog.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
@@ -171,22 +172,13 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
   }
 
   Future<void> _showFriendsOnlyDialog() async {
-    await showDialog<void>(
+    await showPremiumDialog(
       context: context,
-      builder: (alertDialogContext) {
-        return AlertDialog(
-          title: Text('Friends Only Game'),
-          content: Text(
-            'This game is visible to friends only. Add the host as a friend to view details.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(alertDialogContext),
-              child: Text('Ok'),
-            ),
-          ],
-        );
-      },
+      variant: PremiumDialogVariant.informational,
+      icon: PhosphorIconsRegular.lock,
+      title: 'Friends Only Game',
+      body: 'This game is visible to friends only. Add the host as a friend to view details.',
+      actionLabel: 'Got It',
     );
   }
 

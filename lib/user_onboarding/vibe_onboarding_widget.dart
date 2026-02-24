@@ -4,8 +4,12 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/design_patterns/premium_ui_patterns.dart';
+import '/core/motion/motion_tokens.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/app_icon.dart';
 import '/core/widgets/fairway_background.dart';
+import 'package:flutter/services.dart';
 import '/models/vibe_profile.dart';
 import '/profile/edit_vibes/vibe_category_slider.dart';
 import '/profile/main_profile/main_profile_widget.dart';
@@ -46,6 +50,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
   int _currentIndex = 0;
   bool _isLoading = true;
   bool _isCompleting = false;
+  bool _archetypeExpanded = false;
 
   int get _topCount =>
       _importance.values.where((value) => value == VibeImportance.top).length;
@@ -270,52 +275,92 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Vibe Archetype Display
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: AppColors.gold.withValues(alpha:0.15),
-              borderRadius: BorderRadius.circular(AppBorderRadius.md),
-              border: Border.all(
-                color: AppColors.gold.withValues(alpha:0.3),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      AppPhosphorIcons.competitive,
-                      size: AppIconSize.button,
-                      color: AppColors.gold,
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      'Your vibe style',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.sand,
-                        fontWeight: AppTypography.medium,
+          // Vibe Archetype Display - tap to expand description
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              setState(() => _archetypeExpanded = !_archetypeExpanded);
+            },
+            child: GlassCard(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              opacity: 0.25,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Icon container
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColorsDark.navyLight,
+                      borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                      border: Border.all(
+                        color: AppColorsDark.glassBorder,
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  archetypeMatch.name,
-                  style: AppTypography.titleMedium.copyWith(
-                    color: AppColors.pure,
-                    fontWeight: AppTypography.bold,
+                    child: Center(
+                      child: AppIcon(
+                        icon: AppPhosphorIcons.trophy,
+                        size: AppIconSize.md,
+                        color: AppColorsDark.gold,
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  archetypeMatch.description,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.sand,
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Your vibe style',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: AppColorsDark.textMuted,
+                            letterSpacing: AppTypography.letterSpacingWide,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xxs),
+                        Text(
+                          archetypeMatch.name,
+                          style: AppTypography.titleMedium.copyWith(
+                            color: AppColorsDark.textPrimary,
+                            fontWeight: AppTypography.bold,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xxs),
+                        AnimatedCrossFade(
+                          duration: MotionTokens.microInteraction,
+                          crossFadeState: _archetypeExpanded
+                              ? CrossFadeState.showSecond
+                              : CrossFadeState.showFirst,
+                          firstChild: Text(
+                            archetypeMatch.description,
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColorsDark.textSecondary,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          secondChild: Text(
+                            archetypeMatch.description,
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColorsDark.textSecondary,
+                            ),
+                          ),
+                        ),
+                        if (!_archetypeExpanded) ...[
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            'Tap to read more',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: AppColorsDark.textMuted,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -323,14 +368,14 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
           Text(
             'What makes or breaks your round?',
             style: AppTypography.headlineSmall.copyWith(
-              color: AppColors.pure,
+              color: AppColorsDark.textPrimary,
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             'Pick the 2 things that matter most. Optional: pick 1 that matters least.',
             style: AppTypography.bodySmall.copyWith(
-              color: AppColors.sand,
+              color: AppColorsDark.textSecondary,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -342,16 +387,16 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                 label: 'Top',
                 count: _topCount,
                 max: 2,
-                color: AppColors.navy,
-                background: AppColors.navyLight.withValues(alpha:0.15),
+                color: AppColorsDark.green,
+                background: AppColorsDark.green.withValues(alpha: 0.15),
               ),
               const SizedBox(width: AppSpacing.sm),
               _buildCountPill(
                 label: 'Bottom',
                 count: _bottomCount,
                 max: 1,
-                color: AppColors.gold,
-                background: AppColors.gold.withValues(alpha:0.15),
+                color: AppColorsDark.gold,
+                background: AppColorsDark.gold.withValues(alpha: 0.15),
               ),
             ],
           ),
@@ -393,7 +438,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
           Text(
             label,
             style: AppTypography.labelSmall.copyWith(
-              color: AppColors.pure,
+              color: AppColorsDark.textPrimary,
               letterSpacing: AppTypography.letterSpacingNormal,
               fontWeight: AppTypography.semiBold,
             ),
@@ -402,7 +447,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
           Text(
             '$count/$max',
             style: AppTypography.labelSmall.copyWith(
-              color: AppColors.sand,
+              color: AppColorsDark.textSecondary,
               letterSpacing: AppTypography.letterSpacingNormal,
             ),
           ),
@@ -418,21 +463,22 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     final isTop = importance == VibeImportance.top;
     final isBottom = importance == VibeImportance.bottom;
     final background = isTop
-        ? AppColors.navyDark.withValues(alpha:0.3)
+        ? AppColorsDark.green.withValues(alpha: 0.15)
         : isBottom
-            ? AppColors.gold.withValues(alpha:0.2)
-            : AppColors.slate.withValues(alpha:0.15);
+            ? AppColorsDark.gold.withValues(alpha: 0.15)
+            : AppColorsDark.navyLight.withValues(alpha: 0.3);
     final borderColor = isTop
-        ? AppColors.navy
+        ? AppColorsDark.green
         : isBottom
-            ? AppColors.gold
-            : AppColors.cloud;
+            ? AppColorsDark.gold
+            : AppColorsDark.glassBorder;
     final label = isTop
         ? 'Top priority'
         : isBottom
             ? 'Least important'
             : 'Normal';
-    final titleColor = isTop || isBottom ? AppColors.pure : AppColors.sand;
+    final titleColor =
+        isTop || isBottom ? AppColorsDark.textPrimary : AppColorsDark.textSecondary;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -461,20 +507,24 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                     Text(
                       label,
                       style: AppTypography.labelSmall.copyWith(
-                        color: isTop || isBottom ? AppColors.sand : AppColors.stone,
+                        color: isTop || isBottom
+                            ? AppColorsDark.textSecondary
+                            : AppColorsDark.textMuted,
                         letterSpacing: AppTypography.letterSpacingNormal,
                       ),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                isTop
+              AppIcon(
+                icon: isTop
                     ? AppPhosphorIcons.arrowUp
                     : isBottom
                         ? AppPhosphorIcons.arrowDown
                         : AppPhosphorIcons.circle,
-                color: isTop || isBottom ? AppColors.pure : AppColors.stone,
+                color: isTop || isBottom
+                    ? AppColorsDark.textPrimary
+                    : AppColorsDark.textMuted,
                 size: AppIconSize.md,
               ),
             ],
@@ -487,13 +537,13 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
               _buildSelectorChip(
                 label: 'Matters most',
                 selected: isTop,
-                color: AppColors.navy,
+                color: AppColorsDark.green,
                 onTap: () => _setImportance(category, VibeImportance.top),
               ),
               _buildSelectorChip(
                 label: 'Does not matter',
                 selected: isBottom,
-                color: AppColors.gold,
+                color: AppColorsDark.gold,
                 onTap: () => _setImportance(category, VibeImportance.bottom),
               ),
             ],
@@ -509,8 +559,10 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    final textColor = selected ? AppColors.pure : AppColors.onyx;
-    final bgColor = selected ? color : AppColors.sand.withValues(alpha:0.5);
+    final textColor =
+        selected ? AppColorsDark.textPrimary : AppColorsDark.textSecondary;
+    final bgColor =
+        selected ? color : AppColorsDark.navyLight.withValues(alpha: 0.5);
 
     return InkWell(
       onTap: onTap,
@@ -524,7 +576,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
           color: bgColor,
           borderRadius: BorderRadius.circular(AppBorderRadius.full),
           border: Border.all(
-            color: selected ? color : AppColors.cloud,
+            color: selected ? color : AppColorsDark.glassBorder,
             width: selected ? 1.5 : 1,
           ),
         ),
@@ -577,14 +629,14 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                           Text(
                             'Tell us how you like to play.',
                             style: AppTypography.headlineSmall.copyWith(
-                              color: AppColors.pure,
+                              color: AppColorsDark.textPrimary,
                             ),
                           ),
                           const SizedBox(height: AppSpacing.xxs),
                           Text(
                             'Step ${_currentIndex + 1} of ${_categories.length + 1}',
                             style: AppTypography.bodySmall.copyWith(
-                              color: AppColors.stone,
+                              color: AppColorsDark.textMuted,
                             ),
                           ),
                         ],
@@ -601,8 +653,8 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                   borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                   child: LinearProgressIndicator(
                     value: (_currentIndex + 1) / (_categories.length + 1),
-                    backgroundColor: AppColors.slate.withValues(alpha:0.3),
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.navy),
+                    backgroundColor: AppColorsDark.navyLight,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColorsDark.green),
                     minHeight: 6,
                   ),
                 ),
@@ -615,7 +667,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                 child: _isLoading
                     ? Center(
                         child: CircularProgressIndicator(
-                          color: AppColors.navy,
+                          color: AppColorsDark.green,
                         ),
                       )
                     : PageView.builder(
@@ -642,28 +694,22 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // Info card
-                                Container(
-                                  padding: const EdgeInsets.all(AppSpacing.md),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.navyLight.withValues(alpha:0.1),
-                                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                                    border: Border.all(
-                                      color: AppColors.navy.withValues(alpha:0.2),
-                                    ),
-                                  ),
+                                GlassCard(
+                                  padding: const EdgeInsets.all(AppSpacing.sm),
+                                  opacity: 0.2,
                                   child: Row(
                                     children: [
-                                      Icon(
-                                        AppPhosphorIcons.lightbulb,
-                                        size: AppIconSize.button,
-                                        color: AppColors.navy,
+                                      AppIcon(
+                                        icon: AppPhosphorIcons.lightbulb,
+                                        size: AppIconSize.md,
+                                        color: AppColorsDark.green,
                                       ),
                                       const SizedBox(width: AppSpacing.sm),
                                       Expanded(
                                         child: Text(
                                           'We\'ll match you with golfers on the same wavelength.',
                                           style: AppTypography.bodySmall.copyWith(
-                                            color: AppColors.sand,
+                                            color: AppColorsDark.textSecondary,
                                           ),
                                         ),
                                       ),
@@ -689,7 +735,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                                 Text(
                                   'You can adjust this anytime in your profile settings.',
                                   style: AppTypography.bodySmall.copyWith(
-                                    color: AppColors.stone,
+                                    color: AppColorsDark.textMuted,
                                   ),
                                 ),
                                 const SizedBox(height: AppSpacing.xxl),

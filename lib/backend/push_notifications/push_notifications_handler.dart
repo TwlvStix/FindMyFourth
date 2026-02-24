@@ -8,7 +8,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/widgets/app_premium_dialog.dart';
 
 final _handledMessageIds = <String?>{};
 
@@ -94,22 +96,13 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   }
 
   Future<void> _showFriendsOnlyDialog(BuildContext context) async {
-    await showDialog<void>(
+    await showPremiumDialog(
       context: context,
-      builder: (alertDialogContext) {
-        return AlertDialog(
-          title: Text('Friends Only Game'),
-          content: Text(
-            'This game is visible to friends only. Add the host as a friend to view details.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(alertDialogContext),
-              child: Text('Ok'),
-            ),
-          ],
-        );
-      },
+      variant: PremiumDialogVariant.informational,
+      icon: PhosphorIconsRegular.lock,
+      title: 'Friends Only Game',
+      body: 'This game is visible to friends only. Add the host as a friend to view details.',
+      actionLabel: 'Got It',
     );
   }
 
