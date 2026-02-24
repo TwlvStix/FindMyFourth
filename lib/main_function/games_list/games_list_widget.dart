@@ -576,6 +576,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       builder: (context, snapshot) {
                         final unreadCount = snapshot.data?.docs.length ?? 0;
                         return Stack(
+                          alignment: Alignment.center,
                           clipBehavior: Clip.none,
                           children: [
                             AppIconButton(

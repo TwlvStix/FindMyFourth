@@ -649,7 +649,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
             }),
             trackColor: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.selected)) {
-                return AppColors.gold;
+                return AppColors.green;
               }
               return Colors.white.withValues(alpha: 0.2);
             }),
@@ -776,12 +776,12 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
               ),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.gold
+                    ? AppColors.green
                     : Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                 border: Border.all(
                   color: isSelected
-                      ? AppColors.gold
+                      ? AppColors.green
                       : Colors.white.withValues(alpha: 0.2),
                   width: 1.5,
                 ),
@@ -843,7 +843,7 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CircularProgressIndicator(
-                        color: AppColors.gold,
+                        color: AppColors.green,
                       ),
                       SizedBox(height: AppSpacing.md),
                       Text(

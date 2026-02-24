@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
@@ -309,7 +310,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
   }
 
   Widget _buildSection({
-    required String emoji,
+    required PhosphorIconData icon,
     required String title,
     String? subtitle,
     required List<Widget> children,
@@ -339,9 +340,10 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      emoji,
-                      style: TextStyle(fontSize: 20),
+                    AppIcon(
+                      icon: icon,
+                      size: AppIconSize.md,
+                      color: AppColors.textSecondary,
                     ),
                     SizedBox(width: AppSpacing.xs),
                     Text(
@@ -388,7 +390,6 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
         children: options.map((option) {
           final value = option['value'] as String;
           final label = option['label'] as String;
-          final emoji = option['emoji'] as String?;
           final isSelected = selectedValues.contains(value);
 
           return GestureDetector(
@@ -408,32 +409,23 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
               ),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.gold
+                    ? AppColors.green
                     : Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                 border: Border.all(
                   color: isSelected
-                      ? AppColors.gold
+                      ? AppColors.green
                       : Colors.white.withValues(alpha: 0.2),
                   width: 1.5,
                 ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (emoji != null) ...[
-                    Text(emoji, style: TextStyle(fontSize: 16)),
-                    SizedBox(width: AppSpacing.xs),
-                  ],
-                  Text(
-                    label,
-                    style: AppTypography.labelMedium.copyWith(
-                      color: isSelected
-                          ? AppColors.navyDark
-                          : Colors.white.withValues(alpha: 0.9),
-                    ),
-                  ),
-                ],
+              child: Text(
+                label,
+                style: AppTypography.labelMedium.copyWith(
+                  color: isSelected
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.9),
+                ),
               ),
             ),
           );
@@ -443,7 +435,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
   }
 
   Widget _buildToggleRow({
-    required String emoji,
+    required PhosphorIconData icon,
     required String title,
     required String subtitle,
     required bool value,
@@ -456,7 +448,11 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
       ),
       child: Row(
         children: [
-          Text(emoji, style: TextStyle(fontSize: 24)),
+          AppIcon(
+            icon: icon,
+            size: AppIconSize.lg,
+            color: AppColors.textSecondary,
+          ),
           SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
@@ -490,7 +486,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
             }),
             trackColor: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.selected)) {
-                return AppColors.gold;
+                return AppColors.green;
               }
               return Colors.white.withValues(alpha: 0.2);
             }),
@@ -694,7 +690,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
 
                             // Game Vibe
                             _buildSection(
-                              emoji: '🎭',
+                              icon: AppPhosphorIcons.gameVibe,
                               title: 'Game Vibe',
                               subtitle: 'Select preferred game atmosphere',
                               children: [
@@ -713,7 +709,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
 
                             // Stakes
                             _buildSection(
-                              emoji: '💰',
+                              icon: AppPhosphorIcons.betting,
                               title: 'Stakes',
                               subtitle: 'How much are you playing for?',
                               children: [
@@ -731,7 +727,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
 
                             // Format
                             _buildSection(
-                              emoji: '🏆',
+                              icon: AppPhosphorIcons.trophy,
                               title: 'Primary Format',
                               subtitle: 'Scoring format preference',
                               children: [
@@ -749,7 +745,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
 
                             // Handicap Use
                             _buildSection(
-                              emoji: '📊',
+                              icon: AppPhosphorIcons.scoring,
                               title: 'Handicap Use',
                               subtitle: 'Gross, net, or both?',
                               children: [
@@ -768,7 +764,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
 
                             // Courses
                             _buildSection(
-                              emoji: '🏌️',
+                              icon: AppPhosphorIcons.golfCourse,
                               title: 'Courses',
                               subtitle:
                                   'Only notify for games at these courses',
@@ -798,7 +794,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                                     vertical: AppSpacing.sm,
                                                   ),
                                                   decoration: BoxDecoration(
-                                                    color: AppColors.gold,
+                                                    color: AppColors.green,
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             AppBorderRadius.lg),
@@ -808,8 +804,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                                     style: AppTypography
                                                         .labelMedium
                                                         .copyWith(
-                                                      color:
-                                                          AppColors.navyDark,
+                                                      color: Colors.white,
                                                     ),
                                                   ),
                                                 ),
@@ -823,7 +818,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                             : 'Edit Courses (${_selectedCourses.length})',
                                         leadingIcon: AppPhosphorIcons.golfCourse,
                                         size: AppButtonSize.medium,
-                                        variant: AppButtonVariant.secondary,
+                                        variant: AppButtonVariant.navyFilled,
                                         onPressed: _showCoursesPicker,
                                         fullWidth: true,
                                       ),
@@ -835,13 +830,13 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
 
                             // Special Options
                             _buildSection(
-                              emoji: '⚙️',
+                              icon: AppPhosphorIcons.settings,
                               title: 'Special',
                               subtitle: 'Additional game preferences',
                               children: [
                                 _buildToggleRow(
-                                  emoji: '🎮',
-                                  title: 'Games',
+                                  icon: AppPhosphorIcons.wolf,
+                                  title: 'Side Games',
                                   subtitle:
                                       'Only notify for games with side games (Wolf, Nassau, etc.)',
                                   value: _subscription!.special.games,
@@ -860,7 +855,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                   thickness: 1,
                                 ),
                                 _buildToggleRow(
-                                  emoji: '👥',
+                                  icon: AppPhosphorIcons.teams,
                                   title: '2v2 (Teams)',
                                   subtitle:
                                       'Only notify for 2v2/team format games',
@@ -880,7 +875,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                   thickness: 1,
                                 ),
                                 _buildToggleRow(
-                                  emoji: '🏷️',
+                                  icon: AppPhosphorIcons.memberDiscount,
                                   title: 'Discounted Games',
                                   subtitle:
                                       'Only notify for games with a discount',
@@ -1069,7 +1064,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                   child: Text(
                     'Done',
                     style: AppTypography.titleSmall.copyWith(
-                      color: AppColors.gold,
+                      color: AppColors.green,
                     ),
                   ),
                 ),
@@ -1140,12 +1135,12 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                           margin: EdgeInsets.only(bottom: AppSpacing.sm),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? AppColors.gold.withValues(alpha: 0.2)
+                                ? AppColors.green.withValues(alpha: 0.2)
                                 : Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(AppBorderRadius.md),
                             border: Border.all(
                               color: isSelected
-                                  ? AppColors.gold
+                                  ? AppColors.green
                                   : Colors.white.withValues(alpha: 0.1),
                               width: 1.5,
                             ),
@@ -1157,7 +1152,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                                     ? AppPhosphorIcons.success
                                     : AppPhosphorIcons.circle,
                                 color: isSelected
-                                    ? AppColors.gold
+                                    ? AppColors.green
                                     : AppColors.textMuted,
                                 size: AppIconSize.md,
                               ),
