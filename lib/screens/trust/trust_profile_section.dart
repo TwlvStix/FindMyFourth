@@ -86,7 +86,7 @@ class TrustProfileSection extends StatelessWidget {
         Text(
           'Trust Profile',
           style: AppTypography.titleMedium.copyWith(
-            color: AppColors.onyx,
+            color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -108,7 +108,12 @@ class TrustProfileSection extends StatelessWidget {
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [info.gradientStart, info.gradientEnd],
+          colors: [
+            info.gradientStart,
+            info.gradientEnd,
+            info.gradientEnd.withValues(alpha: 0.93),
+          ],
+          stops: [0.0, 0.6, 1.0],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -186,7 +191,7 @@ class TrustProfileSection extends StatelessWidget {
                   color: AppColors.glassSurface,
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   border: Border.all(
-                    color: AppColors.glassBorder,
+                    color: AppColors.glassSurface,
                   ),
                 ),
                 child: Column(
@@ -224,9 +229,9 @@ class TrustProfileSection extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.pure,
+        color: AppColors.navyDark,
         borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-        border: Border.all(color: AppColors.cloud),
+        border: Border.all(color: AppColors.navyLight),
         boxShadow: [AppElevation.md],
       ),
       child: Column(
@@ -295,41 +300,37 @@ class TrustProfileSection extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Just icon, no container background
+          PhosphorIcon(
+            icon,
+            color: AppColors.textMuted.withValues(alpha: 0.7),
+            size: AppIconSize.md,
+          ),
+          SizedBox(height: AppSpacing.xxs),
+          // Subtle horizontal bar under icon
           Container(
-            width: 32,
-            height: 32,
+            width: 24,
+            height: 2,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: iconGradient,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-              boxShadow: [
-                BoxShadow(
-                  color: iconGradient[0].withValues(alpha:0.25),
-                  blurRadius: 6,
-                  offset: Offset(0, 2),
-                ),
-              ],
+              color: AppColors.navyLight,
+              borderRadius: BorderRadius.circular(1),
             ),
-            child: PhosphorIcon(icon, color: AppColors.pure, size: AppIconSize.xs),
           ),
           SizedBox(height: AppSpacing.xs),
           Text(
             displayValue,
             style: isText
                 ? AppTypography.labelSmall.copyWith(
-                    color: AppColors.onyx,
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                   )
                 : isZero
-                    ? AppTypography.monoMedium.copyWith(
-                        color: AppColors.stone,
+                    ? AppTypography.monoLarge.copyWith(
+                        color: AppColors.textMuted,
                         fontWeight: FontWeight.w300,
                       )
-                    : AppTypography.monoMedium.copyWith(
-                        color: AppColors.onyx,
+                    : AppTypography.monoLarge.copyWith(
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.w700,
                       ),
             textAlign: TextAlign.center,
@@ -340,8 +341,8 @@ class TrustProfileSection extends StatelessWidget {
           Text(
             label,
             style: AppTypography.labelSmall.copyWith(
-              color: AppColors.stone,
-              fontSize: 10,
+              color: AppColors.textMuted,
+              fontSize: 9,
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
@@ -372,9 +373,9 @@ class TrustProfileSection extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.sand,
+        color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        border: Border.all(color: AppColors.cloud),
+        border: Border.all(color: AppColors.navyLight),
         boxShadow: [AppElevation.md],
       ),
       child: Column(
@@ -394,9 +395,9 @@ class TrustProfileSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   boxShadow: [
                     BoxShadow(
-                      color: color.withValues(alpha:0.25),
-                      blurRadius: 8,
-                      offset: Offset(0, 3),
+                      color: color.withValues(alpha:0.2),
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
@@ -411,14 +412,14 @@ class TrustProfileSection extends StatelessWidget {
                     Text(
                       'Show-Up Rate',
                       style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.stone,
+                        color: AppColors.textMuted,
                       ),
                     ),
                     SizedBox(height: AppSpacing.xxs),
                     Text(
                       '$denominator game${denominator == 1 ? "" : "s"} played',
                       style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.slate,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -438,7 +439,7 @@ class TrustProfileSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppBorderRadius.xs),
             child: LinearProgressIndicator(
               value: rate,
-              backgroundColor: AppColors.cloud,
+              backgroundColor: AppColors.navyLight,
               valueColor: AlwaysStoppedAnimation<Color>(color),
               minHeight: 6,
             ),
@@ -459,16 +460,10 @@ class TrustProfileSection extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.warning.withValues(alpha:0.08),
+          color: AppColors.navy,
           borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(color: AppColors.warning.withValues(alpha:0.4)),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.warning.withValues(alpha:0.08),
-              blurRadius: 8,
-              offset: Offset(0, 2),
-            ),
-          ],
+          boxShadow: [AppElevation.sm],
         ),
         child: Row(
           children: [
@@ -484,9 +479,9 @@ class TrustProfileSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.warning.withValues(alpha:0.25),
-                    blurRadius: 8,
-                    offset: Offset(0, 3),
+                    color: AppColors.warning.withValues(alpha:0.2),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
@@ -501,7 +496,7 @@ class TrustProfileSection extends StatelessWidget {
                   Text(
                     'Cancellation History',
                     style: AppTypography.labelMedium.copyWith(
-                      color: AppColors.slate,
+                      color: AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -509,7 +504,7 @@ class TrustProfileSection extends StatelessWidget {
                   Text(
                     'Tap for details',
                     style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.stone,
+                      color: AppColors.textMuted,
                     ),
                   ),
                 ],
@@ -517,7 +512,7 @@ class TrustProfileSection extends StatelessWidget {
             ),
             PhosphorIcon(
               AppPhosphorIcons.chevronRight,
-              color: AppColors.stone,
+              color: AppColors.textMuted,
               size: AppIconSize.button,
             ),
           ],
@@ -565,30 +560,30 @@ class TrustProfileSection extends StatelessWidget {
               children: [
                 // Background track
                 Positioned(
-                  left: 6,
-                  right: 6,
+                  left: 7,
+                  right: 7,
                   child: Container(
-                    height: 4,
+                    height: 6,
                     decoration: BoxDecoration(
-                      color: AppColors.cloud,
+                      color: AppColors.navyLight.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                     ),
                   ),
                 ),
                 // Progress fill
                 Positioned(
-                  left: 6,
-                  right: 6,
+                  left: 7,
+                  right: 7,
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       return Align(
                         alignment: Alignment.centerLeft,
                         child: Container(
                           width: constraints.maxWidth * progress,
-                          height: 4,
+                          height: 6,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [AppColors.navy, AppColors.navyLight],
+                              colors: [AppColors.greenLight, AppColors.green],
                             ),
                             borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                           ),
@@ -620,21 +615,21 @@ class TrustProfileSection extends StatelessWidget {
               Text(
                 'First Tee',
                 style: AppTypography.labelSmall.copyWith(
-                  color: AppColors.navy,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
                 '5 Rounds',
                 style: AppTypography.labelSmall.copyWith(
-                  color: rounds >= 5 ? AppColors.navy : AppColors.stone,
+                  color: rounds >= 5 ? AppColors.textPrimary : AppColors.textMuted,
                   fontWeight: rounds >= 5 ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
               Text(
                 'Trusted',
                 style: AppTypography.labelSmall.copyWith(
-                  color: rounds >= 10 ? AppColors.navy : AppColors.stone,
+                  color: rounds >= 10 ? AppColors.textPrimary : AppColors.textMuted,
                   fontWeight: rounds >= 10 ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
@@ -647,20 +642,20 @@ class TrustProfileSection extends StatelessWidget {
 
   Widget _buildProgressNode({required bool isActive}) {
     return Container(
-      width: isActive ? 12 : 10,
-      height: isActive ? 12 : 10,
+      width: isActive ? 14 : 11,
+      height: isActive ? 14 : 11,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isActive ? AppColors.navy : AppColors.cloud,
+        color: isActive ? AppColors.green : AppColors.navyLight,
         border: Border.all(
-          color: isActive ? Colors.white : AppColors.cloud,
+          color: isActive ? AppColors.navy : AppColors.navyLight,
           width: isActive ? 2 : 1,
         ),
         boxShadow: isActive
             ? [
                 BoxShadow(
-                  color: AppColors.navy.withValues(alpha:0.4),
-                  blurRadius: 6,
+                  color: AppColors.green.withValues(alpha: 0.3),
+                  blurRadius: 4,
                   offset: Offset(0, 2),
                 ),
               ]

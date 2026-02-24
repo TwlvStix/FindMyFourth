@@ -141,21 +141,17 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
             vertical: AppSpacing.xs,
           ),
           decoration: BoxDecoration(
-            color: AppColors.navy.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-            border: Border.all(
-              color: _isPressed
-                  ? AppColors.navyLight.withValues(alpha: 0.4)
-                  : AppColors.navyLight.withValues(alpha: 0.3),
-              width: 1,
-            ),
+            color: _isPressed
+                ? AppColors.navy.withValues(alpha: 0.4)
+                : AppColors.navy.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(AppBorderRadius.card),
           ),
           child: Column(
             children: [
 
               // Main content with responsive layout
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.lg - 2),
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     return Row(
@@ -191,15 +187,15 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       width: 52,
       height: 52,
       decoration: BoxDecoration(
-        color: AppColors.navyLight.withValues(alpha: 0.4),
+        color: AppColors.navyLight.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-          width: 1.5,
+          color: AppColors.glassBorder,
+          width: 1,
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppBorderRadius.md),
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg - 1),
         child: widget.user.photoUrl.isNotEmpty
             ? Image.network(
                 widget.user.photoUrl,
@@ -216,14 +212,39 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   }
 
   Widget _buildAvatarFallback() {
+    final initials = _getInitials(widget.user.displayName);
+
     return Container(
-      color: Colors.white.withValues(alpha: 0.04),
-      child: AppIcon(
-        icon: AppPhosphorIcons.profile,
-        color: PremiumFriendCard.textMuted,
-        size: AppIconSize.md,
+      color: AppColors.navy,
+      child: Center(
+        child: initials.isNotEmpty
+            ? Text(
+                initials,
+                style: AppTypography.labelMedium.copyWith(
+                  color: AppColors.textMuted,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              )
+            : AppIcon(
+                icon: AppPhosphorIcons.profile,
+                color: AppColors.textMuted,
+                size: AppIconSize.md,
+              ),
       ),
     );
+  }
+
+  /// Extracts up to 2 initials from a display name
+  String _getInitials(String name) {
+    if (name.isEmpty) return '';
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    } else if (parts.isNotEmpty && parts[0].isNotEmpty) {
+      return parts[0][0].toUpperCase();
+    }
+    return '';
   }
 
   Widget _buildUserInfo(double availableWidth) {
@@ -271,10 +292,10 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     return Container(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xxs),
       decoration: BoxDecoration(
-        color: PremiumFriendCard.goldAccent.withValues(alpha: 0.15),
+        color: AppColors.navyLight.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(AppBorderRadius.xs),
         border: Border.all(
-          color: PremiumFriendCard.goldAccent.withValues(alpha: 0.3),
+          color: AppColors.navyLight.withValues(alpha: 0.5),
           width: 1,
         ),
       ),
@@ -284,14 +305,14 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
           AppIcon(
             icon: AppPhosphorIcons.heartFill,
             size: 10,
-            color: PremiumFriendCard.goldAccent,
+            color: AppColors.textMuted,
           ),
           AppSpacing.horizontalXxs,
           Text(
             '$score%',
             style: AppTypography.labelSmall.copyWith(
               fontSize: 11,
-              color: PremiumFriendCard.goldAccent,
+              color: AppColors.textSecondary,
               letterSpacing: 0.2,
             ),
           ),
@@ -301,18 +322,23 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   }
 
   Widget _buildHandicapBadge(int handicap) {
+    final handicapText = handicap < 0 ? '+${handicap.abs()}' : '$handicap';
     return Container(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xxs),
       decoration: BoxDecoration(
-        color: AppColors.gold,
+        color: AppColors.navyLight.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(AppBorderRadius.xs),
+        border: Border.all(
+          color: AppColors.navyLight,
+          width: 1,
+        ),
       ),
       child: Text(
-        handicap < 0 ? '+${handicap.abs()}' : '$handicap',
+        'HCP $handicapText',
         style: AppTypography.labelSmall.copyWith(
           fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: AppColors.navyDark,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textSecondary,
           letterSpacing: 0.2,
         ),
       ),
@@ -323,27 +349,27 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     // Always use icon-only buttons for compact design
     final actions = <Widget>[];
 
-    // Message button (primary)
+    // Message button (secondary - ghost style)
     if (widget.onMessage != null) {
       actions.add(
         _buildIconOnlyButton(
           icon: widget.messageIcon,
           svgPath: widget.messageSvgPath,
           onPressed: widget.onMessage!,
-          isPrimary: true,
+          isPrimary: false,
           tooltip: widget.messageLabel,
         ),
       );
     }
 
-    // Action button (secondary)
+    // Action button (primary - Add Friend is the main CTA)
     if (widget.showActionButton) {
       actions.add(
         _buildIconOnlyButton(
           icon: widget.actionIcon,
           svgPath: widget.actionSvgPath,
           onPressed: widget.onAction,
-          isPrimary: false,
+          isPrimary: true,
           isLoading: widget.isLoading,
           tooltip: widget.actionLabel,
         ),
@@ -367,20 +393,22 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     bool isLoading = false,
     String? tooltip,
   }) {
+    // Primary: green filled (Add Friend CTA)
+    // Secondary: ghost/transparent with muted icon (Chat)
+    final iconColor = isPrimary ? AppColors.textPrimary : AppColors.textSecondary;
+
     final button = Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: isPrimary
-            ? AppColors.navyDark
-            : Colors.white.withValues(alpha: 0.08),
+        color: isPrimary ? AppColors.green : Colors.transparent,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        border: Border.all(
-          color: isPrimary
-              ? AppColors.navyLight.withValues(alpha: 0.3)
-              : Colors.white.withValues(alpha: 0.15),
-          width: 1,
-        ),
+        border: isPrimary
+            ? null
+            : Border.all(
+                color: AppColors.navyLight,
+                width: 1,
+              ),
       ),
       child: Material(
         color: Colors.transparent,
@@ -394,21 +422,19 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        PremiumFriendCard.textPrimary,
-                      ),
+                      valueColor: AlwaysStoppedAnimation<Color>(iconColor),
                     ),
                   )
                 : svgPath != null
                     ? AppIcon(
                         assetPath: svgPath,
                         size: AppIconSize.button,
-                        color: PremiumFriendCard.textPrimary,
+                        color: iconColor,
                       )
                     : AppIcon(
                         icon: icon,
                         size: AppIconSize.button,
-                        color: PremiumFriendCard.textPrimary,
+                        color: iconColor,
                       ),
           ),
         ),

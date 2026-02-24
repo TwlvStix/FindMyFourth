@@ -1354,14 +1354,14 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return SafeArea(
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.pure,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(AppBorderRadius.xl),
-              ),
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.navyDark,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppBorderRadius.xl),
             ),
+          ),
+          child: SafeArea(
             child: SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(
                 AppSpacing.lg,
@@ -1377,7 +1377,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                       width: 48,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: AppColors.cloud,
+                        color: AppColors.greenLight,
                         borderRadius: BorderRadius.circular(AppBorderRadius.md),
                       ),
                     ),
@@ -1386,14 +1386,14 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                   Text(
                     'Group Fit',
                     style: AppTypography.headlineMedium.copyWith(
-                      color: AppColors.onyx,
+                      color: AppColors.pure,
                     ),
                   ),
                   SizedBox(height: AppSpacing.md),
                   Text(
                     '${result.groupFitScore.round()}%',
                     style: AppTypography.displayMedium.copyWith(
-                      color: AppColors.navyDark,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   SizedBox(height: AppSpacing.lg),
@@ -1401,7 +1401,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                     Text(
                       'Potential conflicts',
                       style: AppTypography.titleSmall.copyWith(
-                        color: AppColors.onyx,
+                        color: AppColors.pure,
                       ),
                     ),
                     SizedBox(height: AppSpacing.sm),
@@ -1411,7 +1411,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                         child: Text(
                           '${VibeLabels.titleFor(conflict.category)} with ${conflict.memberName}',
                           style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.stone,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ),
@@ -1421,7 +1421,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                   Text(
                     'Top differences vs group avg',
                     style: AppTypography.titleSmall.copyWith(
-                      color: AppColors.onyx,
+                      color: AppColors.pure,
                     ),
                   ),
                   SizedBox(height: AppSpacing.sm),
@@ -1435,16 +1435,16 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                           vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.sand,
+                          color: AppColors.navy,
                           borderRadius: BorderRadius.circular(AppBorderRadius.full),
                           border: Border.all(
-                            color: AppColors.cloud,
+                            color: AppColors.navyLight,
                           ),
                         ),
                         child: Text(
                           '${VibeLabels.titleFor(difference.category)} • gap ${difference.distance.toStringAsFixed(1)}',
                           style: AppTypography.labelSmall.copyWith(
-                            color: AppColors.slate,
+                            color: AppColors.textSecondary,
                             letterSpacing: AppTypography.letterSpacingNormal,
                           ),
                         ),
@@ -1459,7 +1459,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                         child: Text(
                           risk.reason,
                           style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.stone,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ),
@@ -1469,7 +1469,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                   Text(
                     'Player matches',
                     style: AppTypography.titleSmall.copyWith(
-                      color: AppColors.onyx,
+                      color: AppColors.pure,
                     ),
                   ),
                   SizedBox(height: AppSpacing.sm),
@@ -1554,9 +1554,9 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: AppColors.sand,
+        color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        border: Border.all(color: AppColors.cloud),
+        border: Border.all(color: AppColors.navyLight),
       ),
       child: Row(
         children: [
@@ -1564,7 +1564,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
             child: Text(
               memberResult.member.name,
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.onyx,
+                color: AppColors.textPrimary,
                 fontWeight: AppTypography.semiBold,
               ),
             ),
@@ -1572,7 +1572,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
           Text(
             '$matchScore%',
             style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.navyDark,
+              color: AppColors.textPrimary,
               fontWeight: AppTypography.semiBold,
             ),
           ),

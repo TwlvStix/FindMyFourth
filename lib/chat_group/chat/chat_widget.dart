@@ -73,14 +73,17 @@ class _ChatWidgetState extends State<ChatWidget> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.navy.withValues(alpha:0.3),
+          color: AppColors.navy.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
             color: unreadCount > 0
-                ? AppColors.gold.withValues(alpha:0.4)
-                : AppColors.glassSurface,
+                ? AppColors.gold.withValues(alpha: 0.4)
+                : AppColors.navyLight,
             width: unreadCount > 0 ? 2 : 1,
           ),
+          boxShadow: unreadCount > 0
+              ? [AppElevation.glowGold]
+              : [AppElevation.xs],
         ),
         padding: EdgeInsets.all(AppSpacing.md),
         child: Row(
@@ -197,7 +200,7 @@ class _ChatWidgetState extends State<ChatWidget> {
             // Arrow
             AppIcon(
               icon: AppPhosphorIcons.chevronRight,
-              color: AppColors.glassTextTertiary,
+              color: AppColors.textMuted.withValues(alpha: 0.5),
               size: AppIconSize.button,
             ),
           ],

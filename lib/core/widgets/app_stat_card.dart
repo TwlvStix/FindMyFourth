@@ -196,7 +196,7 @@ class AppStatCard extends StatelessWidget {
           color: AppColors.navy.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
-            color: AppColors.glassSurface,
+            color: AppColors.navyLight.withValues(alpha: 0.2),
           ),
           boxShadow: accentGlow ? [AppElevation.glowGold] : null,
         ),
@@ -282,20 +282,20 @@ class _GlassIconBox extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveGradient = gradient ?? [AppColors.green, AppColors.greenLight];
     return Container(
-      width: 36,
-      height: 36,
+      width: 28,
+      height: 28,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: effectiveGradient,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Center(
         child: AppIcon(
           icon: icon,
-          size: AppIconSize.xs,
+          size: 14,
           color: AppColors.pure,
         ),
       ),

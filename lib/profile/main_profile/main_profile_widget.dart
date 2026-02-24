@@ -224,7 +224,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: AppColors.pure,
+                      color: AppColors.navyDark,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(AppBorderRadius.xxl),
                         topRight: Radius.circular(AppBorderRadius.xxl),
@@ -245,7 +245,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           width: 40,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: AppColors.cloud,
+                            color: AppColors.navyLight,
                             borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                           ),
                         ),
@@ -307,7 +307,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             return Stack(
               alignment: Alignment.center,
               children: [
-                // Outer glow
+                // Outer glow - gold with ambient intensity
                 Container(
                   width: avatarSize,
                   height: avatarSize,
@@ -315,15 +315,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.green.withValues(alpha:0.3),
-                        blurRadius: 40,
-                        spreadRadius: 5,
+                        color: AppColors.gold.withValues(alpha: 0.15),
+                        blurRadius: 20,
+                        spreadRadius: 1,
                       ),
                     ],
                   ),
                 ),
 
-                // Rotating gradient ring - green-centric with navy depth
+                // Rotating gradient ring - gold-centric for premium feel
                 AnimatedBuilder(
                   animation: _ringController,
                   builder: (context, child) {
@@ -336,11 +336,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           shape: BoxShape.circle,
                           gradient: SweepGradient(
                             colors: [
-                              AppColors.green,
-                              AppColors.greenLight,
                               AppColors.gold,
-                              AppColors.navy,
-                              AppColors.green,
+                              AppColors.goldLight,
+                              AppColors.error,
+                              AppColors.navyLight,
+                              AppColors.gold,
                             ],
                           ),
                         ),
@@ -482,7 +482,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   valueOrDefault(currentUserDocument?.handicap, 0),
                 ),
                 label: 'Handicap',
-                iconGradient: [AppColors.green, AppColors.greenLight],
+                iconGradient: [AppColors.gold, AppColors.goldLight],
               ),
             ),
           ),
@@ -520,7 +520,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   icon: AppPhosphorIcons.friends,
                   value: friendsCount.toString(),
                   label: 'Friends',
-                  iconGradient: [AppColors.green, AppColors.greenLight],
+                  iconGradient: [AppColors.gold, AppColors.goldLight],
                   onTap: () {
                     _pushNamed(TabFriendsWidget.routeName);
                   },
@@ -569,15 +569,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             child: Container(
               padding: EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.green.withValues(alpha:0.15),
-                    AppColors.greenLight.withValues(alpha:0.1),
-                  ],
-                ),
+                color: AppColors.navy,
                 borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                 border: Border.all(
-                  color: AppColors.green.withValues(alpha:0.3),
+                  color: AppColors.gold.withValues(alpha:0.4),
                 ),
               ),
               child: Row(
@@ -587,7 +582,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     height: 44,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [AppColors.green, AppColors.greenLight],
+                        colors: [AppColors.gold, AppColors.goldLight],
                       ),
                       borderRadius: BorderRadius.circular(AppBorderRadius.md),
                     ),
@@ -605,14 +600,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         Text(
                           'Complete Your Vibe Profile',
                           style: AppTypography.titleSmall.copyWith(
-                            color: AppColors.onyx,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         SizedBox(height: AppSpacing.xxs),
                         Text(
                           'Help us match you with the right golfers',
                           style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.slate,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -620,7 +615,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ),
                   AppIcon(
                     icon: AppPhosphorIcons.chevronRight,
-                    color: AppColors.green,
+                    color: AppColors.gold,
                     size: AppIconSize.button,
                   ),
                 ],
@@ -679,7 +674,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         context,
                         icon: AppPhosphorIcons.golfVibes,
                         label: 'Golf Vibes',
-                        gradient: [AppColors.green, AppColors.greenLight],
+                        gradient: [AppColors.gold, AppColors.goldLight],
                         onTap: () {
                           HapticFeedback.lightImpact();
                           _pushNamed(
@@ -770,41 +765,41 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
         decoration: BoxDecoration(
-          color: AppColors.sand,
-          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+          color: AppColors.navy,
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
           border: Border.all(
-            color: AppColors.cloud,
+            color: AppColors.navyLight,
           ),
         ),
         child: Column(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 gradient: LinearGradient(colors: gradient),
-                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+                borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 boxShadow: [
                   BoxShadow(
-                    color: gradient[0].withValues(alpha:0.3),
-                    blurRadius: 12,
-                    offset: Offset(0, 4),
+                    color: gradient[0].withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: Offset(0, 3),
                   ),
                 ],
               ),
               child: AppIcon(
                 icon: icon,
                 color: AppColors.pure,
-                size: AppIconSize.md,
+                size: AppIconSize.button,
               ),
             ),
-            SizedBox(height: AppSpacing.xs),
+            SizedBox(height: 4),
             Text(
               label,
               style: AppTypography.labelMedium.copyWith(
-                color: AppColors.slate,
+                color: AppColors.textSecondary,
                 fontWeight: AppTypography.medium,
               ),
               maxLines: 1,
@@ -829,8 +824,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         children: [
           Text(
             'Golf Info',
-            style: AppTypography.titleLarge.copyWith(
-              color: AppColors.onyx,
+            style: AppTypography.titleMedium.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: AppSpacing.md),
@@ -840,32 +836,29 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             builder: (context) => _buildInfoRow(
               context,
               phosphorIcon: AppPhosphorIcons.verified,
-              iconColor: AppColors.navy,
               label: 'Golf Canada #',
               value: valueOrDefault(
                   currentUserDocument?.golfCanadaNumber, 'Not set'),
             ),
           ),
 
-          SizedBox(height: AppSpacing.sm),
+          SizedBox(height: AppSpacing.md),
 
           // Email
           _buildInfoRow(
             context,
             phosphorIcon: AppPhosphorIcons.email,
-            iconColor: AppColors.green,
             label: 'Email',
             value: currentUserEmail,
           ),
 
-          SizedBox(height: AppSpacing.sm),
+          SizedBox(height: AppSpacing.md),
 
           // Phone
           AuthUserStreamWidget(
             builder: (context) => _buildInfoRow(
               context,
               phosphorIcon: AppPhosphorIcons.phone,
-              iconColor: AppColors.greenLight,
               label: 'Phone',
               value: currentPhoneNumber.isNotEmpty
                   ? currentPhoneNumber
@@ -880,31 +873,23 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Widget _buildInfoRow(
     BuildContext context, {
     required PhosphorIconData phosphorIcon,
-    required Color iconColor,
     required String label,
     required String value,
   }) {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.sand,
+        color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        border: Border.all(color: AppColors.cloud),
+        border: Border.all(color: AppColors.navyLight),
       ),
       child: Row(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha:0.15),
-              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-            ),
-            child: AppIcon(
-              icon: phosphorIcon,
-              color: iconColor,
-              size: AppIconSize.button,
-            ),
+          // Just icon, no container background
+          AppIcon(
+            icon: phosphorIcon,
+            color: AppColors.textMuted,
+            size: AppIconSize.md,
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
@@ -914,14 +899,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 Text(
                   label,
                   style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.stone,
+                    color: AppColors.textMuted,
                   ),
                 ),
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   value,
                   style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.onyx,
+                    color: AppColors.textPrimary,
                     fontWeight: AppTypography.medium,
                   ),
                 ),
@@ -945,16 +930,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         children: [
           Text(
             'Settings',
-            style: AppTypography.titleLarge.copyWith(
-              color: AppColors.onyx,
+            style: AppTypography.titleMedium.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: AppSpacing.md),
           Container(
             decoration: BoxDecoration(
-              color: AppColors.sand,
+              color: AppColors.navy,
               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-              border: Border.all(color: AppColors.cloud),
+              border: Border.all(color: AppColors.navyLight),
             ),
             child: Column(
               children: [
@@ -1011,7 +997,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           );
                         },
                       ),
-                Divider(height: 1, color: AppColors.cloud, indent: 56),
+                Divider(height: 1, color: AppColors.navyLight, indent: 56),
                 _buildSettingsRow(
                   context,
                   phosphorIcon: AppPhosphorIcons.standing,
@@ -1032,7 +1018,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     );
                   },
                 ),
-                Divider(height: 1, color: AppColors.cloud, indent: 56),
+                Divider(height: 1, color: AppColors.navyLight, indent: 56),
                 _buildSettingsRow(
                   context,
                   phosphorIcon: AppPhosphorIcons.logOut,
@@ -1111,7 +1097,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     bool isDestructive = false,
     Widget? trailing,
   }) {
-    final color = isDestructive ? AppColors.error : AppColors.slate;
+    // Muted red for less alarm on destructive actions
+    final color = isDestructive
+        ? AppColors.error.withValues(alpha: 0.85)
+        : AppColors.textSecondary;
 
     return InkWell(
       onTap: onTap,
@@ -1142,7 +1131,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ],
             AppIcon(
               icon: AppPhosphorIcons.chevronRight,
-              color: AppColors.stone,
+              color: AppColors.textMuted,
               size: AppIconSize.md,
             ),
           ],

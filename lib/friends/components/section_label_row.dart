@@ -19,7 +19,12 @@ class SectionLabelRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+      padding: EdgeInsets.only(
+        left: AppSpacing.xxs,
+        right: AppSpacing.xxs,
+        top: AppSpacing.sm,
+        bottom: AppSpacing.xs,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -27,15 +32,15 @@ class SectionLabelRow extends StatelessWidget {
             label.toUpperCase(),
             style: AppTypography.labelSmall.copyWith(
               fontSize: 11,
-              letterSpacing: 1.5,
-              color: AppColors.gold.withValues(alpha: 0.8),
+              letterSpacing: 0.8,
+              color: AppColors.textMuted,
             ),
           ),
           Text(
             '$count $countLabel',
-            style: AppTypography.caption.copyWith(
+            style: AppTypography.labelSmall.copyWith(
               fontWeight: FontWeight.w500,
-              color: Colors.white.withValues(alpha: 0.5),
+              color: AppColors.textMuted,
             ),
           ),
         ],

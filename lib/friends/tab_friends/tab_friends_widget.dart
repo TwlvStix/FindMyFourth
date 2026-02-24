@@ -7,11 +7,8 @@ import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/design_tokens/border_radius.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '/core/widgets/app_icon.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -300,37 +297,12 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                     AppSpacing.lg,
                     0,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Golfers',
-                        style: AppTypography.headlineMediumSans.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: _showFilterBottomSheet,
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: AppColors.navy.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                            border: Border.all(
-                              color: AppColors.navyLight.withValues(alpha: 0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: AppIcon(
-                            icon: AppPhosphorIcons.settings,
-                            color: AppColors.textSecondary,
-                            size: AppIconSize.md,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'Golfers',
+                    style: AppTypography.headlineMediumSans.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
 

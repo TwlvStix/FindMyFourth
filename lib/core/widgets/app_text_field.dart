@@ -13,8 +13,11 @@ enum AppTextFieldVariant {
   /// Outlined border style (default)
   outlined,
 
-  /// Filled background style
+  /// Filled background style (light theme)
   filled,
+
+  /// Filled background style (dark theme)
+  filledDark,
 
   /// Underlined style (minimal)
   underlined,
@@ -135,7 +138,12 @@ class _AppTextFieldState extends State<AppTextField> {
           validator: widget.validator,
           onChanged: widget.onChanged,
           onFieldSubmitted: widget.onSubmitted,
-          style: AppTypography.bodyMedium,
+          cursorColor: widget.variant == AppTextFieldVariant.filledDark
+              ? AppColors.textPrimary
+              : null,
+          style: widget.variant == AppTextFieldVariant.filledDark
+              ? AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary)
+              : AppTypography.bodyMedium,
           decoration: _buildDecoration(hasError),
         ),
         if (widget.helperText != null && !hasError) ...[
@@ -203,6 +211,49 @@ class _AppTextFieldState extends State<AppTextField> {
     return null;
   }
 
+  /// Build prefix icon widget for dark variant
+  Widget? _buildPrefixIconDark() {
+    if (widget.prefixPhosphorIcon != null) {
+      return Padding(
+        padding: AppSpacing.allSm,
+        child: AppIcon(icon: widget.prefixPhosphorIcon!, color: AppColors.textMuted, size: AppIconSize.button),
+      );
+    }
+    if (widget.prefixSvgPath != null) {
+      return Padding(
+        padding: AppSpacing.allSm,
+        child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.textMuted, size: AppIconSize.button),
+      );
+    }
+    if (widget.prefixIcon != null) {
+      return Icon(widget.prefixIcon, color: AppColors.textMuted);
+    }
+    return null;
+  }
+
+  /// Build suffix icon widget for dark variant
+  Widget? _buildSuffixIconDark() {
+    if (widget.suffixPhosphorIcon != null) {
+      return IconButton(
+        icon: AppIcon(icon: widget.suffixPhosphorIcon!, color: AppColors.textMuted, size: AppIconSize.button),
+        onPressed: widget.onSuffixIconTap,
+      );
+    }
+    if (widget.suffixSvgPath != null) {
+      return IconButton(
+        icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.textMuted, size: AppIconSize.button),
+        onPressed: widget.onSuffixIconTap,
+      );
+    }
+    if (widget.suffixIcon != null) {
+      return IconButton(
+        icon: Icon(widget.suffixIcon, color: AppColors.textMuted),
+        onPressed: widget.onSuffixIconTap,
+      );
+    }
+    return null;
+  }
+
   InputDecoration _buildDecoration(bool hasError) {
     final borderColor = hasError
         ? AppColors.error
@@ -262,6 +313,38 @@ class _AppTextFieldState extends State<AppTextField> {
           contentPadding: EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
             vertical: AppSpacing.sm,
+          ),
+        );
+
+      case AppTextFieldVariant.filledDark:
+        return InputDecoration(
+          hintText: widget.hint,
+          hintStyle: AppTypography.bodyMedium.copyWith(
+            color: AppColors.textMuted,
+          ),
+          prefixIcon: _buildPrefixIconDark(),
+          suffixIcon: _buildSuffixIconDark(),
+          filled: true,
+          fillColor: AppColors.inputBackground,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+            borderSide: BorderSide(color: AppColors.inputBorderIdle),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+            borderSide: BorderSide(color: AppColors.inputBorderIdle),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+            borderSide: BorderSide(color: AppColors.inputBorderFocused, width: 1.5),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+            borderSide: BorderSide(color: AppColors.error),
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.md,
           ),
         );
 

@@ -112,302 +112,51 @@ firebase deploy
 
 #### Design Tokens (`lib/core/design_tokens/`)
 
-The token system is the source of truth for all visual design.
+The token system is the source of truth for all visual design. **Always read the token source files for exact values** — use `AppColors`, `AppTypography`, `AppSpacing`, `AppElevation`, `AppBorderRadius`, `AppOpacity`, `AppIconSize` directly. Never hardcode colors, sizes, or spacing.
 
-**Colors** (`colors.dart`) — "The Clubhouse" premium palette with three color roles:
-
-*Primary Accent — Fairway Green (all interactive elements):*
-Darker, richer greens — "fairway at dusk, not neon grass"
-- `green` (#1F6B4E) — primary CTAs, Join Game, active nav, links
-- `greenDark` (#18543E) — pressed states, deep accents
-- `greenLight` (#2E8B68) — hover highlights, score accents
-- Interaction states: `greenHovered`, `greenPressed`
-
-*Structural — Deep Teal-Navy (headers, cards, navigation):*
-Navy with green undertones — masculine, athletic, grounded
-- `navy` (#142A36) — card headers, secondary buttons, structural fills
-- `navyDark` (#0E1C26) — app bar backgrounds, deep gradients, primary background
-- `navyLight` (#1A2F3A) — hover accents on navy, borders
-- Interaction states: `navyHovered`, `navyPressed`
-
-*Secondary Accent — Prestige Gold (trust, achievements, premium):*
-Deeper gold — accent only, never dominant. Use sparingly for icons, divider accents, trust badges.
-- `gold` (#C9A24D) — trust badges, upgrade CTAs, star ratings
-- `goldDark` (#9A7E2A) — pressed states
-- `goldLight` (#D4B060) — hover highlights
-- Interaction states: `goldHovered`, `goldPressed`
-
-*Input Field Tokens (premium contrast for forms):*
-- `inputBackground` (#1A2F3A) — input field fill
-- `inputBorderIdle` (#274453) — input border default state
-- `inputBorderFocused` (#2E8B68) — input border focused (ties to green accent)
-
-*Text Hierarchy Tokens (premium polish — avoid pure white):*
-- `textPrimary` (#F2F6F8) — primary text on dark backgrounds
-- `textSecondary` (#A7BCC9) — secondary text on dark backgrounds
-- `textMuted` (#7F98A6) — helper/muted text on dark backgrounds
-
-*Neutrals (cool-tinted):*
-- `pure` (#FFFFFF), `sand` (#F8FAFB), `cloud` (#F2F5F7), `mist` (#D5DCE1), `stone` (#7F98A6), `slate` (#556275), `onyx` (#141A24)
-
-*Semantic:* `success` (= green), `warning` (= gold), `error` (#D64545), `info` (#5B8DBE) — each with `Hovered` and `Pressed` variants
-
-*Trust Tier Palette:* Each tier has foreground + background colors:
-- `trustPlatinumFg/Bg` — cool blue-silver (highest trust)
-- `trustGoldFg/Bg` — warm gold
-- `trustSilverFg/Bg` — neutral grey
-- `trustBronzeFg/Bg` — rich warm brown
-- `trustCopperFg/Bg` — reddish-rust (new/unverified)
-
-*Glass / Overlay Presets (pre-computed for performance):*
-- `glassBorder` — white at 20%, `glassSurface` — white at 10%
-- `glassTextSecondary` — white at 70%, `glassTextTertiary` — white at 50%
-- `overlayDark` — black at 40%, `scrim` — black at 60%
-
-*Gradients:* `navyGradient`, `greenGradient`, `goldGradient`, `subtleOverlay`, `backgroundGradient` (primary screen background with depth and dark anchor at bottom)
-
-*Dark theme:* `AppColorsDark` provides full dark variants of all colors, interaction states, trust tiers, input fields, text hierarchy, and glass presets with teal-navy-tinted dark surfaces.
-
-*Design principles for gold usage:* Gold should be accent only, never dominant. Use for icons, divider accents, one social button max. Social auth buttons should be neutral (Google = `secondary` (outlined), Apple = `navyFilled`). Visual hierarchy should always point to the primary CTA (Sign In), not social auth.
-
-*Utility:* `AppColorStates.pressed(color)` and `AppColorStates.hovered(color)` for computing interaction states on arbitrary colors.
+**Three Color Roles** (`colors.dart` — "The Clubhouse" palette):
+- **Green** (`AppColors.green`) — all interactive elements (CTAs, active nav, links). Each has `Dark`/`Light`/`Hovered`/`Pressed` variants.
+- **Navy** (`AppColors.navy`) — structural surfaces (cards, headers, nav). Variants: `navyDark` (app bar, primary bg), `navyLight` (borders, hover).
+- **Gold** (`AppColors.gold`) — accent only, never dominant. Trust badges, achievements, premium. Use sparingly.
+- Text hierarchy: `textPrimary`, `textSecondary`, `textMuted` (avoid pure white)
+- Semantic: `success`, `warning`, `error`, `info` with interaction variants
+- Trust tiers: `trustPlatinum/Gold/Silver/Bronze/Copper` each with `Fg`/`Bg`
+- Pre-computed: glass/overlay presets, gradients, input field tokens
+- Utility: `AppColorStates.pressed(color)` / `.hovered(color)` for arbitrary colors
 
 **Typography** (`typography.dart`) — Three font families:
-- **Fraunces**: Sophisticated serif for display/headline tokens (`AppTypography.displaySmall`, `headlineMedium`, `headlineSmall`)
-- **Manrope**: Refined sans-serif for body, title, label tokens and sans headline variants (`AppTypography.bodyMedium`, `labelLarge`, `headlineMediumSans`)
-- **DM Mono**: Elegant monospace for scores and data (`AppTypography.monoLarge`, `monoDisplay`)
+- **Fraunces**: Serif for display/headline (`displaySmall`, `headlineMedium`, `headlineSmall`)
+- **Manrope**: Sans-serif for body/title/label + sans headline variants (`headlineMediumSans`, etc.)
+- **DM Mono**: Monospace for scores/data (`monoLarge`, `monoDisplay`)
+- Mapping: Screen titles → `headlineMediumSans`, sections → `titleLarge`, buttons → `labelLarge`, captions → `labelSmall`, badges → `labelMicro`
 
-Sans-serif headline tokens exist for contexts where Manrope is needed at headline sizes (dialog titles, onboarding headings, bottom sheet headers): `displaySmallSans`, `headlineMediumSans`, `headlineSmallSans`.
+**Other Token Files** — Read source files for exact scales/values:
+- `spacing.dart` — 8-point grid. Semantic: `screenPadding`, `cardPadding`, `cardGap`. Shortcuts: `AppSpacing.card`, `.screen`, `.verticalMdBox`
+- `elevation.dart` — Scale xs→xl + semantic aliases (`card`, `modal`) + accent glows
+- `border_radius.dart` — Scale xxs→full + semantic (`button`=8, `card`=12, `modal`=16, `avatar`=999). Don't introduce off-grid values.
+- `opacity.dart` — Scale + semantic (`disabled`=0.20, `overlay`=0.40, `glass`=0.10)
+- `icon_size.dart` — Scale xs→xxl + semantic (`nav`=24, `button`=20, `listItem`=24, `section`=32)
 
-`labelMicro` (11px) is available for badges, compact metadata, and dense UI elements.
-
-**Canonical token-to-pattern mapping:**
-- Screen titles / page headers → `headlineMediumSans`
-- Section headers → `titleLarge`
-- Button labels → `labelLarge`
-- Captions / metadata → `labelSmall`
-
-**Deprecated tokens** (still in codebase but annotated `@Deprecated`): `text10`, `text11`, `text13`. Use `labelMicro`, `labelSmall`, or `bodySmall` with `.copyWith()` instead.
-
-**Spacing** (`spacing.dart`) — 8-point grid with 4px increments:
-- **Scale**: `xxs` (4px), `xs` (8px), `sm` (12px), `md` (16px), `lg` (20px), `xl` (24px), `xxl` (32px), `xxxl` (48px)
-- **Semantic**: `screenPadding` (20px), `cardPadding` (20px), `cardGap` (16px), `buttonGap` (12px), `formFieldGap` (16px)
-- **Shortcuts**: `AppSpacing.card` (EdgeInsets.all(20)), `AppSpacing.screen`, `AppSpacing.verticalMdBox` (SizedBox)
-- **Extensions**: `widgets.withVerticalSpacing(AppSpacing.sm)` for list spacing
-
-**Elevation** (`elevation.dart`) — Shadow system:
-- **Scale**: `AppElevation.xs` (hover), `sm` (cards), `md` (panels), `lg` (dropdowns), `xl` (modals)
-- **Accent glows**: `glowGold` (premium/VIP features), `glowGreen` (success/active states)
-- **Semantic**: `AppElevation.card`, `button`, `modal`, `dropdown`, `tooltip`
-
-**Border Radius** (`border_radius.dart`):
-- **Scale**: `xxs` (2px), `xs` (4px), `sm` (8px), `md` (12px), `lg` (16px), `xl` (20px), `xxl` (24px), `full` (999px)
-- **Semantic**: `AppBorderRadius.button` (8px), `card` (12px), `modal` (16px), `avatar` (999px), `chip` (999px)
-- **Consolidation rules**: 6→xs, 9/10→sm, 11/12.5→md, 14→lg, 32→xxl. Do not introduce off-grid radius values.
-
-**Opacity** (`opacity.dart`):
-- **Scale**: `subtle` (0.05), `light` (0.10), `medium` (0.20), `strong` (0.40), `prominent` (0.60), `heavy` (0.80)
-- **Semantic**: `AppOpacity.disabled` (0.20), `overlay` (0.40), `hover` (0.05), `glass` (0.10)
-
-**Icon Size** (`icon_size.dart`):
-- **Scale**: `xs` (16px), `sm` (20px), `md` (24px), `lg` (32px), `xl` (40px), `xxl` (48px)
-- **Semantic**: `AppIconSize.nav` (24px), `button` (20px), `listItem` (24px), `section` (32px), `feature` (40px), `avatar` (48px)
-
-**App Icons** (`app_phosphor_icons.dart`) — Phosphor icon library:
-- Unified icon system using [Phosphor Icons](https://phosphoricons.com) via `phosphor_flutter` package
-- **Weight convention**: `PhosphorIconsRegular` everywhere; `PhosphorIconsFill` only for active nav states
-- **Naming**: Icons are named by concept, not shape (e.g., `betting` not `currencyDollar`) — swap the underlying icon without changing call sites
+**Icons** — Phosphor Icons (`app_phosphor_icons.dart`) is the primary system:
+- `PhosphorIconsRegular` everywhere; `PhosphorIconsFill` only for active nav
 - Usage: `AppIcon(icon: AppPhosphorIcons.games, size: AppIconSize.md, color: AppColors.textSecondary)`
-- **Icon color rules**:
-  - Passive/informational icons: `AppColors.textSecondary`
-  - Active/selected states: `AppColors.green`
-  - Trust/achievement badges: `AppColors.gold`
-  - Navigation inactive: `AppColors.textMuted`
-
-**App Icons (Legacy)** (`app_icons.dart`) — SVG icon asset paths:
-- Custom SVGs with 1.75px stroke weight, round caps/joins, 24x24 grid
-- **Deprecated**: Use `AppPhosphorIcons` for new code; SVG system retained for gradual migration
-- Legacy usage: `AppIcon(assetPath: AppIcons.games, size: AppIconSize.md, color: AppColors.navy)`
+- Color rules: informational→`textSecondary`, active→`green`, trust→`gold`, nav inactive→`textMuted`
+- Legacy SVG system (`AppIcons`/`app_icons.dart`) is deprecated — don't use for new code
 
 #### Visual Patterns
 
-These patterns ensure visual consistency while allowing intentional variation. The guiding principle: **color is earned, not sprinkled**.
+Guiding principle: **color is earned, not sprinkled**. Premium feel comes from typography contrast, generous spacing, motion choreography, and quiet surfaces — not more color. Check these drivers before reaching for color.
 
-**What Makes Premium Feel Premium:**
+**Icon color decision tree**: disabled→`textMuted`+opacity, error/warning→semantic color, on colored bg→`textPrimary`, interactive/active→`green`, trust/achievement→`gold`, nav inactive→`textMuted`, default→`textSecondary`.
 
-Premium perception comes from deliberate craft in these areas — not from adding more color:
+**Icon badges** (`AppIconBox`): Only for trust/achievement, feature highlight (empty states), or prominent CTA (FAB). Do NOT wrap informational icons in colored containers.
 
-| Premium Driver | How We Achieve It | Token System |
-|----------------|-------------------|--------------|
-| **Typography Contrast** | Fraunces (serif) for display, Manrope (sans) for body, DM Mono for data — weight and size variation creates hierarchy without color | `AppTypography.*` |
-| **Motion Choreography** | Staggered reveals, enter/exit curves, micro-interactions on high-impact moments — not scattered animation | `MotionTokens.*` |
-| **Restrained Depth** | Subtle elevation on interactive elements, accent glows reserved for success/premium moments | `AppElevation.*` |
-| **Generous Space** | Breathing room signals confidence; cramped layouts feel desperate | `AppSpacing.*` |
-| **Quiet Surfaces** | Navy/dark backgrounds let content and CTAs stand out; busy backgrounds compete | `AppColors.navy*` |
+**Card variants** (all share navy bg, `navyLight` border, `AppBorderRadius.card`, `AppSpacing.cardPadding`):
+- **Info Card**: Icon + label/value, compact, no elevation (game details, profile attributes)
+- **Stat Card**: Large centered value + label, optional `glowGold` (hero metrics)
+- **Action Card**: Title + chevron, hover/press states, slight elevation (settings, navigation)
 
-When a screen feels "off," check these drivers before reaching for color.
-
-**Icon Coloring — Complete State Reference:**
-
-| Icon State | Color Token | Application Notes |
-|------------|-------------|-------------------|
-| **Informational** (default) | `AppColors.textSecondary` | Icons next to text in cards, stats, labels |
-| **Interactive/Active** | `AppColors.green` | Tappable elements, selected states, toggle "on" |
-| **Prestige** | `AppColors.gold` | Trust badges, achievements, premium features |
-| **Navigation (inactive)** | `AppColors.textMuted` | Bottom nav icons when not selected |
-| **Navigation (active)** | `AppColors.green` | Selected nav icon (use `*Fill` variant) |
-| **Disabled** | `AppColors.textMuted` + `AppOpacity.disabled` | Non-interactive, unavailable actions |
-| **Warning** | `AppColors.warning` | Caution states, expiring items |
-| **Error** | `AppColors.error` | Validation failures, blocked actions |
-| **Inverse** (on colored bg) | `AppColors.textPrimary` or white | Icons inside green/gold buttons or badges |
-| **Marketing/Illustrative** | Gradient fills, `AppIconSize.feature`+ | Onboarding heroes, empty states, promotional |
-
-```dart
-// Decision tree:
-// 1. Is it disabled? → textMuted + opacity
-// 2. Is it an error/warning state? → error/warning
-// 3. Is it on a colored background? → textPrimary (inverse)
-// 4. Is it interactive/tappable? → green
-// 5. Is it active/selected? → green
-// 6. Is it trust/achievement? → gold
-// 7. Is it inactive navigation? → textMuted
-// 8. DEFAULT → textSecondary
-```
-
-**Icon Badge Rule — Badges Are Earned:**
-
-Do NOT wrap informational icons in colored containers. Reserve `AppIconBox` for exactly three contexts:
-
-| Context | Background | Icon Color | Example |
-|---------|------------|------------|---------|
-| Trust/Achievement | `AppColors.trustGoldBg` | `AppColors.trustGoldFg` | Trust profile badge |
-| Feature Highlight | `AppColors.navy` | `AppColors.textPrimary` | Empty state hero icons |
-| Prominent CTA | `AppColors.green` | `AppColors.textPrimary` | Floating action buttons |
-
-```dart
-// ❌ WRONG: Colored badge on informational icon
-Container(
-  decoration: BoxDecoration(color: AppColors.green.withOpacity(0.2)),
-  child: AppIcon(icon: AppPhosphorIcons.betting, color: AppColors.green),
-)
-
-// ✅ CORRECT: Plain icon, let the card provide structure
-AppIcon(
-  icon: AppPhosphorIcons.betting,
-  size: AppIconSize.listItem,
-  color: AppColors.textSecondary,
-)
-```
-
-**Card Pattern Family — Consistency With Variation:**
-
-Three card variants share a foundation but serve different purposes:
-
-| Variant | Purpose | Visual Treatment |
-|---------|---------|------------------|
-| **Info Card** | Dense attribute grids (game details) | Icon + label/value, compact, no elevation |
-| **Stat Card** | Hero metrics (handicap, rounds) | Large value, small label, subtle glow on premium stats |
-| **Action Card** | Tappable destinations (settings, navigation) | Chevron trail, hover/press state, slight elevation |
-
-*Shared Foundation (all variants):*
-```
-- Background: AppColors.navy
-- Border: 1px AppColors.navyLight
-- Radius: AppBorderRadius.card (12px)
-- Padding: AppSpacing.cardPadding (20px)
-- Icon: AppColors.textSecondary (unless interactive)
-- Gap (icon→text): AppSpacing.sm (12px)
-```
-
-*Info Card (game details, profile attributes):*
-```
-┌─────────────────────────────────────────────────┐
-│  [Icon]  [Label]                                │
-│          [Value]                                │
-└─────────────────────────────────────────────────┘
-- Icon: AppIconSize.listItem (24px)
-- Label: AppTypography.labelSmall, AppColors.textMuted
-- Value: AppTypography.bodyMedium, AppColors.textPrimary, w600
-- No elevation, no hover state
-```
-
-*Stat Card (profile hero stats, dashboard metrics):*
-```
-┌─────────────────────────────────────────────────┐
-│              [Large Value]                      │
-│              [Label]                            │
-│              [Icon]                             │
-└─────────────────────────────────────────────────┘
-- Value: AppTypography.headlineMediumSans or monoDisplay, AppColors.textPrimary
-- Label: AppTypography.labelSmall, AppColors.textMuted
-- Icon: AppIconSize.section (32px), AppColors.textSecondary
-- Optional: AppElevation.glowGold for trust-related stats
-- Centered layout, more vertical padding
-```
-
-*Action Card (settings rows, navigation destinations):*
-```
-┌─────────────────────────────────────────────────┐
-│  [Icon]  [Title]                            [›] │
-│          [Subtitle]                             │
-└─────────────────────────────────────────────────┘
-- Icon: AppIconSize.listItem (24px)
-- Title: AppTypography.bodyMedium, AppColors.textPrimary
-- Subtitle: AppTypography.labelSmall, AppColors.textMuted
-- Chevron: AppPhosphorIcons.chevronRight, AppColors.textMuted
-- Hover: background → AppColors.navyLight
-- Press: background → AppColors.navyHovered
-- Elevation: AppElevation.xs on hover
-```
-
-**Color Intent — Diagnostic Questions:**
-
-Instead of rigid percentages, ask these questions when adding color:
-
-| Question | If Yes | If No |
-|----------|--------|-------|
-| Is this the primary action on the screen? | Green is appropriate | Should probably be neutral |
-| Does this represent trust, achievement, or premium? | Gold is appropriate | Should probably be neutral |
-| Am I adding color because it "looks nice"? | Stop — that's decoration | Continue if functional |
-| Would a new user understand why this is colored? | Color is justified | Remove the color |
-| Is there already a green CTA on this screen? | Consider if this competes | Green may be appropriate |
-
-*Guardrail (not a law):* Most screens work best with 1-2 green elements (primary CTA + active state) and 0-1 gold elements (trust badge if relevant). Exceptions: onboarding, celebrations, marketing screens may need more emphasis — justify the intent.
-
-**Screen-Specific Guidance:**
-
-| Screen | Primary CTA (green) | Prestige (gold) | Watch Out For |
-|--------|---------------------|-----------------|---------------|
-| Game Details | "Join Game" button | Host trust badge | Info icons should be neutral, not colored per-category |
-| Profile | "Edit Profile" button | Trust tier, milestones | Stat icons neutral; gold only on earned achievements |
-| Game List | "Create Game" FAB | None typically | Card icons neutral; don't color-code game types |
-| Create Game | "Post Game" button | None | Selection states use green; unselected stays neutral |
-| Onboarding | Next/Continue buttons | Premium feature callouts | More color acceptable here for energy and guidance |
-
-**Pre-Ship Checklist:**
-
-Before shipping any screen, verify:
-- [ ] Premium drivers are working (typography contrast, spacing, motion) before adding color
-- [ ] Informational icons use `AppColors.textSecondary`
-- [ ] Icon badges only appear for trust/FAB/empty-state contexts
-- [ ] Color is justified by function, not decoration
-- [ ] Green appears only on primary CTA and active states
-- [ ] Gold appears only for earned achievements/trust (often 0 per screen)
-- [ ] Cards use the appropriate variant (info/stat/action) from the family
-- [ ] Text hierarchy flows: `textPrimary` → `textSecondary` → `textMuted`
-- [ ] Disabled states use `textMuted` + `AppOpacity.disabled`
-- [ ] Error/warning states use semantic colors, not ad-hoc reds/yellows
-
-**Implementation Priority:**
-
-*Phase 1 — Establish Reference:*
-Pick one screen (Game Details recommended), apply all patterns, screenshot as the "gold standard."
-
-*Phase 2 — Propagate:*
-Apply to Profile, Create Game, Settings — using the same card family and icon color rules.
-
-*Phase 3 — Audit & Lock:*
-Grep for `AppIconBox` usage and verify each is justified. Add screenshots to design documentation.
+**Color guardrail**: Most screens need 1-2 green elements (primary CTA + active state) and 0-1 gold (trust badge). Color must be justified by function, not decoration.
 
 #### Motion System (`lib/core/motion/motion_tokens.dart`)
 
@@ -423,115 +172,26 @@ Grep for `AppIconBox` usage and verify each is justified. Add screenshots to des
 
 #### Premium UI Patterns (`lib/core/design_patterns/premium_ui_patterns.dart`)
 
-Reusable premium components built on design tokens (note: file comments still reference old "Fairway Sunset" naming but code uses current tokens):
-- `AppGradients` — preset gradients: `sunsetGold`, `sunsetRose`, `fairway`, `fairwayDark`, `sunsetSweep` (animated rings). **Note: these gradient names are stale and reference the old palette — they should be updated to match The Clubhouse naming (`goldGradient`, `greenGradient`, etc.) when this file is next touched.**
-- `GlassCard` — semi-transparent card for dark backgrounds
-- `GradientIconBox` — gradient-filled icon container with optional shadow
-- `AnimatedAvatarRing` — rotating gradient ring around avatar (8s rotation)
-- `StatCard` — compact metric display on glass background
-- `QuickActionCard` — tappable action card with gradient icon
-- `InfoRow` — labeled info row with colored icon badge
-- `NotificationBadge` — gradient badge with glow effect
-- `BottomSheetCard` — rounded top corners with drag handle
-- `UsernamePill` — pill-shaped badge for @username display
+Reusable premium components built on design tokens: `GlassCard`, `GradientIconBox`, `AnimatedAvatarRing`, `QuickActionCard`, `InfoRow`, `NotificationBadge`, `BottomSheetCard`, `UsernamePill`. Note: `StatCard` here is deprecated — use `AppStatCard` from `app_stat_card.dart`. Gradient names (`sunsetGold`, etc.) are stale and should be updated to match The Clubhouse naming when next touched.
 
 #### Reusable Core Widgets (`lib/core/widgets/`)
 
-Prefixed with `app_` and built on design tokens:
-- `app_button_enhanced.dart` — Button variants: `primary`, `secondary` (outlined), `ghost` (transparent/text), `gradient` (gold-filled), `destructive`, `navyFilled` (solid dark fill)
-- `app_card.dart` — Standard card with token-based elevation and border radius
-- `app_text_field.dart` — Form input with token-based styling
-- `app_text.dart` — Text component wrapping `AppTypography`
-- `app_badge.dart` — Status badges
-- `app_avatar.dart` — User avatar with fallback
-- `app_section_header.dart` — Section header pattern
-- `app_empty_state.dart` — Empty state placeholder
-- `app_loading_state.dart` — Loading state pattern
-- `app_list_tile.dart` — Consistent list item
-- `app_choice_chips.dart` — Chip group selection
-- `app_icon.dart` — Icon wrapper supporting both Phosphor icons (`icon:`) and legacy SVGs (`assetPath:`); includes `AppNavIcon` for navigation with active/inactive states and `AppIconBox` for badge-style icons
-- `app_icon_badge.dart` — Icon with notification badge
-- `app_info_grid.dart` — Grid layout for info display
-- `premium_back_button.dart` — Styled back navigation
-- `fairway_background.dart` — Gradient background wrapper
-- `profile_hero_section.dart`, `profile_card_section.dart` — Profile layout components
-- `vibe_slider_card.dart` — Vibe preference slider
-- `trust/` subfolder — Trust-specific widgets (luxury_player_card, trust_badge_chip, restriction_banner, cancellation_warning_icon)
+Prefixed with `app_` and built on design tokens. Key widgets: `app_button_enhanced.dart` (variants: `primary`, `secondary`, `ghost`, `gradient`, `destructive`, `navyFilled`), `app_card.dart`, `app_text_field.dart`, `app_text.dart`, `app_badge.dart`, `app_avatar.dart`, `app_section_header.dart`, `app_empty_state.dart`, `app_loading_state.dart`, `app_list_tile.dart`, `app_choice_chips.dart`, `app_icon.dart` (supports Phosphor icons + legacy SVGs; includes `AppNavIcon` and `AppIconBox`), `app_icon_badge.dart`, `app_info_grid.dart`, `premium_back_button.dart`, `fairway_background.dart`, `profile_hero_section.dart`, `profile_card_section.dart`, `vibe_slider_card.dart`. Trust-specific widgets in `trust/` subfolder.
 
 #### Quick Reference
 ```dart
-// Typography
-Text('Screen Title', style: AppTypography.headlineMediumSans)
-Text('Section', style: AppTypography.titleLarge)
-Text('Body', style: AppTypography.bodyMedium)
-Text('Button', style: AppTypography.labelLarge)
-Text('Badge', style: AppTypography.labelMicro)
-Text('72', style: AppTypography.monoDisplay)
-
-// Colors — use the three roles
-Container(color: AppColors.green)         // Primary accent (CTAs) — #1F6B4E
-Container(color: AppColors.navy)          // Structural (headers/cards) — #142A36
-Container(color: AppColors.gold)          // Secondary accent (trust/premium) — #C9A24D
-
-// Input fields (premium contrast)
-decoration: BoxDecoration(
-  color: AppColors.inputBackground,
-  border: Border.all(color: isFocused ? AppColors.inputBorderFocused : AppColors.inputBorderIdle),
-)
-
-// Text hierarchy on dark backgrounds (avoid pure white)
-Text('Heading', style: TextStyle(color: AppColors.textPrimary))    // #F2F6F8
-Text('Subtext', style: TextStyle(color: AppColors.textSecondary))  // #A7BCC9
-Text('Helper', style: TextStyle(color: AppColors.textMuted))       // #7F98A6
-
-// Interaction states
-color: isPressed ? AppColors.greenPressed : AppColors.green
-// Or for arbitrary colors:
-color: AppColorStates.pressed(someColor)
-
-// Trust tiers
-Container(color: AppColors.trustGoldBg)
-Text('Gold', style: TextStyle(color: AppColors.trustGoldFg))
-
-// Glass presets (no more manual withOpacity)
-Container(
-  decoration: BoxDecoration(
-    color: AppColors.glassSurface,
-    border: Border.all(color: AppColors.glassBorder),
-  ),
-)
-
-// Gradients
-Container(decoration: BoxDecoration(gradient: AppColors.navyGradient))
-Container(decoration: BoxDecoration(gradient: AppColors.greenGradient))
-
-// Spacing
-Padding(padding: AppSpacing.card)   // 20px all sides
-SizedBox(height: AppSpacing.md)     // 16px
-Column(children: widgets.withVerticalSpacing(AppSpacing.sm))
-
-// Elevation
-Container(decoration: BoxDecoration(boxShadow: [AppElevation.card]))
-
-// Border radius
-Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(AppBorderRadius.card)))
-
-// Icons (Phosphor — preferred)
-AppIcon(icon: AppPhosphorIcons.games, size: AppIconSize.md, color: AppColors.textSecondary)
-AppIcon(icon: AppPhosphorIcons.betting, size: AppIconSize.listItem, color: AppColors.textSecondary)
-
-// Navigation icons (with active/inactive states)
-AppNavIcon(
-  icon: AppPhosphorIcons.games,
-  iconFill: AppPhosphorIcons.gamesFill,
-  isActive: _currentIndex == 0,
-)
-
-// Icons (SVG — legacy, still supported)
-AppIcon(assetPath: AppIcons.games, size: AppIconSize.md, color: AppColors.navy)
-
-// Motion
-AnimatedContainer(duration: MotionTokens.microInteraction, curve: MotionTokens.curveEnter)
+// Typography: AppTypography.headlineMediumSans, .titleLarge, .bodyMedium, .labelLarge, .labelMicro, .monoDisplay
+// Colors: AppColors.green (CTAs), .navy (structure), .gold (accent), .textPrimary/.textSecondary/.textMuted
+// Input: AppColors.inputBackground, .inputBorderIdle, .inputBorderFocused
+// States: AppColors.greenPressed, AppColorStates.pressed(color)
+// Trust: AppColors.trustGoldFg/Bg, trustPlatinumFg/Bg, etc.
+// Glass: AppColors.glassSurface, .glassBorder
+// Spacing: AppSpacing.card (20px all), .md (16px), .sm (12px); widgets.withVerticalSpacing(AppSpacing.sm)
+// Elevation: AppElevation.card, .modal; .glowGold, .glowGreen
+// Radius: BorderRadius.circular(AppBorderRadius.card) // 12px
+// Icons: AppIcon(icon: AppPhosphorIcons.games, size: AppIconSize.md, color: AppColors.textSecondary)
+// Nav: AppNavIcon(icon: AppPhosphorIcons.games, iconFill: AppPhosphorIcons.gamesFill, isActive: true)
+// Motion: MotionTokens.microInteraction (100ms), .curveEnter (easeOutCubic)
 ```
 
 #### AppTheme Bridge (Legacy — `lib/core/app_theme.dart`)
@@ -546,85 +206,24 @@ AnimatedContainer(duration: MotionTokens.microInteraction, curve: MotionTokens.c
 
 #### Known Design Debt
 
-- **SVG icon system (`AppIcons`)** is deprecated — Phosphor Icons (`AppPhosphorIcons`) is now the primary icon system. The SVG assets in `assets/icon/golf-app-icons/` and the `AppIcons` class in `app_icons.dart` are retained for gradual migration but should not be used for new code. Once all screens are migrated, remove the SVG assets, `flutter_svg` dependency (if no other SVGs remain), and `AppIcons` class.
-- **`premium_ui_patterns.dart`** — `StatCard` class is deprecated; use `AppStatCard` from `app_stat_card.dart` instead.
-- **Remaining `withOpacity()` deprecation warnings** — use `Color.withValues(alpha: ...)` or the pre-computed glass/overlay constants in `AppColors` instead.
-- **Some files still use `AppTheme.of(context)`** with FlutterFlow naming instead of direct tokens.
-- **Deprecated typography helpers** (`text10`, `text11`, `text13`) are defined in `typography.dart` but no longer used — can be removed in future cleanup.
-- **`caption` token** still used in ~10 files alongside the standard `labelSmall` — consolidate to `labelSmall` when touching these files.
-- **54 hardcoded BoxShadow instances** remain (intentionally — upward shadows, animated glows, dynamic colors that don't map to tokens).
-- **Flutter analyze: ~5 remaining issues** (non-blocking: unnecessary imports).
+- SVG icon system (`AppIcons`) deprecated → use `AppPhosphorIcons`; remove SVGs after full migration
+- `StatCard` in `premium_ui_patterns.dart` deprecated → use `AppStatCard`
+- Replace remaining `withOpacity()` calls with `Color.withValues(alpha:)` or pre-computed constants
+- Some files still use `AppTheme.of(context)` — migrate to direct tokens
+- `caption` token used in ~10 files — consolidate to `labelSmall`
+- ~5 flutter analyze issues remaining (unnecessary imports)
 
 #### Microcopy & Content Guidelines (`lib/core/content/app_copy.dart`)
 
-**Voice**: Quiet confidence. Clear, composed, trustworthy. Not playful, not loud, not pretentious.
+**Voice**: Quiet confidence — clear, composed, trustworthy. Not playful, loud, or pretentious. Semi-formal, no slang, no corporate buzzwords.
 
-**Tone Pillars**:
-1. **Clear over clever** — Always choose clarity over personality
-2. **Neutral emotional tone** — No exaggerated excitement or disappointment
-3. **Short, complete sentences** — No fragments unless for emphasis
-4. **Controlled warmth** — Professional but human, not cold
-5. **Trust first** — Matching involves vulnerability; copy must reduce anxiety
+**Rules**: No emoji in system messages/errors/trust flows. No exclamation marks in system flows. No ALL CAPS. Sentence case. Button labels: max 3 words, clear action verbs ("Request spot", not "Let's play"). Use constants from `app_copy.dart` for common messages.
 
-**Formality**: Semi-formal. No slang, no "bro" energy, no corporate buzzwords.
+**Tone examples**: "You're confirmed for this round." not "Awesome! You're in 🎉". "We couldn't load this round." not "Uh oh! Something went wrong."
 
-**Emoji Policy**:
-- System messages: No emoji
-- Errors: No emoji
-- Trust flows: No emoji
-- Marketing surfaces: Use sparingly and intentionally
+**Trust-sensitive areas** (ratings, vibe scoring, cancellations): Neutral, procedural tone. Never imply blame.
 
-**Punctuation**:
-- Use periods in confirmations and instructions
-- Avoid exclamation marks in system flows
-- No ALL CAPS
-- Sentence case everywhere
-
-**Button Labels**: Max 3 words, clear action verbs.
-- Good: "Request spot", "Confirm round", "Leave round"
-- Bad: "Let's play", "Count me in"
-
-**Examples by Context**:
-
-| Context | Wrong | Correct |
-|---------|-------|---------|
-| Confirmation | "Awesome! You're in 🎉" | "You're confirmed for this round." |
-| Error | "Uh oh! Something went wrong." | "We couldn't load this round." |
-| Empty state | "No matches 😢" | "No compatible groups right now." |
-| Notification | "You've got a new golf buddy!" | "You have a new match." |
-
-**Trust-Sensitive Areas** (ratings, vibe scoring, cancellations, reports):
-- Tone must be neutral and procedural
-- Never imply blame: "This cancellation falls within the late window." not "You canceled too late."
-
-**Host vs Joiner Language**:
-- Hosts need control clarity: "You'll review player requests before confirming."
-- Joiners need reassurance clarity: "Your request will be reviewed by the host."
-
-**Voice Red Flags** — If copy feels cheesy, salesy, over-motivational, sarcastic, overly casual, or country club elitist, it's off brand.
-
-**Tone Calibration Test**: Does this reduce friction? Does this increase clarity? Would a serious 12-handicap trust this? Does this feel calm? If any answer is no, rewrite.
-
-**Empty State Patterns** — Empty states maintain trust when no content is present. They must feel calm, competent, and forward-looking.
-
-| Pattern | When to Use | Structure | Example |
-|---------|-------------|-----------|---------|
-| **A: Informational Neutral** | Low-stakes (notifications, saved items) | State only, no action | "No new notifications." |
-| **B: Informational + Forward** | User can change outcome | State + optional action | "No compatible groups for this time." / "Adjust your filters to see more options." |
-| **C: Time-Dependent** | Availability fluctuates | State + time cue | "No player requests yet." / "Requests will appear here as players apply." |
-| **D: Procedural** | Restricted/paused/system | Status + governing rule | "Profile review in progress." / "This usually takes up to 24 hours." |
-| **E: Early Lifecycle** | New user, first action | State + first action | "No rounds booked yet." / "Browse available groups to get started." |
-
-**Empty State Escalation**:
-- Low stakes (notifications, saved items): Pure informational tone
-- Medium stakes (search, booking): Neutral + optional forward action
-- High stakes (trust, suspensions): Procedural clarity only
-
-**Empty State Don'ts**: No emoji, no "Uh oh", no "Nothing here yet!", no "Be the first...", no "Let's get you...", no humor, no golf clichés.
-
-**Empty State Quality Check**: Does this imply failure? Does this sound promotional? Does this reduce uncertainty? Would a serious 12-handicap trust this?
-
-**Reusable Copy**: Use constants from `lib/core/content/app_copy.dart` for common messages (confirmations, errors, empty states, button labels, field labels).
+**Empty states**: Calm, competent, forward-looking. No emoji, no "Uh oh", no humor, no golf clichés. Patterns range from pure informational ("No new notifications.") to procedural ("Profile review in progress. This usually takes up to 24 hours."). See `app_copy.dart` for full patterns.
 
 ### Data Models: Record Classes vs Model Classes
 
@@ -777,28 +376,18 @@ When adding a new feature, the typical file set is:
 
 ## Common Pitfalls & Things to Avoid
 
-- **Don't bypass the service layer for Firestore writes** — providers delegate writes to services; widgets never write to Firestore directly
-- **Don't duplicate business logic across `fromDoc()` and `fromRecord()`** — use a shared method (see `Game.resolveGameStatus()`)
-- **Don't use static-only service classes** — use instance classes with `FirebaseFirestore?` constructor injection for testability
-- **Don't forget the 10-item `whereIn` limit** — batch Firestore queries using the chunk pattern (see `ChatService._chunkList`)
-- **Don't forget the 500-operation batch limit** — loop in chunks of 500 for batch writes
-- **Don't use `notifyListeners()` directly in providers** — use the `_scheduleNotify()` debounce pattern to avoid UI jank from rapid updates
-- **Don't call `notifyListeners()` after dispose** — always check `_disposed` flag
-- **Don't add packages without discussion** — the dependency list is intentional; check existing packages before adding new ones
-- **Don't put business logic in widgets** — keep it in services; widgets consume providers
+- **Don't bypass the service layer** — widgets never write to Firestore directly; providers delegate to services
+- **Don't duplicate business logic** across `fromDoc()` and `fromRecord()` — use shared methods (e.g., `Game.resolveGameStatus()`)
+- **Don't use static-only service classes** — use instance classes with `FirebaseFirestore?` constructor injection
+- **Don't forget Firestore limits** — 10-item `whereIn` (use chunk pattern), 500-operation batch limit
+- **Don't call `notifyListeners()` directly** — use `_scheduleNotify()` debounce pattern; check `_disposed` flag
+- **Don't add packages without discussion** — check existing packages first
+- **Don't put business logic in widgets** — keep it in services
 - **Don't use `debugPrint()` or `print()`** — use `AppLog.d()` everywhere
-- **Don't catch generic exceptions in services** — catch `FirebaseException` specifically to preserve error codes
-- **`lib/custom_code/`** is excluded from analysis and contains legacy/generated code — avoid modifying or depending on it for new features
-- **`lib/app_state.dart`** is legacy — it only holds SharedPreferences-backed cancelled game state. Do not add new state here; use the appropriate domain provider instead.
-- **Don't use hardcoded icon sizes** — use `AppIconSize` tokens (e.g., `AppIconSize.button`, `AppIconSize.listItem`). Literal pixel values on icons bypass the design system and create visual inconsistency.
-- **Don't use raw `Icon()`, `PhosphorIcon()`, or Material Icons** — use `AppIcon(icon: AppPhosphorIcons.xxx)` to stay within the unified icon system. Check `app_phosphor_icons.dart` for available icons. The centralized mapping allows icon changes without touching call sites.
-- **Don't use SVG icons (`AppIcons`) for new code** — use `AppPhosphorIcons` instead. The SVG system is deprecated but retained for gradual migration.
-- **Don't mix icon weights** — use `PhosphorIconsRegular` everywhere except active navigation states, which use `PhosphorIconsFill`.
-- **Don't hardcode `fontFamily`, `fontSize`, or `fontWeight`** — use `AppTypography` tokens. If no token matches exactly, use the closest token with `.copyWith()`. Never use raw `TextStyle(fontFamily: 'Manrope', ...)`.
-- **Don't hardcode `BorderRadius.circular()` values** — use `AppBorderRadius` tokens. Map to nearest token: 8→sm, 12→md, 16→lg, 20→xl, 24→xxl, 999→full.
-- **Don't hardcode spacing values** — use `AppSpacing` tokens and shortcuts. Use `AppSpacing.allMd` instead of `EdgeInsets.all(16)`, and `AppSpacing.verticalSmBox` instead of `SizedBox(height: 12)`.
-- **Don't hardcode `BoxShadow()`** — use `AppElevation` tokens. Use semantic aliases when context matches (e.g., `AppElevation.card` for cards, `AppElevation.modal` for modals).
-- **Don't use `AppSpacing` tokens for `BorderRadius`** — spacing and radius are separate token systems. Use `AppBorderRadius` for border radius values.
+- **Don't catch generic exceptions in services** — catch `FirebaseException` specifically
+- **Don't hardcode design values** — use design tokens for colors, typography, spacing, border radius, shadows, icon sizes. Use `AppIcon` with `AppPhosphorIcons`, not raw `Icon()`. Use `AppBorderRadius`, not `BorderRadius.circular(12)`. Use `AppSpacing` tokens, not literal `EdgeInsets`.
+- **`lib/custom_code/`** is excluded from analysis — avoid depending on it for new features
+- **`lib/app_state.dart`** is legacy — only holds SharedPreferences-backed cancelled game state; use domain providers instead
 
 ## Vibe System
 
@@ -815,9 +404,3 @@ The "vibe" matching system connects compatible golfers based on play style prefe
 **Cloud Functions tests**: `firebase/functions/test/`
 - Jest-based tests
 - Load testing: `npm run load-test` or `npm run load-test:small`
-
-## Firebase Project
-
-- Project ID: `find-my-fourth`
-- Region: `us-west2`
-- Node.js version: 20 (for Cloud Functions)

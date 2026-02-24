@@ -70,20 +70,20 @@ class _FriendsEmptyStateState extends State<FriendsEmptyState>
               child: _buildIllustration(),
             ),
 
-            SizedBox(height: AppSpacing.xl),
+            SizedBox(height: AppSpacing.lg),
 
             // Title
             Text(
               _getTitle(),
               style: AppTypography.titleLarge.copyWith(
-                color: AppColors.onyx,
+                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w700,
                 fontSize: 22,
               ),
               textAlign: TextAlign.center,
             ),
 
-            SizedBox(height: AppSpacing.md),
+            SizedBox(height: AppSpacing.sm),
 
             // Description
             Padding(
@@ -91,7 +91,7 @@ class _FriendsEmptyStateState extends State<FriendsEmptyState>
               child: Text(
                 _getDescription(),
                 style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.stone,
+                  color: AppColors.textSecondary,
                   height: 1.6,
                   fontSize: 15,
                 ),
@@ -99,7 +99,7 @@ class _FriendsEmptyStateState extends State<FriendsEmptyState>
               ),
             ),
 
-            SizedBox(height: AppSpacing.xxl),
+            SizedBox(height: AppSpacing.xl),
 
             // CTA Button with enhanced styling
             if (widget.onActionPressed != null)
@@ -198,11 +198,11 @@ class _FriendsEmptyStateState extends State<FriendsEmptyState>
   String _getDescription() {
     switch (widget.type) {
       case FriendsEmptyStateType.noSearchResults:
-        return 'Try searching with a different name or check your spelling. You can also browse golfers at your club!';
+        return 'Try searching with a different name or check your spelling.';
       case FriendsEmptyStateType.noFriendRequests:
-        return 'You\'re all caught up! When golfers send you friend requests, they\'ll appear here.';
+        return 'When golfers send you friend requests, they\'ll appear here.';
       case FriendsEmptyStateType.noFriends:
-        return 'Start building your golf network! Connect with players from your club or search for golfers to play with.';
+        return 'Connect with players from your club or search for golfers to play with.';
     }
   }
 

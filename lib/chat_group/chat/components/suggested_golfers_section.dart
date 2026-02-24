@@ -55,9 +55,9 @@ class _SuggestedGolfersSectionState extends State<SuggestedGolfersSection> {
             padding: EdgeInsets.only(right: AppSpacing.md),
             child: Text(
               'Suggested Golfers',
-              style: AppTypography.titleSmall.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
+              style: AppTypography.labelLarge.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -235,16 +235,16 @@ class _SuggestedGolferCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 220,
-        padding: EdgeInsets.all(AppSpacing.md),
+        width: 180,
+        padding: EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
-          color: AppColors.navy.withValues(alpha:0.28),
+          color: AppColors.navy.withValues(alpha: 0.22),
           borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
             color: AppColors.glassSurface,
             width: 1,
           ),
-          boxShadow: [AppElevation.md],
+          boxShadow: [AppElevation.xs],
         ),
         child: Row(
           children: [
@@ -267,29 +267,35 @@ class _SuggestedGolferCard extends StatelessWidget {
                   SizedBox(height: 6),
                   Container(
                     padding: EdgeInsets.symmetric(
-                      horizontal: AppSpacing.xs,
-                      vertical: 4,
+                      horizontal: 6,
+                      vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      gradient: recommendation == VibeRecommendation.recommended
-                          ? LinearGradient(
-                              colors: [AppColors.gold, AppColors.goldLight],
-                            )
-                          : null,
-                      color: recommendation == VibeRecommendation.caution
-                          ? AppColors.stone.withValues(alpha:0.3)
-                          : null,
-                      borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                      color: recommendation == VibeRecommendation.recommended
+                          ? AppColors.green.withValues(alpha: 0.12)
+                          : AppColors.stone.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.xs),
                     ),
-                    child: Text(
-                      'VIBE $score%',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: recommendation == VibeRecommendation.recommended
-                            ? Colors.white
-                            : AppColors.glassTextSecondary,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.6,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'VIBE ',
+                          style: AppTypography.labelMicro.copyWith(
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          '$score%',
+                          style: AppTypography.monoSmall.copyWith(
+                            color: recommendation == VibeRecommendation.recommended
+                                ? AppColors.greenLight
+                                : AppColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -297,7 +303,7 @@ class _SuggestedGolferCard extends StatelessWidget {
             ),
             AppIcon(
               icon: AppPhosphorIcons.chevronRight,
-              color: AppColors.glassTextTertiary,
+              color: AppColors.textMuted.withValues(alpha: 0.5),
               size: AppIconSize.button,
             ),
           ],
@@ -324,8 +330,8 @@ class _Avatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 44,
-      height: 44,
+      width: 40,
+      height: 40,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [AppColors.navyLight, AppColors.navy],

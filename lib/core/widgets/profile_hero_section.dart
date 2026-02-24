@@ -75,7 +75,7 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                   center: Alignment.topCenter,
                   radius: 1.0,
                   colors: [
-                    AppColors.gold.withValues(alpha: 0.08),
+                    AppColors.gold.withValues(alpha: 0.06),
                     Colors.transparent,
                   ],
                 ),
@@ -103,11 +103,13 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                         gradient: SweepGradient(
                           colors: [
                             AppColors.navy,
+                            AppColors.gold.withValues(alpha: 0.9),
                             AppColors.gold,
                             AppColors.goldLight,
+                            AppColors.gold.withValues(alpha: 0.9),
                             AppColors.navy,
                           ],
-                          stops: [0.0, 0.33, 0.66, 1.0],
+                          stops: [0.0, 0.15, 0.35, 0.65, 0.85, 1.0],
                         ),
                       ),
                     ),

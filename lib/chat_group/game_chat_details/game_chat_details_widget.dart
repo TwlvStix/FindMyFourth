@@ -1338,7 +1338,12 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                                             strokeWidth: 2,
                                                           ),
                                                         )
-                                                      : const Text('Load earlier messages'),
+                                                      : Text(
+                                                          'Load earlier messages',
+                                                          style: AppTypography.labelSmall.copyWith(
+                                                            color: AppColors.textSecondary,
+                                                          ),
+                                                        ),
                                                 ),
                                               ),
                                             );

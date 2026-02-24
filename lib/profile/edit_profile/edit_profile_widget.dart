@@ -266,7 +266,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: AppColors.pure,
+                      color: AppColors.navyDark,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(AppBorderRadius.xxl),
                         topRight: Radius.circular(AppBorderRadius.xxl),
@@ -287,7 +287,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                           width: 40,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: AppColors.cloud,
+                            color: AppColors.navyLight,
                             borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                           ),
                         ),
@@ -345,7 +345,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
               ),
             ),
 
-            // Rotating gradient ring
+            // Rotating gradient ring - member badge aesthetic
             AnimatedBuilder(
               animation: _ringController,
               builder: (context, child) {
@@ -358,12 +358,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                       shape: BoxShape.circle,
                       gradient: SweepGradient(
                         colors: [
+                          AppColors.navy,
+                          AppColors.gold.withValues(alpha: 0.9),
                           AppColors.gold,
                           AppColors.goldLight,
-                          AppColors.error,
-                          AppColors.navyLight,
-                          AppColors.gold,
+                          AppColors.gold.withValues(alpha: 0.9),
+                          AppColors.navy,
                         ],
+                        stops: [0.0, 0.15, 0.35, 0.65, 0.85, 1.0],
                       ),
                     ),
                   ),
@@ -498,7 +500,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           Text(
             'Personal Information',
             style: AppTypography.titleMedium.copyWith(
-              color: AppColors.onyx,
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: AppSpacing.md),
@@ -579,7 +582,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           Text(
             'Golf Profile',
             style: AppTypography.titleMedium.copyWith(
-              color: AppColors.onyx,
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: AppSpacing.md),
@@ -594,13 +598,13 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                       return Container(
                         height: 56,
                         decoration: BoxDecoration(
-                          color: AppColors.sand,
+                          color: AppColors.inputBackground,
                           borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                          border: Border.all(color: AppColors.cloud),
+                          border: Border.all(color: AppColors.inputBorderIdle),
                         ),
                         alignment: Alignment.center,
                         child: CircularProgressIndicator(
-                          color: AppColors.navy,
+                          color: AppColors.textPrimary,
                           strokeWidth: 2,
                         ),
                       );
@@ -617,9 +621,9 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
 
                     return Container(
                       decoration: BoxDecoration(
-                        color: AppColors.sand,
+                        color: AppColors.inputBackground,
                         borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                        border: Border.all(color: AppColors.cloud),
+                        border: Border.all(color: AppColors.inputBorderIdle),
                       ),
                       child: AppDropDown<String>(
                         controller: coursesValueController ??=
@@ -629,15 +633,15 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         width: double.infinity,
                         height: 56,
                         textStyle: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.onyx,
+                          color: AppColors.textPrimary,
                         ),
                         hintText: 'Select Home Course',
                         icon: Icon(
                           AppPhosphorIcons.golfCourse,
-                          color: AppColors.navy,
+                          color: AppColors.textMuted,
                           size: AppIconSize.md,
                         ),
-                        fillColor: AppColors.sand,
+                        fillColor: AppColors.inputBackground,
                         elevation: 0,
                         borderColor: Colors.transparent,
                         borderWidth: 0,
@@ -654,9 +658,9 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                 Container(
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.sand,
+                    color: AppColors.inputBackground,
                     borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                    border: Border.all(color: AppColors.cloud),
+                    border: Border.all(color: AppColors.inputBorderIdle),
                   ),
                   child: Row(
                     children: [
@@ -664,12 +668,16 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: AppColors.gold.withValues(alpha:0.15),
+                          gradient: LinearGradient(
+                            colors: [AppColors.gold, AppColors.goldLight],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                           borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                         ),
                         child: Icon(
                           AppPhosphorIcons.flagCheckered,
-                          color: AppColors.gold,
+                          color: AppColors.pure,
                           size: AppIconSize.button,
                         ),
                       ),
@@ -681,14 +689,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             Text(
                               'Handicap',
                               style: AppTypography.labelSmall.copyWith(
-                                color: AppColors.stone,
+                                color: AppColors.textMuted,
                               ),
                             ),
                             SizedBox(height: AppSpacing.xxs),
                             Text(
                               'Your official handicap index',
                               style: AppTypography.bodySmall.copyWith(
-                                color: AppColors.slate,
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -700,14 +708,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                           height: 32,
                           decoration: BoxDecoration(
                             color: enabled
-                                ? AppColors.navy.withValues(alpha:0.1)
-                                : AppColors.cloud.withValues(alpha:0.5),
+                                ? AppColors.navyLight
+                                : AppColors.navyLight.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                           ),
                           child: Icon(
                             AppPhosphorIcons.minus,
                             color:
-                                enabled ? AppColors.navy : AppColors.stone,
+                                enabled ? AppColors.textPrimary : AppColors.textMuted,
                             size: AppIconSize.button,
                           ),
                         ),
@@ -716,14 +724,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                           height: 32,
                           decoration: BoxDecoration(
                             color: enabled
-                                ? AppColors.navy.withValues(alpha:0.1)
-                                : AppColors.cloud.withValues(alpha:0.5),
+                                ? AppColors.navyLight
+                                : AppColors.navyLight.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                           ),
                           child: Icon(
                             AppPhosphorIcons.plus,
                             color:
-                                enabled ? AppColors.navy : AppColors.stone,
+                                enabled ? AppColors.textPrimary : AppColors.textMuted,
                             size: AppIconSize.button,
                           ),
                         ),
@@ -737,7 +745,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             overflow: TextOverflow.clip,
                             textAlign: TextAlign.center,
                             style: AppTypography.monoLarge.copyWith(
-                              color: AppColors.onyx,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ),
@@ -891,9 +899,9 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           width: double.infinity,
           padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.error.withValues(alpha:0.1),
+            color: AppColors.navy,
             borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-            border: Border.all(color: AppColors.error.withValues(alpha:0.3)),
+            border: Border.all(color: AppColors.error.withValues(alpha: 0.5)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -930,7 +938,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     return AppTextField(
       label: label,
       controller: controller,
-      variant: AppTextFieldVariant.filled,
+      variant: AppTextFieldVariant.filledDark,
       prefixIcon: icon,
       readOnly: readOnly,
       enabled: !readOnly,

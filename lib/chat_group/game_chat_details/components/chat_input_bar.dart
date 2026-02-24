@@ -134,8 +134,8 @@ class ChatInputBar extends StatelessWidget {
                     icon: AppPhosphorIcons.image,
                     size: AppIconSize.md,
                     color: (enabled && onAttachImage != null)
-                        ? AppColors.navyDark
-                        : AppColors.pure.withValues(alpha: 0.4),
+                        ? AppColors.textSecondary
+                        : AppColors.textMuted,
                   ),
                 ),
               ),
@@ -148,6 +148,7 @@ class ChatInputBar extends StatelessWidget {
                   minLines: 1,
                   maxLines: 5,
                   enabled: enabled,
+                  cursorColor: AppColors.textPrimary,
                   onChanged: (value) {
                     if (kDebugMode) {
                       debugPrint(
@@ -155,30 +156,38 @@ class ChatInputBar extends StatelessWidget {
                       );
                     }
                   },
-                  style: AppTypography.bodyMedium,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                   decoration: InputDecoration(
                     hintText: enabled ? placeholder : 'Chat closed',
                     hintStyle: AppTypography.bodyMedium.copyWith(
                       color: AppColors.slate.withValues(alpha: 0.6),
                     ),
                     filled: true,
-                    fillColor: AppColors.navy,
+                    fillColor: AppColors.inputBackground,
                     contentPadding: EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,
                       vertical: AppSpacing.sm,
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-                      borderSide: BorderSide.none,
+                      borderSide: BorderSide(
+                        color: AppColors.inputBorderIdle,
+                        width: 1,
+                      ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-                      borderSide: BorderSide.none,
+                      borderSide: BorderSide(
+                        color: AppColors.inputBorderIdle,
+                        width: 1,
+                      ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                       borderSide: BorderSide(
-                        color: AppColors.navyDark.withValues(alpha: 0.3),
+                        color: AppColors.inputBorderFocused,
                         width: 1.5,
                       ),
                     ),
@@ -193,8 +202,8 @@ class ChatInputBar extends StatelessWidget {
                   return Container(
                     decoration: BoxDecoration(
                       color: enabled && hasText
-                          ? AppColors.navyDark
-                          : AppColors.navy,
+                          ? AppColors.green
+                          : AppColors.navyLight,
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
@@ -203,7 +212,7 @@ class ChatInputBar extends StatelessWidget {
                         size: AppIconSize.md,
                         color: enabled && hasText
                             ? AppColors.pure
-                            : AppColors.pure.withValues(alpha: 0.5),
+                            : AppColors.textMuted,
                       ),
                       onPressed: enabled && hasText ? onSendMessage : null,
                     ),
