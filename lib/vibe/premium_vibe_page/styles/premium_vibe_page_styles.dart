@@ -27,91 +27,91 @@ class PremiumVibePageStyles {
   // CARD DECORATIONS
   // ============================================================================
 
-  /// Strength chip decoration - soft green with subtle border
+  /// Strength chip decoration - navy background with subtle border for dark theme
   static BoxDecoration get strengthChipDecoration => BoxDecoration(
-        color: AppColors.navyLight.withValues(alpha:0.15),
+        color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.full),
         border: Border.all(
-          color: AppColors.navy.withValues(alpha:0.3),
+          color: AppColors.navyLight,
           width: 1,
         ),
       );
 
-  /// Watch point card decoration - warm background with light border
+  /// Watch point card decoration - navy background for dark theme
   static BoxDecoration get watchPointCardDecoration => BoxDecoration(
-        color: AppColors.sand,
+        color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
-          color: AppColors.cloud,
+          color: AppColors.navyLight,
           width: 1,
         ),
       );
 
-  /// Dealbreaker watch point card - emphasizes severity with warm accent
+  /// Dealbreaker watch point card - error tint on dark base
   static BoxDecoration get dealbreakerCardDecoration => BoxDecoration(
-        color: AppColors.error.withValues(alpha:0.08),
+        color: AppColors.error.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
-          color: AppColors.error.withValues(alpha:0.3),
+          color: AppColors.error.withValues(alpha: 0.4),
           width: 1,
         ),
       );
 
-  /// Primary archetype card (current user) - green accent
+  /// Primary archetype card (current user) - navy background with green accent border
   static BoxDecoration get archetypeCardPrimary => BoxDecoration(
-        color: AppColors.navyLight.withValues(alpha:0.12),
+        color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
-          color: AppColors.navy.withValues(alpha:0.25),
+          color: AppColors.green.withValues(alpha: 0.4),
           width: 1,
         ),
       );
 
-  /// Secondary archetype card (matched user) - neutral
+  /// Secondary archetype card (matched user) - navy background
   static BoxDecoration get archetypeCardSecondary => BoxDecoration(
-        color: AppColors.sand.withValues(alpha:0.5),
+        color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
-          color: AppColors.cloud,
+          color: AppColors.navyLight,
           width: 1,
         ),
       );
 
   /// Breakdown section background
   static BoxDecoration get breakdownSectionDecoration => const BoxDecoration(
-        color: AppColors.pure,
+        color: AppColors.navyDark,
       );
 
   // ============================================================================
-  // COLORS
+  // COLORS (Dark theme)
   // ============================================================================
 
-  /// Hero score color - primary dark green
-  static const Color heroScoreColor = AppColors.navyDark;
+  /// Hero score color - light text on dark background
+  static const Color heroScoreColor = AppColors.textPrimary;
 
-  /// Verdict text color - muted secondary
-  static const Color verdictTextColor = AppColors.slate;
+  /// Verdict text color - secondary text for dark theme
+  static const Color verdictTextColor = AppColors.textSecondary;
 
-  /// Section title color - strong onyx
-  static const Color sectionTitleColor = AppColors.onyx;
+  /// Section title color - primary text for dark theme
+  static const Color sectionTitleColor = AppColors.textPrimary;
 
-  /// Aligned category icon color
-  static const Color alignedIconColor = AppColors.navy;
+  /// Aligned category icon color - green accent for success
+  static const Color alignedIconColor = AppColors.green;
 
-  /// Watch point icon color
-  static const Color watchPointIconColor = AppColors.stone;
+  /// Watch point icon color - muted for dark theme
+  static const Color watchPointIconColor = AppColors.textMuted;
 
   /// Dealbreaker icon color
   static const Color dealbreakerIconColor = AppColors.error;
 
-  /// "You" spectrum dot color
-  static const Color youDotColor = AppColors.navyDark;
+  /// "You" spectrum dot color - green accent
+  static const Color youDotColor = AppColors.green;
 
-  /// "Them" spectrum dot color
-  static const Color themDotColor = AppColors.slate;
+  /// "Them" spectrum dot color - secondary text
+  static const Color themDotColor = AppColors.textSecondary;
 
-  /// Spectrum bar background color
-  static const Color spectrumBarColor = AppColors.cloud;
+  /// Spectrum bar background color - navy light for dark theme
+  static const Color spectrumBarColor = AppColors.navyLight;
 
   // ============================================================================
   // SPACING

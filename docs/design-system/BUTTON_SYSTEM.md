@@ -87,23 +87,25 @@ AppButtonEnhanced(
 ---
 
 ### 4. Gradient Button
-**Usage**: Special CTAs, premium actions
-**Style**: Sunset gradient fill
+**Usage**: Onboarding completion and premium upsells ONLY
+**Style**: Gold gradient fill
 
 ```dart
 AppButtonEnhanced(
-  text: 'Start Premium Game',
-  variant: AppButtonVariant.gradient,
-  onPressed: () => startPremium(),
+  text: 'Build Your Profile',
+  variant: AppButtonVariant.premium,
+  onPressed: () => completeOnboarding(),
 )
 ```
 
 **Visual Characteristics**:
-- Background: `AppColors.sunsetGradient` (gold → peach → rose)
+- Background: `AppColors.goldGradient`
 - Text: `AppColors.pure` (off-white)
-- Shadow: Warm glow effect
+- Shadow: Gold glow effect
 - Hover: Maintains gradient
 - Press: Scale effect with shadow depth change
+
+**RESTRICTION**: Do NOT use for standard CTAs. Use `primary` (green) instead. Gold is accent-only.
 
 ---
 
@@ -183,7 +185,7 @@ Hero actions, landing page CTAs
 AppButtonEnhanced(
   text: 'Get Started',
   size: AppButtonSize.xlarge,
-  variant: AppButtonVariant.gradient,
+  variant: AppButtonVariant.primary,
   trailingIcon: Icons.arrow_forward,
   onPressed: () => getStarted(),
 )
@@ -193,7 +195,7 @@ AppButtonEnhanced(
 - Height: 64px
 - Horizontal padding: 28px
 - Vertical padding: 16px
-- Border radius: 14px
+- Border radius: 16px (aligned to design token grid)
 - Icon size: 24px
 - Typography: `AppTypography.buttonLarge` (18px bold)
 
@@ -478,7 +480,7 @@ class _JoinGameButtonState extends State<JoinGameButton> {
 AppButtonEnhanced(
   text: 'Find Your Fourth Player',
   size: AppButtonSize.xlarge,
-  variant: AppButtonVariant.gradient,
+  variant: AppButtonVariant.primary,
   fullWidth: true,
   trailingIcon: Icons.arrow_forward,
   onPressed: () => navigateToGameList(),
@@ -493,7 +495,9 @@ AppButtonEnhanced(
 - **Primary**: Main action on screen (max 1 per view)
 - **Secondary**: Alternative or cancel actions
 - **Ghost**: Tertiary, low-priority actions
-- **Gradient**: Special moments, premium features (use sparingly!)
+- **Premium**: Onboarding completion or premium upsell ONLY (gold gradient)
+- **DestructiveOutlined**: Secondary destructive actions ("Leave Game", "Delete Account")
+- **Destructive**: Final confirmation in modals only (filled red)
 
 ### 2. **Size Selection**
 - **Small**: Tight spaces, repeated actions (lists, cards)

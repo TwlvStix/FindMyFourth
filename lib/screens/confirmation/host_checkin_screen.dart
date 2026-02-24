@@ -199,7 +199,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
                   AppButtonEnhanced(
                     onPressed: () => Navigator.of(context).pop(),
                     text: 'Done',
-                    variant: AppButtonVariant.gradient,
+                    variant: AppButtonVariant.primary,
                     size: AppButtonSize.large,
                   ),
                 ],
@@ -277,7 +277,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
               child: AppButtonEnhanced(
                 onPressed: _submitting ? null : _submit,
                 text: _submitting ? 'Submitting...' : 'Confirm Attendance',
-                variant: AppButtonVariant.gradient,
+                variant: AppButtonVariant.primary,
                 size: AppButtonSize.large,
               ),
             ),

@@ -176,29 +176,41 @@ class _ProgressiveOnboardingWidgetState
             if (needsReauth && mounted) {
               await showDialog<void>(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: Text('Re-authentication required'),
-                  content: Text(
-                      'To update your email, please sign in again and retry.'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text('Cancel'),
+                builder: (ctx) {
+                  return AlertDialog(
+                    backgroundColor: AppColors.navy,
+                    title: Text(
+                      'Re-authentication required',
+                      style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimary),
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        context.goNamed(
-                          SignInWidget.routeName,
-                          extra: <String, dynamic>{
-                            kTransitionInfoKey: TransitionStandards.modalTransition,
-                          },
-                        );
-                      },
-                      child: Text('Sign In'),
+                    content: Text(
+                      'To update your email, please sign in again and retry.',
+                      style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
                     ),
-                  ],
-                ),
+                    actions: [
+                      AppButtonEnhanced(
+                        text: 'Cancel',
+                        variant: AppButtonVariant.ghost,
+                        size: AppButtonSize.small,
+                        onPressed: () => Navigator.of(ctx).pop(),
+                      ),
+                      AppButtonEnhanced(
+                        text: 'Sign In',
+                        variant: AppButtonVariant.primary,
+                        size: AppButtonSize.small,
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          context.goNamed(
+                            SignInWidget.routeName,
+                            extra: <String, dynamic>{
+                              kTransitionInfoKey: TransitionStandards.modalTransition,
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
               );
             }
             setState(() => _isLoading = false);
@@ -971,7 +983,7 @@ class _ProgressiveOnboardingWidgetState
             child: AppButtonEnhanced(
               text: _currentStep == _totalSteps - 1 ? 'Complete' : 'Next',
               onPressed: _isLoading ? null : _nextStep,
-              variant: AppButtonVariant.gradient,
+              variant: AppButtonVariant.premium,
               size: AppButtonSize.medium,
               fullWidth: true,
               isLoading: _isLoading,

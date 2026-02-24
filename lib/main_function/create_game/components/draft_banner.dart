@@ -5,6 +5,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon.dart';
 
 /// Draft continuation banner for game creation
@@ -76,14 +77,11 @@ class DraftBanner extends StatelessWidget {
               ],
             ),
           ),
-          TextButton(
+          AppButtonEnhanced(
+            text: 'Clear',
+            variant: AppButtonVariant.ghost,
+            size: AppButtonSize.small,
             onPressed: onClear,
-            child: Text(
-              'Clear',
-              style: AppTypography.labelMedium.copyWith(
-                color: AppColors.gold,
-              ),
-            ),
           ),
         ],
       ),

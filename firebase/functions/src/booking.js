@@ -25,6 +25,22 @@ const {
   validateEnum,
 } = require("./utils");
 
+/**
+ * Computes age in years from a Firestore Timestamp or Date.
+ * Returns null if dateOfBirth is missing.
+ */
+function computeAge(dateOfBirth) {
+  if (!dateOfBirth) return null;
+  const dob = dateOfBirth.toDate ? dateOfBirth.toDate() : new Date(dateOfBirth);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 // ─────────────────────────────────────────────
 // CREATE ROUND
 // ─────────────────────────────────────────────
@@ -160,6 +176,8 @@ async function addParticipant({ round_id, player_id, role = "joined" }) {
     handicap_at_booking: profile.handicap ?? null,
     vibe_preferences_at_booking: profile.vibe_profile ?? {},
     experience_level_snapshot: profile.badge_level ?? "unknown",
+    gender_at_booking: profile.gender ?? null,
+    age_at_booking: computeAge(profile.date_of_birth),
 
     // ── Temporal features (computed at booking time) ──
     days_since_last_round: temporalFeatures.days_since_last_round,
@@ -201,6 +219,8 @@ async function addParticipant({ round_id, player_id, role = "joined" }) {
       role,
       handicap_at_booking: participantData.handicap_at_booking,
       experience_level_snapshot: participantData.experience_level_snapshot,
+      gender_at_booking: participantData.gender_at_booking,
+      age_at_booking: participantData.age_at_booking,
       days_since_last_round: temporalFeatures.days_since_last_round,
     },
   });

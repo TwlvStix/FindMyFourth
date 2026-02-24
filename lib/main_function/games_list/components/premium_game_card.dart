@@ -9,6 +9,7 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/widgets/app_icon.dart';
+import '/core/widgets/app_premium_dialog.dart';
 import '/utils/app_util.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
@@ -16,7 +17,7 @@ import '/main_function/games_list/components/flexible_time_display.dart';
 import '/main_function/games_list/games_list_widget.dart' show CancelledGameHandling;
 import '/models/game.dart';
 import '/providers/profile_provider.dart';
-import '/friends/tab_friends/tab_friends_widget.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 /// Premium-styled game card for the games list with entrance animation
 class PremiumGameCard extends StatefulWidget {
@@ -25,9 +26,11 @@ class PremiumGameCard extends StatefulWidget {
     required this.game,
     required this.currentUserReference,
     this.isLocked = false,
+    this.hasPendingFriendRequest = false,
     this.getCancelledHandling,
     this.onCancelledGameTap,
     this.onFriendsOnlyTap,
+    this.onAddFriend,
     this.animationIndex = 0,
     this.staggerDelay = Duration.zero,
   });
@@ -35,9 +38,11 @@ class PremiumGameCard extends StatefulWidget {
   final Game game;
   final DocumentReference? currentUserReference;
   final bool isLocked;
+  final bool hasPendingFriendRequest;
   final CancelledGameHandling? Function(Game game)? getCancelledHandling;
   final Future<void> Function(Game game)? onCancelledGameTap;
   final Future<void> Function()? onFriendsOnlyTap;
+  final Future<void> Function()? onAddFriend;
   final int animationIndex;
   final Duration staggerDelay;
 
@@ -659,43 +664,11 @@ class _PremiumGameCardState extends State<PremiumGameCard>
     required bool isFull,
   }) {
     if (isLocked) {
-      return InkWell(
-        onTap: () {
-          context.pushNamed(TabFriendsWidget.routeName);
-        },
-        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.xs,
-          ),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.gold, AppColors.goldLight],
-            ),
-            borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-            boxShadow: [AppElevation.md],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AppIcon(
-                icon: AppPhosphorIcons.addPlayer,
-                color: AppColors.pure,
-                size: AppIconSize.xs,
-              ),
-              SizedBox(width: 6),
-              Text(
-                'Add Friend',
-                style: AppTypography.labelSmall.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+      if (widget.hasPendingFriendRequest) {
+        return _buildPendingRequestBadge();
+      } else {
+        return _buildAddFriendButton(context);
+      }
     }
 
     return Container(
@@ -754,6 +727,97 @@ class _PremiumGameCardState extends State<PremiumGameCard>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Badge for when a friend request is pending to the game host
+  Widget _buildPendingRequestBadge() {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.navyLight.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+        border: Border.all(color: AppColors.navyLight),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppIcon(
+            icon: AppPhosphorIcons.pending,
+            size: AppIconSize.xs,
+            color: AppColors.textMuted,
+          ),
+          SizedBox(width: 6),
+          Text(
+            'Request Pending',
+            style: AppTypography.labelSmall.copyWith(
+              color: AppColors.textMuted,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Button to send a friend request to the game host with confirmation dialog
+  Widget _buildAddFriendButton(BuildContext context) {
+    return InkWell(
+      onTap: () async {
+        // Get host name from ProfileProvider cache
+        final profileProvider = context.read<ProfileProvider>();
+        final hostProfile = profileProvider.getCachedProfile(widget.game.userRef?.id ?? '');
+        final hostName = hostProfile?.displayName ?? 'this player';
+
+        final confirmed = await showPremiumDialog(
+          context: context,
+          variant: PremiumDialogVariant.confirmation,
+          icon: PhosphorIconsRegular.userPlus,
+          title: 'Send Friend Request',
+          body: 'Send friend request to $hostName?',
+          actionLabel: 'Confirm',
+          cancelLabel: 'Cancel',
+        );
+
+        if (confirmed == true && widget.onAddFriend != null) {
+          await widget.onAddFriend!();
+        }
+      },
+      borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.gold, AppColors.goldLight],
+          ),
+          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+          boxShadow: [AppElevation.md],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppIcon(
+              icon: AppPhosphorIcons.addPlayer,
+              color: AppColors.pure,
+              size: AppIconSize.xs,
+            ),
+            SizedBox(width: 6),
+            Text(
+              'Add Friend',
+              style: AppTypography.labelSmall.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

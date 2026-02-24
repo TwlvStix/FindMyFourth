@@ -35,7 +35,7 @@ class ArchetypePairingCard extends StatelessWidget {
           Text(
             'Vibe styles',
             style: AppTypography.titleSmall.copyWith(
-              color: AppColors.onyx,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -48,7 +48,7 @@ class ArchetypePairingCard extends StatelessWidget {
                   label: 'You',
                   archetype: myArchetype,
                   decoration: PremiumVibePageStyles.archetypeCardPrimary,
-                  nameColor: AppColors.navyDark,
+                  nameColor: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -59,7 +59,7 @@ class ArchetypePairingCard extends StatelessWidget {
                   label: 'Them',
                   archetype: theirArchetype,
                   decoration: PremiumVibePageStyles.archetypeCardSecondary,
-                  nameColor: AppColors.onyx,
+                  nameColor: AppColors.textPrimary,
                 ),
               ),
             ],
@@ -144,7 +144,7 @@ class _ExpandableArchetypeCardState extends State<_ExpandableArchetypeCard> {
                       Text(
                         widget.label,
                         style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.stone,
+                          color: AppColors.textMuted,
                           letterSpacing: AppTypography.letterSpacingNormal,
                         ),
                       ),
@@ -173,7 +173,7 @@ class _ExpandableArchetypeCardState extends State<_ExpandableArchetypeCard> {
                       Text(
                         widget.archetype.description,
                         style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.slate,
+                          color: AppColors.textSecondary,
                           height: 1.4,
                         ),
                       ),
@@ -245,7 +245,7 @@ class _ExpandableArchetypeCardState extends State<_ExpandableArchetypeCard> {
     if (widget.decoration.color != null) {
       return widget.decoration.color!;
     }
-    // Fallback to white if no color specified
-    return Colors.white;
+    // Fallback to navy if no color specified (dark theme)
+    return AppColors.navy;
   }
 }

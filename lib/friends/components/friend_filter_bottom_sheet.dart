@@ -93,19 +93,15 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
                       ),
                     ],
                   ),
-                  TextButton(
+                  AppButtonEnhanced(
+                    text: 'Clear All',
+                    variant: AppButtonVariant.ghost,
+                    size: AppButtonSize.small,
                     onPressed: () {
                       setState(() {
                         _filters = FriendFilters();
                       });
                     },
-                    child: Text(
-                      'Clear All',
-                      style: AppTypography.labelMedium.copyWith(
-                        color: AppColors.green,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
                   ),
                 ],
               ),

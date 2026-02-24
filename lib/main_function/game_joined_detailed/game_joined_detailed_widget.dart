@@ -1040,9 +1040,11 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                   if (gameJoinedDetailedGamesRecord.userRef != currentUserRef)
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      child: _buildDestructiveButton(
-                        context: context,
+                      child: AppButtonEnhanced(
                         text: 'Leave game',
+                        variant: AppButtonVariant.destructiveOutlined,
+                        size: AppButtonSize.large,
+                        fullWidth: true,
                         onPressed: () async {
                           // Show tier-aware cancellation warning
                           final confirmed = await CancellationWarningModal.show(
@@ -1129,9 +1131,11 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                   if (gameJoinedDetailedGamesRecord.userRef == currentUserRef)
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      child: _buildDestructiveButton(
-                        context: context,
+                      child: AppButtonEnhanced(
                         text: 'Cancel game',
+                        variant: AppButtonVariant.destructiveOutlined,
+                        size: AppButtonSize.large,
+                        fullWidth: true,
                         onPressed: () async {
                           if (currentUserRef == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -1703,43 +1707,6 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                   scaleOnPush: true,
                 ),
       },
-    );
-  }
-
-  // Helper method to build destructive action buttons (Leave/Cancel)
-  // Reduced saturation to not compete with primary screen content
-  Widget _buildDestructiveButton({
-    required BuildContext context,
-    required String text,
-    required VoidCallback onPressed,
-  }) {
-    return Container(
-      width: double.infinity,
-      height: 56.0,
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        border: Border.all(
-          color: AppColors.error.withValues(alpha: 0.35),
-          width: 1.5,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          child: Center(
-            child: Text(
-              text,
-              style: AppTypography.bodyLarge.copyWith(
-                color: AppColors.error.withValues(alpha: 0.8),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 

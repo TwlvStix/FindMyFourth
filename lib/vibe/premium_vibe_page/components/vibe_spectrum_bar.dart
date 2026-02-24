@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:find_my_fourth/core/design_tokens/colors.dart';
 import 'package:find_my_fourth/core/design_tokens/typography.dart';
 import 'package:find_my_fourth/core/design_tokens/border_radius.dart';
 import 'package:find_my_fourth/models/vibe_profile.dart';
@@ -47,8 +48,12 @@ class VibeSpectrumBar extends StatelessWidget {
         final myDotCenter = myDotLeft + (_dotSize / 2);
         final theirDotCenter = theirDotLeft + (_dotSize / 2);
 
-        // Check if dots are overlapping or very close (within 30px)
-        final dotsAreClose = (myDotCenter - theirDotCenter).abs() < 30;
+        // Check if values are exactly the same (show merged indicator)
+        final valuesMatch = myValue == theirValue;
+
+        // Check if dots are overlapping or very close (within 30px) but not exact match
+        final dotsAreClose =
+            !valuesMatch && (myDotCenter - theirDotCenter).abs() < 30;
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
@@ -72,27 +77,38 @@ class VibeSpectrumBar extends StatelessWidget {
                   ),
                 ),
 
-                // "You" marker
-                _buildMarker(
-                  dotLeft: myDotLeft,
-                  dotCenter: myDotCenter,
-                  label: 'You',
-                  color: PremiumVibePageStyles.youDotColor,
-                  spectrumWidth: spectrumWidth,
-                  // Offset vertically if dots are close and "You" is on left
-                  verticalOffset: dotsAreClose && myValue <= theirValue ? -8 : 0,
-                ),
+                // Show merged indicator for exact match, or separate markers otherwise
+                if (valuesMatch)
+                  // Single merged indicator for exact match
+                  _buildMatchedMarker(
+                    dotLeft: myDotLeft,
+                    dotCenter: myDotCenter,
+                    spectrumWidth: spectrumWidth,
+                  )
+                else ...[
+                  // "You" marker
+                  _buildMarker(
+                    dotLeft: myDotLeft,
+                    dotCenter: myDotCenter,
+                    label: 'You',
+                    color: PremiumVibePageStyles.youDotColor,
+                    spectrumWidth: spectrumWidth,
+                    // Offset vertically if dots are close and "You" is on left
+                    verticalOffset:
+                        dotsAreClose && myValue <= theirValue ? -8 : 0,
+                  ),
 
-                // "Them" marker
-                _buildMarker(
-                  dotLeft: theirDotLeft,
-                  dotCenter: theirDotCenter,
-                  label: 'Them',
-                  color: PremiumVibePageStyles.themDotColor,
-                  spectrumWidth: spectrumWidth,
-                  // Offset vertically if dots are close and "Them" is on right
-                  verticalOffset: dotsAreClose && theirValue > myValue ? -8 : 0,
-                ),
+                  // "Them" marker
+                  _buildMarker(
+                    dotLeft: theirDotLeft,
+                    dotCenter: theirDotCenter,
+                    label: 'Them',
+                    color: PremiumVibePageStyles.themDotColor,
+                    spectrumWidth: spectrumWidth,
+                    // Offset vertically if dots are close and "Them" is on right
+                    verticalOffset: dotsAreClose && theirValue > myValue ? -8 : 0,
+                  ),
+                ],
               ],
             ),
           ),
@@ -184,6 +200,78 @@ class VibeSpectrumBar extends StatelessWidget {
               label,
               style: AppTypography.labelSmall.copyWith(
                 color: color,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Builds a merged marker for when both users have the exact same value.
+  /// Shows a single gold dot with "Match" label to indicate alignment.
+  Widget _buildMatchedMarker({
+    required double dotLeft,
+    required double dotCenter,
+    required double spectrumWidth,
+  }) {
+    // Calculate percentage position for smart label alignment
+    final percentage = dotCenter / spectrumWidth;
+
+    // Determine how to position the label to avoid edges
+    final double labelLeft;
+    final Alignment labelAlignment;
+
+    if (percentage < 0.25) {
+      labelLeft = dotLeft;
+      labelAlignment = Alignment.centerLeft;
+    } else if (percentage > 0.75) {
+      labelLeft = dotLeft + _dotSize - 40;
+      labelAlignment = Alignment.centerRight;
+    } else {
+      labelLeft = dotCenter - 20;
+      labelAlignment = Alignment.center;
+    }
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Single dot (gold for match/alignment)
+        Positioned(
+          left: dotLeft,
+          top: 0,
+          child: Container(
+            width: _dotSize,
+            height: _dotSize,
+            decoration: const BoxDecoration(
+              color: AppColors.gold,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+
+        // Connecting line
+        Positioned(
+          left: dotCenter - 1,
+          top: 10,
+          child: Container(
+            width: 2,
+            height: 18,
+            color: AppColors.gold,
+          ),
+        ),
+
+        // "Match" label
+        Positioned(
+          left: labelLeft.clamp(0, spectrumWidth - 40),
+          top: 32,
+          width: 40,
+          child: Align(
+            alignment: labelAlignment,
+            child: Text(
+              'Match',
+              style: AppTypography.labelSmall.copyWith(
+                color: AppColors.gold,
               ),
             ),
           ),

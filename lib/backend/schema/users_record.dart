@@ -222,6 +222,16 @@ class UsersRecord extends FirestoreRecord {
   int get showUpRateDenominator => _showUpRateDenominator ?? 0;
   bool hasShowUpRateDenominator() => _showUpRateDenominator != null;
 
+  // "gender" field.
+  String? _gender;
+  String get gender => _gender ?? '';
+  bool hasGender() => _gender != null;
+
+  // "date_of_birth" field.
+  DateTime? _dateOfBirth;
+  DateTime? get dateOfBirth => _dateOfBirth;
+  bool hasDateOfBirth() => _dateOfBirth != null;
+
   void _initializeFields() {
     _photoUrl = snapshotData['photo_url'] as String?;
     _createdTime = snapshotData['created_time'] as DateTime?;
@@ -302,6 +312,8 @@ class UsersRecord extends FirestoreRecord {
     _cancellationRate = castToType<double>(snapshotData['cancellation_rate']);
     _showUpRateDenominator =
         castToType<int>(snapshotData['show_up_rate_denominator']);
+    _gender = snapshotData['gender'] as String?;
+    _dateOfBirth = snapshotData['date_of_birth'] as DateTime?;
   }
 
   static CollectionReference get collection =>
@@ -379,6 +391,8 @@ Map<String, dynamic> createUsersRecordData({
   int? cancellationWarningCount,
   double? cancellationRate,
   int? showUpRateDenominator,
+  String? gender,
+  DateTime? dateOfBirth,
 }) {
   final displayNameLower = displayName?.toLowerCase();
   final firestoreData = mapToFirestore(
@@ -426,6 +440,8 @@ Map<String, dynamic> createUsersRecordData({
       'cancellation_warning_count': cancellationWarningCount,
       'cancellation_rate': cancellationRate,
       'show_up_rate_denominator': showUpRateDenominator,
+      'gender': gender,
+      'date_of_birth': dateOfBirth,
     }.withoutNulls,
   );
 
@@ -479,7 +495,9 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e1?.cancellationWarning == e2?.cancellationWarning &&
         e1?.cancellationWarningCount == e2?.cancellationWarningCount &&
         e1?.cancellationRate == e2?.cancellationRate &&
-        e1?.showUpRateDenominator == e2?.showUpRateDenominator;
+        e1?.showUpRateDenominator == e2?.showUpRateDenominator &&
+        e1?.gender == e2?.gender &&
+        e1?.dateOfBirth == e2?.dateOfBirth;
   }
 
   @override
@@ -524,6 +542,8 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.cancellationWarningCount,
         e?.cancellationRate,
         e?.showUpRateDenominator,
+        e?.gender,
+        e?.dateOfBirth,
       ]);
 
   @override

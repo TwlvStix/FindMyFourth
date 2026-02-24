@@ -176,7 +176,21 @@ Reusable premium components built on design tokens: `GlassCard`, `GradientIconBo
 
 #### Reusable Core Widgets (`lib/core/widgets/`)
 
-Prefixed with `app_` and built on design tokens. Key widgets: `app_button_enhanced.dart` (variants: `primary`, `secondary`, `ghost`, `gradient`, `destructive`, `navyFilled`), `app_card.dart`, `app_text_field.dart`, `app_text.dart`, `app_badge.dart`, `app_avatar.dart`, `app_section_header.dart`, `app_empty_state.dart`, `app_loading_state.dart`, `app_list_tile.dart`, `app_choice_chips.dart`, `app_icon.dart` (supports Phosphor icons + legacy SVGs; includes `AppNavIcon` and `AppIconBox`), `app_icon_badge.dart`, `app_info_grid.dart`, `premium_back_button.dart`, `fairway_background.dart`, `profile_hero_section.dart`, `profile_card_section.dart`, `vibe_slider_card.dart`. Trust-specific widgets in `trust/` subfolder.
+Prefixed with `app_` and built on design tokens. Key widgets: `app_button_enhanced.dart` (variants: `primary`, `secondary`, `ghost`, `premium`, `destructive`, `destructiveOutlined`, `navyFilled`, `google`), `app_card.dart`, `app_text_field.dart`, `app_text.dart`, `app_badge.dart`, `app_avatar.dart`, `app_section_header.dart`, `app_empty_state.dart`, `app_loading_state.dart`, `app_list_tile.dart`, `app_choice_chips.dart`, `app_icon.dart` (supports Phosphor icons + legacy SVGs; includes `AppNavIcon` and `AppIconBox`), `app_icon_badge.dart`, `app_info_grid.dart`, `premium_back_button.dart`, `fairway_background.dart`, `profile_hero_section.dart`, `profile_card_section.dart`, `vibe_slider_card.dart`. Trust-specific widgets in `trust/` subfolder.
+
+#### Button Variant Usage
+
+| Scenario | Variant | Example |
+|----------|---------|---------|
+| Main CTA per screen | `primary` | "Join Game", "Save Changes" |
+| Secondary prominent (auth flows) | `navyFilled` | Alt sign-in options |
+| Secondary action | `secondary` | "Back", non-destructive cancel |
+| Destructive (not final) | `destructiveOutlined` | "Leave Game", "Delete Account" |
+| Final destructive confirmation | `destructive` | Modal "Confirm Delete" |
+| Tertiary/dismiss | `ghost` | "Maybe later", inline links |
+| Onboarding completion ONLY | `premium` | "Build Your Profile" |
+
+**Rule**: Most screens need 1 green CTA, 0-1 gold elements. Gold (`premium`) is earned, not sprinkled — use only for onboarding completion or premium upsells.
 
 #### Quick Reference
 ```dart

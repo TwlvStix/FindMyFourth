@@ -228,7 +228,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
                   AppButtonEnhanced(
                     onPressed: () => Navigator.of(context).pop(),
                     text: 'Done',
-                    variant: AppButtonVariant.gradient,
+                    variant: AppButtonVariant.primary,
                     size: AppButtonSize.large,
                   ),
                 ],
@@ -367,7 +367,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
               child: AppButtonEnhanced(
                 onPressed: _submitting ? null : _submit,
                 text: _submitting ? 'Submitting...' : 'Submit Ratings',
-                variant: AppButtonVariant.gradient,
+                variant: AppButtonVariant.primary,
                 size: AppButtonSize.large,
               ),
             ),

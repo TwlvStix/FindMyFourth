@@ -563,6 +563,84 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                   icon: AppPhosphorIcons.email,
                   readOnly: true,
                 ),
+                SizedBox(height: AppSpacing.md),
+
+                // Gender & Date of Birth Row (Read-only)
+                Row(
+                  children: [
+                    // Gender (Read-only)
+                    Expanded(
+                      child: Container(
+                        height: 56,
+                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: AppColors.inputBackground,
+                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                          border: Border.all(color: AppColors.inputBorderIdle),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              AppPhosphorIcons.profile,
+                              color: AppColors.textMuted,
+                              size: AppIconSize.md,
+                            ),
+                            SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: Text(
+                                valueOrDefault(currentUserDocument?.gender, '').isNotEmpty
+                                    ? currentUserDocument!.gender
+                                    : 'Gender',
+                                style: AppTypography.bodyMedium.copyWith(
+                                  color: valueOrDefault(currentUserDocument?.gender, '').isNotEmpty
+                                      ? AppColors.textSecondary
+                                      : AppColors.textMuted,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: AppSpacing.sm),
+                    // Date of Birth (Read-only)
+                    Expanded(
+                      child: Container(
+                        height: 56,
+                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: AppColors.inputBackground,
+                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                          border: Border.all(color: AppColors.inputBorderIdle),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              AppPhosphorIcons.calendar,
+                              color: AppColors.textMuted,
+                              size: AppIconSize.md,
+                            ),
+                            SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: Text(
+                                currentUserDocument?.dateOfBirth != null
+                                    ? '${currentUserDocument!.dateOfBirth!.month.toString().padLeft(2, '0')}/${currentUserDocument!.dateOfBirth!.day.toString().padLeft(2, '0')}/${currentUserDocument!.dateOfBirth!.year}'
+                                    : 'Birthday',
+                                style: AppTypography.bodyMedium.copyWith(
+                                  color: currentUserDocument?.dateOfBirth != null
+                                      ? AppColors.textSecondary
+                                      : AppColors.textMuted,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

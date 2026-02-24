@@ -216,12 +216,11 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
                 padding: EdgeInsets.only(
                     top: AppSpacing.xs,
                 ),
-                child: TextButton(
+                child: AppButtonEnhanced(
+                  text: 'Back to Sign In',
+                  variant: AppButtonVariant.ghost,
+                  size: AppButtonSize.medium,
                   onPressed: _returnToSignIn,
-                  child: AppText.label(
-                    'Back to Sign In',
-                    color: AppColors.navyDark,
-                  ),
                 ),
               ),
             ],

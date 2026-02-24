@@ -366,10 +366,11 @@ AppIcon(
 | Figma Button Style | Flutter Variant |
 |--------------------|-----------------|
 | Filled green | `AppButtonVariant.primary` |
-| Outlined | `AppButtonVariant.secondary` |
+| Outlined navy | `AppButtonVariant.secondary` |
 | Text only | `AppButtonVariant.ghost` |
-| Gradient | `AppButtonVariant.gradient` |
-| Red/destructive | `AppButtonVariant.destructive` |
+| Gold gradient (onboarding only) | `AppButtonVariant.premium` |
+| Red filled (final confirmation) | `AppButtonVariant.destructive` |
+| Red outlined (secondary destructive) | `AppButtonVariant.destructiveOutlined` |
 
 | Figma Button Size | Flutter Size | Height |
 |-------------------|--------------|--------|

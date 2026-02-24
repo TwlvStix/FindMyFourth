@@ -169,12 +169,11 @@ AppButtonEnhanced(
   onPressed: () => handleJoin(),
 )
 
-// Gradient button with icon
+// Premium button (onboarding/upsell ONLY)
 AppButtonEnhanced(
-  text: 'Find Players',
-  variant: AppButtonVariant.gradient,
-  leadingIcon: Icons.search,
-  onPressed: () => search(),
+  text: 'Build Your Profile',
+  variant: AppButtonVariant.premium,
+  onPressed: () => completeOnboarding(),
 )
 ```
 
@@ -270,11 +269,12 @@ Number input with increment/decrement controls.
 
 | Old (AppButton) | New (AppButtonEnhanced) | Notes |
 |----------------|------------------------|-------|
-| Default filled style | `variant: AppButtonVariant.primary` | Filled green button |
-| Outlined style | `variant: AppButtonVariant.secondary` | Green border, transparent bg |
+| Default filled style | `variant: AppButtonVariant.primary` | Filled green button - main CTAs |
+| Outlined style | `variant: AppButtonVariant.secondary` | Navy border, transparent bg |
 | Text-only style | `variant: AppButtonVariant.ghost` | No background, just text |
-| Gradient style | `variant: AppButtonVariant.gradient` | Sunset gradient fill |
-| Delete/remove actions | `variant: AppButtonVariant.destructive` | **NEW!** Red button for dangerous actions |
+| Gradient style | `variant: AppButtonVariant.premium` | Gold gradient - onboarding/upsell ONLY |
+| Delete/remove actions | `variant: AppButtonVariant.destructive` | Filled red - final confirmations only |
+| Secondary destructive | `variant: AppButtonVariant.destructiveOutlined` | **NEW!** Red outlined for "Leave Game", "Delete Account" |
 
 **Size Mapping:**
 

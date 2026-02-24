@@ -21,6 +21,8 @@ import '/main_function/games_list/components/premium_game_card.dart';
 import '/models/game.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
+import '/providers/user_provider.dart';
+import '/core/utils/app_log.dart';
 import '/backend/backend.dart';
 import '/notifications/notifications_list/notifications_list_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -451,29 +453,45 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       context: context,
       builder: (alertDialogContext) {
         return AlertDialog(
-          title: Text('Game cancelled'),
-          content: Text('How would you like to handle this game?'),
+          backgroundColor: AppColors.navy,
+          title: Text(
+            'Game cancelled',
+            style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimary),
+          ),
+          content: Text(
+            'How would you like to handle this game?',
+            style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(
                 alertDialogContext,
                 CancelledGameHandling.removeNow,
               ),
-              child: Text('Remove now'),
+              child: Text(
+                'Remove now',
+                style: AppTypography.labelLarge.copyWith(color: AppColors.error),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(
                 alertDialogContext,
                 CancelledGameHandling.removeAfter7Days,
               ),
-              child: Text('Hide after 7 days'),
+              child: Text(
+                'Hide after 7 days',
+                style: AppTypography.labelLarge.copyWith(color: AppColors.textSecondary),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(
                 alertDialogContext,
                 CancelledGameHandling.keepInList,
               ),
-              child: Text('Keep in list'),
+              child: Text(
+                'Keep in list',
+                style: AppTypography.labelLarge.copyWith(color: AppColors.green),
+              ),
             ),
           ],
         );
@@ -509,6 +527,34 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       body: 'This game is visible to friends only. Add the host as a friend to view details.',
       actionLabel: 'Got It',
     );
+  }
+
+  /// Sends a friend request to the game host
+  Future<void> _sendFriendRequest(
+    BuildContext context,
+    DocumentReference hostRef,
+  ) async {
+    try {
+      await context.read<UserProvider>().sendFriendRequest(hostRef);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Friend request sent'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      AppLog.d('❌ GamesListWidget._sendFriendRequest error: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send friend request. Please try again.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -1011,25 +1057,17 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 ),
                                               ),
                                             ),
-                                            TextButton(
+                                            AppButtonEnhanced(
+                                              text: _showLockedGames ? 'Hide' : 'Show',
+                                              variant: AppButtonVariant.ghost,
+                                              size: AppButtonSize.small,
                                               onPressed: () {
                                                 if (mounted) {
                                                   setState(() {
-                                                    _showLockedGames =
-                                                        !_showLockedGames;
+                                                    _showLockedGames = !_showLockedGames;
                                                   });
                                                 }
                                               },
-                                              child: Text(
-                                                _showLockedGames
-                                                    ? 'Hide'
-                                                    : 'Show',
-                                                style: AppTypography.labelMedium
-                                                    .copyWith(
-                                                  color: AppColors.gold,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
                                             ),
                                           ],
                                         ),
@@ -1048,39 +1086,51 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 ),
                               ),
                             if (_showLockedGames && lockedGames.isNotEmpty)
-                              SliverPadding(
-                                padding: EdgeInsets.only(
-                                  top: AppSpacing.sm,
-                                  // Account for bottom nav bar (56) + FAB (56) + spacing (16) + safe area
-                                  bottom:
-                                      MediaQuery.of(context).padding.bottom +
-                                          128.0,
-                                ),
-                                sliver: SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                    (context, index) {
-                                      final lockedGame = lockedGames[index];
-                                      final isLast =
-                                          index == lockedGames.length - 1;
-                                      return Padding(
-                                        padding: EdgeInsets.only(
-                                          bottom: isLast ? 0.0 : AppSpacing.sm,
-                                        ),
-                                        child: PremiumGameCard(
-                                          game: lockedGame,
-                                          currentUserReference: currentUserReference,
-                                          isLocked: true,
-                                          getCancelledHandling: _getCancelledHandling,
-                                          onCancelledGameTap: _showCancelledGameOptions,
-                                          onFriendsOnlyTap: _showFriendsOnlyDialog,
-                                          animationIndex: index,
-                                          staggerDelay: Duration(milliseconds: 24 * index),
-                                        ),
-                                      );
-                                    },
-                                    childCount: lockedGames.length,
-                                  ),
-                                ),
+                              Consumer<UserProvider>(
+                                builder: (context, userProvider, _) {
+                                  return SliverPadding(
+                                    padding: EdgeInsets.only(
+                                      top: AppSpacing.sm,
+                                      // Account for bottom nav bar (56) + FAB (56) + spacing (16) + safe area
+                                      bottom:
+                                          MediaQuery.of(context).padding.bottom +
+                                              128.0,
+                                    ),
+                                    sliver: SliverList(
+                                      delegate: SliverChildBuilderDelegate(
+                                        (context, index) {
+                                          final lockedGame = lockedGames[index];
+                                          final isLast =
+                                              index == lockedGames.length - 1;
+                                          final hostRef = lockedGame.userRef;
+                                          final hasPendingRequest = hostRef != null
+                                              ? userProvider.hasPendingOutgoingRequest(hostRef.id)
+                                              : false;
+                                          return Padding(
+                                            padding: EdgeInsets.only(
+                                              bottom: isLast ? 0.0 : AppSpacing.sm,
+                                            ),
+                                            child: PremiumGameCard(
+                                              game: lockedGame,
+                                              currentUserReference: currentUserReference,
+                                              isLocked: true,
+                                              hasPendingFriendRequest: hasPendingRequest,
+                                              onAddFriend: hostRef != null
+                                                  ? () => _sendFriendRequest(context, hostRef)
+                                                  : null,
+                                              getCancelledHandling: _getCancelledHandling,
+                                              onCancelledGameTap: _showCancelledGameOptions,
+                                              onFriendsOnlyTap: _showFriendsOnlyDialog,
+                                              animationIndex: index,
+                                              staggerDelay: Duration(milliseconds: 24 * index),
+                                            ),
+                                          );
+                                        },
+                                        childCount: lockedGames.length,
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                           ],
                         ),

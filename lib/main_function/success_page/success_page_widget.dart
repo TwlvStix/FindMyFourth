@@ -117,7 +117,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                                 );
                               },
                               text: 'Go to Game Lists',
-                              variant: AppButtonVariant.gradient,
+                              variant: AppButtonVariant.primary,
                               size: AppButtonSize.large,
                             ),
                           ],

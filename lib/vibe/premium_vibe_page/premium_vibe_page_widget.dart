@@ -74,9 +74,9 @@ class _PremiumVibePageWidgetState extends State<PremiumVibePageWidget> {
       ..sort((a, b) => b.weight.compareTo(a.weight));
 
     return Scaffold(
-      backgroundColor: AppColors.pure,
+      backgroundColor: AppColors.navyDark,
       appBar: AppBar(
-        backgroundColor: AppColors.pure,
+        backgroundColor: AppColors.navyDark,
         elevation: 0,
         leading: PremiumBackButton(
           onTap: () => context.pop(),
@@ -84,7 +84,7 @@ class _PremiumVibePageWidgetState extends State<PremiumVibePageWidget> {
         title: Text(
           data.userName,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppColors.onyx,
+                color: AppColors.textPrimary,
               ),
         ),
       ),
@@ -126,7 +126,7 @@ class _PremiumVibePageWidgetState extends State<PremiumVibePageWidget> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Divider(
-                color: AppColors.cloud,
+                color: AppColors.navyLight,
                 thickness: 1,
               ),
             ),

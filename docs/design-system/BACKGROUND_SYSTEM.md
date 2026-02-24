@@ -205,7 +205,7 @@ FairwayBackgroundSunset(
         SizedBox(height: 24),
         AppButtonEnhanced(
           text: 'Get Started',
-          variant: AppButtonVariant.gradient,
+          variant: AppButtonVariant.primary,
           size: AppButtonSize.xlarge,
           onPressed: () => navigate(),
         ),
@@ -561,7 +561,7 @@ class WelcomeScreen extends StatelessWidget {
                 SizedBox(height: 48),
                 AppButtonEnhanced(
                   text: 'Get Started',
-                  variant: AppButtonVariant.gradient,
+                  variant: AppButtonVariant.primary,
                   size: AppButtonSize.xlarge,
                   fullWidth: true,
                   trailingIcon: Icons.arrow_forward,

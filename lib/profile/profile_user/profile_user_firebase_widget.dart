@@ -271,82 +271,105 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     required String photoUrl,
     required String name,
     required String handle,
+    required int age,
+    required String gender,
+    required bool isSelf,
+    required Map<String, dynamic> data,
     required bool showVibeMatch,
   }) {
+    // Build inline metadata string: "age · gender · @handle"
+    final metadataParts = <String>[];
+    if (age > 0) metadataParts.add(age.toString());
+    if (gender.isNotEmpty) metadataParts.add(gender);
+    if (handle.isNotEmpty) metadataParts.add(handle);
+    final metadataLine = metadataParts.join(' · ');
+
     return Column(
       children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              width: 160,
-              height: 160,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.gold.withValues(alpha: 0.15),
-                    blurRadius: 20,
-                    spreadRadius: 1,
-                  ),
-                ],
+        // Avatar with optional friend FAB
+        SizedBox(
+          width: 170,
+          height: 170,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 160,
+                height: 160,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.gold.withValues(alpha: 0.15),
+                      blurRadius: 20,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            AnimatedBuilder(
-              animation: _ringController,
-              builder: (context, child) {
-                return Transform.rotate(
-                  angle: _ringController.value * 2 * 3.14159,
-                  child: Container(
-                    width: 148,
-                    height: 148,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: SweepGradient(
-                        colors: [
-                          AppColors.navy,
-                          AppColors.gold.withValues(alpha: 0.9),
-                          AppColors.gold,
-                          AppColors.goldLight,
-                          AppColors.gold.withValues(alpha: 0.9),
-                          AppColors.navy,
-                        ],
-                        stops: [0.0, 0.15, 0.35, 0.65, 0.85, 1.0],
+              AnimatedBuilder(
+                animation: _ringController,
+                builder: (context, child) {
+                  return Transform.rotate(
+                    angle: _ringController.value * 2 * 3.14159,
+                    child: Container(
+                      width: 148,
+                      height: 148,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: SweepGradient(
+                          colors: [
+                            AppColors.navy,
+                            AppColors.gold.withValues(alpha: 0.9),
+                            AppColors.gold,
+                            AppColors.goldLight,
+                            AppColors.gold.withValues(alpha: 0.9),
+                            AppColors.navy,
+                          ],
+                          stops: [0.0, 0.15, 0.35, 0.65, 0.85, 1.0],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
-            Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.pure,
+                  );
+                },
               ),
-            ),
-            Container(
-              width: 132,
-              height: 132,
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
+              Container(
+                width: 140,
+                height: 140,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.pure,
+                ),
               ),
-              child: Image.network(
-                photoUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: AppColors.sand,
-                  child: Icon(
-                    AppPhosphorIcons.profile,
-                    size: AppIconSize.hero,
-                    color: AppColors.stone,
+              Container(
+                width: 132,
+                height: 132,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                ),
+                child: Image.network(
+                  photoUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: AppColors.sand,
+                    child: Icon(
+                      AppPhosphorIcons.profile,
+                      size: AppIconSize.hero,
+                      color: AppColors.stone,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+              // Friend FAB at bottom-right (public profiles only)
+              if (!isSelf)
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: _buildAvatarFriendFab(context, data),
+                ),
+            ],
+          ),
         ),
         SizedBox(height: AppSpacing.lg),
         Text(
@@ -356,23 +379,14 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             fontWeight: FontWeight.w600,
           ),
         ),
-        if (handle.isNotEmpty) ...[
-          SizedBox(height: AppSpacing.xxs),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.navy.withValues(alpha:0.4),
-              borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-              border: Border.all(
-                color: AppColors.glassSurface,
-              ),
-            ),
-            child: Text(
-              handle,
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.gold,
-                fontWeight: FontWeight.w500,
-              ),
+        if (metadataLine.isNotEmpty) ...[
+          SizedBox(height: AppSpacing.xs),
+          Text(
+            metadataLine,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w400,
+              letterSpacing: 0.3,
             ),
           ),
         ],
@@ -383,89 +397,21 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     );
   }
 
-  Widget _buildStatsSection(
-    BuildContext context, {
-    required String handicap,
-    required String homeCourse,
-    required int friendsCount,
-    required bool isSelf,
-    required Map<String, dynamic> data,
-  }) {
-    final shortCourse = homeCourse.length > 12
-        ? '${homeCourse.substring(0, 10)}...'
-        : homeCourse;
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-          Expanded(
-            child: AppStatCard(
-              icon: AppPhosphorIcons.golf,
-              value: handicap,
-              label: 'Handicap',
-              variant: AppStatCardVariant.glass,
-              iconGradient: [AppColors.gold, AppColors.goldLight],
-            ),
-          ),
-          SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: AppStatCard(
-              icon: AppPhosphorIcons.homeCourse,
-              value: shortCourse,
-              label: 'Home Course',
-              variant: AppStatCardVariant.glass,
-              iconGradient: [AppColors.navyLight, AppColors.navy],
-              isTextValue: true,
-            ),
-          ),
-          SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: isSelf
-                ? AppStatCard(
-                    icon: AppPhosphorIcons.users,
-                    value: friendsCount.toString(),
-                    label: 'Friends',
-                    variant: AppStatCardVariant.glass,
-                    iconGradient: [AppColors.gold, AppColors.goldLight],
-                  )
-                : _buildFriendStatusButton(context, data),
-          ),
-        ],
-        ),
-      ),
-    );
+  /// Calculate age from date of birth
+  int? _calculateAge(DateTime? dateOfBirth) {
+    if (dateOfBirth == null) return null;
+    final now = DateTime.now();
+    int age = now.year - dateOfBirth.year;
+    if (now.month < dateOfBirth.month ||
+        (now.month == dateOfBirth.month && now.day < dateOfBirth.day)) {
+      age--;
+    }
+    return age;
   }
 
-  void _showMutualFriendsSheet(BuildContext context) {
-    final friends = _mutualFriends;
-    showAppBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      enableDrag: true,
-      builder: (sheetContext) => MutualFriendsSheet(
-        mutualFriends: friends,
-        onFriendTap: (friend) {
-          Navigator.of(sheetContext).pop();
-          context.pushNamed(
-            'ProfileUser',
-            extra: <String, dynamic>{
-              'userRef': friend.reference,
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  /// Friend status button for hero stats section (public profiles only)
-  /// Wrapped in AuthUserStreamWidget to access current user's friend data
-  Widget _buildFriendStatusButton(
-    BuildContext context,
-    Map<String, dynamic> data,
-  ) {
+  /// Compact circular FAB for friend actions on avatar
+  /// Positioned at bottom-right of avatar, only shown on public profiles
+  Widget _buildAvatarFriendFab(BuildContext context, Map<String, dynamic> data) {
     return AuthUserStreamWidget(
       builder: (context) {
         final userProvider = context.watch<UserProvider>();
@@ -483,47 +429,18 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             userProvider.hasPendingOutgoingRequest(widget.userRef.id);
 
         IconData icon;
-        String label;
         List<Color> gradientColors;
-        List<BoxShadow>? boxShadow;
         VoidCallback? onTap;
 
         if (isFriend) {
-          // Friends: premium checkmark with green gradient
           icon = AppPhosphorIcons.check;
-          label = 'FRIENDS';
           gradientColors = [AppColors.navyDark, AppColors.navy];
-          boxShadow = [
-            BoxShadow(
-              color: AppColors.navy.withValues(alpha:0.4),
-              blurRadius: 8,
-              offset: Offset(0, 3),
-            ),
-          ];
         } else if (hasPending) {
-          // Pending: premium hourglass with warm golden gradient
           icon = AppPhosphorIcons.pending;
-          label = 'PENDING';
           gradientColors = [AppColors.gold, AppColors.goldLight];
-          boxShadow = [
-            BoxShadow(
-              color: AppColors.gold.withValues(alpha:0.3),
-              blurRadius: 8,
-              offset: Offset(0, 3),
-            ),
-          ];
         } else {
-          // Add Friend: premium person-add with warm accent gradient
           icon = AppPhosphorIcons.addPlayer;
-          label = 'ADD';
           gradientColors = [AppColors.gold, AppColors.goldLight];
-          boxShadow = [
-            BoxShadow(
-              color: AppColors.gold.withValues(alpha:0.4),
-              blurRadius: 8,
-              offset: Offset(0, 3),
-            ),
-          ];
           onTap = () async {
             HapticFeedback.lightImpact();
             try {
@@ -563,56 +480,161 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         return GestureDetector(
           onTap: onTap,
           child: Container(
-            padding: EdgeInsets.symmetric(
-              vertical: AppSpacing.sm,
-              horizontal: AppSpacing.xs,
-            ),
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              color: AppColors.navy.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(AppBorderRadius.md),
-              border: Border.all(
-                color: AppColors.navyLight.withValues(alpha: 0.3),
+              gradient: LinearGradient(
+                colors: gradientColors,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: gradientColors,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: boxShadow,
-                  ),
-                  child: Icon(
-                    icon,
-                    color: AppColors.pure,
-                    size: AppIconSize.button,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  label,
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.glassTextSecondary,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 10,
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.navyDark,
+                width: 2.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: gradientColors[0].withValues(alpha: 0.4),
+                  blurRadius: 8,
+                  offset: Offset(0, 3),
                 ),
               ],
+            ),
+            child: Icon(
+              icon,
+              color: AppColors.pure,
+              size: AppIconSize.button,
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildStatsSection(
+    BuildContext context, {
+    required String handicap,
+    required String homeCourse,
+    required int friendsCount,
+    required bool isSelf,
+  }) {
+    // Get vibe match score for public profiles
+    final result = !isSelf ? _vibeMatchResult : null;
+    final vibeScore = result == null ? null : result.myFitPercent.round();
+    final canOpenVibe = vibeScore != null;
+
+    // Dynamic color based on vibe score: green (80+), gold (50-79), muted (<50)
+    Color vibeColor;
+    if (vibeScore != null) {
+      if (vibeScore >= 80) {
+        vibeColor = AppColors.green;
+      } else if (vibeScore >= 50) {
+        vibeColor = AppColors.gold;
+      } else {
+        vibeColor = AppColors.textSecondary;
+      }
+    } else {
+      vibeColor = AppColors.textPrimary; // loading state
+    }
+
+    return Column(
+      children: [
+        // Two-card row: Handicap + Your Fit (or Friends for own profile)
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Handicap card
+                Expanded(
+                  child: AppStatCard(
+                    icon: AppPhosphorIcons.golf,
+                    value: handicap,
+                    label: 'Handicap',
+                    variant: AppStatCardVariant.glass,
+                    iconGradient: [AppColors.gold, AppColors.goldLight],
+                  ),
+                ),
+                SizedBox(width: AppSpacing.sm),
+                // Your Fit (public) or Friends (own profile)
+                Expanded(
+                  child: isSelf
+                      ? AppStatCard(
+                          icon: AppPhosphorIcons.users,
+                          value: friendsCount.toString(),
+                          label: 'Friends',
+                          variant: AppStatCardVariant.glass,
+                          iconGradient: [AppColors.gold, AppColors.goldLight],
+                        )
+                      : GestureDetector(
+                          onTap: canOpenVibe ? _openVibePage : null,
+                          child: AppStatCard(
+                            icon: AppPhosphorIcons.sparkle,
+                            value: vibeScore != null ? '$vibeScore%' : '...',
+                            label: 'Your Fit',
+                            variant: AppStatCardVariant.glass,
+                            iconGradient: [AppColors.gold, AppColors.goldLight],
+                            valueStyle: AppTypography.monoLarge.copyWith(
+                              color: vibeColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(height: AppSpacing.md),
+        // Home course text row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              AppPhosphorIcons.homeCourse,
+              color: AppColors.textSecondary,
+              size: AppIconSize.sm,
+            ),
+            SizedBox(width: AppSpacing.xs),
+            Flexible(
+              child: Text(
+                homeCourse,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.2,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _showMutualFriendsSheet(BuildContext context) {
+    final friends = _mutualFriends;
+    showAppBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      enableDrag: true,
+      builder: (sheetContext) => MutualFriendsSheet(
+        mutualFriends: friends,
+        onFriendTap: (friend) {
+          Navigator.of(sheetContext).pop();
+          context.pushNamed(
+            'ProfileUser',
+            extra: <String, dynamic>{
+              'userRef': friend.reference,
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -732,40 +754,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
 
   Widget _buildQuickActionsGrid(
     BuildContext context,
-    Map<String, dynamic> data, {
-    required bool showVibeMatch,
-  }) {
-    // Quick actions: Message | Golf Vibes | Mutual Friends
-    // (Friend status has moved to hero stats section)
-    final result = showVibeMatch ? _vibeMatchResult : null;
-    final vibeScore = result == null ? null : result.myFitPercent.round();
-    final canOpenVibe = vibeScore != null;
-
-    // Build rich label for vibe score - "Your Fit" muted, percentage gold/bold
-    Widget? vibeRichLabel;
-    if (vibeScore != null) {
-      vibeRichLabel = Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Your Fit',
-            style: AppTypography.labelSmall.copyWith(
-              color: AppColors.textSecondary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          Text(
-            '$vibeScore%',
-            style: AppTypography.labelLarge.copyWith(
-              color: AppColors.gold,
-              fontWeight: FontWeight.w700,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      );
-    }
-
+    Map<String, dynamic> data,
+  ) {
+    // Quick actions: Message | Mutual Friends only
+    // Your Fit has moved to the stats section
     final cards = <Widget>[
       if (currentUserReference?.path != widget.userRef.path)
         Expanded(
@@ -775,19 +767,6 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             label: 'Message',
             gradient: [AppColors.navyLight, AppColors.navy],
             onTap: () => _openChatWithUser(widget.userRef),
-          ),
-        ),
-      if (showVibeMatch)
-        Expanded(
-          child: _buildQuickActionCard(
-            context,
-            icon: AppPhosphorIcons.sparkle,
-            label: vibeScore == null ? 'Golf Vibes' : '',
-            gradient: [AppColors.navyLight, AppColors.navy],
-            onTap: canOpenVibe ? _openVibePage : null,
-            isDisabled: !canOpenVibe,
-            labelColor: AppColors.gold,
-            richLabel: vibeRichLabel,
           ),
         ),
       if (currentUserReference?.path != widget.userRef.path)
@@ -1153,6 +1132,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                         photoUrl: photoUrl,
                         name: displayTitle.isNotEmpty ? displayTitle : 'Golfer',
                         handle: handle,
+                        age: _calculateAge(userRecord.dateOfBirth) ?? 0,
+                        gender: userRecord.gender.isNotEmpty ? userRecord.gender : '',
+                        isSelf: isSelf,
+                        data: data,
                         showVibeMatch: !isSelf,
                       ),
                       SizedBox(height: AppSpacing.xl),
@@ -1162,7 +1145,6 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                         homeCourse: homeCourse,
                         friendsCount: friendsCount,
                         isSelf: isSelf,
-                        data: data,
                       ),
                       SizedBox(height: AppSpacing.xl),
                       Container(
@@ -1193,11 +1175,11 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                               ),
                             ),
                             SizedBox(height: AppSpacing.lg),
-                            _buildQuickActionsGrid(
-                              context,
-                              data,
-                              showVibeMatch: !isSelf,
-                            ),
+                            if (!isSelf)
+                              _buildQuickActionsGrid(
+                                context,
+                                data,
+                              ),
                             TrustProfileSection(
                               user: userRecord,
                               isOwnProfile: isSelf,

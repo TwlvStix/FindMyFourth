@@ -3,6 +3,7 @@ import '../design_tokens/colors.dart';
 import '../design_tokens/icon_size.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/spacing.dart';
+import 'app_button_enhanced.dart';
 import 'app_icon.dart';
 
 class AppEmptyState extends StatelessWidget {
@@ -63,9 +64,11 @@ class AppEmptyState extends StatelessWidget {
             ],
             if (actionText != null && onAction != null) ...[
               SizedBox(height: AppSpacing.lg),
-              TextButton(
+              AppButtonEnhanced(
+                text: actionText!,
                 onPressed: onAction,
-                child: Text(actionText!),
+                variant: AppButtonVariant.ghost,
+                size: AppButtonSize.medium,
               ),
             ],
           ],

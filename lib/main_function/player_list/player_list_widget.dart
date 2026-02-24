@@ -529,7 +529,10 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         return Padding(
           padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
           child: Center(
-            child: TextButton(
+            child: AppButtonEnhanced(
+              text: 'Load more',
+              variant: AppButtonVariant.ghost,
+              size: AppButtonSize.small,
               onPressed: () async {
                 await _loadMoreResults();
                 final modalSetState = _modalSetState;
@@ -537,7 +540,6 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   modalSetState(() {});
                 }
               },
-              child: Text('Load more'),
             ),
           ),
         );

@@ -107,7 +107,7 @@ class VibeWatchPointsList extends StatelessWidget {
                   breakdown.label,
                   style: AppTypography.bodyMedium.copyWith(
                     fontWeight: PremiumVibePageStyles.watchPointNameFontWeight,
-                    color: AppColors.onyx,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -120,7 +120,7 @@ class VibeWatchPointsList extends StatelessWidget {
             Text(
               insight.description,
               style: AppTypography.bodySmall.copyWith(
-                color: AppColors.slate,
+                color: AppColors.textSecondary,
               ),
             ),
           ],

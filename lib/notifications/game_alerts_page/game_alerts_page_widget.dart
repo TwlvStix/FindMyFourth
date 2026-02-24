@@ -12,6 +12,7 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/main_function/create_game/create_game_constants.dart';
@@ -148,34 +149,14 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
   }
 
   Future<void> _reset() async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showPremiumDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.navyDark,
-        title: Text(
-          'Reset Alert Settings?',
-          style: AppTypography.titleMedium.copyWith(color: Colors.white),
-        ),
-        content: Text(
-          'This will clear all your alert filters and disable notifications. You can always re-enable them later.',
-          style: AppTypography.bodyMedium.copyWith(
-            color: Colors.white.withValues(alpha: 0.8),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel', style: TextStyle(color: AppColors.glassTextSecondary)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Reset',
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
+      variant: PremiumDialogVariant.destructive,
+      icon: PhosphorIconsRegular.arrowCounterClockwise,
+      title: 'Reset Alert Settings?',
+      body: 'This will clear all your alert filters and disable notifications. You can always re-enable them later.',
+      actionLabel: 'Reset',
+      cancelLabel: 'Cancel',
     );
 
     if (confirmed == true) {
@@ -1059,14 +1040,11 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                     ),
                   ),
                 ),
-                TextButton(
+                AppButtonEnhanced(
+                  text: 'Done',
+                  variant: AppButtonVariant.primary,
+                  size: AppButtonSize.small,
                   onPressed: () => Navigator.pop(context, _selected),
-                  child: Text(
-                    'Done',
-                    style: AppTypography.titleSmall.copyWith(
-                      color: AppColors.green,
-                    ),
-                  ),
                 ),
               ],
             ),

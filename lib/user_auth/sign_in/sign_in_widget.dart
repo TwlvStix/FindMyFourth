@@ -382,7 +382,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                   },
                                   text: 'Continue with Google',
                                   leadingWidget: const GoogleLogo(size: 20),
-                                  variant: AppButtonVariant.secondary,
+                                  variant: AppButtonVariant.navyFilled,
                                   size: AppButtonSize.large,
                                   fullWidth: true,
                                 ),

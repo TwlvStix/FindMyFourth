@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
+import '../design_tokens/border_radius.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
 import 'app_icon.dart';
@@ -17,11 +18,19 @@ enum AppButtonVariant {
   /// Minimal text-only button - use for tertiary actions
   ghost,
 
-  /// Gradient-filled button with gold colors - use for accent CTAs (social auth, premium)
-  gradient,
+  /// Gold gradient button - RESTRICTED USE ONLY
+  /// Only for: onboarding completion, premium upsell
+  /// DO NOT use for standard CTAs (use primary instead)
+  premium,
 
-  /// Destructive action button with error color - use for delete, cancel, remove actions
+  /// Filled destructive button with error color - use for FINAL confirmations only
+  /// For secondary destructive actions, use destructiveOutlined instead
   destructive,
+
+  /// Outlined destructive button with error border - use for secondary destructive actions
+  /// Examples: "Leave Game", "Cancel Game", "Delete Account"
+  /// Use filled `destructive` only for final confirmation in modals
+  destructiveOutlined,
 
   /// Filled button with NAVY (structural) - use for secondary prominent actions
   navyFilled,
@@ -48,13 +57,23 @@ enum AppButtonSize {
 /// Enhanced button component with variants, animations, and polish
 ///
 /// Features:
-/// - 4 visual variants (primary, secondary, ghost, gradient)
+/// - 8 visual variants (primary, secondary, ghost, premium, destructive, destructiveOutlined, navyFilled, google)
 /// - 4 size presets (small, medium, large, xlarge)
 /// - Tactile micro-interactions (scale on press, hover states)
 /// - Loading states that maintain size
 /// - Icon support (leading/trailing)
 /// - Haptic feedback
 /// - Accessibility (focus states, touch targets)
+///
+/// Variant Usage:
+/// - primary: Main CTA per screen (green filled)
+/// - secondary: Secondary actions (navy outlined)
+/// - ghost: Tertiary/dismiss actions (transparent)
+/// - premium: ONLY for onboarding completion or premium upsell (gold gradient)
+/// - destructive: Final confirmation in modals (red filled)
+/// - destructiveOutlined: Secondary destructive actions like "Leave Game" (red outlined)
+/// - navyFilled: Secondary prominent actions in auth flows
+/// - google: Google sign-in button
 ///
 /// Example:
 /// ```dart
@@ -230,13 +249,13 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
   double get _borderRadius {
     switch (widget.size) {
       case AppButtonSize.small:
-        return 8.0;
+        return AppBorderRadius.sm; // 8px
       case AppButtonSize.medium:
-        return 10.0;
+        return AppBorderRadius.sm; // 8px - aligned to design token grid
       case AppButtonSize.large:
-        return 12.0;
+        return AppBorderRadius.md; // 12px
       case AppButtonSize.xlarge:
-        return 14.0;
+        return AppBorderRadius.lg; // 16px - aligned to design token grid
     }
   }
 
@@ -304,8 +323,8 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
                 ? AppColors.sand
                 : Colors.transparent;
 
-      case AppButtonVariant.gradient:
-        // Gradient handled separately
+      case AppButtonVariant.premium:
+        // Gradient handled separately in build
         return Colors.transparent;
 
       case AppButtonVariant.destructive:
@@ -314,6 +333,14 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
             : _isHovered
                 ? AppColors.errorHovered // Lighter error red on hover
                 : AppColors.error;
+
+      case AppButtonVariant.destructiveOutlined:
+        // Transparent with subtle error tint on hover/press
+        return _isPressed
+            ? AppColors.error.withValues(alpha: 0.12)
+            : _isHovered
+                ? AppColors.error.withValues(alpha: 0.06)
+                : Colors.transparent;
 
       case AppButtonVariant.navyFilled:
         return _isPressed
@@ -338,7 +365,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
 
     switch (widget.variant) {
       case AppButtonVariant.primary:
-      case AppButtonVariant.gradient:
+      case AppButtonVariant.premium:
       case AppButtonVariant.destructive:
       case AppButtonVariant.navyFilled:
         return AppColors.pure;
@@ -359,6 +386,14 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
             : _isHovered
                 ? AppColors.navyDark
                 : AppColors.navy;
+
+      case AppButtonVariant.destructiveOutlined:
+        // Error color - slightly muted for the outlined variant
+        return _isPressed
+            ? AppColors.errorPressed
+            : _isHovered
+                ? AppColors.errorHovered
+                : AppColors.error.withValues(alpha: 0.85);
     }
   }
 
@@ -374,6 +409,14 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
             : _isHovered
                 ? AppColors.navy
                 : AppColors.navy;
+
+      case AppButtonVariant.destructiveOutlined:
+        // Error-colored border at 35% alpha for subtlety
+        return _isPressed
+            ? AppColors.error.withValues(alpha: 0.5)
+            : _isHovered
+                ? AppColors.error.withValues(alpha: 0.45)
+                : AppColors.error.withValues(alpha: 0.35);
 
       case AppButtonVariant.google:
         return _isPressed
@@ -392,12 +435,14 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
       return [];
     }
 
+    // Outlined variants get no shadow
     if (widget.variant == AppButtonVariant.secondary ||
+        widget.variant == AppButtonVariant.destructiveOutlined ||
         widget.variant == AppButtonVariant.google) {
       return [];
     }
 
-    // Destructive variant gets error-colored shadow
+    // Destructive (filled) variant gets error-colored shadow
     if (widget.variant == AppButtonVariant.destructive) {
       if (_isPressed) {
         return [
@@ -457,7 +502,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
       ];
     }
 
-    // Gradient variant gets gold shadow
+    // Premium variant gets gold shadow
     if (_isPressed) {
       return [
         BoxShadow(
@@ -502,10 +547,10 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
               width: widget.fullWidth ? double.infinity : null,
               height: _height,
               decoration: BoxDecoration(
-                gradient: widget.variant == AppButtonVariant.gradient && _isEnabled
+                gradient: widget.variant == AppButtonVariant.premium && _isEnabled
                     ? AppColors.goldGradient
                     : null,
-                color: widget.variant != AppButtonVariant.gradient
+                color: widget.variant != AppButtonVariant.premium
                     ? _getBackgroundColor()
                     : null,
                 borderRadius: BorderRadius.circular(_borderRadius),
@@ -513,9 +558,11 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
                   color: _getBorderColor(),
                   width: widget.variant == AppButtonVariant.secondary
                       ? 2.0
-                      : widget.variant == AppButtonVariant.google
-                          ? 1.5
-                          : 0.0,
+                      : widget.variant == AppButtonVariant.destructiveOutlined
+                          ? 2.0
+                          : widget.variant == AppButtonVariant.google
+                              ? 1.5
+                              : 0.0,
                 ),
                 boxShadow: _getShadows(),
               ),

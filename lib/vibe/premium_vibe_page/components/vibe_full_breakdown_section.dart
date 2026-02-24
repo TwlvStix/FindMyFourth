@@ -95,7 +95,7 @@ class VibeFullBreakdownSection extends StatelessWidget {
                       breakdown.label,
                       style: AppTypography.bodyMedium.copyWith(
                         fontWeight: AppTypography.semiBold,
-                        color: AppColors.onyx,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xs),

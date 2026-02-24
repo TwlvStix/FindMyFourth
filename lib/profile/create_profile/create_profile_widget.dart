@@ -60,6 +60,9 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
   FormFieldController<String>? coursesValueController;
   int? handicapValue;
   UsersRecord? usernamesQuery;
+  String? genderValue;
+  FormFieldController<String>? genderValueController;
+  DateTime? dateOfBirth;
 
   // Animation
   late AnimationController _fadeController;
@@ -173,6 +176,35 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       return;
     }
 
+    // Validate required behavioural dataset fields
+    if (genderValue == null || genderValue!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Gender is required.',
+            style: AppTypography.bodySmall.copyWith(color: Colors.white),
+          ),
+          duration: Duration(milliseconds: 2000),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (dateOfBirth == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Date of birth is required.',
+            style: AppTypography.bodySmall.copyWith(color: Colors.white),
+          ),
+          duration: Duration(milliseconds: 2000),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
     // Create username
     final desiredUsername =
         functions.usernameCreator(usernameTextController!.text);
@@ -274,6 +306,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
               firstName: firstNameTextController!.text,
               lastName: lastNameTextController!.text,
               displayName: desiredUsername,
+              gender: genderValue,
+              dateOfBirth: dateOfBirth,
               friends: [],
               friendRequests: [],
             ),
@@ -563,8 +597,14 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                     Expanded(
                                       child: _buildTextField(
                                         controller: firstNameTextController!,
-                                        label: 'First Name',
+                                        label: 'First Name *',
                                         icon: AppPhosphorIcons.profile,
+                                        validator: (context, val) {
+                                          if (val == null || val.trim().isEmpty) {
+                                            return 'First name is required';
+                                          }
+                                          return null;
+                                        },
                                       ),
                                     ),
                                     SizedBox(width: AppSpacing.sm),
@@ -605,6 +645,116 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                   icon: AppPhosphorIcons.email,
                                   validator: _validateEmail,
                                   readOnly: true,
+                                ),
+                                SizedBox(height: AppSpacing.md),
+
+                                // Gender & Date of Birth Row
+                                Row(
+                                  children: [
+                                    // Gender Dropdown
+                                    Expanded(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: AppColors.inputBackground,
+                                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                                          border: Border.all(
+                                            color: AppColors.inputBorderIdle,
+                                          ),
+                                        ),
+                                        child: AppDropDown<String>(
+                                          controller: genderValueController ??=
+                                              FormFieldController<String>(null),
+                                          options: const ['Male', 'Female'],
+                                          onChanged: (val) =>
+                                              setState(() => genderValue = val),
+                                          width: double.infinity,
+                                          height: 56,
+                                          textStyle: AppTypography.bodyMedium.copyWith(
+                                            color: AppColors.textPrimary,
+                                          ),
+                                          hintText: 'Gender *',
+                                          icon: Icon(
+                                            AppPhosphorIcons.profile,
+                                            color: AppColors.textMuted,
+                                            size: AppIconSize.md,
+                                          ),
+                                          fillColor: AppColors.inputBackground,
+                                          elevation: 0,
+                                          borderColor: Colors.transparent,
+                                          borderWidth: 0,
+                                          borderRadius: 12,
+                                          margin: EdgeInsetsDirectional.only(start: AppSpacing.md),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: AppSpacing.sm),
+                                    // Date of Birth Picker
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          final now = DateTime.now();
+                                          final picked = await showDatePicker(
+                                            context: context,
+                                            initialDate: dateOfBirth ?? DateTime(now.year - 25, now.month, now.day),
+                                            firstDate: DateTime(1920),
+                                            lastDate: DateTime(now.year - 13, now.month, now.day),
+                                            helpText: 'SELECT DATE OF BIRTH',
+                                            builder: (context, child) {
+                                              return Theme(
+                                                data: Theme.of(context).copyWith(
+                                                  colorScheme: ColorScheme.dark(
+                                                    primary: AppColors.gold,
+                                                    onPrimary: AppColors.navy,
+                                                    surface: AppColors.navyDark,
+                                                    onSurface: AppColors.textPrimary,
+                                                  ),
+                                                  dialogTheme: DialogThemeData(
+                                                    backgroundColor: AppColors.navyDark,
+                                                  ),
+                                                ),
+                                                child: child!,
+                                              );
+                                            },
+                                          );
+                                          if (picked != null) {
+                                            setState(() => dateOfBirth = picked);
+                                          }
+                                        },
+                                        child: Container(
+                                          height: 56,
+                                          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.inputBackground,
+                                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                                            border: Border.all(color: AppColors.inputBorderIdle),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                AppPhosphorIcons.calendar,
+                                                color: AppColors.textMuted,
+                                                size: AppIconSize.md,
+                                              ),
+                                              SizedBox(width: AppSpacing.sm),
+                                              Expanded(
+                                                child: Text(
+                                                  dateOfBirth != null
+                                                      ? '${dateOfBirth!.month.toString().padLeft(2, '0')}/${dateOfBirth!.day.toString().padLeft(2, '0')}/${dateOfBirth!.year}'
+                                                      : 'Birthday *',
+                                                  style: AppTypography.bodyMedium.copyWith(
+                                                    color: dateOfBirth != null
+                                                        ? AppColors.textPrimary
+                                                        : AppColors.textMuted,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),

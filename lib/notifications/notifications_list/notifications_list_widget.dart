@@ -237,29 +237,14 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
   }
 
   Future<void> _showDeleteAllConfirmDialog(DocumentReference userRef) async {
-    final shouldDelete = await showDialog<bool>(
+    final shouldDelete = await showPremiumDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('Delete All Notifications'),
-        content: Text('Are you sure you want to delete all notifications? This action cannot be undone.'),
-        backgroundColor: AppColors.navy,
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.pure),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(
-              'Delete All',
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
+      variant: PremiumDialogVariant.destructive,
+      icon: PhosphorIconsRegular.trash,
+      title: 'Delete All Notifications',
+      body: 'Are you sure you want to delete all notifications? This action cannot be undone.',
+      actionLabel: 'Delete All',
+      cancelLabel: 'Cancel',
     );
 
     if (shouldDelete == true) {
@@ -484,18 +469,12 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                     builder: (context, snapshot) {
                       final unreadCount = snapshot.data?.docs.length ?? 0;
                       final hasUnread = unreadCount > 0;
-                      return TextButton(
-                        onPressed:
-                            hasUnread ? () => _markAllAsRead(userRef) : null,
-                        child: Text(
-                          'Mark all read',
-                          style: AppTypography.labelLarge.copyWith(
-                            color: hasUnread
-                                ? AppColors.gold
-                                : Colors.white.withValues(alpha: 0.5),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                      return AppButtonEnhanced(
+                        text: 'Mark all read',
+                        variant: AppButtonVariant.ghost,
+                        size: AppButtonSize.small,
+                        enabled: hasUnread,
+                        onPressed: hasUnread ? () => _markAllAsRead(userRef) : null,
                       );
                     },
                   ),
@@ -631,29 +610,14 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                               ),
                             ),
                             confirmDismiss: (direction) async {
-                              return await showDialog<bool>(
+                              return await showPremiumDialog(
                                 context: context,
-                                builder: (dialogContext) => AlertDialog(
-                                  title: Text('Delete Notification'),
-                                  content: Text('Are you sure you want to delete this notification?'),
-                                  backgroundColor: AppColors.navy,
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.of(dialogContext).pop(false),
-                                      child: Text(
-                                        'Cancel',
-                                        style: TextStyle(color: AppColors.pure),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () => Navigator.of(dialogContext).pop(true),
-                                      child: Text(
-                                        'Delete',
-                                        style: TextStyle(color: AppColors.error),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                variant: PremiumDialogVariant.destructive,
+                                icon: PhosphorIconsRegular.trash,
+                                title: 'Delete Notification',
+                                body: 'Are you sure you want to delete this notification?',
+                                actionLabel: 'Delete',
+                                cancelLabel: 'Cancel',
                               ) ?? false;
                             },
                             onDismissed: (direction) {

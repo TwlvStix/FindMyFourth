@@ -120,7 +120,7 @@ class _FallbackConfirmationScreenState
                   AppButtonEnhanced(
                     onPressed: () => Navigator.of(context).pop(),
                     text: 'Close',
-                    variant: AppButtonVariant.gradient,
+                    variant: AppButtonVariant.primary,
                     size: AppButtonSize.large,
                   ),
                 ],

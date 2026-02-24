@@ -1217,7 +1217,7 @@ class _Slide4FillFoursome extends StatelessWidget {
           AppButtonEnhanced(
             text: 'Build Your Profile',
             onPressed: onFinish,
-            variant: AppButtonVariant.gradient,
+            variant: AppButtonVariant.premium,
             size: AppButtonSize.large,
             fullWidth: true,
           ),

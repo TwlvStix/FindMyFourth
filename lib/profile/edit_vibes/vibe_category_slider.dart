@@ -11,6 +11,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_card.dart';
 import '/core/widgets/vibe_toggle.dart';
@@ -193,15 +194,11 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
           ],
         ),
         actions: [
-          TextButton(
+          AppButtonEnhanced(
+            text: 'Got it',
+            variant: AppButtonVariant.ghost,
+            size: AppButtonSize.small,
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'Got it',
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColorsDark.green,
-                fontWeight: AppTypography.semiBold,
-              ),
-            ),
           ),
         ],
       ),

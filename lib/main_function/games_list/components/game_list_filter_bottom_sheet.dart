@@ -181,20 +181,16 @@ class _GameListFilterBottomSheetState
                       ),
                     ],
                   ),
-                  TextButton(
+                  AppButtonEnhanced(
+                    text: 'Clear All',
+                    variant: AppButtonVariant.ghost,
+                    size: AppButtonSize.small,
                     onPressed: () {
                       setState(() {
                         _filters = GameListFilters();
                         _courseController?.value = null;
                       });
                     },
-                    child: Text(
-                      'Clear All',
-                      style: AppTypography.labelMedium.copyWith(
-                        color: AppColors.green,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
                   ),
                 ],
               ),

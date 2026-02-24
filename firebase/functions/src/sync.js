@@ -111,6 +111,8 @@ async function syncPlayerRound(roundId, playerId) {
     participation_status: participant.participation_status,
     co_player_ids: coPlayerIds,
     handicap_at_booking: participant.handicap_at_booking,
+    gender_at_booking: participant.gender_at_booking,
+    age_at_booking: participant.age_at_booking,
     days_since_last_round: participant.days_since_last_round,
     is_returning_after_gap: participant.is_returning_after_gap,
 
@@ -256,6 +258,8 @@ async function exportPlayerRoundsToBigQuery(batchSize = 500) {
   //   role STRING
   //   participation_status STRING
   //   handicap_at_booking FLOAT
+  //   gender_at_booking STRING
+  //   age_at_booking INTEGER
   //   days_since_last_round INTEGER
   //   is_returning_after_gap BOOLEAN
   //   avg_vibe_score_in_group FLOAT

@@ -24,6 +24,7 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
@@ -1301,24 +1302,12 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                                 horizontal: AppSpacing.md,
                                               ),
                                               child: Center(
-                                                child: TextButton(
-                                                  onPressed: _isLoadingOlder
-                                                      ? null
-                                                      : _loadOlderMessages,
-                                                  child: _isLoadingOlder
-                                                      ? const SizedBox(
-                                                          width: 18,
-                                                          height: 18,
-                                                          child: CircularProgressIndicator(
-                                                            strokeWidth: 2,
-                                                          ),
-                                                        )
-                                                      : Text(
-                                                          'Load earlier messages',
-                                                          style: AppTypography.labelSmall.copyWith(
-                                                            color: AppColors.textSecondary,
-                                                          ),
-                                                        ),
+                                                child: AppButtonEnhanced(
+                                                  text: 'Load earlier messages',
+                                                  variant: AppButtonVariant.ghost,
+                                                  size: AppButtonSize.small,
+                                                  isLoading: _isLoadingOlder,
+                                                  onPressed: _loadOlderMessages,
                                                 ),
                                               ),
                                             );
