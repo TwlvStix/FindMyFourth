@@ -463,34 +463,31 @@ class _GamesListWidgetState extends State<GamesListWidget> {
             style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
           ),
           actions: [
-            TextButton(
+            AppButtonEnhanced(
+              text: 'Remove now',
+              variant: AppButtonVariant.destructiveOutlined,
+              size: AppButtonSize.small,
               onPressed: () => Navigator.pop(
                 alertDialogContext,
                 CancelledGameHandling.removeNow,
               ),
-              child: Text(
-                'Remove now',
-                style: AppTypography.labelLarge.copyWith(color: AppColors.error),
-              ),
             ),
-            TextButton(
+            AppButtonEnhanced(
+              text: 'Hide after 7 days',
+              variant: AppButtonVariant.ghost,
+              size: AppButtonSize.small,
               onPressed: () => Navigator.pop(
                 alertDialogContext,
                 CancelledGameHandling.removeAfter7Days,
               ),
-              child: Text(
-                'Hide after 7 days',
-                style: AppTypography.labelLarge.copyWith(color: AppColors.textSecondary),
-              ),
             ),
-            TextButton(
+            AppButtonEnhanced(
+              text: 'Keep in list',
+              variant: AppButtonVariant.secondary,
+              size: AppButtonSize.small,
               onPressed: () => Navigator.pop(
                 alertDialogContext,
                 CancelledGameHandling.keepInList,
-              ),
-              child: Text(
-                'Keep in list',
-                style: AppTypography.labelLarge.copyWith(color: AppColors.green),
               ),
             ),
           ],

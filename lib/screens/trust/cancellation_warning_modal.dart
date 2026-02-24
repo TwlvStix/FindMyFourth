@@ -77,10 +77,11 @@ class _CancellationWarningSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.pure,
+        color: AppColors.navy,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppBorderRadius.xl),
         ),
+        border: Border.all(color: AppColors.navyLight),
       ),
       padding: EdgeInsets.fromLTRB(
         AppSpacing.modalPadding,
@@ -98,7 +99,7 @@ class _CancellationWarningSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.cloud,
+                color: AppColors.navyLight,
                 borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
               ),
             ),
@@ -110,13 +111,13 @@ class _CancellationWarningSheet extends StatelessWidget {
             'Cancel your spot?',
             style: AppTypography.headlineMediumSans.copyWith(
               fontSize: 22,
-              color: AppColors.onyx,
+              color: AppColors.textPrimary,
             ),
           ),
           SizedBox(height: AppSpacing.xxs),
           Text(
             '${game.coursePlay} — ${_formatTeeTime(game.date)}',
-            style: AppTypography.bodySmall.copyWith(color: AppColors.slate),
+            style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
           ),
           SizedBox(height: AppSpacing.lg),
 
@@ -190,7 +191,7 @@ class _EarlyState extends StatelessWidget {
                   "No penalty — you're cancelling with plenty of notice.\n"
                   "Your spot will reopen for others.",
                   style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.slate),
+                      color: AppColors.textSecondary),
                 ),
               ),
             ],
@@ -207,10 +208,10 @@ class _EarlyState extends StatelessWidget {
         ),
         SizedBox(height: AppSpacing.xs),
 
-        // Cancel Spot (ghost)
+        // Cancel Spot (destructiveOutlined - visible on dark backgrounds)
         AppButtonEnhanced(
           text: 'Cancel Spot',
-          variant: AppButtonVariant.ghost,
+          variant: AppButtonVariant.destructiveOutlined,
           fullWidth: true,
           onPressed: onCancel,
         ),
@@ -254,18 +255,18 @@ class _LateState extends StatelessWidget {
                     child: Text(
                       'This is a late cancellation. The host has limited time to fill your spot.',
                       style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.slate),
+                          color: AppColors.textSecondary),
                     ),
                   ),
                 ],
               ),
               SizedBox(height: AppSpacing.sm),
-              Divider(color: AppColors.cloud, height: 1),
+              Divider(color: AppColors.navyLight, height: 1),
               SizedBox(height: AppSpacing.sm),
               Text(
                 'Late cancellations are tracked. 3 within 90 days results in a strike.',
                 style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.stone),
+                    color: AppColors.textMuted),
               ),
             ],
           ),
@@ -333,13 +334,13 @@ class _DayOfState extends StatelessWidget {
                     child: Text(
                       'This is a day-of cancellation. The host almost certainly cannot find a replacement.',
                       style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.slate),
+                          color: AppColors.textSecondary),
                     ),
                   ),
                 ],
               ),
               SizedBox(height: AppSpacing.sm),
-              Divider(color: AppColors.cloud, height: 1),
+              Divider(color: AppColors.navyLight, height: 1),
               SizedBox(height: AppSpacing.sm),
               Text(
                 'This will result in 1 strike on your account.',
@@ -352,7 +353,7 @@ class _DayOfState extends StatelessWidget {
               Text(
                 'You currently have $activeStrikes active strike${activeStrikes != 1 ? 's' : ''}.',
                 style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.stone),
+                    color: AppColors.textMuted),
               ),
             ],
           ),

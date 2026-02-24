@@ -742,8 +742,9 @@ class _WarningDetailSheet extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.pure,
+        color: AppColors.navy,
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
+        border: Border.all(color: AppColors.navyLight),
       ),
       padding: EdgeInsets.fromLTRB(
         AppSpacing.xl,
@@ -761,7 +762,7 @@ class _WarningDetailSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.cloud,
+                color: AppColors.navyLight,
                 borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
               ),
             ),
@@ -775,7 +776,7 @@ class _WarningDetailSheet extends StatelessWidget {
               Text(
                 'Cancellation Notice',
                 style: AppTypography.titleSmall.copyWith(
-                  color: AppColors.onyx,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -785,7 +786,7 @@ class _WarningDetailSheet extends StatelessWidget {
           Text(
             '$countLabel in the last 90 days.',
             style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.onyx,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -797,7 +798,7 @@ class _WarningDetailSheet extends StatelessWidget {
                 : 'This player has had recent late or same-day cancellations. '
                     'This notice clears automatically once the 90-day window passes.',
             style: AppTypography.bodySmall.copyWith(
-              color: AppColors.slate,
+              color: AppColors.textSecondary,
             ),
           ),
           SizedBox(height: AppSpacing.xl),

@@ -602,9 +602,9 @@ class _NavBarPageState extends State<NavBarPage> {
             });
           }
         },
-        backgroundColor: Colors.white,
-        color: AppColors.stone,
-        activeColor: AppColors.navyDark,
+        backgroundColor: AppColors.navyDark,
+        color: AppColors.textMuted,
+        activeColor: AppColors.green,
         tabBackgroundColor: Colors.transparent,
         tabBorderRadius: 0.0,
         tabMargin: EdgeInsets.all(AppSpacing.xxs),
@@ -620,8 +620,8 @@ class _NavBarPageState extends State<NavBarPage> {
               assetPath: AppIcons.games,
               size: AppIconSize.lg,
               isActive: currentIndex == 0,
-              activeColor: AppColors.navyDark,
-              inactiveColor: AppColors.stone,
+              activeColor: AppColors.green,
+              inactiveColor: AppColors.textMuted,
             ),
             icon: AppPhosphorIcons.games, // Fallback (hidden)
             iconSize: 0, // Hide default icon
@@ -632,8 +632,8 @@ class _NavBarPageState extends State<NavBarPage> {
               iconFill: AppPhosphorIcons.myGamesFill,
               size: AppIconSize.lg,
               isActive: currentIndex == 1,
-              activeColor: AppColors.navyDark,
-              inactiveColor: AppColors.stone,
+              activeColor: AppColors.green,
+              inactiveColor: AppColors.textMuted,
             ),
             icon: AppPhosphorIcons.myGames, // Fallback (hidden)
             iconSize: 0, // Hide default icon
@@ -644,8 +644,8 @@ class _NavBarPageState extends State<NavBarPage> {
               iconFill: AppPhosphorIcons.golfersFill,
               size: AppIconSize.lg,
               isActive: currentIndex == 2,
-              activeColor: AppColors.navyDark,
-              inactiveColor: AppColors.stone,
+              activeColor: AppColors.green,
+              inactiveColor: AppColors.textMuted,
             ),
             icon: AppPhosphorIcons.golfers, // Fallback (hidden)
             iconSize: 0, // Hide default icon
@@ -656,8 +656,8 @@ class _NavBarPageState extends State<NavBarPage> {
               iconFill: AppPhosphorIcons.chatFill,
               size: AppIconSize.lg,
               isActive: currentIndex == 3,
-              activeColor: AppColors.navyDark,
-              inactiveColor: AppColors.stone,
+              activeColor: AppColors.green,
+              inactiveColor: AppColors.textMuted,
             ),
             icon: AppPhosphorIcons.chat, // Fallback (hidden)
             iconSize: 0, // Hide default icon
@@ -668,8 +668,8 @@ class _NavBarPageState extends State<NavBarPage> {
               iconFill: AppPhosphorIcons.profileFill,
               size: AppIconSize.lg,
               isActive: currentIndex == 4,
-              activeColor: AppColors.navyDark,
-              inactiveColor: AppColors.stone,
+              activeColor: AppColors.green,
+              inactiveColor: AppColors.textMuted,
             ),
             icon: AppPhosphorIcons.profile, // Fallback (hidden)
             iconSize: 0, // Hide default icon

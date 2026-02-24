@@ -37,68 +37,43 @@ class FlexibleTimeDisplay extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Week label
-        if (showWeekLabel && weekLabel != null) ...[
-          Text(
-            weekLabel,
-            style: compact
-                ? AppTypography.labelSmall.copyWith(
-                    color: AppColors.green,
-                    fontWeight: FontWeight.w600,
-                  )
-                : AppTypography.bodySmall.copyWith(
-                    color: AppColors.green,
-                    fontWeight: FontWeight.w600,
-                  ),
-          ),
-          if (dayLabels.isNotEmpty || timeOfDayLabel != null)
-            SizedBox(height: compact ? AppSpacing.xxs : AppSpacing.xs),
-        ],
-        // Day pills
-        if (dayLabels.isNotEmpty)
+        // Row 1: Week label + Day pills (inline for compact height)
+        if ((showWeekLabel && weekLabel != null) || dayLabels.isNotEmpty)
           Wrap(
-            spacing: AppSpacing.xxs,
+            spacing: AppSpacing.xs,
             runSpacing: AppSpacing.xxs,
-            children: dayLabels.map((day) => _buildDayPill(day, compact)).toList(),
-          ),
-        // Time of day
-        if (timeOfDayLabel != null) ...[
-          if (dayLabels.isNotEmpty)
-            SizedBox(height: compact ? AppSpacing.xxs : AppSpacing.xs),
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: compact ? AppSpacing.xs : AppSpacing.sm,
-              vertical: compact ? 2 : AppSpacing.xxs,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.navy.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(AppBorderRadius.md),
-              border: Border.all(
-                color: AppColors.navy.withValues(alpha: 0.5),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AppIcon(
-                  icon: _getTimeOfDayIcon(game.flexibleTimeOfDay),
-                  color: Colors.white.withValues(alpha: 0.9),
-                  size: AppIconSize.xs,
-                ),
-                SizedBox(width: 4),
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              if (showWeekLabel && weekLabel != null)
                 Text(
-                  timeOfDayLabel,
-                  style: (compact
-                          ? AppTypography.labelMicro
-                          : AppTypography.labelSmall)
-                      .copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
+                  weekLabel,
+                  style: AppTypography.titleSmall.copyWith(
+                    color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-              ],
-            ),
+              ...dayLabels.map((day) => _buildDayPill(day, compact)),
+            ],
+          ),
+        // Row 2: Time of day (simple icon + text like regular time display)
+        if (timeOfDayLabel != null) ...[
+          SizedBox(height: compact ? AppSpacing.xxs : AppSpacing.xs),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppIcon(
+                icon: _getTimeOfDayIcon(game.flexibleTimeOfDay),
+                color: Colors.white.withValues(alpha: 0.6),
+                size: AppIconSize.xs,
+              ),
+              SizedBox(width: 4),
+              Text(
+                timeOfDayLabel,
+                style: AppTypography.labelSmall.copyWith(
+                  color: Colors.white.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
           ),
         ],
       ],

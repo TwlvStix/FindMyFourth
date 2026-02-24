@@ -211,7 +211,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  PhosphorIcon(AppPhosphorIcons.thumbsUp, color: AppColors.navyDark, size: AppIconSize.hero),
+                  PhosphorIcon(AppPhosphorIcons.thumbsUp, color: AppColors.green, size: AppIconSize.hero),
                   SizedBox(height: AppSpacing.lg),
                   Text(
                     'Ratings submitted!',
@@ -248,7 +248,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
           title: Text('Rate Your Group', style: AppTypography.titleMedium),
           centerTitle: true,
           leading: IconButton(
-            icon: PhosphorIcon(AppPhosphorIcons.back, color: AppColors.pure),
+            icon: PhosphorIcon(AppPhosphorIcons.back, color: AppColors.textPrimary),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
@@ -275,7 +275,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
         title: Text('Rate Your Group', style: AppTypography.titleMedium),
         centerTitle: true,
         leading: IconButton(
-          icon: PhosphorIcon(AppPhosphorIcons.back, color: AppColors.pure),
+          icon: PhosphorIcon(AppPhosphorIcons.back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -305,8 +305,12 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
                   vertical: AppSpacing.sm,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.sand,
+                  color: AppColors.navy,
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                  border: Border.all(
+                    color: AppColors.navyLight,
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,7 +318,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
                     PhosphorIcon(
                       AppPhosphorIcons.lock,
                       size: AppIconSize.xs,
-                      color: AppColors.stone,
+                      color: AppColors.textMuted,
                     ),
                     SizedBox(width: AppSpacing.xs),
                     Expanded(
@@ -322,7 +326,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
                         'Your responses are completely private. '
                         "They're never shown to other players.",
                         style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.stone,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -411,8 +415,8 @@ class _RateeRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
           color: rating == null
-              ? AppColors.pure.withValues(alpha:0.2)
-              : (rating! ? AppColors.navyDark.withValues(alpha:0.4) : AppColors.error.withValues(alpha:0.4)),
+              ? AppColors.navyLight
+              : (rating! ? AppColors.green.withValues(alpha:0.4) : AppColors.error.withValues(alpha:0.4)),
           width: 1,
         ),
       ),
@@ -463,7 +467,7 @@ class _ThumbsRating extends StatelessWidget {
         _ThumbButton(
           icon: AppPhosphorIcons.thumbsUp,
           selected: rating == true,
-          activeColor: AppColors.navyDark,
+          activeColor: AppColors.green,
           onTap: () => onRate(true),
         ),
         SizedBox(width: AppSpacing.sm),
@@ -503,13 +507,13 @@ class _ThumbButton extends StatelessWidget {
           color: selected ? activeColor : Colors.transparent,
           shape: BoxShape.circle,
           border: Border.all(
-            color: selected ? activeColor : AppColors.pure.withValues(alpha:0.3),
+            color: selected ? activeColor : AppColors.textMuted.withValues(alpha:0.3),
           ),
         ),
         child: PhosphorIcon(
           icon,
           size: AppIconSize.md,
-          color: selected ? AppColors.pure : AppColors.pure,
+          color: selected ? AppColors.textPrimary : AppColors.textSecondary,
         ),
       ),
     );

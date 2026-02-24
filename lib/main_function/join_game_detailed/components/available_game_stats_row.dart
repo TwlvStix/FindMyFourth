@@ -96,8 +96,15 @@ class AvailableGameStatsRow extends StatelessWidget {
             child: Row(
               children: [
                 // Icon - plain neutral, green only for 1 spot urgency
+                // All cases use 36x36 container for consistent card height
                 isFull
-                    ? AppIcon(icon: AppPhosphorIcons.groups, color: AppColors.textSecondary, size: AppIconSize.listItem)
+                    ? SizedBox(
+                        width: 36,
+                        height: 36,
+                        child: Center(
+                          child: AppIcon(icon: AppPhosphorIcons.groups, color: AppColors.textSecondary, size: AppIconSize.listItem),
+                        ),
+                      )
                     : spotsLeft == 1
                         ? Container(
                             width: 36,
@@ -112,7 +119,13 @@ class AvailableGameStatsRow extends StatelessWidget {
                               child: AppIcon(icon: AppPhosphorIcons.addPlayer, color: AppColors.pure, size: AppIconSize.button),
                             ),
                           )
-                        : AppIcon(icon: AppPhosphorIcons.addPlayer, color: AppColors.textSecondary, size: AppIconSize.listItem),
+                        : SizedBox(
+                            width: 36,
+                            height: 36,
+                            child: Center(
+                              child: AppIcon(icon: AppPhosphorIcons.addPlayer, color: AppColors.textSecondary, size: AppIconSize.listItem),
+                            ),
+                          ),
                 SizedBox(width: AppSpacing.sm),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

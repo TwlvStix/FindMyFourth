@@ -416,7 +416,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
               Text(
                 'Active Strikes',
                 style: AppTypography.titleSmall.copyWith(
-                  color: AppColors.onyx,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -444,14 +444,14 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
             SizedBox(height: AppSpacing.xs),
             Text(
               '${nextThreshold - activeCount} more until: ${_thresholdLabel(nextThreshold)}',
-              style: AppTypography.labelSmall.copyWith(color: AppColors.stone),
+              style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted),
             ),
           ],
           if (strikes.isEmpty) ...[
             SizedBox(height: AppSpacing.md),
             Text(
               'No active strikes.',
-              style: AppTypography.bodySmall.copyWith(color: AppColors.stone),
+              style: AppTypography.bodySmall.copyWith(color: AppColors.textMuted),
             ),
           ] else ...[
             SizedBox(height: AppSpacing.md),
@@ -524,7 +524,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
   }) {
     Color color;
     if (rate == null) {
-      color = AppColors.stone;
+      color = AppColors.textMuted;
     } else if (highIsGood) {
       color = rate >= 0.9
           ? AppColors.success
@@ -550,7 +550,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
               child: Text(
                 label,
                 style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.stone),
+                    color: AppColors.textMuted),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -561,7 +561,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
             ? Text(
                 'N/A',
                 style: AppTypography.titleSmall.copyWith(
-                  color: AppColors.stone,
+                  color: AppColors.textMuted,
                   fontWeight: FontWeight.w600,
                 ),
               )
@@ -577,7 +577,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
           rate == null
               ? 'Need 5+ rounds'
               : '$denominator game${denominator == 1 ? "" : "s"}',
-          style: AppTypography.labelSmall.copyWith(color: AppColors.stone),
+          style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted),
         ),
       ],
     );
@@ -617,7 +617,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
               Text(
                 'Next: ${nextInfo.label}',
                 style: AppTypography.titleSmall.copyWith(
-                  color: AppColors.onyx,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -672,20 +672,20 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
       children: [
         AppIcon(
           icon: met ? AppPhosphorIcons.success : AppPhosphorIcons.circle,
-          color: met ? AppColors.success : AppColors.cloud,
+          color: met ? AppColors.success : AppColors.navyLight,
           size: AppIconSize.button,
         ),
         SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(
             label,
-            style: AppTypography.bodySmall.copyWith(color: AppColors.slate),
+            style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
           ),
         ),
         Text(
           '${format(current)} / ${format(needed)}',
           style: AppTypography.labelSmall.copyWith(
-            color: met ? AppColors.success : AppColors.stone,
+            color: met ? AppColors.success : AppColors.textMuted,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -706,20 +706,20 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
       children: [
         AppIcon(
           icon: met ? AppPhosphorIcons.success : AppPhosphorIcons.circle,
-          color: met ? AppColors.success : AppColors.cloud,
+          color: met ? AppColors.success : AppColors.navyLight,
           size: AppIconSize.button,
         ),
         SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(
             'Cancel rate',
-            style: AppTypography.bodySmall.copyWith(color: AppColors.slate),
+            style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
           ),
         ),
         Text(
           '$pct (max $maxPct)',
           style: AppTypography.labelSmall.copyWith(
-            color: met ? AppColors.success : AppColors.stone,
+            color: met ? AppColors.success : AppColors.textMuted,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -769,8 +769,8 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
         return (
           label: 'New Member',
           icon: AppPhosphorIcons.profile,
-          gradientStart: AppColors.stone,
-          gradientEnd: AppColors.slate,
+          gradientStart: AppColors.greenLight,
+          gradientEnd: AppColors.green,
         );
     }
   }
@@ -816,7 +816,7 @@ class _StrikeRow extends StatelessWidget {
                 Text(
                   label,
                   style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.onyx,
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -824,7 +824,7 @@ class _StrikeRow extends StatelessWidget {
                   Text(
                     'Expires $expiryText',
                     style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.stone),
+                        color: AppColors.textMuted),
                   ),
               ],
             ),
@@ -875,15 +875,9 @@ class _SectionCard extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.pure,
+        color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.onyx.withValues(alpha:0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: AppColors.navyLight),
       ),
       child: child,
     );

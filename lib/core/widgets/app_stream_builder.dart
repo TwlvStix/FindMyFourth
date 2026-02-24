@@ -4,6 +4,8 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon.dart';
+import '/core/widgets/app_button_enhanced.dart';
+import '/core/design_tokens/typography.dart';
 import 'package:find_my_fourth/core/utils/error_messages.dart';
 import 'package:find_my_fourth/core/exceptions/app_exceptions.dart';
 
@@ -83,13 +85,15 @@ class AppStreamBuilder<T> extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
             ),
             if (onRetry != null) ...[
               AppSpacing.verticalMdBox,
-              ElevatedButton(
+              AppButtonEnhanced(
+                text: 'Retry',
+                variant: AppButtonVariant.primary,
+                size: AppButtonSize.medium,
                 onPressed: onRetry,
-                child: Text('Retry'),
               ),
             ],
           ],

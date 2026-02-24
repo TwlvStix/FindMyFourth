@@ -188,7 +188,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   PhosphorIcon(AppPhosphorIcons.successFill,
-                      color: AppColors.navyDark, size: AppIconSize.hero),
+                      color: AppColors.green, size: AppIconSize.hero),
                   SizedBox(height: AppSpacing.lg),
                   Text(
                     _successMessage!,
@@ -221,7 +221,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: PhosphorIcon(AppPhosphorIcons.back, color: AppColors.pure),
+          icon: PhosphorIcon(AppPhosphorIcons.back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -325,7 +325,7 @@ class _ParticipantRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
           color: isPresent
-              ? AppColors.navyDark.withValues(alpha:0.3)
+              ? AppColors.green.withValues(alpha:0.3)
               : AppColors.error.withValues(alpha:0.3),
           width: 1,
         ),
@@ -344,12 +344,12 @@ class _ParticipantRow extends StatelessWidget {
                 if (participant.role == 'host')
                   Text('Host',
                       style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.navyDark,
+                        color: AppColors.gold,
                       ))
                 else if (participant.isGuest)
                   Text('Guest',
                       style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.pure,
+                        color: AppColors.textSecondary,
                       )),
               ],
             ),
@@ -392,7 +392,7 @@ class _AttendanceToggle extends StatelessWidget {
         _ToggleChip(
           label: 'Present',
           selected: isPresent,
-          selectedColor: AppColors.navyDark,
+          selectedColor: AppColors.green,
           onTap: () => onToggle(true),
         ),
         SizedBox(width: AppSpacing.sm),
@@ -431,13 +431,13 @@ class _ToggleChip extends StatelessWidget {
           color: selected ? selectedColor : Colors.transparent,
           borderRadius: BorderRadius.circular(AppBorderRadius.xl),
           border: Border.all(
-            color: selected ? selectedColor : AppColors.pure.withValues(alpha:0.4),
+            color: selected ? selectedColor : AppColors.textMuted.withValues(alpha:0.4),
           ),
         ),
         child: Text(
           label,
           style: AppTypography.bodySmall.copyWith(
-            color: selected ? Colors.white : AppColors.pure,
+            color: selected ? AppColors.textPrimary : AppColors.textSecondary,
             fontWeight: FontWeight.w600,
           ),
         ),

@@ -1233,7 +1233,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             label: 'Game name',
                                             hint: 'Auto-generated',
                                             controller: _gameNameController,
-                                            variant: AppTextFieldVariant.filled,
+                                            variant: AppTextFieldVariant.filledDark,
                                             prefixPhosphorIcon: AppPhosphorIcons.label,
                                             onChanged: (_) => _saveDraft(),
                                           ),
@@ -1577,23 +1577,24 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   },
                                                   width: 300.0,
                                                   height: 50.0,
-                                                  searchHintTextStyle: AppTypography.labelMedium,
-                                                  searchTextStyle: AppTypography.bodyMedium,
-                                                  textStyle: AppTypography.bodyMedium,
+                                                  searchHintTextStyle: AppTypography.labelMedium.copyWith(color: AppColors.textMuted),
+                                                  searchTextStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
+                                                  searchCursorColor: AppColors.green,
+                                                  textStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
                                                   hintText:
                                                       'Where are you playing?',
                                                   searchHintText:
                                                       'Find your course',
                                                   icon: AppIcon(
                                                     icon: AppPhosphorIcons.chevronDown,
-                                                    color: AppColors.slate,
+                                                    color: AppColors.textSecondary,
                                                     size: AppIconSize.md,
                                                   ),
                                                   fillColor:
-                                                      AppColors.pure,
+                                                      AppColors.inputBackground,
                                                   elevation: 2.0,
                                                   borderColor:
-                                                      AppColors.navyDark,
+                                                      AppColors.inputBorderIdle,
                                                   borderWidth: 1.0,
                                                   borderRadius: 10.0,
                                                   margin: EdgeInsetsDirectional

@@ -1279,39 +1279,19 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                     return;
                                   }
 
-                                    if (joinGameDetailedGamesRecord.chatRef !=
-                                        null) {
-                                      try {
-                                        await context
-                                            .read<ChatProvider>()
-                                            .addMember(
-                                              chatId: joinGameDetailedGamesRecord
-                                                  .chatRef!
-                                                  .id,
-                                              uid: currentUser.uid,
-                                            );
-                                      } on FirebaseException {
-                                        if (mounted) {
-                                          showSnackbar(
-                                            context,
-                                            'Joined the game, but chat access is unavailable right now.',
-                                          );
-                                        }
-                                      } catch (error) {
-                                        if (mounted) {
-                                          showSnackbar(
-                                            context,
-                                            'Joined the game, but chat access is unavailable right now.',
-                                          );
-                                        }
-                                      }
-                                    }
-
                                     if (!mounted) {
                                       return;
                                     }
                                     context.gameProvider.invalidateAvailableGamesCache();
                                     context.gameProvider.invalidateUserGamesCache(context.userProvider.userId);
+                                    // Invalidate chat caches so memberJoinedAt is refreshed
+                                    // (GameProvider._ensureChatMembership uses ChatService directly,
+                                    // bypassing ChatProvider cache invalidation)
+                                    if (joinGameDetailedGamesRecord.chatRef != null) {
+                                      final chatId = joinGameDetailedGamesRecord.chatRef!.id;
+                                      context.read<ChatProvider>().invalidateChatCache(chatId);
+                                      context.read<ChatProvider>().invalidateMessagesCache(chatId);
+                                    }
                                     context.goNamed(
                                       GameJoinedDetailedWidget.routeName,
                                       extra: <String, dynamic>{

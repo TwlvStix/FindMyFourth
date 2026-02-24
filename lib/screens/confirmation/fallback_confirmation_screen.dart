@@ -105,7 +105,7 @@ class _FallbackConfirmationScreenState
                 children: [
                   PhosphorIcon(
                     _answered! ? AppPhosphorIcons.successFill : AppPhosphorIcons.cancelFill,
-                    color: _answered! ? AppColors.navyDark : AppColors.pure,
+                    color: _answered! ? AppColors.green : AppColors.textSecondary,
                     size: AppIconSize.hero,
                   ),
                   SizedBox(height: AppSpacing.lg),
@@ -139,7 +139,7 @@ class _FallbackConfirmationScreenState
         title: Text('Round Check-in', style: AppTypography.titleMedium),
         centerTitle: true,
         leading: IconButton(
-          icon: PhosphorIcon(AppPhosphorIcons.back, color: AppColors.pure),
+          icon: PhosphorIcon(AppPhosphorIcons.back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -152,7 +152,7 @@ class _FallbackConfirmationScreenState
             children: [
               PhosphorIcon(
                 AppPhosphorIcons.golfCourse,
-                color: AppColors.navyDark,
+                color: AppColors.green,
                 size: AppIconSize.xxl,
               ),
               SizedBox(height: AppSpacing.xl),
@@ -165,7 +165,7 @@ class _FallbackConfirmationScreenState
               Text(
                 "The host hasn't confirmed the round yet. Let us know if it happened.",
                 style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.pure,
+                  color: AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -186,7 +186,7 @@ class _FallbackConfirmationScreenState
                     child: _YesNoButton(
                       label: 'Yes',
                       icon: AppPhosphorIcons.check,
-                      color: AppColors.navyDark,
+                      color: AppColors.green,
                       onTap: _submitting ? null : () => _submit(true),
                     ),
                   ),
@@ -195,7 +195,7 @@ class _FallbackConfirmationScreenState
                     child: _YesNoButton(
                       label: 'No',
                       icon: AppPhosphorIcons.close,
-                      color: AppColors.pure,
+                      color: AppColors.textSecondary,
                       onTap: _submitting ? null : () => _submit(false),
                     ),
                   ),
