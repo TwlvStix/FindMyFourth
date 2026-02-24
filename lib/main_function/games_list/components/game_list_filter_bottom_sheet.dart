@@ -138,7 +138,7 @@ class _GameListFilterBottomSheetState
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.navyDark,
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
       ),
       child: SafeArea(
@@ -150,7 +150,7 @@ class _GameListFilterBottomSheetState
               height: 4,
               margin: EdgeInsets.only(top: AppSpacing.sm),
               decoration: BoxDecoration(
-                color: AppColors.cloud,
+                color: AppColors.greenLight,
                 borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
               ),
             ),
@@ -167,7 +167,7 @@ class _GameListFilterBottomSheetState
                           Navigator.of(context).pop();
                         },
                         icon: Icon(AppPhosphorIcons.close, size: AppIconSize.md),
-                        color: AppColors.onyx,
+                        color: AppColors.pure,
                         padding: EdgeInsets.zero,
                         constraints: BoxConstraints(),
                       ),
@@ -176,6 +176,7 @@ class _GameListFilterBottomSheetState
                         'Filter Games',
                         style: AppTypography.titleLarge.copyWith(
                           fontWeight: FontWeight.w700,
+                          color: AppColors.pure,
                         ),
                       ),
                     ],
@@ -190,7 +191,7 @@ class _GameListFilterBottomSheetState
                     child: Text(
                       'Clear All',
                       style: AppTypography.labelMedium.copyWith(
-                        color: AppColors.navy,
+                        color: AppColors.green,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -237,14 +238,13 @@ class _GameListFilterBottomSheetState
             Container(
               padding: EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha:0.05),
-                    blurRadius: 10,
-                    offset: Offset(0, -2),
+                color: AppColors.navyDark,
+                border: Border(
+                  top: BorderSide(
+                    color: AppColors.navyLight,
+                    width: 1,
                   ),
-                ],
+                ),
               ),
               child: AppButtonEnhanced(
                 onPressed: () {
@@ -266,7 +266,7 @@ class _GameListFilterBottomSheetState
       title,
       style: AppTypography.labelLarge.copyWith(
         fontWeight: FontWeight.w700,
-        color: AppColors.onyx,
+        color: AppColors.pure,
       ),
     );
   }
@@ -277,7 +277,7 @@ class _GameListFilterBottomSheetState
       return Text(
         'No formats available.',
         style: AppTypography.bodyMedium.copyWith(
-          color: AppColors.stone,
+          color: AppColors.textSecondary,
         ),
       );
     }
@@ -315,10 +315,10 @@ class _GameListFilterBottomSheetState
             ),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.navy.withValues(alpha:0.1)
-                  : Colors.transparent,
+                  ? AppColors.green.withValues(alpha:0.15)
+                  : AppColors.navy.withValues(alpha:0.3),
               border: Border.all(
-                color: isSelected ? AppColors.navy : AppColors.cloud,
+                color: isSelected ? AppColors.green : AppColors.navyLight,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(AppBorderRadius.md),
@@ -326,7 +326,7 @@ class _GameListFilterBottomSheetState
             child: Text(
               label,
               style: AppTypography.bodyMedium.copyWith(
-                color: isSelected ? AppColors.navy : AppColors.stone,
+                color: isSelected ? AppColors.green : AppColors.textSecondary,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
@@ -342,7 +342,7 @@ class _GameListFilterBottomSheetState
       return Text(
         'No game vibes available.',
         style: AppTypography.bodyMedium.copyWith(
-          color: AppColors.stone,
+          color: AppColors.textSecondary,
         ),
       );
     }
@@ -355,7 +355,7 @@ class _GameListFilterBottomSheetState
       return Text(
         'No stakes available.',
         style: AppTypography.bodyMedium.copyWith(
-          color: AppColors.stone,
+          color: AppColors.textSecondary,
         ),
       );
     }
@@ -368,7 +368,7 @@ class _GameListFilterBottomSheetState
       return Text(
         'No handicap options available.',
         style: AppTypography.bodyMedium.copyWith(
-          color: AppColors.stone,
+          color: AppColors.textSecondary,
         ),
       );
     }
@@ -381,7 +381,7 @@ class _GameListFilterBottomSheetState
       return Text(
         'No courses available.',
         style: AppTypography.bodyMedium.copyWith(
-          color: AppColors.stone,
+          color: AppColors.textSecondary,
         ),
       );
     }
@@ -397,14 +397,14 @@ class _GameListFilterBottomSheetState
       },
       hintText: 'All courses',
       textStyle: AppTypography.bodyMedium.copyWith(
-        color: AppColors.onyx,
+        color: AppColors.pure,
       ),
       elevation: 2.0,
       borderWidth: 1.0,
       borderRadius: 12.0,
-      borderColor: AppColors.cloud,
+      borderColor: AppColors.navyLight,
       margin: EdgeInsetsDirectional.zero,
-      fillColor: Colors.white,
+      fillColor: AppColors.navy,
       hidesUnderline: true,
       isOverButton: true,
       isSearchable: true,
@@ -458,10 +458,10 @@ class _GameListFilterBottomSheetState
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.navy.withValues(alpha:0.1)
-              : Colors.transparent,
+              ? AppColors.green.withValues(alpha:0.15)
+              : AppColors.navy.withValues(alpha:0.3),
           border: Border.all(
-            color: isSelected ? AppColors.navy : AppColors.cloud,
+            color: isSelected ? AppColors.green : AppColors.navyLight,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
@@ -470,7 +470,7 @@ class _GameListFilterBottomSheetState
           child: Text(
             label,
             style: AppTypography.bodyMedium.copyWith(
-              color: isSelected ? AppColors.navy : AppColors.stone,
+              color: isSelected ? AppColors.green : AppColors.textSecondary,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),

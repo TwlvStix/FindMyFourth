@@ -38,9 +38,6 @@ class PlayerListWidget extends StatefulWidget {
 class _PlayerListWidgetState extends State<PlayerListWidget> {
   static const String guestOptionValue = 'guest';
 
-  // Design token for gold accent
-  static final Color _goldAccent = AppColors.goldLight;
-
   List<DocumentReference> playersJoined = [];
   void addToPlayersJoined(DocumentReference item) => playersJoined.add(item);
   void removeFromPlayersJoined(DocumentReference item) =>
@@ -292,7 +289,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               builder: (_, scrollController) {
                 return Container(
                   decoration: BoxDecoration(
-                    color: AppColors.pure,
+                    color: AppColors.navy,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(AppBorderRadius.xl),
                       topRight: Radius.circular(AppBorderRadius.xl),
@@ -319,7 +316,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                             Text(
                               'Add Player',
                               style: AppTypography.sectionHeader.copyWith(
-                                color: AppColors.greenDark,
+                                color: AppColors.textPrimary,
                               ),
                             ),
                             IconButton(
@@ -333,7 +330,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                           ],
                         ),
                       ),
-                      Divider(height: 1.0),
+                      Divider(height: 1.0, color: AppColors.navyLight),
                       // Search field
                       Padding(
                         padding: EdgeInsets.all(AppSpacing.lg),
@@ -569,10 +566,10 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
           margin: EdgeInsets.only(bottom: AppSpacing.xs),
           padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
           decoration: BoxDecoration(
-            color: AppColors.navy,
+            color: AppColors.navyLight,
             borderRadius: BorderRadius.circular(AppBorderRadius.lg),
             border: Border.all(
-              color: AppColors.navyLight.withValues(alpha: 0.4),
+              color: AppColors.glassBorder,
               width: 1,
             ),
           ),
@@ -584,16 +581,16 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: _goldAccent.withValues(alpha: 0.2),
+                    color: AppColors.navyDark,
                     borderRadius: BorderRadius.circular(AppBorderRadius.md),
                     border: Border.all(
-                      color: _goldAccent.withValues(alpha: 0.4),
+                      color: AppColors.glassBorder,
                       width: 1.5,
                     ),
                   ),
                   child: AppIcon(
                     icon: AppPhosphorIcons.profile,
-                    color: _goldAccent,
+                    color: AppColors.textMuted,
                     size: AppIconSize.md,
                   ),
                 )
@@ -602,7 +599,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.navyLight,
+                    color: AppColors.navyDark,
                     borderRadius: BorderRadius.circular(AppBorderRadius.md),
                     border: Border.all(
                       color: AppColors.glassBorder,
@@ -654,7 +651,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                         subtitle,
                         style: AppTypography.labelSmall.copyWith(
                           fontWeight: FontWeight.w500,
-                          color: _goldAccent,
+                          color: AppColors.textSecondary,
                           letterSpacing: 0.1,
                         ),
                       ),
@@ -669,12 +666,12 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: _goldAccent,
+                    color: AppColors.green,
                     borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                   ),
                   child: AppIcon(
                     icon: AppPhosphorIcons.add,
-                    color: AppColors.navyDark,
+                    color: AppColors.textPrimary,
                     size: AppIconSize.button,
                   ),
                 ),
@@ -700,10 +697,10 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
           decoration: BoxDecoration(
-            color: AppColors.navy.withValues(alpha: 0.15),
+            color: AppColors.navyLight,
             borderRadius: BorderRadius.circular(AppBorderRadius.lg),
             border: Border.all(
-              color: AppColors.navy.withValues(alpha: 0.3),
+              color: AppColors.glassBorder,
               width: 1.5,
               strokeAlign: BorderSide.strokeAlignInside,
             ),
@@ -714,16 +711,16 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.navy.withValues(alpha: 0.2),
+                  color: AppColors.navyDark,
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   border: Border.all(
-                    color: AppColors.navy.withValues(alpha: 0.3),
+                    color: AppColors.glassBorder,
                     width: 1.5,
                   ),
                 ),
                 child: AppIcon(
                   icon: AppPhosphorIcons.addPlayer,
-                  color: AppColors.navy.withValues(alpha: 0.6),
+                  color: AppColors.textMuted,
                   size: AppIconSize.md,
                 ),
               ),
@@ -734,7 +731,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   style: AppTypography.bodySmall.copyWith(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.navy.withValues(alpha: 0.6),
+                    color: AppColors.textMuted,
                     letterSpacing: 0.2,
                   ),
                 ),
@@ -745,7 +742,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.navy,
+                  color: AppColors.navyDark,
                   borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                 ),
                 child: Text(
@@ -779,59 +776,40 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       child: Row(
         children: [
           // ── Avatar ─────────────────────────────────────────────────────
-          if (isGuest)
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: _goldAccent.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                border: Border.all(
-                  color: _goldAccent.withValues(alpha: 0.4),
-                  width: 1.5,
-                ),
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.navyDark,
+              borderRadius: BorderRadius.circular(AppBorderRadius.md),
+              border: Border.all(
+                color: AppColors.glassBorder,
+                width: 1.5,
               ),
-              child: AppIcon(
-                icon: AppPhosphorIcons.profile,
-                color: _goldAccent,
-                size: AppIconSize.md,
-              ),
-            )
-          else
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: AppColors.navyLight,
-                borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                border: Border.all(
-                  color: AppColors.glassBorder,
-                  width: 1.5,
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-                child: photoUrl != null && photoUrl.isNotEmpty
-                    ? Image.network(
-                        photoUrl,
-                        width: 48,
-                        height: 48,
-                        cacheWidth: 144,
-                        cacheHeight: 144,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => AppIcon(
-                          icon: AppPhosphorIcons.profile,
-                          color: AppColors.textMuted,
-                          size: AppIconSize.md,
-                        ),
-                      )
-                    : AppIcon(
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+              child: (!isGuest && photoUrl != null && photoUrl.isNotEmpty)
+                  ? Image.network(
+                      photoUrl,
+                      width: 48,
+                      height: 48,
+                      cacheWidth: 144,
+                      cacheHeight: 144,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => AppIcon(
                         icon: AppPhosphorIcons.profile,
                         color: AppColors.textMuted,
                         size: AppIconSize.md,
                       ),
-              ),
+                    )
+                  : AppIcon(
+                      icon: AppPhosphorIcons.profile,
+                      color: AppColors.textMuted,
+                      size: AppIconSize.md,
+                    ),
             ),
+          ),
           AppSpacing.horizontalSmBox,
 
           // ── Name + role ────────────────────────────────────────────────
@@ -855,7 +833,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                   isGuest ? 'Guest' : 'Member',
                   style: AppTypography.labelSmall.copyWith(
                     fontWeight: FontWeight.w500,
-                    color: _goldAccent,
+                    color: AppColors.textSecondary,
                     letterSpacing: 0.1,
                   ),
                 ),
@@ -996,7 +974,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                             Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
-                                color: AppColors.pure,
+                                color: AppColors.navy,
                                 borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                                 boxShadow: [AppElevation.lg],
                               ),
@@ -1014,7 +992,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         Text(
                                           'Your Group',
                                           style: AppTypography.titleSmall.copyWith(
-                                            color: AppColors.greenDark,
+                                            color: AppColors.goldLight,
                                           ),
                                         ),
                                         SizedBox(height: AppSpacing.md),
@@ -1030,12 +1008,11 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                             return Container(
                                               padding: AppSpacing.allMd,
                                               decoration: BoxDecoration(
-                                                color: AppColors.cloud,
+                                                color: AppColors.navyLight,
                                                 borderRadius:
                                                     BorderRadius.circular(AppBorderRadius.md),
                                                 border: Border.all(
-                                                  color: AppColors.greenDark
-                                                      .withValues(alpha: 0.2),
+                                                  color: AppColors.glassBorder,
                                                   width: 1.0,
                                                 ),
                                               ),
@@ -1045,8 +1022,12 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                     width: 48.0,
                                                     height: 48.0,
                                                     decoration: BoxDecoration(
-                                                      color: AppColors.navyLight,
+                                                      color: AppColors.navyDark,
                                                       borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
+                                                      border: Border.all(
+                                                        color: AppColors.glassBorder,
+                                                        width: 1.5,
+                                                      ),
                                                     ),
                                                     child: ClipRRect(
                                                       borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
@@ -1086,7 +1067,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                                   .displayName
                                                               : 'You',
                                                           style: AppTypography.titleSmall.copyWith(
-                                                            color: AppColors.greenDark,
+                                                            color: AppColors.textPrimary,
                                                           ),
                                                         ),
                                                         SizedBox(height: 2.0),
@@ -1133,7 +1114,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                               Text(
                                                 'Add Friends',
                                                 style: AppTypography.titleSmall.copyWith(
-                                                  color: AppColors.greenDark,
+                                                  color: AppColors.goldLight,
                                                 ),
                                               ),
                                               Text(
@@ -1310,11 +1291,10 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                 width: double.infinity,
                                 padding: EdgeInsets.all(AppSpacing.md),
                                 decoration: BoxDecoration(
-                                  color: AppColors.pure,
+                                  color: AppColors.navy,
                                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                                   border: Border.all(
-                                    color: AppColors.greenDark
-                                        .withValues(alpha: 0.2),
+                                    color: AppColors.glassBorder,
                                     width: 1.0,
                                   ),
                                 ),
@@ -1326,13 +1306,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         AppIcon(
                                           icon: AppPhosphorIcons.info,
                                           size: AppIconSize.button,
-                                          color: AppColors.greenDark,
+                                          color: AppColors.goldLight,
                                         ),
                                         SizedBox(width: AppSpacing.xs),
                                         Text(
                                           'Game Summary',
                                           style: AppTypography.titleSmall.copyWith(
-                                            color: AppColors.greenDark,
+                                            color: AppColors.goldLight,
                                           ),
                                         ),
                                       ],

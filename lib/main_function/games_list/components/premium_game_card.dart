@@ -16,7 +16,6 @@ import '/main_function/games_list/components/flexible_time_display.dart';
 import '/main_function/games_list/games_list_widget.dart' show CancelledGameHandling;
 import '/models/game.dart';
 import '/providers/profile_provider.dart';
-import '/backend/backend.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 
 /// Premium-styled game card for the games list with entrance animation

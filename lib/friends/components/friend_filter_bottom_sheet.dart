@@ -45,7 +45,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.navyDark,
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
       ),
       child: SafeArea(
@@ -58,7 +58,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
               height: 4,
               margin: EdgeInsets.only(top: AppSpacing.sm),
               decoration: BoxDecoration(
-                color: AppColors.cloud,
+                color: AppColors.greenLight,
                 borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
               ),
             ),
@@ -78,7 +78,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
                           Navigator.of(context).pop();
                         },
                         icon: Icon(AppPhosphorIcons.close),
-                        color: AppColors.onyx,
+                        color: AppColors.pure,
                         iconSize: AppIconSize.md,
                         padding: EdgeInsets.zero,
                         constraints: BoxConstraints(),
@@ -88,6 +88,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
                         'Filter Golfers',
                         style: AppTypography.titleLarge.copyWith(
                           fontWeight: FontWeight.w700,
+                          color: AppColors.pure,
                         ),
                       ),
                     ],
@@ -101,7 +102,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
                     child: Text(
                       'Clear All',
                       style: AppTypography.labelMedium.copyWith(
-                        color: AppColors.navy,
+                        color: AppColors.green,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -155,14 +156,13 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
             Container(
               padding: EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha:0.05),
-                    blurRadius: 10,
-                    offset: Offset(0, -2),
+                color: AppColors.navyDark,
+                border: Border(
+                  top: BorderSide(
+                    color: AppColors.navyLight,
+                    width: 1,
                   ),
-                ],
+                ),
               ),
               child: AppButtonEnhanced(
                 onPressed: () {
@@ -184,7 +184,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
       title,
       style: AppTypography.labelLarge.copyWith(
         fontWeight: FontWeight.w700,
-        color: AppColors.onyx,
+        color: AppColors.pure,
       ),
     );
   }
@@ -235,10 +235,10 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.navy.withValues(alpha:0.1)
-              : Colors.transparent,
+              ? AppColors.green.withValues(alpha:0.15)
+              : AppColors.navy.withValues(alpha:0.3),
           border: Border.all(
-            color: isSelected ? AppColors.navy : AppColors.cloud,
+            color: isSelected ? AppColors.green : AppColors.navyLight,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
@@ -247,7 +247,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
           child: Text(
             label,
             style: AppTypography.bodyMedium.copyWith(
-              color: isSelected ? AppColors.navy : AppColors.stone,
+              color: isSelected ? AppColors.green : AppColors.textSecondary,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
@@ -302,10 +302,10 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.navy.withValues(alpha:0.1)
-              : Colors.transparent,
+              ? AppColors.green.withValues(alpha:0.15)
+              : AppColors.navy.withValues(alpha:0.3),
           border: Border.all(
-            color: isSelected ? AppColors.navy : AppColors.cloud,
+            color: isSelected ? AppColors.green : AppColors.navyLight,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
@@ -314,7 +314,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
           child: Text(
             label,
             style: AppTypography.bodyMedium.copyWith(
-              color: isSelected ? AppColors.navy : AppColors.stone,
+              color: isSelected ? AppColors.green : AppColors.textSecondary,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
@@ -330,13 +330,13 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: AppColors.sand.withValues(alpha:0.3),
+        color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        border: Border.all(color: AppColors.cloud),
+        border: Border.all(color: AppColors.navyLight),
       ),
       child: Row(
         children: [
-          Icon(AppPhosphorIcons.golfCourse, color: AppColors.navy, size: AppIconSize.button),
+          Icon(AppPhosphorIcons.golfCourse, color: AppColors.textSecondary, size: AppIconSize.button),
           SizedBox(width: AppSpacing.sm),
           Expanded(
             child: TextField(
@@ -348,10 +348,15 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
               controller: _homeCourseController,
               decoration: InputDecoration(
                 hintText: 'Enter course name...',
+                hintStyle: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textMuted,
+                ),
                 border: InputBorder.none,
                 isDense: true,
               ),
-              style: AppTypography.bodyMedium,
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.pure,
+              ),
             ),
           ),
         ],
@@ -390,9 +395,9 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
           vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: value ? AppColors.navy.withValues(alpha:0.1) : Colors.transparent,
+          color: value ? AppColors.green.withValues(alpha:0.15) : AppColors.navy.withValues(alpha:0.3),
           border: Border.all(
-            color: value ? AppColors.navy : AppColors.cloud,
+            color: value ? AppColors.green : AppColors.navyLight,
             width: value ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
@@ -403,14 +408,14 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
               padding: EdgeInsets.all(AppSpacing.xs - 2),
               decoration: BoxDecoration(
                 color: value
-                    ? AppColors.navy.withValues(alpha:0.2)
-                    : AppColors.cloud.withValues(alpha:0.3),
+                    ? AppColors.green.withValues(alpha:0.2)
+                    : AppColors.navy,
                 borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
               child: Icon(
                 icon,
                 size: AppIconSize.button,
-                color: value ? AppColors.navy : AppColors.stone,
+                color: value ? AppColors.green : AppColors.textSecondary,
               ),
             ),
             SizedBox(width: AppSpacing.sm),
@@ -418,7 +423,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
               child: Text(
                 label,
                 style: AppTypography.bodyMedium.copyWith(
-                  color: value ? AppColors.onyx : AppColors.stone,
+                  color: value ? AppColors.pure : AppColors.textSecondary,
                   fontWeight: value ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
@@ -426,7 +431,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
             if (value)
               Icon(
                 AppPhosphorIcons.success,
-                color: AppColors.navy,
+                color: AppColors.green,
                 size: AppIconSize.button,
               ),
           ],

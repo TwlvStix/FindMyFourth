@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '/backend/backend.dart';
@@ -14,6 +15,7 @@ import '/models/chat.dart';
 import '/models/chat_message.dart';
 import '/providers/chat_provider.dart';
 import '/providers/profile_provider.dart';
+import '/core/widgets/app_premium_dialog.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
@@ -606,41 +608,14 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   }
 
   Future<void> _showDeleteConfirmation() async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showPremiumDialog(
       context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text(
-            'Delete Chat?',
-            style: AppTypography.headlineSmall,
-          ),
-          content: Text(
-            'This will permanently delete all messages in this chat. This action cannot be undone.',
-            style: AppTypography.bodyMedium,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(
-                'Cancel',
-                style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.pure,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(
-                'Delete',
-                style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.error,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+      variant: PremiumDialogVariant.destructive,
+      icon: PhosphorIconsRegular.trash,
+      title: 'Delete Chat',
+      body:
+          'This will permanently delete all messages in this chat. This action cannot be undone.',
+      actionLabel: 'Delete',
     );
 
     if (confirmed == true) {

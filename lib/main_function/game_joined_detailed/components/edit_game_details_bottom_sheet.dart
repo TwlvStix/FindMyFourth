@@ -205,7 +205,7 @@ class _EditGameDetailsBottomSheetState
                   if (!snapshot.hasData) {
                     return Center(
                       child: SpinKitWanderingCubes(
-                        color: AppColors.gold,
+                        color: AppColors.green,
                         size: 30.0,
                       ),
                     );

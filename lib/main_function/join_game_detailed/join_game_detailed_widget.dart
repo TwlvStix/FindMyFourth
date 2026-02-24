@@ -4,8 +4,10 @@ import '/core/exceptions/app_exceptions.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
+import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/trust/luxury_player_card.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/main_function/game_joined_detailed/components/player_match_chip.dart';
 import '/main_function/game_joined_detailed/components/group_vibe_summary.dart';
 import '/main_function/game_joined_detailed/components/premium_app_bar.dart';
@@ -126,22 +128,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
       return;
     }
     _hasShownAccessDeniedDialog = true;
-    await showDialog<void>(
+    await showPremiumDialog(
       context: context,
-      builder: (alertDialogContext) {
-        return AlertDialog(
-          title: Text('Friends Only Game'),
-          content: Text(
-            'This game is visible to friends only. Add the host as a friend to view details.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(alertDialogContext),
-              child: Text('Ok'),
-            ),
-          ],
-        );
-      },
+      variant: PremiumDialogVariant.informational,
+      icon: PhosphorIconsRegular.lock,
+      title: 'Friends Only Game',
+      body:
+          'This game is visible to friends only. Add the host as a friend to view details.',
+      actionLabel: 'Got It',
     );
     if (mounted) {
       context.pop();
@@ -235,7 +229,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
         return SafeArea(
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.pure,
+              color: AppColors.navyDark,
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(AppBorderRadius.xl),
               ),
@@ -255,7 +249,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                       width: 48,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: AppColors.cloud,
+                        color: AppColors.greenLight,
                         borderRadius: BorderRadius.circular(AppBorderRadius.md),
                       ),
                     ),
@@ -264,14 +258,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                   Text(
                     'Group Fit',
                     style: AppTypography.headlineMedium.copyWith(
-                      color: AppColors.onyx,
+                      color: AppColors.pure,
                     ),
                   ),
                   SizedBox(height: AppSpacing.md),
                   Text(
                     '${result.groupFitScore.round()}%',
                     style: AppTypography.displayMedium.copyWith(
-                      color: AppColors.navyDark,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   SizedBox(height: AppSpacing.lg),
@@ -279,7 +273,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                     Text(
                       'Potential conflicts',
                       style: AppTypography.titleSmall.copyWith(
-                        color: AppColors.onyx,
+                        color: AppColors.pure,
                       ),
                     ),
                     SizedBox(height: AppSpacing.sm),
@@ -289,7 +283,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                         child: Text(
                           '${VibeLabels.titleFor(conflict.category)} with ${conflict.memberName}',
                           style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.stone,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ),
@@ -299,7 +293,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                   Text(
                     'Top differences vs group avg',
                     style: AppTypography.titleSmall.copyWith(
-                      color: AppColors.onyx,
+                      color: AppColors.pure,
                     ),
                   ),
                   SizedBox(height: AppSpacing.sm),
@@ -313,16 +307,16 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                           vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.sand,
+                          color: AppColors.navy,
                           borderRadius: BorderRadius.circular(AppBorderRadius.full),
                           border: Border.all(
-                            color: AppColors.cloud,
+                            color: AppColors.navyLight,
                           ),
                         ),
                         child: Text(
                           '${VibeLabels.titleFor(difference.category)} • gap ${difference.distance.toStringAsFixed(1)}',
                           style: AppTypography.labelSmall.copyWith(
-                            color: AppColors.slate,
+                            color: AppColors.textSecondary,
                             letterSpacing: AppTypography.letterSpacingNormal,
                           ),
                         ),
@@ -337,7 +331,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                         child: Text(
                           risk.reason,
                           style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.stone,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ),
@@ -347,7 +341,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                   Text(
                     'Player matches',
                     style: AppTypography.titleSmall.copyWith(
-                      color: AppColors.onyx,
+                      color: AppColors.pure,
                     ),
                   ),
                   SizedBox(height: AppSpacing.sm),
@@ -374,9 +368,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: AppColors.sand,
+        color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        border: Border.all(color: AppColors.cloud),
+        border: Border.all(color: AppColors.navyLight),
       ),
       child: Row(
         children: [
@@ -384,7 +378,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
             child: Text(
               memberResult.member.name,
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.onyx,
+                color: AppColors.pure,
                 fontWeight: AppTypography.semiBold,
               ),
             ),
@@ -392,7 +386,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
           Text(
             '$matchScore%',
             style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.navyDark,
+              color: AppColors.textPrimary,
               fontWeight: AppTypography.semiBold,
             ),
           ),
@@ -1208,22 +1202,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                     }
                                   }
                                   if (!(isPublic || (isFriendsOnly && isOwnerFriendsWithUser))) {
-                                    await showAppDialog(
+                                    await showPremiumDialog(
                                       context: context,
-                                      builder: (alertDialogContext) {
-                                        return AlertDialog(
-                                          title: Text('Sorry!'),
-                                          content: Text(
-                                            'You must be friends with the game creator to join this game.',
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(alertDialogContext),
-                                              child: Text('Ok'),
-                                            ),
-                                          ],
-                                        );
-                                      },
+                                      variant: PremiumDialogVariant.informational,
+                                      icon: PhosphorIconsRegular.usersThree,
+                                      title: 'Friends Only',
+                                      body:
+                                          'You must be friends with the game creator to join this game.',
+                                      actionLabel: 'Got It',
                                     );
                                     return;
                                   }

@@ -1241,7 +1241,7 @@ class MutualFriendsSheet extends StatelessWidget {
     return Container(
       constraints: BoxConstraints(maxHeight: maxHeight),
       decoration: BoxDecoration(
-        color: AppColors.pure,
+        color: AppColors.navyDark,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppBorderRadius.xxl),
           topRight: Radius.circular(AppBorderRadius.xxl),
@@ -1256,7 +1256,7 @@ class MutualFriendsSheet extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.cloud,
+              color: AppColors.greenLight,
               borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
             ),
           ),
@@ -1269,7 +1269,7 @@ class MutualFriendsSheet extends StatelessWidget {
                 Text(
                   'Mutual Friends',
                   style: AppTypography.headlineSmall.copyWith(
-                    color: AppColors.onyx,
+                    color: AppColors.pure,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1280,7 +1280,7 @@ class MutualFriendsSheet extends StatelessWidget {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.navy.withValues(alpha:0.12),
+                    color: AppColors.navy,
                     borderRadius: BorderRadius.circular(AppBorderRadius.full),
                   ),
                   child: Text(
@@ -1288,7 +1288,7 @@ class MutualFriendsSheet extends StatelessWidget {
                         ? '3+'
                         : '${mutualFriends.length}',
                     style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.navy,
+                      color: AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1309,7 +1309,7 @@ class MutualFriendsSheet extends StatelessWidget {
               itemCount: mutualFriends.length,
               separatorBuilder: (_, __) => Divider(
                 height: 1,
-                color: AppColors.cloud,
+                color: AppColors.navyLight,
               ),
               itemBuilder: (context, index) {
                 final friend = mutualFriends[index];
@@ -1338,7 +1338,7 @@ class MutualFriendsSheet extends StatelessWidget {
                           height: 48,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppColors.navy.withValues(alpha:0.15),
+                            color: AppColors.navy,
                           ),
                           child: ClipOval(
                             child: friend.photoUrl.isNotEmpty
@@ -1347,13 +1347,13 @@ class MutualFriendsSheet extends StatelessWidget {
                                     fit: BoxFit.cover,
                                     errorBuilder: (_, __, ___) => Icon(
                                       AppPhosphorIcons.profile,
-                                      color: AppColors.navy,
+                                      color: AppColors.textSecondary,
                                       size: AppIconSize.md,
                                     ),
                                   )
                                 : Icon(
                                     AppPhosphorIcons.profile,
-                                    color: AppColors.navy,
+                                    color: AppColors.textSecondary,
                                     size: AppIconSize.md,
                                   ),
                           ),
@@ -1367,7 +1367,7 @@ class MutualFriendsSheet extends StatelessWidget {
                               Text(
                                 title,
                                 style: AppTypography.bodyMedium.copyWith(
-                                  color: AppColors.onyx,
+                                  color: AppColors.pure,
                                   fontWeight: FontWeight.w600,
                                 ),
                                 maxLines: 1,
@@ -1377,7 +1377,7 @@ class MutualFriendsSheet extends StatelessWidget {
                                 Text(
                                   '@$displayName',
                                   style: AppTypography.labelSmall.copyWith(
-                                    color: AppColors.stone,
+                                    color: AppColors.textSecondary,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -1407,7 +1407,7 @@ class MutualFriendsSheet extends StatelessWidget {
                         SizedBox(width: AppSpacing.xs),
                         Icon(
                           AppPhosphorIcons.chevronRight,
-                          color: AppColors.stone,
+                          color: AppColors.textSecondary,
                           size: AppIconSize.button,
                         ),
                       ],

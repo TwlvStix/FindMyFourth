@@ -72,8 +72,8 @@ class SegmentedControl extends StatelessWidget {
                       gradient: isSelected
                           ? LinearGradient(
                               colors: [
-                                AppColors.gold,
-                                AppColors.goldLight,
+                                AppColors.green,
+                                AppColors.greenLight,
                               ],
                             )
                           : null,

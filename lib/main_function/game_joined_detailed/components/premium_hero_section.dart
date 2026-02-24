@@ -33,8 +33,8 @@ class PremiumHeroSection extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
         border: Border.all(
-          color: AppColors.gold.withValues(alpha: 0.3),
-          width: 2,
+          color: AppColors.navyLight,
+          width: 1,
         ),
         boxShadow: [AppElevation.xl],
       ),
@@ -49,7 +49,7 @@ class PremiumHeroSection extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [AppColors.gold, AppColors.goldLight],
+                colors: [AppColors.green, AppColors.greenLight],
               ),
               borderRadius: BorderRadius.circular(AppBorderRadius.xl),
             ),
@@ -77,7 +77,7 @@ class PremiumHeroSection extends StatelessWidget {
                 height: 48,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppColors.gold, AppColors.goldLight],
+                    colors: [AppColors.navyLight, AppColors.navy],
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                   boxShadow: [AppElevation.md],

@@ -12,6 +12,7 @@ import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/models/alert_subscription.dart';
@@ -211,38 +212,14 @@ class _NotificationPageWidgetState extends State<NotificationPageWidget> {
   }
 
   Future<void> _reset() async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showPremiumDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.navyDark,
-        title: Text(
-          'Reset to Defaults?',
-          style: AppTypography.titleMedium.copyWith(color: Colors.white),
-        ),
-        content: Text(
-          'This will reset all notification settings to defaults:\n\n'
-          '• Push notifications: ON\n'
-          '• Game alerts: OFF\n'
-          '• Chat alerts: ON\n'
-          '• All filters: Cleared',
-          style: AppTypography.bodyMedium.copyWith(
-            color: Colors.white.withValues(alpha: 0.8),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel', style: TextStyle(color: AppColors.glassTextSecondary)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Reset',
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
+      variant: PremiumDialogVariant.destructive,
+      icon: PhosphorIconsRegular.arrowCounterClockwise,
+      title: 'Reset to Defaults',
+      body:
+          'Push notifications will be ON, game alerts OFF, chat alerts ON, and all filters cleared.',
+      actionLabel: 'Reset',
     );
 
     if (confirmed == true) {

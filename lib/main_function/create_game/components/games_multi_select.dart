@@ -98,11 +98,11 @@ class GamesMultiSelect extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   border: Border.all(
                     color: isSelected
-                        ? AppColors.gold
+                        ? AppColors.green
                         : Colors.white.withValues(alpha: 0.1),
                     width: isSelected ? 2 : 1,
                   ),
-                  boxShadow: isSelected ? [AppElevation.md] : null,
+                  boxShadow: isSelected ? [AppElevation.glowGreen] : null,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -113,7 +113,7 @@ class GamesMultiSelect extends StatelessWidget {
                       decoration: BoxDecoration(
                         gradient: isSelected
                             ? LinearGradient(
-                                colors: [AppColors.gold, AppColors.goldLight],
+                                colors: [AppColors.green, AppColors.greenLight],
                               )
                             : null,
                         color: isSelected ? null : Colors.white.withValues(alpha: 0.1),

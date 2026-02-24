@@ -47,7 +47,7 @@ class QuickStatsRow extends StatelessWidget {
                   height: 36,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [AppColors.green, AppColors.greenLight],
+                      colors: [AppColors.navyLight, AppColors.navy],
                     ),
                     borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                   ),
@@ -87,12 +87,12 @@ class QuickStatsRow extends StatelessWidget {
                   AppIconButton(
                     icon: AppIcon(
                       icon: AppPhosphorIcons.edit,
-                      color: AppColors.gold,
+                      color: AppColors.textSecondary,
                       size: AppIconSize.button,
                     ),
                     borderRadius: 8.0,
                     buttonSize: 32.0,
-                    fillColor: AppColors.gold.withValues(alpha: 0.15),
+                    fillColor: AppColors.navy.withValues(alpha: 0.3),
                     onPressed: onEditPressed,
                     tooltip: 'Edit game details',
                   ),

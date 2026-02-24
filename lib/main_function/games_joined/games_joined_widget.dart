@@ -18,6 +18,7 @@ import '/main_function/games_list/components/flexible_time_display.dart';
 import '/models/game.dart';
 import '/providers/game_provider.dart';
 import '/auth/firebase_auth/auth_util.dart';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -436,14 +437,47 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              valueOrDefault<String>(game.coursePlay, 'Course Name'),
-                              style: AppTypography.titleSmall.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                final courseName = valueOrDefault<String>(game.coursePlay, 'Course Name');
+                                final textStyle = AppTypography.titleSmall.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                );
+                                final textPainter = TextPainter(
+                                  text: TextSpan(text: courseName, style: textStyle),
+                                  maxLines: 1,
+                                  textDirection: ui.TextDirection.ltr,
+                                )..layout(maxWidth: double.infinity);
+
+                                final willOverflow = textPainter.width > constraints.maxWidth;
+
+                                final textWidget = Text(
+                                  courseName,
+                                  style: textStyle,
+                                  maxLines: 1,
+                                  overflow: willOverflow ? TextOverflow.clip : TextOverflow.ellipsis,
+                                );
+
+                                if (!willOverflow) return textWidget;
+
+                                return ShaderMask(
+                                  shaderCallback: (Rect bounds) {
+                                    return LinearGradient(
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                      colors: [
+                                        Colors.white,
+                                        Colors.white,
+                                        Colors.transparent,
+                                      ],
+                                      stops: [0.0, 0.85, 1.0],
+                                    ).createShader(bounds);
+                                  },
+                                  blendMode: BlendMode.dstIn,
+                                  child: textWidget,
+                                );
+                              },
                             ),
                             Text(
                               valueOrDefault<String>(game.nameGame, 'Game Name'),
@@ -455,6 +489,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           ],
                         ),
                       ),
+                      SizedBox(width: AppSpacing.md),
                       // Chat button
                       if (game.chatRef != null)
                         GestureDetector(

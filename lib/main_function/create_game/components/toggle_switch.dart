@@ -41,7 +41,7 @@ class ToggleSwitch extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(
           color: value
-              ? AppColors.gold.withValues(alpha: 0.5)
+              ? AppColors.green.withValues(alpha: 0.5)
               : Colors.white.withValues(alpha: 0.1),
           width: value ? 2 : 1,
         ),
@@ -82,7 +82,7 @@ class ToggleSwitch extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: value
                     ? LinearGradient(
-                        colors: [AppColors.gold, AppColors.goldLight],
+                        colors: [AppColors.green, AppColors.greenLight],
                       )
                     : null,
                 color: value ? null : Colors.white.withValues(alpha: 0.2),

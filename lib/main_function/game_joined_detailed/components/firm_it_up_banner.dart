@@ -22,16 +22,11 @@ class FirmItUpBanner extends StatelessWidget {
       ),
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.gold.withValues(alpha: 0.2),
-            AppColors.goldLight.withValues(alpha: 0.2),
-          ],
-        ),
+        color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(
-          color: AppColors.gold.withValues(alpha: 0.4),
-          width: 2,
+          color: AppColors.navyLight,
+          width: 1,
         ),
       ),
       child: Column(
@@ -40,15 +35,20 @@ class FirmItUpBanner extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: EdgeInsets.all(AppSpacing.sm),
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  color: AppColors.gold.withValues(alpha: 0.3),
+                  gradient: const LinearGradient(
+                    colors: [AppColors.navyLight, AppColors.navy],
+                  ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                 ),
-                child: AppIcon(
-                  icon: AppPhosphorIcons.calendarCheck,
-                  color: AppColors.gold,
-                  size: AppIconSize.md,
+                child: Center(
+                  child: AppIcon(
+                    icon: AppPhosphorIcons.calendarCheck,
+                    color: AppColors.pure,
+                    size: AppIconSize.button,
+                  ),
                 ),
               ),
               SizedBox(width: AppSpacing.md),
@@ -60,7 +60,7 @@ class FirmItUpBanner extends StatelessWidget {
                       'Got Your Tee Time?',
                       style: AppTypography.titleSmall.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     SizedBox(height: 4),
@@ -68,7 +68,7 @@ class FirmItUpBanner extends StatelessWidget {
                       'Lock in your date, time, and course',
                       style: AppTypography.bodySmall.copyWith(
                         fontSize: 13,
-                        color: Colors.white.withValues(alpha: 0.8),
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],

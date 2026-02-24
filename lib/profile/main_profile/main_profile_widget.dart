@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/app_icon_button.dart';
+import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/design_patterns/premium_ui_patterns.dart';
@@ -1028,45 +1029,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     HapticFeedback.mediumImpact();
 
                     // Show confirmation dialog
-                    final shouldLogout = await showDialog<bool>(
+                    final shouldLogout = await showPremiumDialog(
                       context: context,
-                      builder: (context) => AlertDialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-                        ),
-                        title: Text(
-                          'Log Out?',
-                          style: AppTypography.titleMedium.copyWith(
-                            color: AppColors.onyx,
-                          ),
-                        ),
-                        content: Text(
-                          'Are you sure you want to log out of your account?',
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.slate,
-                          ),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: Text(
-                              'Cancel',
-                              style: AppTypography.labelLarge.copyWith(
-                                color: AppColors.stone,
-                              ),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: Text(
-                              'Log Out',
-                              style: AppTypography.labelLarge.copyWith(
-                                color: AppColors.error,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      variant: PremiumDialogVariant.destructive,
+                      icon: PhosphorIconsRegular.signOut,
+                      title: 'Log Out',
+                      body: 'You will need to sign in again to access your account.',
+                      actionLabel: 'Log Out',
                     );
 
                     if (shouldLogout == true) {

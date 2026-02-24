@@ -4,6 +4,7 @@ import '/core/widgets/app_count_controller.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/widgets/app_text_field.dart';
+import '/core/widgets/app_premium_dialog.dart';
 import '/core/motion/motion_helpers.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/fairway_background.dart';
@@ -21,6 +22,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 
 class EditProfileWidget extends StatefulWidget {
@@ -825,45 +827,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       child: GestureDetector(
         onTap: () async {
           HapticFeedback.mediumImpact();
-          final confirm = await showDialog<bool>(
+          final confirm = await showPremiumDialog(
                 context: context,
-                builder: (alertDialogContext) => AlertDialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-                  ),
-                  title: Text(
-                    'Delete Account?',
-                    style: AppTypography.titleMedium.copyWith(
-                      color: AppColors.onyx,
-                    ),
-                  ),
-                  content: Text(
+                variant: PremiumDialogVariant.destructive,
+                icon: PhosphorIconsRegular.trash,
+                title: 'Delete Account',
+                body:
                     'This permanently deletes your account and all associated data. This action cannot be undone.',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.slate,
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(alertDialogContext, false),
-                      child: Text(
-                        'Cancel',
-                        style: AppTypography.labelLarge.copyWith(
-                          color: AppColors.stone,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(alertDialogContext, true),
-                      child: Text(
-                        'Delete',
-                        style: AppTypography.labelLarge.copyWith(
-                          color: AppColors.error,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                actionLabel: 'Delete',
               ) ??
               false;
 

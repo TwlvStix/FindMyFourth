@@ -947,7 +947,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             decoration: BoxDecoration(
               gradient: isSelected
                   ? LinearGradient(
-                      colors: [AppColors.gold, AppColors.goldLight],
+                      colors: [AppColors.green, AppColors.greenLight],
                     )
                   : null,
               color:
@@ -955,7 +955,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               borderRadius: BorderRadius.circular(AppBorderRadius.xl),
               border: Border.all(
                 color: isSelected
-                    ? AppColors.gold
+                    ? AppColors.green
                     : AppColors.greenLight.withValues(alpha: 0.3),
                 width: 1.5,
               ),
@@ -1030,7 +1030,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               border: Border.all(
                 color: isSelected
-                    ? AppColors.gold
+                    ? AppColors.green
                     : AppColors.glassSurface,
                 width: isSelected ? 2 : 1,
               ),
@@ -1153,7 +1153,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SpinKitWanderingCubes(
-                              color: AppColors.gold,
+                              color: AppColors.green,
                               size: 50.0,
                             ),
                             SizedBox(height: AppSpacing.md),
@@ -1890,7 +1890,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   borderRadius:
                                                       BorderRadius.circular(AppBorderRadius.md),
                                                   border: Border.all(
-                                                    color: AppColors.gold
+                                                    color: AppColors.green
                                                         .withValues(alpha: 0.3),
                                                     width: 1,
                                                   ),

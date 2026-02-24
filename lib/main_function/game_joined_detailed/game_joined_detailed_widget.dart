@@ -2,11 +2,13 @@ import '/backend/backend.dart';
 import '/backend/schema/trust_profile.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/trust/luxury_player_card.dart';
+import '/core/widgets/app_premium_dialog.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/utils/app_util.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
@@ -321,7 +323,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SpinKitWanderingCubes(
-                      color: AppColors.gold,
+                      color: AppColors.green,
                       size: 50.0,
                     ),
                     SizedBox(height: AppSpacing.md),
@@ -440,7 +442,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         CircularProgressIndicator(
-                                          color: AppColors.gold,
+                                          color: AppColors.green,
                                         ),
                                         SizedBox(height: AppSpacing.md),
                                         Text(
@@ -846,7 +848,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                                                 )
                                               : AppIcon(
                                                   icon: AppPhosphorIcons.joined,
-                                                  color: AppColors.goldLight,
+                                                  color: AppColors.green,
                                                   size: AppIconSize.md,
                                                 ),
                                       onTap: () {
@@ -1141,91 +1143,38 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                             );
                             return;
                           }
-                          final confirmDialogResponse = await showDialog<bool>(
+                          final confirmDialogResponse = await showPremiumDialog(
                                 context: context,
-                                builder: (alertDialogContext) {
-                                  return AlertDialog(
-                                    title: Text('Cancel this game?'),
-                                    content:
-                                        Text(
-                                          'This will end the game for everyone.',
-                                        ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(
-                                            alertDialogContext, false),
-                                        child: Text('Keep game'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(
-                                            alertDialogContext, true),
-                                        child: Text('Cancel game'),
-                                      ),
-                                    ],
-                                  );
-                                },
+                                variant: PremiumDialogVariant.destructive,
+                                icon: PhosphorIconsRegular.xCircle,
+                                title: 'Cancel Game',
+                                body: 'This will end the game for all players.',
+                                actionLabel: 'Cancel Game',
+                                cancelLabel: 'Keep Game',
                               ) ??
                               false;
                           if (!confirmDialogResponse) {
                             return;
                           }
 
-                          final visibilityChoice =
-                              await showDialog<_CancelListingHandling>(
+                          final shouldRemove = await showPremiumDialog(
                             context: context,
-                            builder: (alertDialogContext) {
-                              return AlertDialog(
-                                title: Text('Remove game listing?'),
-                                content: Text(
-                                  'Choose when to remove this game from your list.',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(
-                                      alertDialogContext,
-                                      _CancelListingHandling.hideAfter7Days,
-                                    ),
-                                    child: Text('Hide after 7 days'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(
-                                      alertDialogContext,
-                                      _CancelListingHandling.removeNow,
-                                    ),
-                                    child: Text('Remove now'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(
-                                      alertDialogContext,
-                                      null,
-                                    ),
-                                    child: Text('Back'),
-                                  ),
-                                ],
-                              );
-                            },
+                            variant: PremiumDialogVariant.destructive,
+                            icon: PhosphorIconsRegular.trashSimple,
+                            title: 'Remove Game Listing',
+                            body:
+                                'This game will be removed from your list immediately.',
+                            actionLabel: 'Delete Now',
                           );
-                          if (visibilityChoice == null) {
+                          if (shouldRemove != true) {
                             return;
                           }
 
                           if (widget.gameRef != null) {
-                            if (visibilityChoice ==
-                                _CancelListingHandling.removeNow) {
-                              AppState().setCancelledGameHandling(
-                                gameRef.path,
-                                'removeNow',
-                              );
-                            } else {
-                              AppState().setCancelledGameHandling(
-                                gameRef.path,
-                                'removeAfter7Days',
-                              );
-                              AppState().setCancelledGameHideAt(
-                                gameRef.path,
-                                getCurrentTimestamp.add(Duration(days: 7)),
-                              );
-                            }
+                            AppState().setCancelledGameHandling(
+                              gameRef.path,
+                              'removeNow',
+                            );
                           }
 
                           {
@@ -1650,27 +1599,13 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
       return;
     }
 
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showPremiumDialog(
       context: context,
-      builder: (alertDialogContext) {
-        return AlertDialog(
-          title: Text('Remove Player?'),
-          content: Text('Remove $playerName from this game?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(alertDialogContext, false),
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(alertDialogContext, true),
-              child: Text(
-                'Remove',
-                style: TextStyle(color: AppColors.error),
-              ),
-            ),
-          ],
-        );
-      },
+      variant: PremiumDialogVariant.destructive,
+      icon: PhosphorIconsRegular.userMinus,
+      title: 'Remove Player',
+      body: 'This will remove $playerName from the game.',
+      actionLabel: 'Remove',
     ) ?? false;
 
     if (confirmed) {
@@ -1826,20 +1761,14 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
 
       if (hoursUntilTeeTime < 2) {
         debugPrint('❌ Edit blocked: Less than 2 hours until tee time');
-        await showDialog(
+        await showPremiumDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text('Cannot Edit'),
-            content: Text(
+          variant: PremiumDialogVariant.informational,
+          icon: PhosphorIconsRegular.info,
+          title: 'Cannot Edit',
+          body:
               'Tee time is less than 2 hours away. Consider cancelling this game and creating a new one instead.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('OK'),
-              ),
-            ],
-          ),
+          actionLabel: 'Got It',
         );
         return;
       }
@@ -1883,7 +1812,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(color: AppColors.gold),
+                CircularProgressIndicator(color: AppColors.green),
                 SizedBox(height: AppSpacing.md),
                 Text(
                   'Updating game details...',

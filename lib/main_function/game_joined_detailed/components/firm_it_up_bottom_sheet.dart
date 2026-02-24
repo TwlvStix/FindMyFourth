@@ -140,11 +140,13 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                     child: Row(
                       children: [
                         AppIcon(icon: AppPhosphorIcons.teeTime,
-                          color: AppColors.navyDark, size: AppIconSize.md),
+                          color: AppColors.textSecondary, size: AppIconSize.md),
                         SizedBox(width: AppSpacing.sm),
                         Text(
                           dateTimeFormat("jm", _selectedDate),
-                          style: AppTypography.titleSmall,
+                          style: AppTypography.titleSmall.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
                         ),
                       ],
                     ),
@@ -178,7 +180,7 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                   if (!snapshot.hasData) {
                     return Center(
                       child: SpinKitWanderingCubes(
-                        color: AppColors.gold,
+                        color: AppColors.green,
                         size: 30.0,
                       ),
                     );
@@ -202,16 +204,26 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                     },
                     width: 300.0,
                     height: 50.0,
-                    textStyle: AppTypography.bodyMedium,
+                    textStyle: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
                     hintText: 'Select a course',
+                    searchHintText: 'Search courses...',
+                    searchTextStyle: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                    searchHintTextStyle: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    searchCursorColor: AppColors.green,
                     icon: AppIcon(
                       icon: AppPhosphorIcons.chevronDown,
-                      color: AppColors.pure,
+                      color: AppColors.textSecondary,
                       size: AppIconSize.md,
                     ),
                     fillColor: AppColors.navy,
                     elevation: 2.0,
-                    borderColor: AppColors.navyDark,
+                    borderColor: AppColors.navyLight,
                     borderWidth: 1.0,
                     borderRadius: 10.0,
                     margin: EdgeInsetsDirectional.only(start: 0),

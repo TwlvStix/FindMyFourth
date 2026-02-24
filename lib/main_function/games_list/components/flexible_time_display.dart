@@ -43,11 +43,11 @@ class FlexibleTimeDisplay extends StatelessWidget {
             weekLabel,
             style: compact
                 ? AppTypography.labelSmall.copyWith(
-                    color: AppColors.warning,
+                    color: AppColors.green,
                     fontWeight: FontWeight.w600,
                   )
                 : AppTypography.bodySmall.copyWith(
-                    color: AppColors.warning,
+                    color: AppColors.green,
                     fontWeight: FontWeight.w600,
                   ),
           ),
@@ -113,7 +113,7 @@ class FlexibleTimeDisplay extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [AppColors.gold, AppColors.goldLight],
+          colors: [AppColors.green, AppColors.greenLight],
         ),
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         boxShadow: [AppElevation.xs],
