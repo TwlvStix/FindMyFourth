@@ -11,7 +11,7 @@ import '/core/motion/motion_helpers.dart';
 import '/core/design_patterns/premium_ui_patterns.dart';
 import '/utils/app_util.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
-import '/notifications/notification_page/notification_page_widget.dart';
+import '/notification_settings/notification_settings_widget.dart';
 import '/notifications/notifications_list/notifications_list_widget.dart';
 import '/profile/change_photo/change_photo_widget.dart';
 import '/profile/edit_profile/edit_profile_widget.dart';
@@ -990,7 +990,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         onTap: () {
                           HapticFeedback.lightImpact();
                           _pushNamed(
-                            NotificationPageWidget.routeName,
+                            NotificationSettingsWidget.routeName,
                             extra: <String, dynamic>{
                               kTransitionInfoKey: TransitionInfo(
                                 hasTransition: true,
@@ -1020,7 +1020,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             onTap: () {
                               HapticFeedback.lightImpact();
                               _pushNamed(
-                                NotificationPageWidget.routeName,
+                                NotificationSettingsWidget.routeName,
                                 extra: <String, dynamic>{
                                   kTransitionInfoKey: TransitionInfo(
                                     hasTransition: true,

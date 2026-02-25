@@ -224,6 +224,122 @@ class NotificationProvider extends ChangeNotifier {
     await checkBackendErrors();
   }
 
+  // ========================================
+  // GRANULAR UPDATE METHODS
+  // ========================================
+
+  /// Apply a notification profile preset, preserving quiet hours and muted threads.
+  Future<void> applyProfile(NotificationProfile profile) async {
+    final profilePrefs = NotificationPreferences.fromProfile(profile);
+
+    // Preserve quiet hours config and muted threads from current prefs
+    final newPrefs = profilePrefs.copyWith(
+      quietHours: _prefs.quietHours,
+      mutedThreads: _prefs.mutedThreads,
+    );
+
+    await updatePreferences(newPrefs);
+  }
+
+  /// Update game alert settings.
+  Future<void> updateGameAlerts({
+    bool? enabled,
+    DeliveryFrequency? delivery,
+  }) async {
+    final newGameAlerts = _prefs.gameAlerts.copyWith(
+      enabled: enabled,
+      deliveryFrequency: delivery,
+    );
+
+    var newPrefs = _prefs.copyWith(gameAlerts: newGameAlerts);
+
+    // Recalculate active profile
+    final detectedProfile = newPrefs.detectActiveProfile();
+    newPrefs = newPrefs.copyWith(
+      activeProfile: detectedProfile,
+      clearActiveProfile: detectedProfile == null,
+    );
+
+    await updatePreferences(newPrefs);
+  }
+
+  /// Update chat alert settings.
+  Future<void> updateChatAlerts({
+    bool? enabled,
+    DeliveryFrequency? delivery,
+  }) async {
+    final newChatAlerts = _prefs.chatAlerts.copyWith(
+      enabled: enabled,
+      deliveryFrequency: delivery,
+    );
+
+    var newPrefs = _prefs.copyWith(chatAlerts: newChatAlerts);
+
+    // Recalculate active profile
+    final detectedProfile = newPrefs.detectActiveProfile();
+    newPrefs = newPrefs.copyWith(
+      activeProfile: detectedProfile,
+      clearActiveProfile: detectedProfile == null,
+    );
+
+    await updatePreferences(newPrefs);
+  }
+
+  /// Update trust category settings.
+  /// When enabled=false, sub-toggle states are preserved for restore on re-enable.
+  Future<void> updateTrustCategories({
+    bool? enabled,
+    bool? postRound,
+    bool? trustAlerts,
+    bool? badges,
+    DeliveryFrequency? delivery,
+  }) async {
+    final newTrustCategories = _prefs.trustCategories.copyWith(
+      enabled: enabled,
+      postRound: postRound,
+      trustAlerts: trustAlerts,
+      badges: badges,
+      deliveryFrequency: delivery,
+    );
+
+    var newPrefs = _prefs.copyWith(trustCategories: newTrustCategories);
+
+    // Recalculate active profile
+    final detectedProfile = newPrefs.detectActiveProfile();
+    newPrefs = newPrefs.copyWith(
+      activeProfile: detectedProfile,
+      clearActiveProfile: detectedProfile == null,
+    );
+
+    await updatePreferences(newPrefs);
+  }
+
+  /// Update quiet hours settings.
+  Future<void> updateQuietHours({
+    bool? enabled,
+    String? start,
+    String? end,
+    List<int>? activeDays,
+  }) async {
+    final newQuietHours = _prefs.quietHours.copyWith(
+      enabled: enabled,
+      start: start,
+      end: end,
+      activeDays: activeDays,
+    );
+
+    var newPrefs = _prefs.copyWith(quietHours: newQuietHours);
+
+    // Recalculate active profile (quiet hours don't affect profile detection)
+    final detectedProfile = newPrefs.detectActiveProfile();
+    newPrefs = newPrefs.copyWith(
+      activeProfile: detectedProfile,
+      clearActiveProfile: detectedProfile == null,
+    );
+
+    await updatePreferences(newPrefs);
+  }
+
   @override
   void dispose() {
     _connectivitySub?.cancel();

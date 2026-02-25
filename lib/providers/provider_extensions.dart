@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'game_provider.dart';
+import 'notification_provider.dart';
 import 'user_provider.dart';
 
 /// Convenient extensions for accessing providers throughout the app
@@ -18,6 +19,13 @@ extension ProviderExtensions on BuildContext {
 
   /// Access GameProvider and listen for changes
   GameProvider get watchGameProvider => watch<GameProvider>();
+
+  /// Access NotificationProvider without listening for changes
+  NotificationProvider get notificationProvider => read<NotificationProvider>();
+
+  /// Access NotificationProvider and listen for changes
+  NotificationProvider get watchNotificationProvider =>
+      watch<NotificationProvider>();
 
   /// Select specific data from UserProvider
   /// Only rebuilds when the selected data changes

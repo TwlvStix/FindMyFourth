@@ -319,7 +319,7 @@ final parametersBuilderMap =
   'MainProfile': ParameterData.none(),
   'EditProfile': ParameterData.none(),
   'GamesJoined': ParameterData.none(),
-  'NotificationPage': ParameterData.none(),
+  'NotificationSettings': ParameterData.none(),
   'Chat': ParameterData.none(),
   'success_page': ParameterData.none(),
   'ProfileUser': (data) async => ParameterData(
