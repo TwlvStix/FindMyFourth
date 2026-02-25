@@ -23,17 +23,20 @@ class GameListFilters {
     Set<String>? selectedVibes,
     Set<String>? selectedStakes,
     Set<String>? selectedHandicaps,
+    Set<String>? selectedEligibility,
     this.selectedCourse,
     this.selectedDateRange = GameDateRange.any,
   })  : selectedGameTypes = selectedGameTypes ?? <String>{},
         selectedVibes = selectedVibes ?? <String>{},
         selectedStakes = selectedStakes ?? <String>{},
-        selectedHandicaps = selectedHandicaps ?? <String>{};
+        selectedHandicaps = selectedHandicaps ?? <String>{},
+        selectedEligibility = selectedEligibility ?? <String>{};
 
   Set<String> selectedGameTypes;
   Set<String> selectedVibes;
   Set<String> selectedStakes;
   Set<String> selectedHandicaps;
+  Set<String> selectedEligibility;
   String? selectedCourse;
   GameDateRange selectedDateRange;
 
@@ -43,6 +46,7 @@ class GameListFilters {
       selectedVibes: {...selectedVibes},
       selectedStakes: {...selectedStakes},
       selectedHandicaps: {...selectedHandicaps},
+      selectedEligibility: {...selectedEligibility},
       selectedCourse: selectedCourse,
       selectedDateRange: selectedDateRange,
     );
@@ -53,6 +57,7 @@ class GameListFilters {
       selectedVibes.isNotEmpty ||
       selectedStakes.isNotEmpty ||
       selectedHandicaps.isNotEmpty ||
+      selectedEligibility.isNotEmpty ||
       (selectedCourse != null && selectedCourse!.trim().isNotEmpty) ||
       selectedDateRange != GameDateRange.any;
 }
@@ -66,6 +71,7 @@ class GameListFilterBottomSheet extends StatefulWidget {
     required this.availableStakes,
     required this.availableHandicaps,
     required this.availableCourses,
+    required this.availableEligibilities,
   });
 
   final GameListFilters currentFilters;
@@ -74,6 +80,7 @@ class GameListFilterBottomSheet extends StatefulWidget {
   final Set<String> availableStakes;
   final Set<String> availableHandicaps;
   final Set<String> availableCourses;
+  final Set<String> availableEligibilities;
 
   @override
   State<GameListFilterBottomSheet> createState() =>
@@ -226,6 +233,10 @@ class _GameListFilterBottomSheetState
                     _buildSectionHeader('Date Range'),
                     SizedBox(height: AppSpacing.sm),
                     _buildDateRange(),
+                    SizedBox(height: AppSpacing.xl),
+                    _buildSectionHeader('Who Can Join'),
+                    SizedBox(height: AppSpacing.sm),
+                    _buildEligibility(),
                     SizedBox(height: AppSpacing.xl),
                   ],
                 ),
@@ -473,5 +484,22 @@ class _GameListFilterBottomSheetState
         ),
       ),
     );
+  }
+
+  Widget _buildEligibility() {
+    final eligibilities = widget.availableEligibilities;
+    if (eligibilities.isEmpty) {
+      return Text(
+        'No eligibility options available.',
+        style: AppTypography.bodyMedium.copyWith(
+          color: AppColors.textSecondary,
+        ),
+      );
+    }
+    // Map Firestore values to display labels
+    final options = kCreateGameEligibilityOptions
+        .where((option) => eligibilities.contains(option['value'] as String))
+        .toList(growable: false);
+    return _buildOptionChips(options, _filters.selectedEligibility);
   }
 }

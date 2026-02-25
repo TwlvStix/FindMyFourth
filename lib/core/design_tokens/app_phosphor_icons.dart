@@ -561,4 +561,17 @@ class AppPhosphorIcons {
 
   /// Hero size icon for empty states (alias for larger contexts)
   static const hero = PhosphorIconsRegular.warningCircle;
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PLAYER ELIGIBILITY
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Open to all — users three (inclusive group)
+  static const openToAll = PhosphorIconsRegular.usersThree;
+
+  /// Women only — gender female
+  static const womenOnly = PhosphorIconsRegular.genderFemale;
+
+  /// Men only — gender male
+  static const menOnly = PhosphorIconsRegular.genderMale;
 }

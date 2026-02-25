@@ -5,6 +5,7 @@ import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/app_icons.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/widgets/app_empty_state_premium.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/trust/restriction_banner.dart';
@@ -19,7 +20,9 @@ import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
 import '/main_function/games_list/components/premium_game_card.dart';
 import '/models/game.dart';
+import '/models/player_eligibility.dart';
 import '/providers/game_provider.dart';
+import '/services/game_eligibility_service.dart';
 import '/providers/profile_provider.dart';
 import '/providers/user_provider.dart';
 import '/core/utils/app_log.dart';
@@ -46,6 +49,7 @@ class GameFilterMeta {
   final Set<String> availableStakes;
   final Set<String> availableHandicaps;
   final Set<String> availableCourses;
+  final Set<String> availableEligibilities;
 
   const GameFilterMeta({
     required this.availableGameTypes,
@@ -53,6 +57,7 @@ class GameFilterMeta {
     required this.availableStakes,
     required this.availableHandicaps,
     required this.availableCourses,
+    required this.availableEligibilities,
   });
 
   factory GameFilterMeta.fromGames(
@@ -67,6 +72,7 @@ class GameFilterMeta {
     final stakes = <String>{};
     final handicaps = <String>{};
     final courses = <String>{};
+    final eligibilities = <String>{};
 
     for (final game in games) {
       final type = gameTypeExtractor(game);
@@ -83,6 +89,9 @@ class GameFilterMeta {
 
       final course = game.coursePlay.trim();
       if (course.isNotEmpty) courses.add(course);
+
+      // Extract eligibility value
+      eligibilities.add(game.playerEligibility.toFirestoreValue());
     }
 
     return GameFilterMeta(
@@ -91,6 +100,7 @@ class GameFilterMeta {
       availableStakes: stakes,
       availableHandicaps: handicaps,
       availableCourses: courses,
+      availableEligibilities: eligibilities,
     );
   }
 }
@@ -121,6 +131,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     availableStakes: {},
     availableHandicaps: {},
     availableCourses: {},
+    availableEligibilities: {},
   );
 
   // Track last warmed profile UIDs to avoid redundant warming calls
@@ -419,6 +430,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
           return false;
         }
       }
+      if (filters.selectedEligibility.isNotEmpty) {
+        final eligibility = game.playerEligibility.toFirestoreValue();
+        if (!filters.selectedEligibility.contains(eligibility)) {
+          return false;
+        }
+      }
       if (!_matchesDateRange(game.date, filters.selectedDateRange)) {
         return false;
       }
@@ -438,6 +455,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
         availableStakes: filterMeta.availableStakes,
         availableHandicaps: filterMeta.availableHandicaps,
         availableCourses: filterMeta.availableCourses,
+        availableEligibilities: filterMeta.availableEligibilities,
       ),
     );
 
@@ -751,9 +769,27 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                         : UsersRecord.getDocument(currentUserReference),
                     builder: (context, userSnapshot) {
                       final friendIds = _friendIdsFromRecord(userSnapshot.data);
+
+                      // Filter out gender-restricted games the user isn't eligible for
+                      // (unless they're the owner)
+                      final userGender = userSnapshot.data?.gender;
+                      final eligibleGames = visibleGames.where((game) {
+                        // Owner always sees their own games
+                        if (game.userRef == currentUserReference) {
+                          return true;
+                        }
+
+                        // Check gender eligibility
+                        final eligibilityResult = checkPlayerEligibility(
+                          eligibility: game.playerEligibility,
+                          userGender: userGender,
+                        );
+                        return eligibilityResult.allowed;
+                      }).toList();
+
                       final joinableGames = <Game>[];
                       final lockedGames = <Game>[];
-                      for (final game in visibleGames) {
+                      for (final game in eligibleGames) {
                         if (_isJoinableGame(
                             game, currentUserReference, friendIds)) {
                           joinableGames.add(game);
@@ -832,48 +868,17 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   ? SliverToBoxAdapter(
                                       child: Padding(
                                         padding: EdgeInsets.symmetric(
-                                          horizontal: AppSpacing.lg,
                                           vertical: AppSpacing.xl,
                                         ),
                                         child: Column(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            Container(
-                                              width: 120,
-                                              height: 120,
-                                              decoration: BoxDecoration(
-                                                color: AppColors.navy
-                                                    .withValues(alpha:0.3),
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: Center(
-                                                child: AppIcon(
-                                                  assetPath: AppIcons.games,
-                                                  size: AppIconSize.hero,
-                                                  color: AppColors.glassTextTertiary,
-                                                ),
-                                              ),
-                                            ),
-                                            SizedBox(height: AppSpacing.lg),
                                             if (_filters.hasActiveFilters) ...[
-                                              Text(
-                                                'No games match these filters',
-                                                style: AppTypography.titleMedium
-                                                    .copyWith(
-                                                  color: AppColors.textPrimary,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              SizedBox(height: AppSpacing.xs),
-                                              Text(
-                                                'Try adjusting or clearing your filters.',
-                                                style: AppTypography.bodyMedium
-                                                    .copyWith(
-                                                  color: AppColors.glassTextSecondary,
-                                                ),
-                                                textAlign: TextAlign.center,
+                                              AppEmptyStatePremium(
+                                                icon: AppPhosphorIcons.searchOff,
+                                                title: 'No games match these filters',
+                                                message: 'Try adjusting or clearing your filters.',
                                               ),
                                               SizedBox(height: AppSpacing.lg),
                                               SizedBox(
@@ -895,23 +900,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                               ),
                                             ] else if (lockedGames
                                                 .isNotEmpty) ...[
-                                              Text(
-                                                'No joinable games right now',
-                                                style: AppTypography.titleMedium
-                                                    .copyWith(
-                                                  color: AppColors.textPrimary,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              SizedBox(height: AppSpacing.xs),
-                                              Text(
-                                                'There are friends-only games you can view below.',
-                                                style: AppTypography.bodyMedium
-                                                    .copyWith(
-                                                  color: AppColors.glassTextSecondary,
-                                                ),
-                                                textAlign: TextAlign.center,
+                                              AppEmptyStatePremium(
+                                                icon: AppPhosphorIcons.lock,
+                                                title: 'No joinable games right now',
+                                                message: 'There are friends-only games you can view below.',
                                               ),
                                               SizedBox(height: AppSpacing.lg),
                                               SizedBox(
@@ -934,23 +926,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 ),
                                               ),
                                             ] else ...[
-                                              Text(
-                                                'No games yet',
-                                                style: AppTypography.titleMedium
-                                                    .copyWith(
-                                                  color: AppColors.textPrimary,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              SizedBox(height: AppSpacing.xs),
-                                              Text(
-                                                'Be the first to create a game.',
-                                                style: AppTypography.bodyMedium
-                                                    .copyWith(
-                                                  color: AppColors.glassTextSecondary,
-                                                ),
-                                                textAlign: TextAlign.center,
+                                              AppEmptyStatePremium(
+                                                assetPath: AppIcons.games,
+                                                title: 'No Games Yet',
+                                                message: 'Be the first to create a game.',
                                               ),
                                               SizedBox(height: AppSpacing.lg),
                                               SizedBox(

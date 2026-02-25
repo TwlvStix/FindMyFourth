@@ -8,6 +8,7 @@ import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/motion/motion_tokens.dart';
+import '/core/widgets/app_expandable_text.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/utils/app_util.dart';
@@ -16,7 +17,10 @@ import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/main_function/games_list/components/flexible_time_display.dart';
 import '/main_function/games_list/games_list_widget.dart' show CancelledGameHandling;
 import '/models/game.dart';
+import '/models/player_eligibility.dart';
 import '/providers/profile_provider.dart';
+import '/providers/user_provider.dart';
+import '/services/game_eligibility_service.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 /// Premium-styled game card for the games list with entrance animation
@@ -121,6 +125,14 @@ class _PremiumGameCardState extends State<PremiumGameCard>
     final isFull = spotsLeft <= 0;
     final ownerRef = game.userRef;
 
+    // Check eligibility based on current user's gender
+    final userGender = context.watch<UserProvider>().currentUser?.gender;
+    final eligibilityResult = checkPlayerEligibility(
+      eligibility: game.playerEligibility,
+      userGender: userGender,
+    );
+    final isIneligible = !eligibilityResult.allowed;
+
     return GestureDetector(
       onTap: () async {
         if (isCancelled) {
@@ -198,6 +210,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                 isLocked: isLocked,
                 isUserGame: isUserGame,
                 isFull: isFull,
+                isIneligible: isIneligible,
               ),
           ],
         ),
@@ -317,6 +330,52 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                 style: AppTypography.labelSmall.copyWith(
                   color: AppColors.gold,
                   fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+        // Player eligibility badge
+        if (widget.game.playerEligibility == PlayerEligibility.womenOnly) ...[
+          SizedBox(width: AppSpacing.xs),
+          Opacity(
+            opacity: isUserGame ? 0.65 : 1.0,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xxs,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.gold.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(AppBorderRadius.md),
+              ),
+              child: Text(
+                'Women Only',
+                style: AppTypography.labelSmall.copyWith(
+                  color: AppColors.gold,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ] else if (widget.game.playerEligibility == PlayerEligibility.menOnly) ...[
+          SizedBox(width: AppSpacing.xs),
+          Opacity(
+            opacity: isUserGame ? 0.65 : 1.0,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xxs,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.info.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(AppBorderRadius.md),
+              ),
+              child: Text(
+                'Men Only',
+                style: AppTypography.labelSmall.copyWith(
+                  color: AppColors.info,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -470,8 +529,8 @@ class _PremiumGameCardState extends State<PremiumGameCard>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  widget.game.coursePlay.isEmpty ? 'Course TBD' : widget.game.coursePlay,
+                AppExpandableText(
+                  text: widget.game.coursePlay.isEmpty ? 'Course TBD' : widget.game.coursePlay,
                   style: AppTypography.titleSmall.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -479,7 +538,6 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                         widget.game.coursePlay.isEmpty ? FontStyle.italic : FontStyle.normal,
                   ),
                   maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   valueOrDefault<String>(widget.game.nameGame, 'Game Name'),
@@ -609,6 +667,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
     required bool isLocked,
     required bool isUserGame,
     required bool isFull,
+    required bool isIneligible,
   }) {
     return Container(
       padding: EdgeInsets.symmetric(
@@ -651,6 +710,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
             isLocked: isLocked,
             isUserGame: isUserGame,
             isFull: isFull,
+            isIneligible: isIneligible,
           ),
         ],
       ),
@@ -662,6 +722,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
     required bool isLocked,
     required bool isUserGame,
     required bool isFull,
+    required bool isIneligible,
   }) {
     if (isLocked) {
       if (widget.hasPendingFriendRequest) {
@@ -669,6 +730,11 @@ class _PremiumGameCardState extends State<PremiumGameCard>
       } else {
         return _buildAddFriendButton(context);
       }
+    }
+
+    // Show disabled state for ineligible users (non-user games only)
+    if (isIneligible && !isUserGame) {
+      return _buildIneligibleButton();
     }
 
     return Container(
@@ -728,6 +794,56 @@ class _PremiumGameCardState extends State<PremiumGameCard>
           ),
         ],
       ),
+    );
+  }
+
+  /// Disabled button for users who don't meet eligibility requirements
+  Widget _buildIneligibleButton() {
+    final eligibilityText = widget.game.playerEligibility == PlayerEligibility.womenOnly
+        ? 'Open to women only'
+        : 'Open to men only';
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.navyLight.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+            border: Border.all(color: AppColors.navyLight),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppIcon(
+                icon: AppPhosphorIcons.lock,
+                color: AppColors.textMuted,
+                size: AppIconSize.xs,
+              ),
+              SizedBox(width: 6),
+              Text(
+                'Join Game',
+                style: AppTypography.labelSmall.copyWith(
+                  color: AppColors.textMuted,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: AppSpacing.xxs),
+        Text(
+          eligibilityText,
+          style: AppTypography.labelMicro.copyWith(
+            color: AppColors.textMuted,
+          ),
+        ),
+      ],
     );
   }
 

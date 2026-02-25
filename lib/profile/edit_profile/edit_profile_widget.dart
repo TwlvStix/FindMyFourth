@@ -825,7 +825,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             overflow: TextOverflow.clip,
                             textAlign: TextAlign.center,
                             style: AppTypography.monoLarge.copyWith(
-                              color: AppColors.textPrimary,
+                              color: AppColors.textPrimary.withValues(alpha: 0.85),
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
                         ),

@@ -703,13 +703,16 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                               return Theme(
                                                 data: Theme.of(context).copyWith(
                                                   colorScheme: ColorScheme.dark(
-                                                    primary: AppColors.gold,
-                                                    onPrimary: AppColors.navy,
-                                                    surface: AppColors.navyDark,
+                                                    primary: AppColors.green,
+                                                    onPrimary: AppColors.textPrimary,
+                                                    surface: AppColors.navy,
                                                     onSurface: AppColors.textPrimary,
+                                                    onSurfaceVariant: AppColors.textPrimary,
+                                                    secondary: AppColors.green,
+                                                    onSecondary: AppColors.textPrimary,
                                                   ),
                                                   dialogTheme: DialogThemeData(
-                                                    backgroundColor: AppColors.navyDark,
+                                                    backgroundColor: AppColors.navy,
                                                   ),
                                                 ),
                                                 child: child!,
@@ -917,13 +920,14 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                           constraints: BoxConstraints(minWidth: 56),
                                           alignment: Alignment.center,
                                           child: Text(
-                                            count < 0 ? '+${count.abs()}' : count.toString(),
+                                            formatHandicap(count),
                                             maxLines: 1,
                                             softWrap: false,
                                             overflow: TextOverflow.clip,
                                             textAlign: TextAlign.center,
                                             style: AppTypography.monoLarge.copyWith(
-                                              color: AppColors.textPrimary,
+                                              color: AppColors.textPrimary.withValues(alpha: 0.85),
+                                              fontWeight: FontWeight.w400,
                                             ),
                                           ),
                                         ),

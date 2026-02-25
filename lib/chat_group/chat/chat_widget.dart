@@ -11,6 +11,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_empty_state_premium.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
@@ -426,43 +427,11 @@ class _ChatWidgetState extends State<ChatWidget> {
           debugPrint('💬 ChatList: Chat rows array is empty, showing empty state');
           return SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.xl,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: AppColors.navy.withValues(alpha:0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    child: AppIcon(
-                      icon: AppPhosphorIcons.chat,
-                      color: AppColors.glassTextTertiary,
-                      size: AppIconSize.xl,
-                    ),
-                  ),
-                  SizedBox(height: AppSpacing.md),
-                  Text(
-                    'No Chats Yet',
-                    style: AppTypography.titleSmall.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: AppSpacing.xs),
-                  Text(
-                    'Start a conversation with other golfers',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.glassTextSecondary,
-                    ),
-                  ),
-                ],
+              padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),
+              child: AppEmptyStatePremium(
+                icon: AppPhosphorIcons.chat,
+                title: 'No Chats Yet',
+                message: 'Start a conversation with other golfers',
               ),
             ),
           );

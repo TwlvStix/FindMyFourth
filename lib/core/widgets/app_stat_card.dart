@@ -176,8 +176,8 @@ class AppStatCard extends StatelessWidget {
                 color: AppColors.textPrimary,
               )
             : AppTypography.monoLarge.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary.withValues(alpha: 0.85),
+                fontWeight: FontWeight.w400,
               ));
 
     return GestureDetector(
@@ -218,7 +218,7 @@ class AppStatCard extends StatelessWidget {
             Text(
               label,
               style: AppTypography.labelSmall.copyWith(
-                color: AppColors.glassTextSecondary,
+                color: AppColors.textPrimary.withValues(alpha: 0.60),
               ),
               textAlign: TextAlign.center,
             ),

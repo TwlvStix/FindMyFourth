@@ -439,27 +439,46 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           ),
         ),
 
-        SizedBox(height: AppSpacing.xxs),
+        SizedBox(height: AppSpacing.xs),
 
-        // Username
+        // Metadata row: age · gender · @username
         AuthUserStreamWidget(
-          builder: (context) => Container(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xxs),
-            decoration: BoxDecoration(
-              color: AppColors.navy.withValues(alpha:0.4),
-              borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-              border: Border.all(
-                color: AppColors.glassSurface,
-              ),
-            ),
-            child: Text(
-              '@${currentUserDisplayName}',
+          builder: (context) {
+            final metadataParts = <String>[];
+
+            // Calculate age from date of birth
+            final dob = currentUserDocument?.dateOfBirth;
+            if (dob != null) {
+              final now = DateTime.now();
+              int age = now.year - dob.year;
+              if (now.month < dob.month ||
+                  (now.month == dob.month && now.day < dob.day)) {
+                age--;
+              }
+              if (age > 0) metadataParts.add(age.toString());
+            }
+
+            // Gender
+            final gender = valueOrDefault(currentUserDocument?.gender, '');
+            if (gender.isNotEmpty) metadataParts.add(gender);
+
+            // Username
+            final handle = currentUserDisplayName;
+            if (handle.isNotEmpty) metadataParts.add('@$handle');
+
+            final metadataLine = metadataParts.join(' · ');
+
+            if (metadataLine.isEmpty) return SizedBox.shrink();
+
+            return Text(
+              metadataLine,
               style: AppTypography.bodySmall.copyWith(
-                color: AppColors.green,
-                fontWeight: AppTypography.medium,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w400,
+                letterSpacing: 0.3,
               ),
-            ),
-          ),
+            );
+          },
         ),
       ],
     );
@@ -469,68 +488,86 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   // STATS SECTION
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildStatsSection(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Row(
-        children: [
-          // Handicap
-          Expanded(
-            child: AuthUserStreamWidget(
-              builder: (context) => AppStatCard(
-                variant: AppStatCardVariant.glass,
-                icon: AppPhosphorIcons.handicap,
-                value: formatHandicap(
-                  valueOrDefault(currentUserDocument?.handicap, 0),
+    return Column(
+      children: [
+        // Two-card row: Handicap + Friends
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Handicap
+                Expanded(
+                  child: AuthUserStreamWidget(
+                    builder: (context) => AppStatCard(
+                      variant: AppStatCardVariant.glass,
+                      icon: AppPhosphorIcons.handicap,
+                      value: formatHandicap(
+                        valueOrDefault(currentUserDocument?.handicap, 0),
+                      ),
+                      label: 'Handicap',
+                      iconGradient: [AppColors.gold, AppColors.goldLight],
+                    ),
+                  ),
                 ),
-                label: 'Handicap',
-                iconGradient: [AppColors.gold, AppColors.goldLight],
-              ),
-            ),
-          ),
-          SizedBox(width: AppSpacing.sm),
+                SizedBox(width: AppSpacing.sm),
 
-          // Home Course (shortened)
-          Expanded(
-            child: AuthUserStreamWidget(
-              builder: (context) {
-                final course =
-                    valueOrDefault(currentUserDocument?.homeCourse, 'Not Set');
-                final shortCourse = course.length > 12
-                    ? '${course.substring(0, 10)}...'
-                    : course;
-                return AppStatCard(
-                  variant: AppStatCardVariant.glass,
-                  icon: AppPhosphorIcons.homeCourse,
-                  value: shortCourse,
-                  label: 'Home Course',
-                  iconGradient: [AppColors.navyLight, AppColors.navy],
-                  isTextValue: true,
-                );
-              },
+                // Friends count
+                Expanded(
+                  child: AuthUserStreamWidget(
+                    builder: (context) {
+                      final friendsCount = currentUserDocument?.friends.length ?? 0;
+                      return AppStatCard(
+                        variant: AppStatCardVariant.glass,
+                        icon: AppPhosphorIcons.friends,
+                        value: friendsCount.toString(),
+                        label: 'Friends',
+                        iconGradient: [AppColors.gold, AppColors.goldLight],
+                        onTap: () {
+                          _pushNamed(TabFriendsWidget.routeName);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(width: AppSpacing.sm),
+        ),
+        SizedBox(height: AppSpacing.md),
 
-          // Friends count
-          Expanded(
-            child: AuthUserStreamWidget(
-              builder: (context) {
-                final friendsCount = currentUserDocument?.friends.length ?? 0;
-                return AppStatCard(
-                  variant: AppStatCardVariant.glass,
-                  icon: AppPhosphorIcons.friends,
-                  value: friendsCount.toString(),
-                  label: 'Friends',
-                  iconGradient: [AppColors.gold, AppColors.goldLight],
-                  onTap: () {
-                    _pushNamed(TabFriendsWidget.routeName);
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+        // Home course text row
+        AuthUserStreamWidget(
+          builder: (context) {
+            final course =
+                valueOrDefault(currentUserDocument?.homeCourse, 'Not Set');
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  AppPhosphorIcons.homeCourse,
+                  color: AppColors.textSecondary,
+                  size: AppIconSize.sm,
+                ),
+                SizedBox(width: AppSpacing.xs),
+                Flexible(
+                  child: Text(
+                    course,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.2,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ],
     );
   }
 

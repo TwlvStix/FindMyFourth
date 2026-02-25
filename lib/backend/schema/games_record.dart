@@ -167,6 +167,11 @@ class GamesRecord extends FirestoreRecord {
   String get verificationStatus => _verificationStatus ?? 'pending';
   bool hasVerificationStatus() => _verificationStatus != null;
 
+  // "player_eligibility" field.
+  String? _playerEligibility;
+  String get playerEligibility => _playerEligibility ?? 'open_to_all';
+  bool hasPlayerEligibility() => _playerEligibility != null;
+
   void _initializeFields() {
     _nameGame = snapshotData['name_game'] as String?;
     _date = snapshotData['date'] as DateTime?;
@@ -198,6 +203,7 @@ class GamesRecord extends FirestoreRecord {
     _guestCount = castToType<int>(snapshotData['guest_count']);
     _verifiedAt = snapshotData['verified_at'] as DateTime?;
     _verificationStatus = snapshotData['verification_status'] as String?;
+    _playerEligibility = snapshotData['player_eligibility'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -263,6 +269,7 @@ Map<String, dynamic> createGamesRecordData({
   int? guestCount,
   DateTime? verifiedAt,
   String? verificationStatus,
+  String? playerEligibility,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -295,6 +302,7 @@ Map<String, dynamic> createGamesRecordData({
       'guest_count': guestCount,
       'verified_at': verifiedAt,
       'verification_status': verificationStatus,
+      'player_eligibility': playerEligibility,
     }.withoutNulls,
   );
 
@@ -331,7 +339,8 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e1?.appUserCount == e2?.appUserCount &&
         e1?.guestCount == e2?.guestCount &&
         e1?.verifiedAt == e2?.verifiedAt &&
-        e1?.verificationStatus == e2?.verificationStatus;
+        e1?.verificationStatus == e2?.verificationStatus &&
+        e1?.playerEligibility == e2?.playerEligibility;
   }
 
   @override
@@ -361,6 +370,7 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e?.guestCount,
         e?.verifiedAt,
         e?.verificationStatus,
+        e?.playerEligibility,
       ]);
 
   @override

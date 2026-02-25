@@ -11,6 +11,8 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/app_icons.dart';
 import '/core/design_tokens/icon_size.dart';
+import '/core/widgets/app_empty_state_premium.dart';
+import '/core/widgets/app_expandable_text.dart';
 import '/core/widgets/app_icon.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/create_game/create_game_widget.dart';
@@ -18,7 +20,6 @@ import '/main_function/games_list/components/flexible_time_display.dart';
 import '/models/game.dart';
 import '/providers/game_provider.dart';
 import '/auth/firebase_auth/auth_util.dart';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -132,43 +133,15 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             ? SliverToBoxAdapter(
                                 child: Padding(
                                   padding: EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.lg,
                                     vertical: AppSpacing.xl,
                                   ),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Container(
-                                        width: 120,
-                                        height: 120,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.navy.withValues(alpha:0.3),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Center(
-                                          child: AppIcon(
-                                            assetPath: AppIcons.games,
-                                            size: AppIconSize.hero,
-                                            color: AppColors.glassTextTertiary,
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(height: AppSpacing.lg),
-                                      Text(
-                                        'No games yet',
-                                        style: AppTypography.titleMedium.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      SizedBox(height: AppSpacing.xs),
-                                      Text(
-                                        'Be the first to create a game.',
-                                        style: AppTypography.bodyMedium.copyWith(
-                                          color: AppColors.glassTextSecondary,
-                                        ),
-                                        textAlign: TextAlign.center,
+                                      AppEmptyStatePremium(
+                                        assetPath: AppIcons.games,
+                                        title: 'No Games Yet',
+                                        message: 'Join or create a game to get started.',
                                       ),
                                       SizedBox(height: AppSpacing.lg),
                                       SizedBox(
@@ -437,47 +410,13 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            LayoutBuilder(
-                              builder: (context, constraints) {
-                                final courseName = valueOrDefault<String>(game.coursePlay, 'Course Name');
-                                final textStyle = AppTypography.titleSmall.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                );
-                                final textPainter = TextPainter(
-                                  text: TextSpan(text: courseName, style: textStyle),
-                                  maxLines: 1,
-                                  textDirection: ui.TextDirection.ltr,
-                                )..layout(maxWidth: double.infinity);
-
-                                final willOverflow = textPainter.width > constraints.maxWidth;
-
-                                final textWidget = Text(
-                                  courseName,
-                                  style: textStyle,
-                                  maxLines: 1,
-                                  overflow: willOverflow ? TextOverflow.clip : TextOverflow.ellipsis,
-                                );
-
-                                if (!willOverflow) return textWidget;
-
-                                return ShaderMask(
-                                  shaderCallback: (Rect bounds) {
-                                    return LinearGradient(
-                                      begin: Alignment.centerLeft,
-                                      end: Alignment.centerRight,
-                                      colors: [
-                                        Colors.white,
-                                        Colors.white,
-                                        Colors.transparent,
-                                      ],
-                                      stops: [0.0, 0.85, 1.0],
-                                    ).createShader(bounds);
-                                  },
-                                  blendMode: BlendMode.dstIn,
-                                  child: textWidget,
-                                );
-                              },
+                            AppExpandableText(
+                              text: valueOrDefault<String>(game.coursePlay, 'Course Name'),
+                              style: AppTypography.titleSmall.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
                             ),
                             Text(
                               valueOrDefault<String>(game.nameGame, 'Game Name'),

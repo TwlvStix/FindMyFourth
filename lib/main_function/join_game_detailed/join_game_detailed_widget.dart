@@ -26,8 +26,11 @@ import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_icon.dart';
 import '/providers/trust_provider.dart';
+import '/providers/user_provider.dart';
 import '/models/game.dart';
+import '/models/player_eligibility.dart';
 import '/models/vibe_profile.dart';
+import '/services/game_eligibility_service.dart';
 import '/vibe/vibe_recommendation_rank.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
@@ -847,6 +850,15 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                     label: 'Friends Only',
                                     value: joinGameDetailedGamesRecord.friendGame,
                                   ),
+                                  // Player eligibility info card
+                                  if (joinGameDetailedGamesRecord.playerEligibility != PlayerEligibility.openToAll)
+                                    AppInfoCard(
+                                      icon: AppPhosphorIcons.golfers,
+                                      label: 'Who Can Join',
+                                      value: joinGameDetailedGamesRecord.playerEligibility == PlayerEligibility.womenOnly
+                                          ? 'Women Only'
+                                          : 'Men Only',
+                                    ),
                                 ],
                               );
                             }),
@@ -1144,22 +1156,43 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                         ),
 
                       if (joinGameDetailedGamesRecord.userRef != currentUserRef)
-                        Consumer<TrustProvider>(
-                          builder: (context, trust, _) {
+                        Consumer2<TrustProvider, UserProvider>(
+                          builder: (context, trust, userProvider, _) {
                             final isRestricted = trust.myStanding?.currentRestriction != null;
+
+                            // Check player eligibility
+                            final userGender = userProvider.currentUser?.gender;
+                            final eligibilityResult = checkPlayerEligibility(
+                              eligibility: joinGameDetailedGamesRecord.playerEligibility,
+                              userGender: userGender,
+                            );
+                            final isIneligible = !eligibilityResult.allowed;
+                            final isDisabled = isRestricted || isIneligible;
+
+                            // Build eligibility explanation text
+                            String? eligibilityText;
+                            if (isIneligible) {
+                              eligibilityText = joinGameDetailedGamesRecord.playerEligibility == PlayerEligibility.womenOnly
+                                  ? 'This game is open to women only'
+                                  : 'This game is open to men only';
+                            }
+
                             return Align(
                           alignment: AlignmentDirectional(0.0, 0.0),
                           child: Padding(
                             padding: EdgeInsets.only(
                                 bottom: AppSpacing.xs),
-                            child: SizedBox(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
                               width: 300.0,
                               child: AppButtonEnhanced(
                                 text: 'Join Game',
                                 variant: AppButtonVariant.primary,
                                 size: AppButtonSize.large,
-                                enabled: !isRestricted,
-                                onPressed: isRestricted ? null : () async {
+                                enabled: !isDisabled,
+                                onPressed: isDisabled ? null : () async {
                                   // Check permission before attempting join
                                   final friendGameValue =
                                       joinGameDetailedGamesRecord.friendGame.trim();
@@ -1228,6 +1261,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                     await context.read<GameProvider>().joinGame(
                                           joinGameDetailedGamesRecord.reference.id,
                                           currentUser.uid,
+                                          userGender: userGender,
                                         );
                                   } on GameOperationException catch (error) {
                                     if (!mounted) {
@@ -1248,6 +1282,21 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                       case 'game-not-found':
                                         message = 'Game not found';
                                         break;
+                                      case 'gender-restricted':
+                                        final restrictionLabel =
+                                            joinGameDetailedGamesRecord.playerEligibility ==
+                                                    PlayerEligibility.womenOnly
+                                                ? 'women'
+                                                : 'men';
+                                        await showPremiumDialog(
+                                          context: context,
+                                          variant: PremiumDialogVariant.informational,
+                                          icon: PhosphorIconsRegular.prohibit,
+                                          title: 'Unable to Join',
+                                          body: 'This game is restricted to $restrictionLabel only.',
+                                          actionLabel: 'OK',
+                                        );
+                                        return;
                                       default:
                                         message = error.message;
                                     }
@@ -1309,6 +1358,19 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                   },
                                 ),
                               ),
+                                // Eligibility explanation text
+                                if (eligibilityText != null) ...[
+                                  SizedBox(height: AppSpacing.xs),
+                                  Text(
+                                    eligibilityText,
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: AppColors.textMuted,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ],
+                            ),
                             ),
                           );
                           },

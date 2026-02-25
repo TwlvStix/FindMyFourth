@@ -230,9 +230,9 @@ class GameProvider extends ChangeNotifier {
   /// Join a game
   ///
   /// Invalidates game cache and refreshes data
-  Future<void> joinGame(String gameId, String userId) async {
+  Future<void> joinGame(String gameId, String userId, {String? userGender}) async {
     try {
-      await _service.joinGame(gameId, userId);
+      await _service.joinGame(gameId, userId, userGender: userGender);
       await _ensureChatMembership(gameId, userId);
       // Invalidate game cache to force refresh
       invalidateGameCache(gameId);

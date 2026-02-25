@@ -15,8 +15,11 @@ enum AppButtonVariant {
   /// Outlined button with navy border - use for secondary actions
   secondary,
 
-  /// Minimal text-only button - use for tertiary actions
+  /// Minimal text-only button - use for tertiary actions (light backgrounds)
   ghost,
+
+  /// Minimal text-only button for dark backgrounds - use for tertiary actions in app bars, dark surfaces
+  ghostDark,
 
   /// Gold gradient button - RESTRICTED USE ONLY
   /// Only for: onboarding completion, premium upsell
@@ -57,7 +60,7 @@ enum AppButtonSize {
 /// Enhanced button component with variants, animations, and polish
 ///
 /// Features:
-/// - 8 visual variants (primary, secondary, ghost, premium, destructive, destructiveOutlined, navyFilled, google)
+/// - 9 visual variants (primary, secondary, ghost, ghostDark, premium, destructive, destructiveOutlined, navyFilled, google)
 /// - 4 size presets (small, medium, large, xlarge)
 /// - Tactile micro-interactions (scale on press, hover states)
 /// - Loading states that maintain size
@@ -68,7 +71,8 @@ enum AppButtonSize {
 /// Variant Usage:
 /// - primary: Main CTA per screen (green filled)
 /// - secondary: Secondary actions (navy outlined)
-/// - ghost: Tertiary/dismiss actions (transparent)
+/// - ghost: Tertiary/dismiss actions on light backgrounds (transparent, dark text)
+/// - ghostDark: Tertiary/dismiss actions on dark backgrounds (transparent, light text)
 /// - premium: ONLY for onboarding completion or premium upsell (gold gradient)
 /// - destructive: Final confirmation in modals (red filled)
 /// - destructiveOutlined: Secondary destructive actions like "Leave Game" (red outlined)
@@ -298,6 +302,11 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
 
   Color _getBackgroundColor() {
     if (!_isEnabled) {
+      // Ghost variants stay transparent when disabled
+      if (widget.variant == AppButtonVariant.ghost ||
+          widget.variant == AppButtonVariant.ghostDark) {
+        return Colors.transparent;
+      }
       return AppColors.cloud;
     }
 
@@ -321,6 +330,14 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
             ? AppColors.cloud
             : _isHovered
                 ? AppColors.sand
+                : Colors.transparent;
+
+      case AppButtonVariant.ghostDark:
+        // For dark surfaces - subtle glass effect on interaction
+        return _isPressed
+            ? AppColors.glassSurface
+            : _isHovered
+                ? AppColors.glassSurface
                 : Colors.transparent;
 
       case AppButtonVariant.premium:
@@ -360,6 +377,10 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
 
   Color _getTextColor() {
     if (!_isEnabled) {
+      // Use muted text for disabled ghostDark on dark surfaces
+      if (widget.variant == AppButtonVariant.ghostDark) {
+        return AppColors.textMuted;
+      }
       return AppColors.stone;
     }
 
@@ -375,10 +396,10 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
 
       case AppButtonVariant.secondary:
         return _isPressed
-            ? AppColors.navyDark
+            ? AppColors.textSecondary.withValues(alpha: 0.7)
             : _isHovered
-                ? AppColors.navy
-                : AppColors.navyDark;
+                ? AppColors.textSecondary.withValues(alpha: 0.85)
+                : AppColors.textSecondary;
 
       case AppButtonVariant.ghost:
         return _isPressed
@@ -386,6 +407,14 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
             : _isHovered
                 ? AppColors.navyDark
                 : AppColors.navy;
+
+      case AppButtonVariant.ghostDark:
+        // For dark surfaces - light text that brightens on interaction
+        return _isPressed
+            ? AppColors.textPrimary
+            : _isHovered
+                ? AppColors.textPrimary
+                : AppColors.textSecondary;
 
       case AppButtonVariant.destructiveOutlined:
         // Error color - slightly muted for the outlined variant
@@ -405,10 +434,10 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
     switch (widget.variant) {
       case AppButtonVariant.secondary:
         return _isPressed
-            ? AppColors.navyDark
+            ? AppColors.textSecondary.withValues(alpha: 0.5)
             : _isHovered
-                ? AppColors.navy
-                : AppColors.navy;
+                ? AppColors.textSecondary.withValues(alpha: 0.4)
+                : AppColors.textSecondary.withValues(alpha: 0.3);
 
       case AppButtonVariant.destructiveOutlined:
         // Error-colored border at 35% alpha for subtlety
@@ -431,7 +460,9 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
   }
 
   List<BoxShadow> _getShadows() {
-    if (!_isEnabled || widget.variant == AppButtonVariant.ghost) {
+    if (!_isEnabled ||
+        widget.variant == AppButtonVariant.ghost ||
+        widget.variant == AppButtonVariant.ghostDark) {
       return [];
     }
 

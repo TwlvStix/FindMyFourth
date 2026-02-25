@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '/backend/schema/games_record.dart';
+import '/models/player_eligibility.dart';
 
 class Game {
   Game({
@@ -27,6 +28,7 @@ class Game {
     required this.uid,
     required this.scheduleType,
     required this.isFunGame,
+    required this.playerEligibility,
     this.flexibleDays,
     this.flexibleTimeOfDay,
     this.flexibleWeek,
@@ -55,6 +57,7 @@ class Game {
   final String uid;
   final String scheduleType;
   final bool isFunGame;
+  final PlayerEligibility playerEligibility;
   final List<int>? flexibleDays;
   final String? flexibleTimeOfDay;
   final String? flexibleWeek;
@@ -154,6 +157,9 @@ class Game {
       uid: (data['uid'] as String?) ?? doc.id,
       scheduleType: scheduleType,
       isFunGame: (data['is_fun_game'] as bool?) ?? false,
+      playerEligibility: PlayerEligibilityExtension.fromFirestoreValue(
+        data['player_eligibility'] as String?,
+      ),
       flexibleDays: (data['flexible_days'] as List<dynamic>?)
               ?.whereType<int>()
               .toList(),
@@ -199,6 +205,9 @@ class Game {
       uid: record.uid,
       scheduleType: record.scheduleType,
       isFunGame: record.isFunGame,
+      playerEligibility: PlayerEligibilityExtension.fromFirestoreValue(
+        record.playerEligibility,
+      ),
       flexibleDays: record.flexibleDays.isEmpty ? null : record.flexibleDays,
       flexibleTimeOfDay: record.flexibleTimeOfDay,
       flexibleWeek: record.flexibleWeek,

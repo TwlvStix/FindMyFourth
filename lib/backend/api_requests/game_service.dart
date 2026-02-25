@@ -4,6 +4,8 @@ import 'package:rxdart/rxdart.dart';
 import '/backend/backend.dart';
 import '/core/utils/app_log.dart';
 import '/core/exceptions/app_exceptions.dart';
+import '/models/player_eligibility.dart';
+import '/services/game_eligibility_service.dart';
 
 /// GameService provides stateless, centralized access to game data in Firestore
 ///
@@ -179,7 +181,7 @@ class GameService {
   /// Updates:
   /// - joined_players: adds userId DocumentReference
   /// - updated_at: server timestamp
-  Future<void> joinGame(String gameId, String userId) async {
+  Future<void> joinGame(String gameId, String userId, {String? userGender}) async {
     try {
       await _firestore.runTransaction((transaction) async {
         // 1. Read game document
@@ -199,6 +201,24 @@ class GameService {
         // 2. Check capacity atomically
         if (currentPlayers >= maxPlayers) {
           throw GameOperationException('Game is full', code: 'game-full');
+        }
+
+        // 2b. Check player eligibility
+        final playerEligibility = PlayerEligibilityExtension.fromFirestoreValue(
+          gameDoc.data()?['player_eligibility'] as String?,
+        );
+        final eligibilityResult = checkPlayerEligibility(
+          eligibility: playerEligibility,
+          userGender: userGender,
+        );
+        if (!eligibilityResult.allowed) {
+          final restrictionType = playerEligibility == PlayerEligibility.womenOnly
+              ? 'women'
+              : 'men';
+          throw GameOperationException(
+            'This round is restricted to $restrictionType only',
+            code: 'gender-restricted',
+          );
         }
 
         // 3. Check not already joined

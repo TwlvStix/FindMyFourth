@@ -4,6 +4,7 @@ import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_expandable_text.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -95,14 +96,13 @@ class PremiumHeroSection extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      game.coursePlay,
+                    AppExpandableText(
+                      text: game.coursePlay,
                       style: AppTypography.titleLarge.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       game.nameGame,

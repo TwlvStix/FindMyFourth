@@ -23,6 +23,7 @@ import '/main_function/games_list/games_list_widget.dart';
 import '/main_function/player_list/player_list_widget.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/trust_provider.dart';
+import '/providers/user_provider.dart';
 import '/models/course.dart';
 import 'create_game_constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -91,6 +92,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
 
   // Just for Fun mode
   bool _isJustForFun = false;
+
+  // Player Eligibility (who can join based on gender)
+  String _playerEligibility = 'open_to_all'; // 'open_to_all' | 'women_only' | 'men_only'
 
   // Games multi-select (max 3)
   final Set<String> _selectedGames = {};
@@ -174,6 +178,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _loadDraft();
       if (mounted) {
+        // Validate draft eligibility against user's gender
+        final userGender = context.read<UserProvider>().currentUser?.gender;
+        final validOptions = _getFilteredEligibilityOptions(userGender);
+        final validValues = validOptions.map((o) => o['value']).toSet();
+        if (!validValues.contains(_playerEligibility)) {
+          _playerEligibility = 'open_to_all';
+        }
         setState(() {
           _isLoading = false;
         });
@@ -266,6 +277,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         if (draft['isJustForFun'] != null) {
           _isJustForFun = draft['isJustForFun'] as bool;
         }
+        if (draft['playerEligibility'] != null) {
+          _playerEligibility = draft['playerEligibility'] as String;
+        }
 
         _hasDraft = true;
       }
@@ -297,6 +311,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         'flexibleDays': _selectedDays.toList(),
         'flexibleTimeOfDay': _flexibleTimeOfDay,
         'isJustForFun': _isJustForFun,
+        'playerEligibility': _playerEligibility,
       };
 
       final prefs = await SharedPreferences.getInstance();
@@ -529,6 +544,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           'uid': currentUser.uid,
           'is_fun_game': _isJustForFun,
           'schedule_type': _scheduleType,
+          'player_eligibility': _playerEligibility,
           if (_scheduleType == 'flexible') ...{
             'flexible_week': _flexibleWeek,
             'flexible_days': _selectedDays.toList(),
@@ -665,6 +681,26 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     }
 
     return summary;
+  }
+
+  /// Returns filtered eligibility options based on user's gender.
+  /// Male users see: Open to All, Men Only
+  /// Female users see: Open to All, Women Only
+  /// Unknown gender sees: Open to All only
+  List<Map<String, dynamic>> _getFilteredEligibilityOptions(String? userGender) {
+    if (userGender == 'Male') {
+      return kCreateGameEligibilityOptions
+          .where((opt) => opt['value'] != 'women_only')
+          .toList();
+    } else if (userGender == 'Female') {
+      return kCreateGameEligibilityOptions
+          .where((opt) => opt['value'] != 'men_only')
+          .toList();
+    } else {
+      // Gender not yet loaded - show all options while loading
+      // Proper filtering will apply once UserProvider emits gender
+      return kCreateGameEligibilityOptions.toList();
+    }
   }
 
   // Show help dialog
@@ -1468,6 +1504,44 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         ),
                                         _buildAnimatedSection(
                                           sectionIndex: 3,
+                                          child: SectionHeader(
+                                            phosphorIcon: AppPhosphorIcons.openToAll,
+                                            title: 'Who Can Join',
+                                            helpText:
+                                                'Choose who can join your game based on gender.',
+                                            onHelpTap: () => _showHelpDialog(
+                                                context,
+                                                'Who Can Join',
+                                                'Choose who can join your game. \'Women Only\' and \'Men Only\' restrict joining based on the gender in each player\'s profile.'),
+                                          ),
+                                        ),
+                                        Consumer<UserProvider>(
+                                          builder: (context, userProvider, _) {
+                                            final filteredOptions =
+                                                _getFilteredEligibilityOptions(
+                                              userProvider.currentUser?.gender,
+                                            );
+                                            return Padding(
+                                              padding: EdgeInsets.only(
+                                                  top: AppSpacing.xxs),
+                                              child: CardGrid(
+                                                options: filteredOptions,
+                                                selectedValue: _playerEligibility,
+                                                onChanged: (val) {
+                                                  if (mounted) {
+                                                    setState(() =>
+                                                        _playerEligibility = val);
+                                                    _saveDraft();
+                                                  }
+                                                },
+                                                crossAxisCount: filteredOptions.length,
+                                                childAspectRatio: 1.2,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        _buildAnimatedSection(
+                                          sectionIndex: 4,
                                           child: SectionHeader(
                                             phosphorIcon: AppPhosphorIcons.course,
                                             title: 'Course',

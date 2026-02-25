@@ -13,7 +13,9 @@ import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/main_function/games_list/games_list_widget.dart';
 import '/models/game.dart';
+import '/models/player_eligibility.dart';
 import '/models/user_profile.dart';
+import '/services/game_eligibility_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -134,8 +136,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     });
   }
 
-  void _addPlayerToSlot(int slotIndex, {UserProfile? profile, bool isGuest = false}) {
+  void _addPlayerToSlot(int slotIndex, {UserProfile? profile, bool isGuest = false, PlayerEligibility eligibility = PlayerEligibility.openToAll}) {
     if (isGuest) {
+      // Guests are always allowed - trust the owner to add eligible guests
       setState(() {
         _playerSlots[slotIndex] = {
           'uid': guestOptionValue,
@@ -149,6 +152,22 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     if (profile == null) return;
     final uid = profile.uid;
     if (uid.isEmpty) return;
+
+    // Check player eligibility based on gender
+    final eligibilityResult = checkPlayerEligibility(
+      eligibility: eligibility,
+      userGender: profile.gender,
+    );
+    if (!eligibilityResult.allowed) {
+      final restrictionType = eligibility == PlayerEligibility.womenOnly ? 'women' : 'men';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('This round is open to $restrictionType only'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
 
     // Check if player already selected in any slot
     final alreadySelected = _playerSlots.values.any((slot) => slot['uid'] == uid);
@@ -168,6 +187,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         'name': profile.displayName.isNotEmpty ? profile.displayName : 'Player',
         'isGuest': false,
         'photoUrl': profile.photoUrl,
+        'gender': profile.gender, // Store gender for submission validation
       };
       _labelCache[uid] = profile.displayName.isNotEmpty ? profile.displayName : 'Player';
     });
@@ -264,7 +284,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     await _runSearch(query: _activeQuery, reset: false);
   }
 
-  Future<void> _showAddPlayerModal(int slotIndex, Set<String> joinedPlayerIds) async {
+  Future<void> _showAddPlayerModal(int slotIndex, Set<String> joinedPlayerIds, PlayerEligibility eligibility) async {
     // Reset search for modal
     _searchController.clear();
     _activeQuery = '';
@@ -409,7 +429,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                           padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                           itemCount: _calculateItemCount(),
                           itemBuilder: (context, index) {
-                            return _buildListItem(context, index, slotIndex, joinedPlayerIds);
+                            return _buildListItem(context, index, slotIndex, joinedPlayerIds, eligibility);
                           },
                         ),
                       ),
@@ -448,8 +468,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     return count;
   }
 
-  Widget _buildListItem(BuildContext context, int index, int slotIndex, Set<String> joinedPlayerIds) {
-    // Index 0: Guest option
+  Widget _buildListItem(BuildContext context, int index, int slotIndex, Set<String> joinedPlayerIds, PlayerEligibility eligibility) {
+    // Index 0: Guest option (always allowed - trust owner to add eligible guests)
     if (index == 0) {
       return Column(
         children: [
@@ -460,7 +480,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
             photoUrl: null,
             isGuest: true,
             onTap: () {
-              _addPlayerToSlot(slotIndex, isGuest: true);
+              _addPlayerToSlot(slotIndex, isGuest: true, eligibility: eligibility);
               Navigator.pop(context);
             },
           ),
@@ -511,16 +531,36 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         final profile = _searchResults[contentIndex];
         final isInGame = joinedPlayerIds.contains(profile.uid);
         final isSelected = _playerSlots.values.any((slot) => slot['uid'] == profile.uid);
-        final canAdd = !isInGame && !isSelected;
+
+        // Check gender eligibility
+        final eligibilityResult = checkPlayerEligibility(
+          eligibility: eligibility,
+          userGender: profile.gender,
+        );
+        final isEligible = eligibilityResult.allowed;
+
+        final canAdd = !isInGame && !isSelected && isEligible;
+
+        // Determine subtitle based on why player can't be added
+        String? subtitle;
+        if (isInGame) {
+          subtitle = 'Already in game';
+        } else if (isSelected) {
+          subtitle = 'Already selected';
+        } else if (!isEligible) {
+          subtitle = eligibility == PlayerEligibility.womenOnly
+              ? 'Women only round'
+              : 'Men only round';
+        }
 
         return _buildPlayerOption(
           context: context,
           name: profile.displayName.isNotEmpty ? profile.displayName : 'Player',
-          subtitle: isInGame ? 'Already in game' : (isSelected ? 'Already selected' : null),
+          subtitle: subtitle,
           photoUrl: profile.photoUrl,
           isGuest: false,
           onTap: canAdd ? () {
-            _addPlayerToSlot(slotIndex, profile: profile);
+            _addPlayerToSlot(slotIndex, profile: profile, eligibility: eligibility);
             Navigator.pop(context);
           } : null,
         );
@@ -689,13 +729,14 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     required String slotLabel,
     required Map<String, dynamic>? playerData,
     required Set<String> joinedPlayerIds,
+    required PlayerEligibility eligibility,
   }) {
     final bool isEmpty = playerData == null;
 
     // ── Empty slot — "Add" placeholder ──────────────────────────────────
     if (isEmpty) {
       return GestureDetector(
-        onTap: () => _showAddPlayerModal(slotIndex, joinedPlayerIds),
+        onTap: () => _showAddPlayerModal(slotIndex, joinedPlayerIds, eligibility),
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
           decoration: BoxDecoration(
@@ -1136,6 +1177,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                             slotLabel: 'Player ${currentPlayerCount + i + 1}',
                                             playerData: _playerSlots[i],
                                             joinedPlayerIds: joinedPlayerIds,
+                                            eligibility: game.playerEligibility,
                                           ),
                                           if (i < remainingSlots - 1)
                                             SizedBox(height: AppSpacing.sm),
@@ -1230,6 +1272,35 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                   _isSubmitting = false;
                                                 });
                                                 return;
+                                              }
+
+                                              // Defensive: Validate all non-guest players meet eligibility
+                                              if (game.playerEligibility != PlayerEligibility.openToAll) {
+                                                for (final slotData in _playerSlots.values) {
+                                                  final isGuest = slotData['isGuest'] == true;
+                                                  if (isGuest) continue; // Guests are always allowed
+
+                                                  final playerGender = slotData['gender'] as String?;
+                                                  final eligibilityResult = checkPlayerEligibility(
+                                                    eligibility: game.playerEligibility,
+                                                    userGender: playerGender,
+                                                  );
+                                                  if (!eligibilityResult.allowed) {
+                                                    final restrictionType = game.playerEligibility == PlayerEligibility.womenOnly ? 'women' : 'men';
+                                                    final playerName = slotData['name'] ?? 'A player';
+                                                    debugPrint('❌ PLAYER LIST: $playerName does not meet eligibility (gender: $playerGender)');
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text('$playerName cannot join - this round is open to $restrictionType only'),
+                                                        backgroundColor: AppColors.error,
+                                                      ),
+                                                    );
+                                                    setState(() {
+                                                      _isSubmitting = false;
+                                                    });
+                                                    return;
+                                                  }
+                                                }
                                               }
 
                                               try {

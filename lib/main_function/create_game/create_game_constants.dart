@@ -68,3 +68,21 @@ final List<Map<String, dynamic>> kCreateGameHandicapOptions = [
     'phosphorIcon': AppPhosphorIcons.handicap,
   },
 ];
+
+final List<Map<String, dynamic>> kCreateGameEligibilityOptions = [
+  {
+    'value': 'open_to_all',
+    'label': 'Open to All',
+    'phosphorIcon': AppPhosphorIcons.openToAll,
+  },
+  {
+    'value': 'women_only',
+    'label': 'Women Only',
+    'phosphorIcon': AppPhosphorIcons.womenOnly,
+  },
+  {
+    'value': 'men_only',
+    'label': 'Men Only',
+    'phosphorIcon': AppPhosphorIcons.menOnly,
+  },
+];

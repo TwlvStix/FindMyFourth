@@ -55,11 +55,6 @@ import 'components/edit_game_details_bottom_sheet.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
 import '/screens/trust/cancellation_warning_modal.dart';
 
-enum _CancelListingHandling {
-  removeNow,
-  hideAfter7Days,
-}
-
 const int _cancelledChatArchiveDays = 3;
 class GameJoinedDetailedWidget extends StatefulWidget {
   const GameJoinedDetailedWidget({

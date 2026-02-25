@@ -10,7 +10,7 @@ import '/core/widgets/app_icon.dart';
 
 /// Draft continuation banner for game creation
 ///
-/// Displays a yellow gradient banner with restore icon and message
+/// Displays a green gradient banner with restore icon and message
 /// when user has a saved draft. Includes clear action button.
 class DraftBanner extends StatelessWidget {
   const DraftBanner({
@@ -28,14 +28,14 @@ class DraftBanner extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.gold.withValues(alpha: 0.2),
-            AppColors.goldLight.withValues(alpha: 0.15),
+            AppColors.green.withValues(alpha: 0.15),
+            AppColors.greenLight.withValues(alpha: 0.10),
           ],
         ),
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(
-          color: AppColors.gold.withValues(alpha: 0.4),
-          width: 2,
+          color: AppColors.green.withValues(alpha: 0.3),
+          width: 1,
         ),
       ),
       child: Row(
@@ -45,7 +45,7 @@ class DraftBanner extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.gold, AppColors.goldLight],
+                colors: [AppColors.green, AppColors.greenLight],
               ),
               borderRadius: BorderRadius.circular(AppBorderRadius.md),
             ),
@@ -79,7 +79,7 @@ class DraftBanner extends StatelessWidget {
           ),
           AppButtonEnhanced(
             text: 'Clear',
-            variant: AppButtonVariant.ghost,
+            variant: AppButtonVariant.ghostDark,
             size: AppButtonSize.small,
             onPressed: onClear,
           ),

@@ -12,8 +12,9 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_button_enhanced.dart';
-import '/core/widgets/app_empty_state.dart';
+import '/core/widgets/app_empty_state_premium.dart';
 import '/core/widgets/app_icon.dart';
+import '/core/widgets/app_popup_menu.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
@@ -34,16 +35,23 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   static const int _pageSizeStep = 50;
   int _pageSize = _pageSizeStep;
+  int _notificationCount = 0;
 
   @override
   void initState() {
     super.initState();
-    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  Future<void> _onRefresh() async {
+    // Reset page size to trigger fresh query
+    setState(() => _pageSize = _pageSizeStep);
+    // Brief delay for visual feedback
+    await Future.delayed(const Duration(milliseconds: 500));
   }
 
   Future<void> _markAllAsRead(DocumentReference userRef) async {
@@ -434,6 +442,50 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     }
   }
 
+  List<Widget> _buildAppBarActions(DocumentReference userRef) {
+    // Only show actions when there are notifications
+    if (_notificationCount == 0) {
+      return [];
+    }
+
+    return [
+      StreamBuilder<QuerySnapshot>(
+        stream: userRef
+            .collection('notifications')
+            .where('read', isEqualTo: false)
+            .snapshots(),
+        builder: (context, snapshot) {
+          final unreadCount = snapshot.data?.docs.length ?? 0;
+          final hasUnread = unreadCount > 0;
+          return AppButtonEnhanced(
+            text: 'Mark all read',
+            variant: AppButtonVariant.ghostDark,
+            size: AppButtonSize.small,
+            enabled: hasUnread,
+            onPressed: hasUnread ? () => _markAllAsRead(userRef) : null,
+          );
+        },
+      ),
+      AppPopupMenu(
+        icon: AppPhosphorIcons.more,
+        tooltip: 'More actions',
+        items: [
+          AppPopupMenuItem(
+            label: 'Delete all',
+            value: 'delete_all',
+            icon: AppPhosphorIcons.trash,
+            isDestructive: true,
+          ),
+        ],
+        onSelected: (value) {
+          if (value == 'delete_all') {
+            _showDeleteAllConfirmDialog(userRef);
+          }
+        },
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final userRef = currentUserReference;
@@ -458,62 +510,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          actions: userRef == null
-              ? []
-              : [
-                  StreamBuilder<QuerySnapshot>(
-                    stream: userRef
-                        .collection('notifications')
-                        .where('read', isEqualTo: false)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      final unreadCount = snapshot.data?.docs.length ?? 0;
-                      final hasUnread = unreadCount > 0;
-                      return AppButtonEnhanced(
-                        text: 'Mark all read',
-                        variant: AppButtonVariant.ghost,
-                        size: AppButtonSize.small,
-                        enabled: hasUnread,
-                        onPressed: hasUnread ? () => _markAllAsRead(userRef) : null,
-                      );
-                    },
-                  ),
-                  PopupMenuButton<String>(
-                    icon: AppIcon(
-                      icon: AppPhosphorIcons.more,
-                      color: Colors.white,
-                      size: AppIconSize.md,
-                    ),
-                    color: AppColors.navy,
-                    onSelected: (value) {
-                      if (value == 'delete_all') {
-                        _showDeleteAllConfirmDialog(userRef);
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem<String>(
-                        value: 'delete_all',
-                        child: Row(
-                          children: [
-                            AppIcon(
-                              icon: AppPhosphorIcons.trash,
-                              color: AppColors.error,
-                              size: AppIconSize.button,
-                            ),
-                            SizedBox(width: AppSpacing.sm),
-                            Text(
-                              'Delete all',
-                              style: AppTypography.bodyMedium.copyWith(
-                                color: AppColors.error,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+          actions: userRef == null ? [] : _buildAppBarActions(userRef),
           centerTitle: false,
         ),
         body: FairwayBackgroundDark(
@@ -548,19 +545,49 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                     if (!snapshot.hasData) {
                       return Center(
                         child: CircularProgressIndicator(
-                          color: AppColors.navyDark,
+                          color: AppColors.green,
                         ),
                       );
                     }
                     final docs = snapshot.data?.docs ?? [];
+
+                    // Update notification count for app bar actions
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted && _notificationCount != docs.length) {
+                        setState(() => _notificationCount = docs.length);
+                      }
+                    });
+
                     if (docs.isEmpty) {
-                      return AppEmptyState(
-                        icon: AppPhosphorIcons.notifications,
-                        title: 'No notifications yet',
-                        message: 'When you receive notifications, they\'ll appear here.',
+                      // Wrap in scrollable for pull-to-refresh on empty state
+                      return RefreshIndicator(
+                        color: AppColors.green,
+                        backgroundColor: AppColors.navy,
+                        onRefresh: _onRefresh,
+                        child: CustomScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          slivers: [
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                  top: MediaQuery.of(context).padding.top + 100,
+                                ),
+                                child: AppEmptyStatePremium(
+                                  icon: AppPhosphorIcons.notifications,
+                                  title: "You're all caught up",
+                                  message: 'New activity will appear here.',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       );
                     }
-                    return NotificationListener<ScrollNotification>(
+                    return RefreshIndicator(
+                      color: AppColors.green,
+                      backgroundColor: AppColors.navy,
+                      onRefresh: _onRefresh,
+                      child: NotificationListener<ScrollNotification>(
                       onNotification: (notification) {
                         if (notification.metrics.extentAfter < 200 &&
                             docs.length >= _pageSize) {
@@ -789,6 +816,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                           );
                         },
                       ),
+                    ),
                     );
                   },
                 ),
