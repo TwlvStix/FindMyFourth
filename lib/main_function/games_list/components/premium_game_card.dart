@@ -10,7 +10,6 @@ import '/core/design_tokens/border_radius.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/widgets/app_expandable_text.dart';
 import '/core/widgets/app_icon.dart';
-import '/core/widgets/app_premium_dialog.dart';
 import '/utils/app_util.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
@@ -19,9 +18,6 @@ import '/main_function/games_list/games_list_widget.dart' show CancelledGameHand
 import '/models/game.dart';
 import '/models/player_eligibility.dart';
 import '/providers/profile_provider.dart';
-import '/providers/user_provider.dart';
-import '/services/game_eligibility_service.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 /// Premium-styled game card for the games list with entrance animation
 class PremiumGameCard extends StatefulWidget {
@@ -125,14 +121,6 @@ class _PremiumGameCardState extends State<PremiumGameCard>
     final isFull = spotsLeft <= 0;
     final ownerRef = game.userRef;
 
-    // Check eligibility based on current user's gender
-    final userGender = context.watch<UserProvider>().currentUser?.gender;
-    final eligibilityResult = checkPlayerEligibility(
-      eligibility: game.playerEligibility,
-      userGender: userGender,
-    );
-    final isIneligible = !eligibilityResult.allowed;
-
     return GestureDetector(
       onTap: () async {
         if (isCancelled) {
@@ -203,15 +191,6 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                 ],
               ),
             ),
-            // Bottom action bar
-            if (!isCancelled && !isExpired)
-              _buildBottomActionBar(
-                context: context,
-                isLocked: isLocked,
-                isUserGame: isUserGame,
-                isFull: isFull,
-                isIneligible: isIneligible,
-              ),
           ],
         ),
       ),
@@ -376,6 +355,46 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                 style: AppTypography.labelSmall.copyWith(
                   color: AppColors.info,
                   fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
+        // Member discount badge
+        if (widget.game.memberDiscount == 'Yes') ...[
+          SizedBox(width: AppSpacing.xs),
+          Flexible(
+            child: Opacity(
+              opacity: isUserGame ? 0.65 : 1.0,
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xxs,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.green.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppIcon(
+                      icon: AppPhosphorIcons.memberDiscount,
+                      color: AppColors.green,
+                      size: AppIconSize.xs,
+                    ),
+                    SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        'Discount',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: AppColors.green,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -654,282 +673,6 @@ class _PremiumGameCardState extends State<PremiumGameCard>
                     ),
                   ),
                 ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomActionBar({
-    required BuildContext context,
-    required bool isLocked,
-    required bool isUserGame,
-    required bool isFull,
-    required bool isIneligible,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.glassSurface,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(AppBorderRadius.card),
-          bottomRight: Radius.circular(AppBorderRadius.card),
-        ),
-      ),
-      child: Row(
-        children: [
-          // Member discount badge (plain, informational)
-          if (widget.game.memberDiscount == 'Yes')
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AppIcon(
-                  icon: AppPhosphorIcons.memberDiscount,
-                  color: AppColors.textPrimary,
-                  size: AppIconSize.xs,
-                ),
-                SizedBox(width: 4),
-                Text(
-                  'Discount',
-                  style: AppTypography.labelMicro.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          Spacer(),
-          // Action button
-          _buildActionButton(
-            context: context,
-            isLocked: isLocked,
-            isUserGame: isUserGame,
-            isFull: isFull,
-            isIneligible: isIneligible,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required BuildContext context,
-    required bool isLocked,
-    required bool isUserGame,
-    required bool isFull,
-    required bool isIneligible,
-  }) {
-    if (isLocked) {
-      if (widget.hasPendingFriendRequest) {
-        return _buildPendingRequestBadge();
-      } else {
-        return _buildAddFriendButton(context);
-      }
-    }
-
-    // Show disabled state for ineligible users (non-user games only)
-    if (isIneligible && !isUserGame) {
-      return _buildIneligibleButton();
-    }
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        gradient: isUserGame
-            ? null
-            : LinearGradient(colors: [AppColors.green, AppColors.greenLight]),
-        border: isUserGame
-            ? Border.all(
-                color: AppColors.glassBorder,
-                width: 1.5,
-              )
-            : null,
-        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-        boxShadow: isUserGame
-            ? null
-            : [
-                BoxShadow(
-                  color: AppColors.green.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
-                ),
-              ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (isUserGame)
-            AppIcon(
-              icon: AppPhosphorIcons.eye,
-              color: AppColors.textSecondary,
-              size: AppIconSize.xs,
-            )
-          else if (isFull)
-            AppIcon(
-              icon: AppPhosphorIcons.pending,
-              color: AppColors.pure,
-              size: AppIconSize.xs,
-            )
-          else
-            AppIcon(
-              icon: AppPhosphorIcons.add,
-              color: AppColors.pure,
-              size: AppIconSize.xs,
-            ),
-          SizedBox(width: 6),
-          Text(
-            isUserGame ? 'View Details' : (isFull ? 'Full' : 'Join Game'),
-            style: AppTypography.labelSmall.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Disabled button for users who don't meet eligibility requirements
-  Widget _buildIneligibleButton() {
-    final eligibilityText = widget.game.playerEligibility == PlayerEligibility.womenOnly
-        ? 'Open to women only'
-        : 'Open to men only';
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.xs,
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.navyLight.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-            border: Border.all(color: AppColors.navyLight),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AppIcon(
-                icon: AppPhosphorIcons.lock,
-                color: AppColors.textMuted,
-                size: AppIconSize.xs,
-              ),
-              SizedBox(width: 6),
-              Text(
-                'Join Game',
-                style: AppTypography.labelSmall.copyWith(
-                  color: AppColors.textMuted,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: AppSpacing.xxs),
-        Text(
-          eligibilityText,
-          style: AppTypography.labelMicro.copyWith(
-            color: AppColors.textMuted,
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Badge for when a friend request is pending to the game host
-  Widget _buildPendingRequestBadge() {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.navyLight.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-        border: Border.all(color: AppColors.navyLight),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AppIcon(
-            icon: AppPhosphorIcons.pending,
-            size: AppIconSize.xs,
-            color: AppColors.textMuted,
-          ),
-          SizedBox(width: 6),
-          Text(
-            'Request Pending',
-            style: AppTypography.labelSmall.copyWith(
-              color: AppColors.textMuted,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Button to send a friend request to the game host with confirmation dialog
-  Widget _buildAddFriendButton(BuildContext context) {
-    return InkWell(
-      onTap: () async {
-        // Get host name from ProfileProvider cache
-        final profileProvider = context.read<ProfileProvider>();
-        final hostProfile = profileProvider.getCachedProfile(widget.game.userRef?.id ?? '');
-        final hostName = hostProfile?.displayName ?? 'this player';
-
-        final confirmed = await showPremiumDialog(
-          context: context,
-          variant: PremiumDialogVariant.confirmation,
-          icon: PhosphorIconsRegular.userPlus,
-          title: 'Send Friend Request',
-          body: 'Send friend request to $hostName?',
-          actionLabel: 'Confirm',
-          cancelLabel: 'Cancel',
-        );
-
-        if (confirmed == true && widget.onAddFriend != null) {
-          await widget.onAddFriend!();
-        }
-      },
-      borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.xs,
-        ),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.gold, AppColors.goldLight],
-          ),
-          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-          boxShadow: [AppElevation.md],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppIcon(
-              icon: AppPhosphorIcons.addPlayer,
-              color: AppColors.pure,
-              size: AppIconSize.xs,
-            ),
-            SizedBox(width: 6),
-            Text(
-              'Add Friend',
-              style: AppTypography.labelSmall.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ],

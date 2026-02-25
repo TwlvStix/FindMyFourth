@@ -19,6 +19,8 @@ import '/utils/app_util.dart';
 import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
 import '/main_function/games_list/components/premium_game_card.dart';
+import '/main_function/games_list/components/flexible_games_shelf.dart';
+import '/main_function/games_list/components/flexible_games_bottom_sheet.dart';
 import '/models/game.dart';
 import '/models/player_eligibility.dart';
 import '/providers/game_provider.dart';
@@ -466,6 +468,21 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     }
   }
 
+  void _showFlexibleGamesSheet(
+    List<Game> games,
+    DocumentReference? currentUserReference,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => FlexibleGamesBottomSheet(
+        games: games,
+        currentUserReference: currentUserReference,
+      ),
+    );
+  }
+
   Future<void> _showCancelledGameOptions(Game game) async {
     final selection = await showDialog<CancelledGameHandling>(
       context: context,
@@ -801,6 +818,30 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       }
 
                       // ═══════════════════════════════════════════════════════
+                      // Split games into flexible and scheduled
+                      // ═══════════════════════════════════════════════════════
+                      final flexibleGames = joinableGames
+                          .where((g) => g.isFlexible)
+                          .toList();
+                      final scheduledGames = joinableGames
+                          .where((g) => !g.isFlexible)
+                          .toList();
+
+                      // Sort scheduled by date ascending (soonest first)
+                      scheduledGames.sort((a, b) {
+                        final aDate = a.date;
+                        final bDate = b.date;
+                        if (aDate == null && bDate == null) return 0;
+                        if (aDate == null) return 1;
+                        if (bDate == null) return -1;
+                        return aDate.compareTo(bDate);
+                      });
+
+                      // Sort flexible by readiness (most players first)
+                      flexibleGames.sort((a, b) =>
+                          b.joinedPlayers.length.compareTo(a.joinedPlayers.length));
+
+                      // ═══════════════════════════════════════════════════════
                       // PERFORMANCE FIX #7: Batch-warm profiles for locked games
                       // ═══════════════════════════════════════════════════════
                       // Extract all unique owner UIDs from locked games and pre-fetch
@@ -856,15 +897,32 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 );
                               },
                             ),
+                            // ════════════════════════════════════════════════════
+                            // Flexible Games Shelf
+                            // ════════════════════════════════════════════════════
+                            if (flexibleGames.isNotEmpty)
+                              SliverToBoxAdapter(
+                                child: FlexibleGamesShelf(
+                                  games: flexibleGames,
+                                  currentUserReference: currentUserReference,
+                                  onSeeAll: () => _showFlexibleGamesSheet(
+                                    flexibleGames,
+                                    currentUserReference,
+                                  ),
+                                ),
+                              ),
+                            // ════════════════════════════════════════════════════
+                            // Scheduled Games List
+                            // ════════════════════════════════════════════════════
                             SliverPadding(
                               padding: EdgeInsets.only(
-                                top: AppSpacing.md,
+                                top: flexibleGames.isEmpty ? AppSpacing.md : 0,
                                 // Only add large bottom padding if no locked games section follows
                                 bottom: lockedGames.isEmpty
                                     ? MediaQuery.of(context).padding.bottom + 128.0
                                     : AppSpacing.md,
                               ),
-                              sliver: joinableGames.isEmpty
+                              sliver: scheduledGames.isEmpty
                                   ? SliverToBoxAdapter(
                                       child: Padding(
                                         padding: EdgeInsets.symmetric(
@@ -925,6 +983,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                   },
                                                 ),
                                               ),
+                                            ] else if (flexibleGames.isNotEmpty) ...[
+                                              // Show soft message when there are flexible games but no scheduled
+                                              AppEmptyStatePremium(
+                                                icon: AppPhosphorIcons.calendarCheck,
+                                                title: 'No confirmed games yet',
+                                                message: 'Check out the flexible games above.',
+                                              ),
                                             ] else ...[
                                               AppEmptyStatePremium(
                                                 assetPath: AppIcons.games,
@@ -961,9 +1026,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                       delegate: SliverChildBuilderDelegate(
                                         (context, index) {
                                           final containerVarItem =
-                                              joinableGames[index];
+                                              scheduledGames[index];
                                           final isLast =
-                                              index == joinableGames.length - 1;
+                                              index == scheduledGames.length - 1;
                                           return Padding(
                                             padding: EdgeInsets.only(
                                               bottom:
@@ -980,7 +1045,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                             ),
                                           );
                                         },
-                                        childCount: joinableGames.length,
+                                        childCount: scheduledGames.length,
                                       ),
                                     ),
                             ),

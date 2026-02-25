@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '/backend/schema/games_record.dart';
 import '/models/player_eligibility.dart';
+import '/utils/flexible_date_formatter.dart';
 
 class Game {
   Game({
@@ -32,6 +33,8 @@ class Game {
     this.flexibleDays,
     this.flexibleTimeOfDay,
     this.flexibleWeek,
+    this.flexibleStartDate,
+    this.flexibleEndDate,
   });
 
   final DocumentReference reference;
@@ -61,6 +64,8 @@ class Game {
   final List<int>? flexibleDays;
   final String? flexibleTimeOfDay;
   final String? flexibleWeek;
+  final DateTime? flexibleStartDate;
+  final DateTime? flexibleEndDate;
 
   static String resolveGameStatus({
     required String rawStatus,
@@ -69,6 +74,7 @@ class Game {
     required DateTime? date,
     required DateTime? createdTime,
     required String? flexibleWeek,
+    DateTime? flexibleEndDate,
   }) {
     if (rawStatus != 'active') {
       return rawStatus;
@@ -80,20 +86,32 @@ class Game {
 
     if (scheduleType == 'flexible') {
       // Flexible game expiration logic
-      if (flexibleWeek == 'this_week') {
+      // Prefer concrete end date when available
+      if (flexibleEndDate != null) {
+        if (DateTime.now().isAfter(flexibleEndDate)) {
+          return 'expired';
+        }
+      } else if (flexibleWeek == 'this_week') {
+        // Fallback for legacy games without concrete dates
         final endOfWeek = _getEndOfWeek(DateTime.now());
         if (DateTime.now().isAfter(endOfWeek)) {
           return 'expired';
         }
+      } else if (flexibleWeek == 'this_weekend') {
+        // Weekend expiration: end of Sunday
+        final endOfWeekend = _getEndOfWeekend(DateTime.now());
+        if (DateTime.now().isAfter(endOfWeekend)) {
+          return 'expired';
+        }
       } else if (flexibleWeek == 'next_week') {
         final endOfNextWeek =
-            _getEndOfWeek(DateTime.now().add(Duration(days: 7)));
+            _getEndOfWeek(DateTime.now().add(const Duration(days: 7)));
         if (DateTime.now().isAfter(endOfNextWeek)) {
           return 'expired';
         }
       } else if (flexibleWeek == 'flexible' && createdTime != null) {
         // Expire after 30 days
-        final expireDate = createdTime.add(Duration(days: 30));
+        final expireDate = createdTime.add(const Duration(days: 30));
         if (DateTime.now().isAfter(expireDate)) {
           return 'expired';
         }
@@ -116,6 +134,9 @@ class Game {
     final gameDate = (data['date'] as Timestamp?)?.toDate();
     final createdTime = (data['created_time'] as Timestamp?)?.toDate();
     final flexibleWeek = data['flexible_week'] as String?;
+    final flexibleStartDate =
+        (data['flexible_start_date'] as Timestamp?)?.toDate();
+    final flexibleEndDate = (data['flexible_end_date'] as Timestamp?)?.toDate();
 
     // Resolve status using shared logic
     final gameStatus = resolveGameStatus(
@@ -125,6 +146,7 @@ class Game {
       date: gameDate,
       createdTime: createdTime,
       flexibleWeek: flexibleWeek,
+      flexibleEndDate: flexibleEndDate,
     );
 
     return Game(
@@ -165,6 +187,8 @@ class Game {
               .toList(),
       flexibleTimeOfDay: data['flexible_time_of_day'] as String?,
       flexibleWeek: data['flexible_week'] as String?,
+      flexibleStartDate: flexibleStartDate,
+      flexibleEndDate: flexibleEndDate,
     );
   }
 
@@ -179,6 +203,7 @@ class Game {
       date: record.date,
       createdTime: record.createdTime,
       flexibleWeek: record.flexibleWeek,
+      flexibleEndDate: record.flexibleEndDate,
     );
 
     return Game(
@@ -211,6 +236,8 @@ class Game {
       flexibleDays: record.flexibleDays.isEmpty ? null : record.flexibleDays,
       flexibleTimeOfDay: record.flexibleTimeOfDay,
       flexibleWeek: record.flexibleWeek,
+      flexibleStartDate: record.flexibleStartDate,
+      flexibleEndDate: record.flexibleEndDate,
     );
   }
 
@@ -227,10 +254,20 @@ class Game {
 
     final parts = <String>[];
 
-    if (flexibleWeek != null) {
+    // Prefer concrete dates when available
+    if (flexibleStartDate != null && flexibleEndDate != null) {
+      parts.add(FlexibleDateFormatter.formatWithHint(
+        flexibleStartDate,
+        flexibleEndDate,
+      ));
+    } else if (flexibleWeek != null) {
+      // Fallback for legacy games without concrete dates
       switch (flexibleWeek) {
         case 'this_week':
           parts.add('This Week');
+          break;
+        case 'this_weekend':
+          parts.add('This Weekend');
           break;
         case 'next_week':
           parts.add('Next Week');
@@ -268,6 +305,25 @@ class Game {
       date.year,
       date.month,
       date.day + (7 - date.weekday),
+      23,
+      59,
+      59,
+    );
+  }
+
+  /// Returns end of Sunday 23:59:59 for the current/upcoming weekend.
+  static DateTime _getEndOfWeekend(DateTime date) {
+    // Dart weekday: Monday=1, Saturday=6, Sunday=7
+    if (date.weekday == DateTime.sunday) {
+      // Today is Sunday - end of today
+      return DateTime(date.year, date.month, date.day, 23, 59, 59);
+    }
+    // Any other day - end of this week's Sunday
+    final daysUntilSunday = DateTime.sunday - date.weekday;
+    return DateTime(
+      date.year,
+      date.month,
+      date.day + daysUntilSunday,
       23,
       59,
       59,

@@ -9,6 +9,7 @@ import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/models/game.dart';
+import '/utils/flexible_date_formatter.dart';
 
 /// Displays flexible time information with week range and selected day pills
 class FlexibleTimeDisplay extends StatelessWidget {
@@ -105,12 +106,25 @@ class FlexibleTimeDisplay extends StatelessWidget {
   }
 
   String? _getWeekLabel(String? week) {
+    // Prefer concrete dates when available
+    if (game.flexibleStartDate != null && game.flexibleEndDate != null) {
+      return FlexibleDateFormatter.formatWithHint(
+        game.flexibleStartDate,
+        game.flexibleEndDate,
+      );
+    }
+
+    // Fallback for legacy games without concrete dates
     if (week == null) return null;
     switch (week) {
       case 'this_week':
         return 'This Week';
+      case 'this_weekend':
+        return 'This Weekend';
       case 'next_week':
         return 'Next Week';
+      case 'next_2_weeks':
+        return 'Next 2 Weeks';
       case 'flexible':
         return 'Flexible';
       default:
@@ -126,29 +140,44 @@ class FlexibleTimeDisplay extends StatelessWidget {
   }
 
   String? _getTimeOfDayLabel(String? timeOfDay) {
-    if (timeOfDay == null) return null;
-    switch (timeOfDay) {
-      case 'morning':
-        return 'Morning';
-      case 'afternoon':
-        return 'Afternoon';
-      case 'twilight':
-        return 'Twilight';
-      default:
-        return null;
+    if (timeOfDay == null || timeOfDay.isEmpty) return null;
+
+    // Handle comma-separated multi-select values
+    final times = timeOfDay.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList();
+
+    if (times.isEmpty) return null;
+
+    // Single 'anytime' returns Anytime
+    if (times.length == 1 && times.first == 'anytime') {
+      return 'Anytime';
     }
+
+    // Filter out 'anytime' if present with other values
+    final specificTimes = times.where((t) => t != 'anytime').toList();
+    if (specificTimes.isEmpty) return 'Anytime';
+
+    // Map each time to its label in order
+    final labels = <String>[];
+    if (specificTimes.contains('morning')) labels.add('Morning');
+    if (specificTimes.contains('afternoon')) labels.add('Afternoon');
+    if (specificTimes.contains('twilight')) labels.add('Twilight');
+
+    return labels.isEmpty ? null : labels.join(', ');
   }
 
   PhosphorIconData _getTimeOfDayIcon(String? timeOfDay) {
-    switch (timeOfDay) {
-      case 'morning':
-        return AppPhosphorIcons.morning;
-      case 'afternoon':
-        return AppPhosphorIcons.afternoon;
-      case 'twilight':
-        return AppPhosphorIcons.twilight;
-      default:
-        return AppPhosphorIcons.afternoon;
+    if (timeOfDay == null || timeOfDay.isEmpty) {
+      return AppPhosphorIcons.afternoon; // default
     }
+
+    // Handle comma-separated: use first specific time's icon (morning priority)
+    final times = timeOfDay.split(',').map((t) => t.trim()).toSet();
+
+    // Priority order: morning > afternoon > twilight
+    if (times.contains('morning')) return AppPhosphorIcons.morning;
+    if (times.contains('afternoon')) return AppPhosphorIcons.afternoon;
+    if (times.contains('twilight')) return AppPhosphorIcons.twilight;
+
+    return AppPhosphorIcons.afternoon; // default for 'anytime' or unknown
   }
 }

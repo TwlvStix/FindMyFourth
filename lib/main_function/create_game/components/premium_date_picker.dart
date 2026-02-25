@@ -9,7 +9,8 @@ import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_icon.dart';
 import '/utils/app_util.dart';
 
-/// Premium date picker with quick date chips and calendar bottom sheet
+/// Premium date picker with calendar bottom sheet
+/// Defaults to tomorrow since most tee times are booked at least a day ahead
 class PremiumDatePicker extends StatelessWidget {
   final DateTime? selectedDate;
   final Function(DateTime) onDateSelected;
@@ -22,16 +23,6 @@ class PremiumDatePicker extends StatelessWidget {
 
   DateTime get _today => DateTime.now();
   DateTime get _tomorrow => DateTime.now().add(const Duration(days: 1));
-
-  DateTime get _thisWeekend {
-    final now = DateTime.now();
-    // Find next Saturday
-    int daysUntilSaturday = DateTime.saturday - now.weekday;
-    if (daysUntilSaturday <= 0) {
-      daysUntilSaturday += 7; // Next week's Saturday
-    }
-    return now.add(Duration(days: daysUntilSaturday));
-  }
 
   void _showCalendarBottomSheet(BuildContext context) {
     HapticFeedback.mediumImpact();
@@ -80,23 +71,24 @@ class PremiumDatePicker extends StatelessWidget {
                 ),
                 SizedBox(height: AppSpacing.sm),
 
-                // Calendar
+                // Calendar - defaults to tomorrow
                 Theme(
                   data: Theme.of(context).copyWith(
-                    colorScheme: ColorScheme.light(
-                      primary: AppColors.navyDark,
+                    colorScheme: ColorScheme.dark(
+                      primary: AppColors.green,
                       onPrimary: AppColors.pure,
                       surface: AppColors.navyDark,
                       onSurface: AppColors.pure,
+                      onSurfaceVariant: AppColors.pure,
                     ),
                   ),
                   child: CalendarDatePicker(
-                    initialDate: selectedDate ?? _today,
+                    initialDate: selectedDate ?? _tomorrow,
                     firstDate: _today,
                     lastDate: DateTime(2050),
                     onDateChanged: (date) {
                       HapticFeedback.selectionClick();
-                      // Preserve time if already set, otherwise use current time
+                      // Preserve time if already set, otherwise default to 9 AM
                       final newDate = selectedDate != null
                           ? DateTime(
                               date.year,
@@ -109,8 +101,8 @@ class PremiumDatePicker extends StatelessWidget {
                               date.year,
                               date.month,
                               date.day,
-                              _today.hour,
-                              _today.minute,
+                              9, // Default to 9 AM
+                              0,
                             );
                       onDateSelected(newDate);
                       Navigator.pop(context);
@@ -125,155 +117,57 @@ class PremiumDatePicker extends StatelessWidget {
     );
   }
 
-  Widget _buildDateChip({
-    required BuildContext context,
-    required String label,
-    required DateTime date,
-    required bool isSelected,
-  }) {
-    return Expanded(
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          // Preserve time if already set, otherwise use current time
-          final newDate = selectedDate != null
-              ? DateTime(
-                  date.year,
-                  date.month,
-                  date.day,
-                  selectedDate!.hour,
-                  selectedDate!.minute,
-                )
-              : DateTime(
-                  date.year,
-                  date.month,
-                  date.day,
-                  _today.hour,
-                  _today.minute,
-                );
-          onDateSelected(newDate);
-        },
-        borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            vertical: AppSpacing.sm,
-            horizontal: AppSpacing.xs,
-          ),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? AppColors.navyDark
-                : AppColors.navy,
-            borderRadius: BorderRadius.circular(AppBorderRadius.md),
-            border: Border.all(
-              color: isSelected
-                  ? AppColors.navyDark
-                  : AppColors.greenLight.withValues(alpha: 0.3),
-              width: 1.5,
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: AppTypography.labelMedium.copyWith(
-                  color: AppColors.pure,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 4),
-              Text(
-                dateTimeFormat("MMM d", date),
-                style: AppTypography.labelSmall.copyWith(
-                  fontWeight: FontWeight.w400,
-                  color: isSelected
-                      ? AppColors.pure.withValues(alpha: 0.8)
-                      : AppColors.pure,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  bool _isSameDay(DateTime? a, DateTime? b) {
-    if (a == null || b == null) return false;
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Quick date chips
-        Row(
-          children: [
-            _buildDateChip(
-              context: context,
-              label: 'Today',
-              date: _today,
-              isSelected: _isSameDay(selectedDate, _today),
-            ),
-            SizedBox(width: AppSpacing.xs),
-            _buildDateChip(
-              context: context,
-              label: 'Tomorrow',
-              date: _tomorrow,
-              isSelected: _isSameDay(selectedDate, _tomorrow),
-            ),
-            SizedBox(width: AppSpacing.xs),
-            _buildDateChip(
-              context: context,
-              label: 'Weekend',
-              date: _thisWeekend,
-              isSelected: _isSameDay(selectedDate, _thisWeekend),
-            ),
-          ],
-        ),
-        SizedBox(height: AppSpacing.xs),
+    final hasDate = selectedDate != null;
 
-        // Pick a date button
-        InkWell(
-          onTap: () => _showCalendarBottomSheet(context),
+    return InkWell(
+      onTap: () => _showCalendarBottomSheet(context),
+      borderRadius: BorderRadius.circular(AppBorderRadius.md),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(
+          vertical: AppSpacing.md,
+          horizontal: AppSpacing.md,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.navy,
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(
-              vertical: AppSpacing.sm,
-              horizontal: AppSpacing.md,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.navy,
-              borderRadius: BorderRadius.circular(AppBorderRadius.md),
-              border: Border.all(
-                color: AppColors.greenLight.withValues(alpha: 0.3),
-                width: 1.5,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AppIcon(
-                  icon: AppPhosphorIcons.calendar,
-                  color: AppColors.pure,
-                  size: AppIconSize.button,
-                ),
-                SizedBox(width: AppSpacing.xs),
-                Text(
-                  'Pick a Date',
-                  style: AppTypography.labelMedium.copyWith(
-                    color: AppColors.pure,
-                  ),
-                ),
-              ],
-            ),
+          border: Border.all(
+            color: hasDate
+                ? AppColors.green.withValues(alpha: 0.5)
+                : AppColors.greenLight.withValues(alpha: 0.3),
+            width: 1.5,
           ),
         ),
-      ],
+        child: Row(
+          children: [
+            AppIcon(
+              icon: AppPhosphorIcons.calendar,
+              color: AppColors.pure,
+              size: AppIconSize.button,
+            ),
+            SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                hasDate
+                    ? dateTimeFormat("EEEE, MMM d", selectedDate)
+                    : 'Pick a Date',
+                style: AppTypography.labelMedium.copyWith(
+                  color: AppColors.pure,
+                  fontWeight: hasDate ? FontWeight.w600 : FontWeight.w500,
+                ),
+              ),
+            ),
+            if (hasDate)
+              AppIcon(
+                icon: AppPhosphorIcons.edit,
+                color: AppColors.textSecondary,
+                size: AppIconSize.sm,
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

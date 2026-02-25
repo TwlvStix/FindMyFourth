@@ -18,6 +18,7 @@ import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/games_list/components/flexible_time_display.dart';
 import '/models/game.dart';
+import '/models/player_eligibility.dart';
 import '/providers/game_provider.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import 'package:flutter/material.dart';
@@ -228,7 +229,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
           color: AppColors.navy,
           borderRadius: BorderRadius.circular(AppBorderRadius.card),
           border: Border.all(
-            color: AppColors.gold.withValues(alpha: 0.25),
+            color: AppColors.navyLight,
             width: 1.0,
           ),
           boxShadow: [AppElevation.card],
@@ -244,8 +245,31 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                   // Top row: Game Type Badge + Status
                   Row(
                     children: [
+                      // Just for Fun pill
+                      if (game.isFunGame)
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xxs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.navy,
+                            borderRadius: BorderRadius.circular(AppBorderRadius.chip),
+                            border: Border.all(
+                              color: AppColors.navyLight,
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Text(
+                            'Just for Fun',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        )
                       // Game Type Badge
-                      if (game.gameType.isNotEmpty)
+                      else if (game.gameType.isNotEmpty)
                         Container(
                           padding: EdgeInsets.symmetric(
                             horizontal: AppSpacing.sm,
@@ -275,7 +299,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             vertical: AppSpacing.xxs,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.gold.withValues(alpha:0.2),
+                            color: AppColors.gold.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Text(
@@ -284,6 +308,62 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                               color: AppColors.gold,
                               fontWeight: FontWeight.w700,
                             ),
+                          ),
+                        ),
+                      ],
+                      // Player eligibility badge
+                      if (game.playerEligibility == PlayerEligibility.womenOnly) ...[
+                        SizedBox(width: AppSpacing.xs),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xxs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.gold.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                          ),
+                          child: Text(
+                            'Women Only',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: AppColors.gold,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ] else if (game.playerEligibility == PlayerEligibility.menOnly) ...[
+                        SizedBox(width: AppSpacing.xs),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xxs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.info.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                          ),
+                          child: Text(
+                            'Men Only',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: AppColors.info,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                      // Member discount badge (icon only)
+                      if (game.memberDiscount == 'Yes') ...[
+                        SizedBox(width: AppSpacing.xs),
+                        Container(
+                          padding: EdgeInsets.all(AppSpacing.xxs),
+                          decoration: BoxDecoration(
+                            color: AppColors.green.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                          ),
+                          child: AppIcon(
+                            icon: AppPhosphorIcons.memberDiscount,
+                            color: AppColors.green,
+                            size: AppIconSize.xs,
                           ),
                         ),
                       ],
@@ -428,60 +508,6 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           ],
                         ),
                       ),
-                      SizedBox(width: AppSpacing.md),
-                      // Chat button
-                      if (game.chatRef != null)
-                        GestureDetector(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            if (currentUserUid.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Please sign in to open the chat.'),
-                                ),
-                              );
-                              return;
-                            }
-                            final isMember = game.joinedPlayers.any(
-                              (player) => player.id == currentUserUid,
-                            );
-                            if (!isMember) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Join the game to access the group chat.',
-                                  ),
-                                ),
-                              );
-                              return;
-                            }
-                            context.pushNamed(
-                              'ChatDetails',
-                              pathParameters: {
-                                'chatId': game.chatRef!.id,
-                              },
-                              extra: <String, dynamic>{
-                                kTransitionInfoKey: TransitionStandards.detailTransition,
-                              },
-                            );
-                          },
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [AppColors.gold, AppColors.goldLight],
-                              ),
-                              borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                              boxShadow: [AppElevation.md],
-                            ),
-                            child: AppIcon(
-                              icon: AppPhosphorIcons.chat,
-                              color: AppColors.pure,
-                              size: AppIconSize.button,
-                            ),
-                          ),
-                        ),
                     ],
                   ),
 
@@ -577,78 +603,6 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Bottom action bar
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.glassSurface,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(AppBorderRadius.card),
-                  bottomRight: Radius.circular(AppBorderRadius.card),
-                ),
-              ),
-              child: Row(
-                children: [
-                  // Member discount badge (plain, informational)
-                  if (game.memberDiscount == 'Yes')
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AppIcon(
-                          icon: AppPhosphorIcons.memberDiscount,
-                          color: AppColors.textPrimary,
-                          size: AppIconSize.xs,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          'Discount',
-                          style: AppTypography.labelMicro.copyWith(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  Spacer(),
-                  // View Details button (ghost/secondary style)
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: AppColors.glassBorder,
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AppIcon(
-                          icon: AppPhosphorIcons.eye,
-                          color: AppColors.textSecondary,
-                          size: AppIconSize.xs,
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          'View Details',
-                          style: AppTypography.labelSmall.copyWith(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],

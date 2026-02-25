@@ -77,6 +77,13 @@ class UserProvider extends ChangeNotifier {
 
   /// Initialize the provider by listening to auth changes
   void _init() {
+    // Seed initial value from global currentUserDocument
+    // (handles race condition where broadcast stream already emitted before we subscribed)
+    if (currentUserDocument != null) {
+      _currentUser = currentUserDocument;
+      _isLoading = false;
+    }
+
     _userSubscription = authenticatedUserStream.listen(
       (user) async {
         final wasLoggedIn = _currentUser != null;

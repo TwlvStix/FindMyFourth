@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/widgets/app_drop_down.dart';
+import '/utils/flexible_week_resolver.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -84,7 +86,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   String _scheduleType = 'confirmed'; // 'confirmed' | 'flexible'
   String? _flexibleWeek;
   Set<int> _selectedDays = {};
-  String? _flexibleTimeOfDay;
+  Set<String> _flexibleTimesOfDay = {'anytime'}; // Multi-select, default to Anytime
 
   // Team Setup
   bool _is2v2 = false;
@@ -272,7 +274,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           _selectedDays = Set.from(days.cast<int>());
         }
         if (draft['flexibleTimeOfDay'] != null) {
-          _flexibleTimeOfDay = draft['flexibleTimeOfDay'];
+          // Handle both legacy single string and new comma-separated format
+          final stored = draft['flexibleTimeOfDay'] as String;
+          _flexibleTimesOfDay = stored.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toSet();
+          if (_flexibleTimesOfDay.isEmpty) {
+            _flexibleTimesOfDay = {'anytime'}; // Default
+          }
         }
         if (draft['isJustForFun'] != null) {
           _isJustForFun = draft['isJustForFun'] as bool;
@@ -309,7 +316,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         'scheduleType': _scheduleType,
         'flexibleWeek': _flexibleWeek,
         'flexibleDays': _selectedDays.toList(),
-        'flexibleTimeOfDay': _flexibleTimeOfDay,
+        'flexibleTimeOfDay': _flexibleTimesOfDay.join(','), // Store as comma-separated
         'isJustForFun': _isJustForFun,
         'playerEligibility': _playerEligibility,
       };
@@ -413,14 +420,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         return;
       }
     } else {
-      // Flexible mode validation
-      if (_flexibleWeek == null &&
-          _selectedDays.isEmpty &&
-          _flexibleTimeOfDay == null) {
+      // Flexible mode validation - week is required
+      if (_flexibleWeek == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                'Please select at least a week, days, or time of day for flexible games.'),
+            content: Text('Please select a week for your flexible game.'),
             duration: Duration(milliseconds: 4000),
             backgroundColor: AppColors.error,
           ),
@@ -548,7 +552,16 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           if (_scheduleType == 'flexible') ...{
             'flexible_week': _flexibleWeek,
             'flexible_days': _selectedDays.toList(),
-            'flexible_time_of_day': _flexibleTimeOfDay,
+            // Store as comma-separated for multi-select (e.g., "morning,afternoon")
+            'flexible_time_of_day': _flexibleTimesOfDay.where((t) => t != 'anytime').isEmpty
+                ? 'anytime'
+                : _flexibleTimesOfDay.where((t) => t != 'anytime').join(','),
+            // Compute concrete dates at creation time
+            if (FlexibleWeekResolver.resolveWeekDates(_flexibleWeek)
+                case final dates?) ...{
+              'flexible_start_date': dates.start,
+              'flexible_end_date': dates.end,
+            },
           },
         });
         gameRef = gamesRecordReference;
@@ -697,9 +710,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           .where((opt) => opt['value'] != 'men_only')
           .toList();
     } else {
-      // Gender not yet loaded - show all options while loading
-      // Proper filtering will apply once UserProvider emits gender
-      return kCreateGameEligibilityOptions.toList();
+      // Gender not yet loaded or unknown - show Open to All only
+      return kCreateGameEligibilityOptions
+          .where((opt) => opt['value'] == 'open_to_all')
+          .toList();
     }
   }
 
@@ -819,15 +833,26 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
 
         SizedBox(height: AppSpacing.md),
 
-        // Day selector
-        Text('Days (Optional)', style: _labelStyle()),
-        SizedBox(height: AppSpacing.xs),
-        _buildDayChips(),
-
-        SizedBox(height: AppSpacing.md),
+        // Day selector - hidden when "This Weekend" is selected
+        AnimatedCrossFade(
+          duration: MotionTokens.contentReveal,
+          crossFadeState: _flexibleWeek == 'this_weekend'
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
+          firstChild: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Days — tap to exclude', style: _labelStyle()),
+              SizedBox(height: AppSpacing.xs),
+              _buildDayChips(),
+              SizedBox(height: AppSpacing.md),
+            ],
+          ),
+          secondChild: const SizedBox.shrink(),
+        ),
 
         // Time of day
-        Text('Time of Day (Optional)', style: _labelStyle()),
+        Text('Time of Day', style: _labelStyle()),
         SizedBox(height: AppSpacing.xs),
         _buildTimeOfDayCards(),
 
@@ -893,11 +918,44 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         );
   }
 
+  /// Returns available days based on selected week.
+  /// - 'this_week': Only remaining days this week (from today onwards)
+  /// - 'this_weekend': Sat, Sun (not shown in UI - row hidden)
+  /// - 'next_week' / 'next_2_weeks': All 7 days
+  List<int> _getAvailableDays() {
+    final now = DateTime.now();
+    switch (_flexibleWeek) {
+      case 'this_week':
+        // Only days from today onwards
+        // Dart weekday: Mon=1...Sun=7, we need Sun=0...Sat=6
+        final todayDayIndex = now.weekday % 7; // Sun=0, Mon=1, ... Sat=6
+        return List.generate(7, (i) => i).where((d) => d >= todayDayIndex).toList();
+      case 'this_weekend':
+        return [0, 6]; // Sun, Sat
+      case 'next_week':
+      case 'next_2_weeks':
+      default:
+        return [0, 1, 2, 3, 4, 5, 6]; // All days
+    }
+  }
+
+  /// Called when week selection changes - updates days to match available days
+  void _onWeekChanged(String weekValue) {
+    setState(() {
+      _flexibleWeek = weekValue;
+      // Reset days to all available days for the selected week
+      final availableDays = _getAvailableDays();
+      _selectedDays = availableDays.toSet();
+    });
+    _saveDraft();
+  }
+
   Widget _buildWeekChips() {
     final weeks = [
       {'value': 'this_week', 'label': 'This Week'},
+      {'value': 'this_weekend', 'label': 'This Weekend'},
       {'value': 'next_week', 'label': 'Next Week'},
-      {'value': 'flexible', 'label': 'Flexible'},
+      {'value': 'next_2_weeks', 'label': 'Next 2 Weeks'},
     ];
 
     return Row(
@@ -911,8 +969,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             child: InkWell(
               onTap: () {
                 HapticFeedback.selectionClick();
-                setState(() => _flexibleWeek = week['value'] as String);
-                _saveDraft();
+                _onWeekChanged(week['value'] as String);
               },
               borderRadius: BorderRadius.circular(AppBorderRadius.md),
               child: Container(
@@ -945,7 +1002,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   }
 
   Widget _buildDayChips() {
-    final days = [
+    final allDays = [
       {'value': 0, 'label': 'Sun'},
       {'value': 1, 'label': 'Mon'},
       {'value': 2, 'label': 'Tue'},
@@ -954,6 +1011,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       {'value': 5, 'label': 'Fri'},
       {'value': 6, 'label': 'Sat'},
     ];
+
+    // Filter to only available days for the selected week
+    final availableDayIndices = _getAvailableDays().toSet();
+    final days = allDays.where((d) => availableDayIndices.contains(d['value'])).toList();
 
     return Wrap(
       spacing: AppSpacing.xs,
@@ -1012,6 +1073,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   Widget _buildTimeOfDayCards() {
     final times = [
       {
+        'value': 'anytime',
+        'label': 'Anytime',
+        'icon': AppPhosphorIcons.teeTime,
+        'subtitle': 'Any Time',
+      },
+      {
         'value': 'morning',
         'label': 'Morning',
         'icon': AppPhosphorIcons.morning,
@@ -1032,26 +1099,44 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     ];
 
     return GridView.count(
-      crossAxisCount: 3,
+      crossAxisCount: 4,
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
-      crossAxisSpacing: AppSpacing.sm,
-      mainAxisSpacing: AppSpacing.sm,
-      childAspectRatio: 0.85,
+      crossAxisSpacing: AppSpacing.xs,
+      mainAxisSpacing: AppSpacing.xs,
+      childAspectRatio: 0.75,
       padding: EdgeInsets.zero,
       children: times.map((time) {
-        final isSelected = _flexibleTimeOfDay == time['value'];
+        final value = time['value'] as String;
+        final isSelected = _flexibleTimesOfDay.contains(value);
 
         return GestureDetector(
           onTap: () {
             HapticFeedback.lightImpact();
             setState(() {
-              _flexibleTimeOfDay = isSelected ? null : time['value'] as String;
+              if (value == 'anytime') {
+                // Selecting Anytime clears all others and selects only Anytime
+                _flexibleTimesOfDay = {'anytime'};
+              } else {
+                // Selecting a specific time
+                if (isSelected) {
+                  // Deselecting - if it would leave empty, default to Anytime
+                  _flexibleTimesOfDay.remove(value);
+                  if (_flexibleTimesOfDay.isEmpty ||
+                      (_flexibleTimesOfDay.length == 1 && _flexibleTimesOfDay.contains('anytime'))) {
+                    _flexibleTimesOfDay = {'anytime'};
+                  }
+                } else {
+                  // Adding - remove Anytime if present
+                  _flexibleTimesOfDay.remove('anytime');
+                  _flexibleTimesOfDay.add(value);
+                }
+              }
             });
             _saveDraft();
           },
           child: Container(
-            padding: EdgeInsets.all(AppSpacing.sm),
+            padding: EdgeInsets.all(AppSpacing.xs),
             decoration: BoxDecoration(
               gradient: isSelected
                   ? LinearGradient(
@@ -1063,7 +1148,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                   : null,
               color:
                   isSelected ? null : AppColors.navy.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+              borderRadius: BorderRadius.circular(AppBorderRadius.md),
               border: Border.all(
                 color: isSelected
                     ? AppColors.green
@@ -1076,22 +1161,24 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               children: [
                 AppIcon(
                   icon: time['icon'] as PhosphorIconData,
-                  size: AppIconSize.lg,
+                  size: AppIconSize.md,
                   color: AppColors.pure,
                 ),
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   time['label'] as String,
                   style: AppTypography.labelSmall.copyWith(
+                    fontSize: 11,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 2),
+                SizedBox(height: 1),
                 Text(
                   time['subtitle'] as String,
                   style: AppTypography.labelMicro.copyWith(
+                    fontSize: 9,
                     fontWeight: FontWeight.w400,
                     color: AppColors.glassTextSecondary,
                   ),
@@ -1108,37 +1195,54 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   String _buildFlexibleSummary() {
     final parts = <String>[];
 
+    // Week part
     if (_flexibleWeek != null) {
       switch (_flexibleWeek) {
         case 'this_week':
           parts.add('This Week');
           break;
+        case 'this_weekend':
+          parts.add('This Weekend');
+          break;
         case 'next_week':
           parts.add('Next Week');
           break;
-        case 'flexible':
-          parts.add('Flexible');
+        case 'next_2_weeks':
+          parts.add('Next 2 Weeks');
           break;
       }
     }
 
-    if (_selectedDays.isNotEmpty) {
+    // Days part - use intelligent collapsing
+    if (_selectedDays.isNotEmpty && _flexibleWeek != 'this_weekend') {
       final dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       final sortedDays = _selectedDays.toList()..sort();
-      parts.add(sortedDays.map((d) => dayNames[d]).join(', '));
+
+      // Check for special patterns
+      if (sortedDays.length == 7) {
+        parts.add('Any Day');
+      } else if (setEquals(sortedDays.toSet(), {1, 2, 3, 4, 5})) {
+        parts.add('Weekdays');
+      } else if (setEquals(sortedDays.toSet(), {0, 6})) {
+        parts.add('Weekend');
+      } else {
+        parts.add(sortedDays.map((d) => dayNames[d]).join(', '));
+      }
     }
 
-    if (_flexibleTimeOfDay != null) {
-      switch (_flexibleTimeOfDay) {
-        case 'morning':
-          parts.add('Morning');
-          break;
-        case 'afternoon':
-          parts.add('Afternoon');
-          break;
-        case 'twilight':
-          parts.add('Twilight');
-          break;
+    // Time of day part - handle multi-select
+    if (_flexibleTimesOfDay.isNotEmpty) {
+      if (_flexibleTimesOfDay.contains('anytime')) {
+        parts.add('Anytime');
+      } else {
+        final timeLabels = <String>[];
+        // Sort in logical order: morning, afternoon, twilight
+        if (_flexibleTimesOfDay.contains('morning')) timeLabels.add('Morning');
+        if (_flexibleTimesOfDay.contains('afternoon')) timeLabels.add('Afternoon');
+        if (_flexibleTimesOfDay.contains('twilight')) timeLabels.add('Twilight');
+        if (timeLabels.isNotEmpty) {
+          parts.add(timeLabels.join(', '));
+        }
       }
     }
 
@@ -1316,7 +1420,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   } else {
                                                     _flexibleWeek = null;
                                                     _selectedDays.clear();
-                                                    _flexibleTimeOfDay = null;
+                                                    _flexibleTimesOfDay = {'anytime'}; // Reset to default
                                                   }
                                                 });
                                                 _saveDraft();
@@ -1365,14 +1469,16 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   BorderRadius.circular(AppBorderRadius.md),
                                               child: Container(
                                                 width: double.infinity,
-                                                padding: EdgeInsets.all(
-                                                    AppSpacing.md),
+                                                padding: EdgeInsets.symmetric(
+                                                  vertical: AppSpacing.md,
+                                                  horizontal: AppSpacing.md,
+                                                ),
                                                 decoration: BoxDecoration(
-                                                  color: AppColors.pure,
+                                                  color: AppColors.navy,
                                                   borderRadius:
                                                       BorderRadius.circular(AppBorderRadius.md),
                                                   border: Border.all(
-                                                    color: AppColors.navyDark,
+                                                    color: AppColors.greenLight.withValues(alpha: 0.3),
                                                     width: 1.5,
                                                   ),
                                                 ),
@@ -1380,39 +1486,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   children: [
                                                     AppIcon(
                                                       icon: AppPhosphorIcons.teeTime,
-                                                      color: AppColors.navyDark,
-                                                      size: AppIconSize.md,
+                                                      color: AppColors.pure,
+                                                      size: AppIconSize.button,
                                                     ),
                                                     SizedBox(
                                                         width: AppSpacing.sm),
                                                     Expanded(
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Text(
-                                                            'Tee Time',
-                                                            style: AppTypography.labelSmall.copyWith(
-                                                              fontWeight: FontWeight.w500,
-                                                              color: AppColors.slate,
-                                                            ),
-                                                          ),
-                                                          SizedBox(height: 2),
-                                                          Text(
-                                                            dateTimeFormat("jm",
-                                                                datePicked),
-                                                            style: AppTypography.titleSmall.copyWith(
-                                                              color: AppColors.onyx,
-                                                            ),
-                                                          ),
-                                                        ],
+                                                      child: Text(
+                                                        dateTimeFormat("jm",
+                                                            datePicked),
+                                                        style: AppTypography.labelMedium.copyWith(
+                                                          color: AppColors.pure,
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
                                                       ),
                                                     ),
                                                     AppIcon(
                                                       icon: AppPhosphorIcons.edit,
-                                                      color: AppColors.slate,
-                                                      size: AppIconSize.button,
+                                                      color: AppColors.textSecondary,
+                                                      size: AppIconSize.sm,
                                                     ),
                                                   ],
                                                 ),

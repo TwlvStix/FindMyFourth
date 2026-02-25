@@ -131,6 +131,16 @@ class GamesRecord extends FirestoreRecord {
   String? get flexibleWeek => _flexibleWeek;
   bool hasFlexibleWeek() => _flexibleWeek != null;
 
+  // "flexible_start_date" field. Concrete start date for flexible games.
+  DateTime? _flexibleStartDate;
+  DateTime? get flexibleStartDate => _flexibleStartDate;
+  bool hasFlexibleStartDate() => _flexibleStartDate != null;
+
+  // "flexible_end_date" field. Concrete end date for flexible games.
+  DateTime? _flexibleEndDate;
+  DateTime? get flexibleEndDate => _flexibleEndDate;
+  bool hasFlexibleEndDate() => _flexibleEndDate != null;
+
   // "is_fun_game" field.
   bool? _isFunGame;
   bool get isFunGame => _isFunGame ?? false;
@@ -196,6 +206,8 @@ class GamesRecord extends FirestoreRecord {
     _flexibleDays = getDataList(snapshotData['flexible_days']);
     _flexibleTimeOfDay = snapshotData['flexible_time_of_day'] as String?;
     _flexibleWeek = snapshotData['flexible_week'] as String?;
+    _flexibleStartDate = snapshotData['flexible_start_date'] as DateTime?;
+    _flexibleEndDate = snapshotData['flexible_end_date'] as DateTime?;
     _isFunGame = snapshotData['is_fun_game'] as bool?;
     _status = snapshotData['status'] as String?;
     _minAppUsers = castToType<int>(snapshotData['min_app_users']);
@@ -262,6 +274,8 @@ Map<String, dynamic> createGamesRecordData({
   List<int>? flexibleDays,
   String? flexibleTimeOfDay,
   String? flexibleWeek,
+  DateTime? flexibleStartDate,
+  DateTime? flexibleEndDate,
   bool? isFunGame,
   String? status,
   int? minAppUsers,
@@ -295,6 +309,8 @@ Map<String, dynamic> createGamesRecordData({
       'flexible_days': flexibleDays,
       'flexible_time_of_day': flexibleTimeOfDay,
       'flexible_week': flexibleWeek,
+      'flexible_start_date': flexibleStartDate,
+      'flexible_end_date': flexibleEndDate,
       'is_fun_game': isFunGame,
       'status': status,
       'min_app_users': minAppUsers,
@@ -333,6 +349,8 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e1?.uid == e2?.uid &&
         e1?.chatRef == e2?.chatRef &&
         e1?.isCancelled == e2?.isCancelled &&
+        e1?.flexibleStartDate == e2?.flexibleStartDate &&
+        e1?.flexibleEndDate == e2?.flexibleEndDate &&
         e1?.isFunGame == e2?.isFunGame &&
         e1?.status == e2?.status &&
         e1?.minAppUsers == e2?.minAppUsers &&
@@ -363,6 +381,8 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e?.uid,
         e?.chatRef,
         e?.isCancelled,
+        e?.flexibleStartDate,
+        e?.flexibleEndDate,
         e?.isFunGame,
         e?.status,
         e?.minAppUsers,
