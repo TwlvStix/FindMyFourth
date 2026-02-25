@@ -13,7 +13,7 @@ import '/core/widgets/app_icon.dart';
 import '/utils/app_util.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
-import '/main_function/games_list/components/flexible_time_display.dart';
+import '/main_function/games_list/components/flexible_availability_summary.dart';
 import '/main_function/games_list/games_list_widget.dart' show CancelledGameHandling;
 import '/models/game.dart';
 import '/models/player_eligibility.dart';
@@ -578,6 +578,15 @@ class _PremiumGameCardState extends State<PremiumGameCard>
     required bool isUserGame,
     required bool isFull,
   }) {
+    // Flexible games use the unified summary with built-in icon and spots
+    if (widget.game.isFlexible) {
+      return Opacity(
+        opacity: isUserGame ? 0.65 : 1.0,
+        child: FlexibleAvailabilitySummary(game: widget.game),
+      );
+    }
+
+    // Fixed-time games use the glass container with date/time and player count
     return Opacity(
       opacity: isUserGame ? 0.65 : 1.0,
       child: Container(
@@ -604,40 +613,30 @@ class _PremiumGameCardState extends State<PremiumGameCard>
               ),
             ),
             SizedBox(width: AppSpacing.sm),
-            if (widget.game.isFlexible) ...[
-              Expanded(
-                child: FlexibleTimeDisplay(
-                  game: widget.game,
-                  showWeekLabel: true,
-                  compact: true,
-                ),
-              ),
-            ] else ...[
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${dateTimeFormat("EEEE", widget.game.date)}, ${dateTimeFormat("MMM d", widget.game.date)}',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${dateTimeFormat("EEEE", widget.game.date)}, ${dateTimeFormat("MMM d", widget.game.date)}',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w500,
                     ),
-                    Text(
-                      dateTimeFormat("jm", widget.game.date),
-                      style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.glassTextSecondary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    dateTimeFormat("jm", widget.game.date),
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.glassTextSecondary,
                     ),
-                  ],
-                ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-            ],
+            ),
             // Player count indicator
             Container(
               padding: EdgeInsets.symmetric(

@@ -9,9 +9,12 @@ import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/models/game.dart';
 import '/utils/app_util.dart';
-import '/main_function/games_list/components/flexible_time_display.dart';
+import '/main_function/games_list/components/flexible_game_info_accordion.dart';
 
-/// Quick stats row displaying player count, tee time, and available spots
+/// Quick stats row displaying player count, tee time, and available spots.
+///
+/// For flexible games: Shows accordion widget with expandable scheduling info.
+/// For fixed games: Shows two-card layout (Date Card + Players Card).
 class QuickStatsRow extends StatelessWidget {
   const QuickStatsRow({
     super.key,
@@ -26,6 +29,16 @@ class QuickStatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Flexible games get single accordion widget (includes spots info)
+    if (game.isFlexible) {
+      return FlexibleGameInfoAccordion(game: game);
+    }
+
+    // Fixed games keep the existing two-card layout
+    return _buildFixedGameLayout();
+  }
+
+  Widget _buildFixedGameLayout() {
     final spotsLeft = game.maxPlayers - (game.joinedPlayers.length + game.guestPlayers.length);
     final isFull = spotsLeft <= 0;
 
@@ -57,32 +70,26 @@ class QuickStatsRow extends StatelessWidget {
                 ),
                 SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: game.isFlexible
-                      ? FlexibleTimeDisplay(
-                          game: game,
-                          showWeekLabel: true,
-                          compact: false,
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              dateTimeFormat("MMM d", game.date),
-                              style: AppTypography.titleSmall.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              dateTimeFormat("jm", game.date),
-                              style: AppTypography.labelSmall.copyWith(
-                                color: Colors.white.withValues(alpha: 0.6),
-                              ),
-                            ),
-                          ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        dateTimeFormat("MMM d", game.date),
+                        style: AppTypography.titleSmall.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
                         ),
+                      ),
+                      Text(
+                        dateTimeFormat("jm", game.date),
+                        style: AppTypography.labelSmall.copyWith(
+                          color: Colors.white.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                if (isOwner && !game.isFlexible && onEditPressed != null) ...[
+                if (isOwner && onEditPressed != null) ...[
                   SizedBox(width: AppSpacing.xs),
                   AppIconButton(
                     icon: AppIcon(

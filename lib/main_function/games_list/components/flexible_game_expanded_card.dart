@@ -11,7 +11,7 @@ import '/core/widgets/app_expandable_text.dart';
 import '/models/player_eligibility.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
-import '/main_function/games_list/components/flexible_time_display.dart';
+import '/main_function/games_list/components/flexible_availability_summary.dart';
 import '/models/game.dart';
 import '/utils/app_util.dart';
 
@@ -36,8 +36,6 @@ class FlexibleGameExpandedCard extends StatelessWidget {
             game.joinedPlayers.contains(currentUserReference));
     final isCancelled = game.status == 'cancelled';
     final isExpired = game.status == 'expired';
-    final playerCount = game.joinedPlayers.length + game.guestPlayers.length;
-    final isFull = playerCount >= game.maxPlayers;
 
     return GestureDetector(
       onTap: () => _navigateToGame(context, isUserGame),
@@ -69,11 +67,9 @@ class FlexibleGameExpandedCard extends StatelessWidget {
               // Row 2: Course icon + Course name + Game name
               _buildCourseSection(isUserGame: isUserGame),
               SizedBox(height: AppSpacing.md),
-              // Row 3: Date/time with player count
+              // Row 3: Flexible availability summary
               _buildDateTimeSection(
                 isUserGame: isUserGame,
-                isFull: isFull,
-                playerCount: playerCount,
               ),
             ],
           ),
@@ -431,85 +427,13 @@ class FlexibleGameExpandedCard extends StatelessWidget {
     );
   }
 
-  /// Row 3: Glass surface with FlexibleTimeDisplay + player count chip
+  /// Row 3: Flexible availability summary
   Widget _buildDateTimeSection({
     required bool isUserGame,
-    required bool isFull,
-    required int playerCount,
   }) {
     return Opacity(
       opacity: isUserGame ? 0.65 : 1.0,
-      child: Container(
-        padding: EdgeInsets.all(AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: AppColors.glassSurface,
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppColors.navyLight.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-              ),
-              child: Center(
-                child: AppIcon(
-                  icon: AppPhosphorIcons.calendarCheck,
-                  color: AppColors.textSecondary,
-                  size: AppIconSize.xs,
-                ),
-              ),
-            ),
-            SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: FlexibleTimeDisplay(
-                game: game,
-                showWeekLabel: true,
-                compact: true,
-              ),
-            ),
-            // Player count chip
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: AppSpacing.xxs,
-              ),
-              decoration: BoxDecoration(
-                color: isFull
-                    ? AppColors.error.withValues(alpha: 0.2)
-                    : AppColors.navy,
-                borderRadius: BorderRadius.circular(AppBorderRadius.chip),
-                border: Border.all(
-                  color: isFull
-                      ? AppColors.error.withValues(alpha: 0.4)
-                      : AppColors.navyLight,
-                  width: 1.0,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppIcon(
-                    icon: AppPhosphorIcons.golfers,
-                    color: isFull ? AppColors.error : AppColors.textSecondary,
-                    size: AppIconSize.xs,
-                  ),
-                  SizedBox(width: 4),
-                  Text(
-                    '$playerCount/${game.maxPlayers}',
-                    style: AppTypography.labelMicro.copyWith(
-                      color: isFull ? AppColors.error : AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      child: FlexibleAvailabilitySummary(game: game),
     );
   }
 

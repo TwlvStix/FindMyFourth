@@ -4,6 +4,7 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/motion/motion_tokens.dart';
+import '/core/widgets/app_time_picker.dart';
 import '/providers/provider_extensions.dart';
 import '/notification_settings/components/expand_section_label.dart';
 
@@ -102,93 +103,16 @@ class _TimeRangePicker extends StatelessWidget {
   ) async {
     final tod = _parseTime(currentTime);
 
-    final result = await showTimePicker(
+    showAppTimePicker(
       context: context,
+      title: 'Set Time',
       initialTime: tod,
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            timePickerTheme: TimePickerThemeData(
-              backgroundColor: AppColors.navy,
-              hourMinuteColor: WidgetStateColor.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return AppColors.green.withValues(alpha: 0.2);
-                }
-                return AppColors.navyDark;
-              }),
-              hourMinuteTextColor: WidgetStateColor.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return AppColors.green;
-                }
-                return AppColors.textPrimary;
-              }),
-              dialHandColor: AppColors.green,
-              dialBackgroundColor: AppColors.navyDark,
-              dialTextColor: WidgetStateColor.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return AppColors.textPrimary;
-                }
-                return AppColors.textSecondary;
-              }),
-              entryModeIconColor: AppColors.textSecondary,
-              confirmButtonStyle: TextButton.styleFrom(
-                foregroundColor: AppColors.green,
-              ),
-              cancelButtonStyle: TextButton.styleFrom(
-                foregroundColor: AppColors.textSecondary,
-              ),
-              dayPeriodColor: WidgetStateColor.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return AppColors.green.withValues(alpha: 0.2);
-                }
-                return AppColors.navyDark;
-              }),
-              dayPeriodTextColor: WidgetStateColor.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return AppColors.green;
-                }
-                return AppColors.textSecondary;
-              }),
-              dayPeriodBorderSide: BorderSide(
-                color: AppColors.navyLight,
-              ),
-              inputDecorationTheme: InputDecorationTheme(
-                filled: true,
-                fillColor: AppColors.navyDark,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-                  borderSide: BorderSide(color: AppColors.navyLight),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-                  borderSide: BorderSide(color: AppColors.navyLight),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-                  borderSide: BorderSide(color: AppColors.green),
-                ),
-              ),
-            ),
-            colorScheme: ColorScheme.dark(
-              primary: AppColors.green,
-              onPrimary: AppColors.textPrimary,
-              surface: AppColors.navy,
-              onSurface: AppColors.textPrimary,
-            ),
-          ),
-          child: child!,
-        );
+      showQuickAdjust: false,
+      onTimeSelected: (time) {
+        final formatted = _formatTimeToHHMM(time);
+        onChanged(formatted);
       },
     );
-
-    if (result != null) {
-      final formatted = _formatTimeToHHMM(result);
-      onChanged(formatted);
-    }
   }
 
   TimeOfDay _parseTime(String timeString) {

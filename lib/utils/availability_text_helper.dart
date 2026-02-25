@@ -1,5 +1,6 @@
 import '/models/game.dart';
 import '/utils/flexible_date_formatter.dart';
+import '/utils/flexible_week_resolver.dart';
 
 /// Formats flexible game availability with intelligent day collapsing.
 ///
@@ -46,13 +47,13 @@ String _formatAvailabilityWithDates({
   ));
 
   // Add collapsed day representation
-  final dayPart = _formatDays(flexibleDays);
+  final dayPart = formatDays(flexibleDays);
   if (dayPart != null) {
     parts.add(dayPart);
   }
 
   // Add time of day
-  final timePart = _formatTimeOfDay(flexibleTimeOfDay);
+  final timePart = formatTimeOfDay(flexibleTimeOfDay);
   if (timePart != null) {
     parts.add(timePart);
   }
@@ -70,19 +71,19 @@ String formatAvailabilityFromRaw({
   final parts = <String>[];
 
   // Add week context if not "flexible" (30-day window)
-  final weekPart = _formatWeek(flexibleWeek);
+  final weekPart = formatWeek(flexibleWeek);
   if (weekPart != null) {
     parts.add(weekPart);
   }
 
   // Add collapsed day representation
-  final dayPart = _formatDays(flexibleDays);
+  final dayPart = formatDays(flexibleDays);
   if (dayPart != null) {
     parts.add(dayPart);
   }
 
   // Add time of day
-  final timePart = _formatTimeOfDay(flexibleTimeOfDay);
+  final timePart = formatTimeOfDay(flexibleTimeOfDay);
   if (timePart != null) {
     parts.add(timePart);
   }
@@ -90,7 +91,8 @@ String formatAvailabilityFromRaw({
   return parts.isEmpty ? 'Flexible' : parts.join(' · ');
 }
 
-String? _formatWeek(String? flexibleWeek) {
+/// Formats week value into display label.
+String? formatWeek(String? flexibleWeek) {
   switch (flexibleWeek) {
     case 'this_week':
       return 'This Week';
@@ -108,7 +110,33 @@ String? _formatWeek(String? flexibleWeek) {
   }
 }
 
-String? _formatDays(List<int>? days) {
+/// Returns relative week label without date range.
+///
+/// Uses hint from dates if available, otherwise falls back to flexibleWeek enum.
+/// Examples: "This Week", "Next Week", "This Weekend", "Flexible"
+String getWeekHintOnly(Game game) {
+  // Try to derive from dates first
+  if (game.flexibleStartDate != null && game.flexibleEndDate != null) {
+    final hint = FlexibleWeekResolver.getRelativeWeekHint(
+      game.flexibleStartDate,
+      game.flexibleEndDate,
+    );
+    if (hint != null) {
+      // Strip parentheses and capitalize: "(next week)" → "Next Week"
+      final cleaned = hint.replaceAll(RegExp(r'[()]'), '').trim();
+      return cleaned
+          .split(' ')
+          .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+          .join(' ');
+    }
+  }
+  // Fall back to enum value
+  return formatWeek(game.flexibleWeek) ?? 'Flexible';
+}
+
+/// Formats day indices into collapsed display string.
+/// Handles patterns like "Weekdays", "Weekend", "Any Day", contiguous ranges.
+String? formatDays(List<int>? days) {
   if (days == null || days.isEmpty) return null;
 
   final sorted = List<int>.from(days)..sort();
@@ -127,7 +155,9 @@ String? _formatDays(List<int>? days) {
   return sorted.map(_dayName).join(', ');
 }
 
-String? _formatTimeOfDay(String? timeOfDay) {
+/// Formats time of day values into display labels.
+/// Use [joiner] to customize how multiple times are joined (default: ', ').
+String? formatTimeOfDay(String? timeOfDay, {String joiner = ', '}) {
   if (timeOfDay == null || timeOfDay.isEmpty) return null;
 
   // Handle comma-separated multi-select values
@@ -150,7 +180,7 @@ String? _formatTimeOfDay(String? timeOfDay) {
   if (specificTimes.contains('afternoon')) labels.add('Afternoon');
   if (specificTimes.contains('twilight')) labels.add('Twilight');
 
-  return labels.isEmpty ? null : labels.join(', ');
+  return labels.isEmpty ? null : labels.join(joiner);
 }
 
 /// Check if all 7 days are selected (0-6)

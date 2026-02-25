@@ -8,9 +8,12 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/models/game.dart';
 import '/utils/app_util.dart';
-import '/main_function/games_list/components/flexible_time_display.dart';
+import '/main_function/games_list/components/flexible_game_info_accordion.dart';
 
-/// Quick stats row for Available Game page with matched card heights
+/// Quick stats row for Available Game page with matched card heights.
+///
+/// For flexible games: Shows accordion widget with expandable scheduling info.
+/// For fixed games: Shows two-card layout (Date Card + Players Card).
 class AvailableGameStatsRow extends StatelessWidget {
   const AvailableGameStatsRow({
     super.key,
@@ -21,6 +24,16 @@ class AvailableGameStatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Flexible games get single accordion widget (includes spots info)
+    if (game.isFlexible) {
+      return FlexibleGameInfoAccordion(game: game);
+    }
+
+    // Fixed games keep the existing two-card layout
+    return _buildFixedGameLayout();
+  }
+
+  Widget _buildFixedGameLayout() {
     final spotsLeft = game.maxPlayers - (game.joinedPlayers.length + game.guestPlayers.length);
     final isFull = spotsLeft <= 0;
 
@@ -54,31 +67,25 @@ class AvailableGameStatsRow extends StatelessWidget {
                   ),
                   SizedBox(width: AppSpacing.sm),
                   Expanded(
-                    child: game.isFlexible
-                        ? FlexibleTimeDisplay(
-                            game: game,
-                            showWeekLabel: true,
-                            compact: false,
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                dateTimeFormat("MMM d", game.date),
-                                style: AppTypography.titleSmall.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Text(
-                                dateTimeFormat("jm", game.date),
-                                style: AppTypography.labelSmall.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                ),
-                              ),
-                            ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          dateTimeFormat("MMM d", game.date),
+                          style: AppTypography.titleSmall.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
                           ),
+                        ),
+                        Text(
+                          dateTimeFormat("jm", game.date),
+                          style: AppTypography.labelSmall.copyWith(
+                            color: Colors.white.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

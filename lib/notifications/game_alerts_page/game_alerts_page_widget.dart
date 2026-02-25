@@ -22,6 +22,12 @@ import '/services/alert_subscription_service.dart';
 import '/services/notification_permission_service.dart';
 import '/utils/app_util.dart';
 
+import 'components/alert_filter_card.dart';
+import 'components/alert_filter_chips.dart';
+import 'components/alert_navigation_card.dart';
+import 'components/alert_section_label.dart';
+import 'components/alert_toggle_card.dart';
+
 /// Premium Game Alerts page
 /// Configure which games trigger push notifications
 class GameAlertsPageWidget extends StatefulWidget {
@@ -48,6 +54,9 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
   List<Course> _selectedCourses = [];
   List<Course> _allCourses = [];
 
+  // Accordion state for filter cards
+  int? _expandedFilterIndex;
+
   @override
   void initState() {
     super.initState();
@@ -62,11 +71,14 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
       // Try to load subscription, but handle permission errors gracefully
       AlertSubscription? subscription;
       try {
-        subscription = await AlertSubscriptionService.loadSubscription(currentUserUid);
-        AppLog.d('📱 [GameAlertsPage] Loaded subscription: ${subscription != null ? 'exists' : 'null'}');
+        subscription =
+            await AlertSubscriptionService.loadSubscription(currentUserUid);
+        AppLog.d(
+            '📱 [GameAlertsPage] Loaded subscription: ${subscription != null ? 'exists' : 'null'}');
       } catch (e) {
         // Handle permission errors gracefully - use defaults
-        AppLog.d('📱 [GameAlertsPage] Error loading subscription (using defaults): $e');
+        AppLog.d(
+            '📱 [GameAlertsPage] Error loading subscription (using defaults): $e');
         subscription = null;
       }
 
@@ -124,7 +136,8 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
       });
 
       if (mounted) {
-        AppLog.d('📱 [GameAlertsPage] Saving complete. Returning subscription: enabled=${_subscription!.enabled}, filters=${_subscription!.getSummary()}');
+        AppLog.d(
+            '📱 [GameAlertsPage] Saving complete. Returning subscription: enabled=${_subscription!.enabled}, filters=${_subscription!.getSummary()}');
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -153,8 +166,9 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
       context: context,
       variant: PremiumDialogVariant.destructive,
       icon: PhosphorIconsRegular.arrowCounterClockwise,
-      title: 'Reset Alert Settings?',
-      body: 'This will clear all your alert filters and disable notifications. You can always re-enable them later.',
+      title: 'Reset Filters?',
+      body:
+          'This will clear all your game alert filters. You will receive alerts for all games instead of filtered games.',
       actionLabel: 'Reset',
       cancelLabel: 'Cancel',
     );
@@ -164,6 +178,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
         _subscription = AlertSubscription.defaults(currentUserUid);
         _selectedCourses = [];
         _hasChanges = true;
+        _expandedFilterIndex = null;
       });
     }
   }
@@ -172,6 +187,16 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
     setState(() {
       _subscription = updated;
       _hasChanges = true;
+    });
+  }
+
+  void _toggleFilterExpanded(int index) {
+    setState(() {
+      if (_expandedFilterIndex == index) {
+        _expandedFilterIndex = null;
+      } else {
+        _expandedFilterIndex = index;
+      }
     });
   }
 
@@ -195,6 +220,17 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
         _hasChanges = true;
       });
     }
+  }
+
+  /// Generate courses subtitle
+  String get _coursesSubtitle {
+    if (_selectedCourses.isEmpty) {
+      return 'All courses';
+    }
+    if (_selectedCourses.length == 1) {
+      return _selectedCourses.first.name;
+    }
+    return '${_selectedCourses.length} courses';
   }
 
   // Custom styled buttons for better visibility on dark background
@@ -290,187 +326,35 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
     );
   }
 
-  Widget _buildSection({
-    required PhosphorIconData icon,
-    required String title,
-    String? subtitle,
-    required List<Widget> children,
-  }) {
-    return Container(
-      margin: EdgeInsets.only(bottom: AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.navy.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1.0,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              AppSpacing.md,
-              AppSpacing.md,
-              subtitle != null ? AppSpacing.xs : AppSpacing.sm,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    AppIcon(
-                      icon: icon,
-                      size: AppIconSize.md,
-                      color: AppColors.textSecondary,
-                    ),
-                    SizedBox(width: AppSpacing.xs),
-                    Text(
-                      title,
-                      style: AppTypography.titleSmall.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-                if (subtitle != null) ...[
-                  SizedBox(height: AppSpacing.xxs),
-                  Text(
-                    subtitle,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: Colors.white.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Divider(
-            color: Colors.white.withValues(alpha: 0.1),
-            height: 1,
-            thickness: 1,
-          ),
-          ...children,
-        ],
-      ),
-    );
-  }
+  /// Build inline summary line at top showing current filter state
+  Widget _buildWatchingSummary() {
+    if (_subscription == null) return const SizedBox.shrink();
 
-  Widget _buildMultiSelectChips({
-    required List<String> selectedValues,
-    required List<Map<String, dynamic>> options,
-    required Function(List<String>) onChanged,
-  }) {
+    final summary = _subscription!.getSummary();
+    // getSummary() already returns "Watching: ..." so just truncate if needed
+    final displaySummary = summary.length > 50
+        ? '${summary.substring(0, 47)}...'
+        : summary;
+
     return Padding(
-      padding: EdgeInsets.all(AppSpacing.md),
-      child: Wrap(
-        spacing: AppSpacing.sm,
-        runSpacing: AppSpacing.sm,
-        children: options.map((option) {
-          final value = option['value'] as String;
-          final label = option['label'] as String;
-          final isSelected = selectedValues.contains(value);
-
-          return GestureDetector(
-            onTap: () {
-              final newValues = List<String>.from(selectedValues);
-              if (isSelected) {
-                newValues.remove(value);
-              } else {
-                newValues.add(value);
-              }
-              onChanged(newValues);
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.green
-                    : Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-                border: Border.all(
-                  color: isSelected
-                      ? AppColors.green
-                      : Colors.white.withValues(alpha: 0.2),
-                  width: 1.5,
-                ),
-              ),
-              child: Text(
-                label,
-                style: AppTypography.labelMedium.copyWith(
-                  color: isSelected
-                      ? Colors.white
-                      : Colors.white.withValues(alpha: 0.9),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildToggleRow({
-    required PhosphorIconData icon,
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
-      ),
+      padding: EdgeInsets.only(bottom: AppSpacing.lg),
       child: Row(
         children: [
           AppIcon(
-            icon: icon,
-            size: AppIconSize.lg,
-            color: AppColors.textSecondary,
+            icon: AppPhosphorIcons.filter,
+            size: AppIconSize.sm,
+            color: AppColors.textMuted,
           ),
-          SizedBox(width: AppSpacing.sm),
+          SizedBox(width: AppSpacing.xs),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTypography.titleMedium.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.7),
-                  ),
-                ),
-              ],
+            child: Text(
+              displaySummary,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textMuted,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          ),
-          SizedBox(width: AppSpacing.sm),
-          Switch.adaptive(
-            value: value,
-            onChanged: onChanged,
-            thumbColor: WidgetStateProperty.resolveWith((states) {
-              if (states.contains(WidgetState.selected)) {
-                return Colors.white;
-              }
-              return Colors.white.withValues(alpha: 0.5);
-            }),
-            trackColor: WidgetStateProperty.resolveWith((states) {
-              if (states.contains(WidgetState.selected)) {
-                return AppColors.green;
-              }
-              return Colors.white.withValues(alpha: 0.2);
-            }),
           ),
         ],
       ),
@@ -538,44 +422,19 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                             120, // Space for sticky bottom bar
                           ),
                           children: [
-                            // Header
-                            Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.sm),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Get notified when new games match your preferences.',
-                                    style: AppTypography.bodyMedium.copyWith(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.8),
-                                    ),
-                                  ),
-                                  SizedBox(height: AppSpacing.sm),
-                                  Text(
-                                    'Leave a category empty to match any value. All selected categories must match for a notification.',
-                                    style: AppTypography.bodySmall.copyWith(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.6),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(height: AppSpacing.lg),
-
                             // Error message
                             if (_errorMessage != null) ...[
                               Container(
                                 padding: EdgeInsets.all(AppSpacing.md),
                                 margin: EdgeInsets.only(bottom: AppSpacing.md),
                                 decoration: BoxDecoration(
-                                  color: AppColors.error.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                                  color:
+                                      AppColors.error.withValues(alpha: 0.2),
+                                  borderRadius:
+                                      BorderRadius.circular(AppBorderRadius.md),
                                   border: Border.all(
-                                    color: AppColors.error
-                                        .withValues(alpha: 0.5),
+                                    color:
+                                        AppColors.error.withValues(alpha: 0.5),
                                     width: 1.0,
                                   ),
                                 ),
@@ -601,14 +460,15 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                               ),
                             ],
 
-                            // Permission status (using cached state, no async in build)
+                            // Permission status
                             Builder(
                               builder: (context) {
-                                final status = NotificationPermissionService().cachedStatus;
+                                final status =
+                                    NotificationPermissionService().cachedStatus;
 
                                 if (status ==
-                                        NotificationPermissionStatus
-                                            .permanentlyDenied) {
+                                    NotificationPermissionStatus
+                                        .permanentlyDenied) {
                                   return Container(
                                     margin:
                                         EdgeInsets.only(bottom: AppSpacing.md),
@@ -616,7 +476,8 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                     decoration: BoxDecoration(
                                       color: AppColors.warning
                                           .withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                                      borderRadius: BorderRadius.circular(
+                                          AppBorderRadius.md),
                                       border: Border.all(
                                         color: AppColors.warning
                                             .withValues(alpha: 0.5),
@@ -633,8 +494,8 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                         SizedBox(height: AppSpacing.sm),
                                         Text(
                                           'Notification permission required',
-                                          style: AppTypography.titleSmall
-                                              .copyWith(
+                                          style:
+                                              AppTypography.titleSmall.copyWith(
                                             color: Colors.white,
                                           ),
                                           textAlign: TextAlign.center,
@@ -642,8 +503,8 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                         SizedBox(height: AppSpacing.xs),
                                         Text(
                                           'Please enable notifications in Settings',
-                                          style: AppTypography.bodySmall
-                                              .copyWith(
+                                          style:
+                                              AppTypography.bodySmall.copyWith(
                                             color: Colors.white
                                                 .withValues(alpha: 0.8),
                                           ),
@@ -656,7 +517,8 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                                 .openSystemSettings();
                                           },
                                           text: 'Open Settings',
-                                          trailingIcon: AppPhosphorIcons.externalLink,
+                                          trailingIcon:
+                                              AppPhosphorIcons.externalLink,
                                           size: AppButtonSize.small,
                                           variant: AppButtonVariant.primary,
                                         ),
@@ -665,264 +527,148 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                   );
                                 }
 
-                                return SizedBox.shrink();
+                                return const SizedBox.shrink();
                               },
                             ),
 
+                            // Inline summary
+                            _buildWatchingSummary(),
+
+                            // FILTERS section
+                            const AlertSectionLabel(
+                              text: 'FILTERS',
+                              isFirst: true,
+                            ),
+
                             // Game Vibe
-                            _buildSection(
-                              icon: AppPhosphorIcons.gameVibe,
+                            AlertFilterCard(
                               title: 'Game Vibe',
-                              subtitle: 'Select preferred game atmosphere',
-                              children: [
-                                _buildMultiSelectChips(
-                                  selectedValues: _subscription!.gameVibes,
-                                  options: kCreateGameVibeOptions,
-                                  onChanged: (values) {
-                                    _updateSubscription(
-                                      _subscription!
-                                          .copyWith(gameVibes: values),
-                                    );
-                                  },
-                                ),
-                              ],
+                              icon: AppPhosphorIcons.gameVibe,
+                              selectedValues: _subscription!.gameVibes,
+                              isExpanded: _expandedFilterIndex == 0,
+                              onTap: () => _toggleFilterExpanded(0),
+                              expandedContent: AlertFilterChips(
+                                selectedValues: _subscription!.gameVibes,
+                                options: kCreateGameVibeOptions,
+                                onChanged: (values) {
+                                  _updateSubscription(
+                                    _subscription!.copyWith(gameVibes: values),
+                                  );
+                                },
+                              ),
                             ),
 
                             // Stakes
-                            _buildSection(
-                              icon: AppPhosphorIcons.betting,
+                            AlertFilterCard(
                               title: 'Stakes',
-                              subtitle: 'How much are you playing for?',
-                              children: [
-                                _buildMultiSelectChips(
-                                  selectedValues: _subscription!.stakes,
-                                  options: kCreateGameStakesOptions,
-                                  onChanged: (values) {
-                                    _updateSubscription(
-                                      _subscription!.copyWith(stakes: values),
-                                    );
-                                  },
-                                ),
-                              ],
+                              icon: AppPhosphorIcons.betting,
+                              selectedValues: _subscription!.stakes,
+                              isExpanded: _expandedFilterIndex == 1,
+                              onTap: () => _toggleFilterExpanded(1),
+                              expandedContent: AlertFilterChips(
+                                selectedValues: _subscription!.stakes,
+                                options: kCreateGameStakesOptions,
+                                onChanged: (values) {
+                                  _updateSubscription(
+                                    _subscription!.copyWith(stakes: values),
+                                  );
+                                },
+                              ),
                             ),
 
-                            // Format
-                            _buildSection(
-                              icon: AppPhosphorIcons.trophy,
+                            // Primary Format
+                            AlertFilterCard(
                               title: 'Primary Format',
-                              subtitle: 'Scoring format preference',
-                              children: [
-                                _buildMultiSelectChips(
-                                  selectedValues: _subscription!.formats,
-                                  options: kCreateGamePrimaryFormatOptions,
-                                  onChanged: (values) {
-                                    _updateSubscription(
-                                      _subscription!.copyWith(formats: values),
-                                    );
-                                  },
-                                ),
-                              ],
+                              icon: AppPhosphorIcons.trophy,
+                              selectedValues: _subscription!.formats,
+                              isExpanded: _expandedFilterIndex == 2,
+                              onTap: () => _toggleFilterExpanded(2),
+                              expandedContent: AlertFilterChips(
+                                selectedValues: _subscription!.formats,
+                                options: kCreateGamePrimaryFormatOptions,
+                                onChanged: (values) {
+                                  _updateSubscription(
+                                    _subscription!.copyWith(formats: values),
+                                  );
+                                },
+                              ),
                             ),
 
                             // Handicap Use
-                            _buildSection(
-                              icon: AppPhosphorIcons.scoring,
+                            AlertFilterCard(
                               title: 'Handicap Use',
-                              subtitle: 'Gross, net, or both?',
-                              children: [
-                                _buildMultiSelectChips(
-                                  selectedValues: _subscription!.handicapUses,
-                                  options: kCreateGameHandicapOptions,
-                                  onChanged: (values) {
-                                    _updateSubscription(
-                                      _subscription!
-                                          .copyWith(handicapUses: values),
-                                    );
-                                  },
-                                ),
-                              ],
+                              icon: AppPhosphorIcons.scoring,
+                              selectedValues: _subscription!.handicapUses,
+                              isExpanded: _expandedFilterIndex == 3,
+                              onTap: () => _toggleFilterExpanded(3),
+                              expandedContent: AlertFilterChips(
+                                selectedValues: _subscription!.handicapUses,
+                                options: kCreateGameHandicapOptions,
+                                onChanged: (values) {
+                                  _updateSubscription(
+                                    _subscription!.copyWith(handicapUses: values),
+                                  );
+                                },
+                              ),
                             ),
 
-                            // Courses
-                            _buildSection(
-                              icon: AppPhosphorIcons.golfCourse,
+                            // SPECIAL section
+                            const AlertSectionLabel(text: 'SPECIAL'),
+
+                            // Side Games
+                            AlertToggleCard(
+                              title: 'Side Games',
+                              icon: AppPhosphorIcons.wolf,
+                              value: _subscription!.special.games,
+                              onChanged: (value) {
+                                _updateSubscription(
+                                  _subscription!.copyWith(
+                                    special: _subscription!.special
+                                        .copyWith(games: value),
+                                  ),
+                                );
+                              },
+                            ),
+
+                            // 2v2 (Teams)
+                            AlertToggleCard(
+                              title: '2v2 (Teams)',
+                              icon: AppPhosphorIcons.teams,
+                              value: _subscription!.special.twoVTwo,
+                              onChanged: (value) {
+                                _updateSubscription(
+                                  _subscription!.copyWith(
+                                    special: _subscription!.special
+                                        .copyWith(twoVTwo: value),
+                                  ),
+                                );
+                              },
+                            ),
+
+                            // Discounted Games
+                            AlertToggleCard(
+                              title: 'Discounted Games',
+                              icon: AppPhosphorIcons.memberDiscount,
+                              value: _subscription!.special.discount,
+                              onChanged: (value) {
+                                _updateSubscription(
+                                  _subscription!.copyWith(
+                                    special: _subscription!.special
+                                        .copyWith(discount: value),
+                                  ),
+                                );
+                              },
+                            ),
+
+                            // COURSES section
+                            const AlertSectionLabel(text: 'COURSES'),
+
+                            // Courses navigation card
+                            AlertNavigationCard(
                               title: 'Courses',
-                              subtitle:
-                                  'Only notify for games at these courses',
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.all(AppSpacing.md),
-                                  child: Column(
-                                    children: [
-                                      if (_selectedCourses.isEmpty)
-                                        Text(
-                                          'No courses selected (all courses)',
-                                          style: AppTypography.bodyMedium
-                                              .copyWith(
-                                            color: Colors.white
-                                                .withValues(alpha: 0.6),
-                                          ),
-                                        )
-                                      else
-                                        Wrap(
-                                          spacing: AppSpacing.sm,
-                                          runSpacing: AppSpacing.sm,
-                                          children: _selectedCourses
-                                              .map(
-                                                (course) => Container(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: AppSpacing.md,
-                                                    vertical: AppSpacing.sm,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: AppColors.green,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            AppBorderRadius.lg),
-                                                  ),
-                                                  child: Text(
-                                                    course.name,
-                                                    style: AppTypography
-                                                        .labelMedium
-                                                        .copyWith(
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ),
-                                              )
-                                              .toList(),
-                                        ),
-                                      SizedBox(height: AppSpacing.md),
-                                      AppButtonEnhanced(
-                                        text: _selectedCourses.isEmpty
-                                            ? 'Select Courses'
-                                            : 'Edit Courses (${_selectedCourses.length})',
-                                        leadingIcon: AppPhosphorIcons.golfCourse,
-                                        size: AppButtonSize.medium,
-                                        variant: AppButtonVariant.navyFilled,
-                                        onPressed: _showCoursesPicker,
-                                        fullWidth: true,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            // Special Options
-                            _buildSection(
-                              icon: AppPhosphorIcons.settings,
-                              title: 'Special',
-                              subtitle: 'Additional game preferences',
-                              children: [
-                                _buildToggleRow(
-                                  icon: AppPhosphorIcons.wolf,
-                                  title: 'Side Games',
-                                  subtitle:
-                                      'Only notify for games with side games (Wolf, Nassau, etc.)',
-                                  value: _subscription!.special.games,
-                                  onChanged: (value) {
-                                    _updateSubscription(
-                                      _subscription!.copyWith(
-                                        special: _subscription!.special
-                                            .copyWith(games: value),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                Divider(
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                  height: 1,
-                                  thickness: 1,
-                                ),
-                                _buildToggleRow(
-                                  icon: AppPhosphorIcons.teams,
-                                  title: '2v2 (Teams)',
-                                  subtitle:
-                                      'Only notify for 2v2/team format games',
-                                  value: _subscription!.special.twoVTwo,
-                                  onChanged: (value) {
-                                    _updateSubscription(
-                                      _subscription!.copyWith(
-                                        special: _subscription!.special
-                                            .copyWith(twoVTwo: value),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                Divider(
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                  height: 1,
-                                  thickness: 1,
-                                ),
-                                _buildToggleRow(
-                                  icon: AppPhosphorIcons.memberDiscount,
-                                  title: 'Discounted Games',
-                                  subtitle:
-                                      'Only notify for games with a discount',
-                                  value: _subscription!.special.discount,
-                                  onChanged: (value) {
-                                    _updateSubscription(
-                                      _subscription!.copyWith(
-                                        special: _subscription!.special
-                                            .copyWith(discount: value),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-
-                            // Live Summary
-                            Container(
-                              padding: EdgeInsets.all(AppSpacing.md),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppColors.navy.withValues(alpha: 0.3),
-                                    AppColors.navyDark
-                                        .withValues(alpha: 0.4),
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-                                border: Border.all(
-                                  color: AppColors.gold
-                                      .withValues(alpha: 0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      AppIcon(
-                                        icon: AppPhosphorIcons.info,
-                                        color: AppColors.gold,
-                                        size: AppIconSize.button,
-                                      ),
-                                      SizedBox(width: AppSpacing.xs),
-                                      Text(
-                                        'Summary',
-                                        style:
-                                            AppTypography.labelSmall.copyWith(
-                                          color: AppColors.textMuted,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: AppSpacing.xs),
-                                  Text(
-                                    _subscription!.getSummary(),
-                                    style: AppTypography.titleSmall.copyWith(
-                                      color: Colors.white,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              icon: AppPhosphorIcons.golfCourse,
+                              subtitle: _coursesSubtitle,
+                              onTap: _showCoursesPicker,
                             ),
                           ],
                         ),
@@ -943,7 +689,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                 ],
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
-                                stops: [0.0, 0.3, 1.0],
+                                stops: const [0.0, 0.3, 1.0],
                               ),
                             ),
                             child: SafeArea(
@@ -1012,7 +758,8 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
       height: MediaQuery.of(context).size.height * 0.8,
       decoration: BoxDecoration(
         color: AppColors.navyDark,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
       ),
       child: Column(
         children: [
@@ -1101,8 +848,8 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                         onTap: () {
                           setState(() {
                             if (isSelected) {
-                              _selected.removeWhere((c) =>
-                                  c.reference.id == course.reference.id);
+                              _selected.removeWhere(
+                                  (c) => c.reference.id == course.reference.id);
                             } else {
                               _selected.add(course);
                             }
@@ -1115,7 +862,8 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                             color: isSelected
                                 ? AppColors.green.withValues(alpha: 0.2)
                                 : Colors.white.withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.md),
                             border: Border.all(
                               color: isSelected
                                   ? AppColors.green
