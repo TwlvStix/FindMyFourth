@@ -81,6 +81,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     lastNameFocusNode = FocusNode();
     usernameTextController = TextEditingController();
     usernameFocusNode = FocusNode();
+    usernameFocusNode!.addListener(_onUsernameBlur);
     phoneNumTextController = TextEditingController();
     phoneNumFocusNode = FocusNode();
     emailTextController = TextEditingController(text: currentUserEmail);
@@ -140,6 +141,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     firstNameTextController?.dispose();
     lastNameFocusNode?.dispose();
     lastNameTextController?.dispose();
+    usernameFocusNode?.removeListener(_onUsernameBlur);
     usernameFocusNode?.dispose();
     usernameTextController?.dispose();
     phoneNumFocusNode?.dispose();
@@ -149,6 +151,15 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     golfCanadaFocusNode?.dispose();
     golfCanadaTextController?.dispose();
     super.dispose();
+  }
+
+  void _onUsernameBlur() {
+    if (!usernameFocusNode!.hasFocus && usernameTextController != null) {
+      final trimmed = usernameTextController!.text.trim();
+      if (trimmed != usernameTextController!.text) {
+        usernameTextController!.text = trimmed;
+      }
+    }
   }
 
   String? _validateUsername(BuildContext context, String? val) {
@@ -451,6 +462,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     bool readOnly = false,
     TextInputType? keyboardType,
     List<TextInputFormatter>? inputFormatters,
+    FocusNode? focusNode,
   }) {
     return AppTextField(
       label: label,
@@ -462,6 +474,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       validator: validator != null ? (val) => validator(context, val) : null,
+      focusNode: focusNode,
     );
   }
 
@@ -625,6 +638,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                   label: 'Display Name',
                                   icon: AppPhosphorIcons.atSign,
                                   validator: _validateUsername,
+                                  focusNode: usernameFocusNode,
                                 ),
                                 SizedBox(height: AppSpacing.md),
 

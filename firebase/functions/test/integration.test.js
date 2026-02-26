@@ -229,7 +229,7 @@ async function makeDevice(db, userId, deviceId, token, platform = 'ios') {
   await db
     .collection('users').doc(userId)
     .collection('devices').doc(deviceId)
-    .set({ fcm_token: token, platform, lastSeenAt: new Date() });
+    .set({ fcmToken: token, platform, lastSeenAt: new Date() });
 }
 
 /** Seeds games/{gameId}. */

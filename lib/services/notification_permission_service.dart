@@ -9,7 +9,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/utils/app_log.dart';
 
 enum NotificationPermissionStatus {
@@ -306,16 +305,6 @@ class NotificationPermissionService {
     }
 
     await deviceRef.set(data, SetOptions(merge: true));
-
-    // Keep legacy token storage active for existing Cloud Functions.
-    await makeCloudCall(
-      'addFcmToken',
-      {
-        'userDocPath': 'users/$uid',
-        'fcmToken': token,
-        'deviceType': _platformLabel(),
-      },
-    );
   }
 
   Future<void> _markPermissionDenied(String uid) async {

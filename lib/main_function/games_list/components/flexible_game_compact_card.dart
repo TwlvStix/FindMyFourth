@@ -97,6 +97,7 @@ class _FlexibleGameCompactCardState extends State<FlexibleGameCompactCard>
     final isUserGame = currentUserReference != null &&
         (game.userRef == currentUserReference ||
             game.joinedPlayers.contains(currentUserReference));
+    final isCancelled = game.status == 'cancelled';
 
     return GestureDetector(
       onTap: () {
@@ -118,19 +119,21 @@ class _FlexibleGameCompactCardState extends State<FlexibleGameCompactCard>
           );
         }
       },
-      child: Container(
-        width: 260,
-        height: 100,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: AppColors.navy,
-          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-          border: Border.all(
-            color: AppColors.navyLight,
-            width: 1,
+      child: Opacity(
+        opacity: isCancelled ? 0.65 : 1.0,
+        child: Container(
+          width: 260,
+          height: 100,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: AppColors.navy,
+            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+            border: Border.all(
+              color: AppColors.navyLight,
+              width: 1,
+            ),
           ),
-        ),
-        child: Stack(
+          child: Stack(
           children: [
             // Gold accent bar on the left
             Positioned(
@@ -148,6 +151,33 @@ class _FlexibleGameCompactCardState extends State<FlexibleGameCompactCard>
                 ),
               ),
             ),
+            // Cancelled badge (top-right)
+            if (isCancelled)
+              Positioned(
+                top: AppSpacing.xs,
+                right: AppSpacing.xs,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xs,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.chip),
+                    border: Border.all(
+                      color: AppColors.error.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    'Cancelled',
+                    style: AppTypography.labelMicro.copyWith(
+                      color: AppColors.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
             // Main content
             Padding(
               padding: EdgeInsets.only(
@@ -170,6 +200,7 @@ class _FlexibleGameCompactCardState extends State<FlexibleGameCompactCard>
               ),
             ),
           ],
+        ),
         ),
       ),
     );

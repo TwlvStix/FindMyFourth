@@ -1,4 +1,4 @@
-const functions = require("firebase-functions");
+const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 admin.initializeApp();
 
@@ -918,7 +918,7 @@ exports.fetchReceiptants = functions
 exports.deleteAccount = functions
   .region("us-west2")
   .https.onCall(async (data, context) => {
-    const version = "deleteAccount-v2";
+    const version = "deleteAccount-v3";
     let uid = context.auth?.uid;
     if (!uid) {
       const idToken = data?.idToken;
@@ -951,53 +951,14 @@ exports.deleteAccount = functions
         },
       );
     }
-    const userRef = firestore.doc(`users/${uid}`);
 
     try {
-      console.log("deleteAccount start", { uid, version });
-      const userDoc = await userRef.get();
-      const displayName = userDoc.exists
-        ? userDoc.data()?.display_name || ""
-        : "";
-      console.log("deleteAccount userDoc", {
-        exists: userDoc.exists,
-        displayName,
+      await performAccountDeletion(uid, {
+        deleteAuthUser: true,
+        source: "callable_primary",
+        version,
       });
-
-      const tokensSnap = await userRef.collection(kFcmTokensCollection).get();
-      console.log("deleteAccount tokenCount", { count: tokensSnap.size });
-      if (!tokensSnap.empty) {
-        const batch = firestore.batch();
-        tokensSnap.docs.forEach((doc) => batch.delete(doc.ref));
-        await batch.commit();
-      }
-      console.log("deleteAccount tokensDeleted");
-
-      await removeUserFromArrays(userRef);
-      console.log("deleteAccount removedFromArrays");
-
-      if (displayName) {
-        const usernameRef = firestore.doc(`usernames/${displayName}`);
-        const usernameDoc = await usernameRef.get();
-        console.log("deleteAccount usernameDoc", {
-          exists: usernameDoc.exists,
-          uid: usernameDoc.exists ? usernameDoc.data()?.uid?.path : null,
-        });
-        if (
-          usernameDoc.exists &&
-          usernameDoc.data()?.uid?.path === userRef.path
-        ) {
-          await usernameRef.delete();
-        }
-      }
-      console.log("deleteAccount usernameDeleted");
-
-      await userRef.delete();
-      console.log("deleteAccount userDocDeleted");
-      await admin.auth().deleteUser(uid);
-      console.log("deleteAccount authDeleted");
-
-      return { ok: true, version };
+      return { ok: true, version, deletionMode: "callable_primary", uid };
     } catch (error) {
       console.error("deleteAccount failed", error);
       throw new functions.https.HttpsError(
@@ -1113,16 +1074,16 @@ async function sendPushNotifications(snapshot) {
     for (var userRef of userRefs) {
       const userTokens = await firestore
         .doc(userRef)
-        .collection(kFcmTokensCollection)
+        .collection(kUserDevicesCollection)
         .get();
       userTokens.docs.forEach((token) => {
-        if (typeof token.data().fcm_token !== undefined) {
-          tokens.add(token.data().fcm_token);
+        if (typeof token.data().fcmToken !== "undefined") {
+          tokens.add(token.data().fcmToken);
         }
       });
     }
   } else {
-    var userTokensQuery = firestore.collectionGroup(kFcmTokensCollection);
+    var userTokensQuery = firestore.collectionGroup(kUserDevicesCollection);
     // Handle batched push notifications by splitting tokens up by document
     // id.
     if (numBatches > 0) {
@@ -1135,9 +1096,9 @@ async function sendPushNotifications(snapshot) {
     userTokens.docs.forEach((token) => {
       const data = token.data();
       const audienceMatches =
-        targetAudience === "All" || data.device_type === targetAudience;
-      if (audienceMatches && typeof data.fcm_token !== undefined) {
-        tokens.add(data.fcm_token);
+        targetAudience === "All" || data.platform === targetAudience;
+      if (audienceMatches && typeof data.fcmToken !== "undefined") {
+        tokens.add(data.fcmToken);
       }
     });
   }
@@ -1197,8 +1158,8 @@ async function removeUserFromArrays(userRef) {
 
     for (const doc of snap.docs) {
       batch.update(doc.ref, {
-        friends: admin.firestore.FieldValue.arrayRemove([userRef]),
-        friend_requests: admin.firestore.FieldValue.arrayRemove([userRef]),
+        friends: admin.firestore.FieldValue.arrayRemove(userRef),
+        friend_requests: admin.firestore.FieldValue.arrayRemove(userRef),
       });
       opCount++;
       if (opCount >= 450) {
@@ -1287,6 +1248,107 @@ async function removeUserFromArrays(userRef) {
   ]);
 }
 
+function isAuthUserNotFoundError(error) {
+  const code = error?.code || "";
+  const message = (error?.message || "").toLowerCase();
+  return (
+    code === "auth/user-not-found" ||
+    code === "user-not-found" ||
+    message.includes("user-not-found")
+  );
+}
+
+async function deleteUserTokens(userRef) {
+  const tokensSnap = await userRef.collection(kUserDevicesCollection).get();
+  if (tokensSnap.empty) {
+    return 0;
+  }
+  const batch = firestore.batch();
+  tokensSnap.docs.forEach((doc) => batch.delete(doc.ref));
+  await batch.commit();
+  return tokensSnap.size;
+}
+
+async function cleanupUsernameReservation(userRef, displayName) {
+  if (!displayName) {
+    return false;
+  }
+  const usernameRef = firestore.doc(`usernames/${displayName}`);
+  const usernameDoc = await usernameRef.get();
+  if (
+    usernameDoc.exists &&
+    usernameDoc.data()?.uid?.path === userRef.path
+  ) {
+    await usernameRef.delete();
+    return true;
+  }
+  return false;
+}
+
+async function performAccountDeletion(
+  uid,
+  { deleteAuthUser, source, version },
+) {
+  const startedAt = Date.now();
+  const userRef = firestore.doc(`users/${uid}`);
+  console.log("accountDeletion start", {
+    uid,
+    source,
+    version,
+    deleteAuthUser,
+  });
+
+  const userDoc = await userRef.get();
+  const displayName = userDoc.exists ? userDoc.data()?.display_name || "" : "";
+  console.log("accountDeletion userDoc", {
+    uid,
+    source,
+    exists: userDoc.exists,
+    displayName,
+  });
+
+  const deletedTokenCount = await deleteUserTokens(userRef);
+  console.log("accountDeletion tokensDeleted", {
+    uid,
+    source,
+    deletedTokenCount,
+  });
+
+  await removeUserFromArrays(userRef);
+  console.log("accountDeletion refsRemoved", { uid, source });
+
+  const usernameDeleted = await cleanupUsernameReservation(userRef, displayName);
+  console.log("accountDeletion usernameCleaned", {
+    uid,
+    source,
+    usernameDeleted,
+  });
+
+  await firestore.recursiveDelete(userRef);
+  console.log("accountDeletion recursiveDeleteComplete", { uid, source });
+
+  if (deleteAuthUser) {
+    try {
+      await admin.auth().deleteUser(uid);
+      console.log("accountDeletion authDeleted", { uid, source });
+    } catch (error) {
+      if (isAuthUserNotFoundError(error)) {
+        console.log("accountDeletion authAlreadyDeleted", { uid, source });
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  const durationMs = Date.now() - startedAt;
+  console.log("accountDeletion complete", {
+    uid,
+    source,
+    version,
+    durationMs,
+  });
+}
+
 function getDocIdBound(index, numBatches) {
   if (index <= 0) {
     return "users/(";
@@ -1318,42 +1380,17 @@ exports.onUserDeleted = functions
   .region("us-west2")
   .auth.user()
   .onDelete(async (user) => {
-    let firestore = admin.firestore();
-    let userRef = firestore.doc("users/" + user.uid);
-    console.log("onUserDeleted start", { uid: user.uid });
-    const userDoc = await userRef.get();
-    const displayName = userDoc.exists ? userDoc.data()?.display_name || null : null;
-    const tokensSnap = await userRef.collection(kFcmTokensCollection).get();
-    if (!tokensSnap.empty) {
-      const batch = firestore.batch();
-      tokensSnap.docs.forEach((doc) => batch.delete(doc.ref));
-      await batch.commit();
-    }
-    await removeUserFromArrays(userRef);
-    if (displayName) {
-      const usernameRef = firestore.doc("usernames/" + displayName);
-      const usernameDoc = await usernameRef.get();
-      if (
-        usernameDoc.exists &&
-        usernameDoc.data()?.uid?.path === userRef.path
-      ) {
-        await usernameRef.delete();
-      }
-    }
-    await firestore.collection("users").doc(user.uid).delete();
-    console.log("onUserDeleted userDocDeleted", { uid: user.uid });
-    await firestore
-      .collection("chat_messages")
-      .where("user", "==", userRef)
-      .get()
-      .then(async (querySnapshot) => {
-        for (var doc of querySnapshot.docs) {
-          console.log(
-            `Deleting document ${doc.id} from collection chat_messages`,
-          );
-          await doc.ref.delete();
-        }
+    const version = "deleteAccount-v3";
+    try {
+      await performAccountDeletion(user.uid, {
+        deleteAuthUser: false,
+        source: "auth_trigger",
+        version,
       });
+    } catch (error) {
+      console.error("onUserDeleted failed", { uid: user.uid, error });
+      throw error;
+    }
   });
 
 exports.syncGameChatMembers = functions
@@ -1941,7 +1978,9 @@ exports.onUserCreated = functions
  *
  * Call from app: firebase.functions().httpsCallable('createNewRound')({...})
  */
-exports.createNewRound = functions.https.onCall(async (data, context) => {
+exports.createNewRound = functions
+  .region("us-west2")
+  .https.onCall(async (data, context) => {
   // Verify authentication
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
@@ -1968,7 +2007,9 @@ exports.createNewRound = functions.https.onCall(async (data, context) => {
 /**
  * Adds a player to an existing round.
  */
-exports.joinRound = functions.https.onCall(async (data, context) => {
+exports.joinRound = functions
+  .region("us-west2")
+  .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
@@ -1990,7 +2031,9 @@ exports.joinRound = functions.https.onCall(async (data, context) => {
  * Finalizes the group and generates all pairwise match predictions.
  * Call this when the group is full or the host locks it in.
  */
-exports.finalizeAndScore = functions.https.onCall(async (data, context) => {
+exports.finalizeAndScore = functions
+  .region("us-west2")
+  .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
@@ -2012,7 +2055,9 @@ exports.finalizeAndScore = functions.https.onCall(async (data, context) => {
 /**
  * Confirms participation (invited → confirmed).
  */
-exports.confirmJoin = functions.https.onCall(async (data, context) => {
+exports.confirmJoin = functions
+  .region("us-west2")
+  .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
@@ -2028,7 +2073,9 @@ exports.confirmJoin = functions.https.onCall(async (data, context) => {
 /**
  * Declines an invitation (invited → declined).
  */
-exports.declineInvitation = functions.https.onCall(async (data, context) => {
+exports.declineInvitation = functions
+  .region("us-west2")
+  .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
@@ -2045,7 +2092,9 @@ exports.declineInvitation = functions.https.onCall(async (data, context) => {
  * Cancels participation (confirmed → cancelled).
  * Automatically detects if cancellation happened after seeing the group.
  */
-exports.cancelJoin = functions.https.onCall(async (data, context) => {
+exports.cancelJoin = functions
+  .region("us-west2")
+  .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
@@ -2065,7 +2114,9 @@ exports.cancelJoin = functions.https.onCall(async (data, context) => {
 /**
  * Checks in a player at the course (confirmed → checked_in).
  */
-exports.checkIn = functions.https.onCall(async (data, context) => {
+exports.checkIn = functions
+  .region("us-west2")
+  .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
@@ -2084,7 +2135,9 @@ exports.checkIn = functions.https.onCall(async (data, context) => {
  *
  * Typically called by the host or triggered by a game-end event.
  */
-exports.endRound = functions.https.onCall(async (data, context) => {
+exports.endRound = functions
+  .region("us-west2")
+  .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
@@ -2104,7 +2157,9 @@ exports.endRound = functions.https.onCall(async (data, context) => {
 /**
  * Submits post-round feedback.
  */
-exports.submitRoundFeedback = functions.https.onCall(async (data, context) => {
+exports.submitRoundFeedback = functions
+  .region("us-west2")
+  .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
@@ -2137,8 +2192,9 @@ exports.submitRoundFeedback = functions.https.onCall(async (data, context) => {
  * When a participant document is created or updated,
  * sync it to the player_rounds denormalized collection.
  */
-exports.onParticipantWrite = functions.firestore
-  .document("rounds/{roundId}/participants/{playerId}")
+exports.onParticipantWrite = functions
+  .region("us-west2")
+  .firestore.document("rounds/{roundId}/participants/{playerId}")
   .onWrite(async (change, context) => {
     const { roundId, playerId } = context.params;
 
@@ -2156,8 +2212,9 @@ exports.onParticipantWrite = functions.firestore
  * When feedback is written (including behavioral backfill),
  * re-sync the player_round to pick up the new labels.
  */
-exports.onFeedbackWrite = functions.firestore
-  .document("rounds/{roundId}/feedback/{playerId}")
+exports.onFeedbackWrite = functions
+  .region("us-west2")
+  .firestore.document("rounds/{roundId}/feedback/{playerId}")
   .onWrite(async (change, context) => {
     const { roundId, playerId } = context.params;
 
@@ -2181,8 +2238,9 @@ exports.onFeedbackWrite = functions.firestore
  * computes whether the player actually played again, and writes
  * the behavioral labels.
  */
-exports.scheduledBehavioralBackfill = functions.pubsub
-  .schedule("0 3 * * *") // 3:00 AM daily
+exports.scheduledBehavioralBackfill = functions
+  .region("us-west2")
+  .pubsub.schedule("0 3 * * *") // 3:00 AM daily
   .timeZone("America/Vancouver") // Adjust to your timezone
   .onRun(async () => {
     try {
@@ -2197,8 +2255,9 @@ exports.scheduledBehavioralBackfill = functions.pubsub
  * Detects no-shows every hour.
  * Marks confirmed players as no-shows if the round started 60+ minutes ago.
  */
-exports.scheduledNoShowDetection = functions.pubsub
-  .schedule("0 * * * *") // Every hour
+exports.scheduledNoShowDetection = functions
+  .region("us-west2")
+  .pubsub.schedule("0 * * * *") // Every hour
   .timeZone("America/Vancouver")
   .onRun(async () => {
     try {
@@ -2215,8 +2274,9 @@ exports.scheduledNoShowDetection = functions.pubsub
  * Exports flat event log to BigQuery every 6 hours.
  * Phase 3: Replace the placeholder in sync.js with actual BQ inserts.
  */
-exports.scheduledBigQueryExport = functions.pubsub
-  .schedule("0 */6 * * *") // Every 6 hours
+exports.scheduledBigQueryExport = functions
+  .region("us-west2")
+  .pubsub.schedule("0 */6 * * *") // Every 6 hours
   .timeZone("America/Vancouver")
   .onRun(async () => {
     try {

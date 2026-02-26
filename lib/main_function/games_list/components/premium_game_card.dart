@@ -125,13 +125,10 @@ class _PremiumGameCardState extends State<PremiumGameCard>
 
     return GestureDetector(
       onTap: () async {
-        if (isCancelled) {
-          if (widget.getCancelledHandling?.call(game) == null) {
-            await widget.onCancelledGameTap?.call(game);
-          }
-        } else if (isLocked) {
+        if (isLocked && !isCancelled) {
           await widget.onFriendsOnlyTap?.call();
         } else if (isUserGame) {
+          // Navigate to joined game detail (includes cancelled games user joined)
           context.pushNamed(
             GameJoinedDetailedWidget.routeName,
             extra: <String, dynamic>{
@@ -140,6 +137,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
             },
           );
         } else {
+          // Navigate to join game detail (includes cancelled games - will show banner)
           context.pushNamed(
             JoinGameDetailedWidget.routeName,
             extra: <String, dynamic>{
@@ -149,19 +147,21 @@ class _PremiumGameCardState extends State<PremiumGameCard>
           );
         }
       },
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: AppColors.navy,
-          borderRadius: BorderRadius.circular(AppBorderRadius.card),
-          border: Border.all(
-            color: AppColors.navyLight,
-            width: 1.0,
+      child: Opacity(
+        opacity: isCancelled ? 0.65 : 1.0,
+        child: Container(
+          clipBehavior: Clip.antiAlias,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: AppColors.navy,
+            borderRadius: BorderRadius.circular(AppBorderRadius.card),
+            border: Border.all(
+              color: AppColors.navyLight,
+              width: 1.0,
+            ),
+            boxShadow: [AppElevation.card],
           ),
-          boxShadow: [AppElevation.card],
-        ),
-        child: Column(
+          child: Column(
           children: [
             // Main content
             Padding(
@@ -194,6 +194,7 @@ class _PremiumGameCardState extends State<PremiumGameCard>
               ),
             ),
           ],
+        ),
         ),
       ),
     );

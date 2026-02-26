@@ -106,8 +106,8 @@ function makeSentDoc(offsetMs = 0) {
   };
 }
 
-const DEVICE_1 = { id: 'dev_1', data: () => ({ fcm_token: 'tok_abc', platform: 'ios' }) };
-const DEVICE_2 = { id: 'dev_2', data: () => ({ fcm_token: 'tok_def', platform: 'android' }) };
+const DEVICE_1 = { id: 'dev_1', data: () => ({ fcmToken: 'tok_abc', platform: 'ios' }) };
+const DEVICE_2 = { id: 'dev_2', data: () => ({ fcmToken: 'tok_def', platform: 'android' }) };
 
 const SEND_SUCCESS = (deviceId) => ({ success: true,  deviceId, latencyMs: 10 });
 const SEND_FAIL_INVALID = (deviceId) => ({

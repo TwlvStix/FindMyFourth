@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/widgets/app_count_controller.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/app_drop_down.dart';
@@ -18,7 +19,6 @@ import '/core/form_field_controller.dart';
 import '/profile/change_photo/change_photo_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
@@ -290,7 +290,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                           height: 4,
                           decoration: BoxDecoration(
                             color: AppColors.navyLight,
-                            borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.xxs),
                           ),
                         ),
 
@@ -339,7 +340,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.gold.withValues(alpha:0.3),
+                    color: AppColors.gold.withValues(alpha: 0.3),
                     blurRadius: 40,
                     spreadRadius: 5,
                   ),
@@ -572,10 +573,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                     Expanded(
                       child: Container(
                         height: 56,
-                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: AppSpacing.md),
                         decoration: BoxDecoration(
                           color: AppColors.inputBackground,
-                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                          borderRadius:
+                              BorderRadius.circular(AppBorderRadius.md),
                           border: Border.all(color: AppColors.inputBorderIdle),
                         ),
                         child: Row(
@@ -588,11 +591,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             SizedBox(width: AppSpacing.sm),
                             Expanded(
                               child: Text(
-                                valueOrDefault(currentUserDocument?.gender, '').isNotEmpty
+                                valueOrDefault(currentUserDocument?.gender, '')
+                                        .isNotEmpty
                                     ? currentUserDocument!.gender
                                     : 'Gender',
                                 style: AppTypography.bodyMedium.copyWith(
-                                  color: valueOrDefault(currentUserDocument?.gender, '').isNotEmpty
+                                  color: valueOrDefault(
+                                              currentUserDocument?.gender, '')
+                                          .isNotEmpty
                                       ? AppColors.textSecondary
                                       : AppColors.textMuted,
                                 ),
@@ -608,10 +614,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                     Expanded(
                       child: Container(
                         height: 56,
-                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: AppSpacing.md),
                         decoration: BoxDecoration(
                           color: AppColors.inputBackground,
-                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                          borderRadius:
+                              BorderRadius.circular(AppBorderRadius.md),
                           border: Border.all(color: AppColors.inputBorderIdle),
                         ),
                         child: Row(
@@ -628,9 +636,10 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                                     ? '${currentUserDocument!.dateOfBirth!.month.toString().padLeft(2, '0')}/${currentUserDocument!.dateOfBirth!.day.toString().padLeft(2, '0')}/${currentUserDocument!.dateOfBirth!.year}'
                                     : 'Birthday',
                                 style: AppTypography.bodyMedium.copyWith(
-                                  color: currentUserDocument?.dateOfBirth != null
-                                      ? AppColors.textSecondary
-                                      : AppColors.textMuted,
+                                  color:
+                                      currentUserDocument?.dateOfBirth != null
+                                          ? AppColors.textSecondary
+                                          : AppColors.textMuted,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -679,7 +688,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         height: 56,
                         decoration: BoxDecoration(
                           color: AppColors.inputBackground,
-                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                          borderRadius:
+                              BorderRadius.circular(AppBorderRadius.md),
                           border: Border.all(color: AppColors.inputBorderIdle),
                         ),
                         alignment: Alignment.center,
@@ -690,7 +700,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                       );
                     }
 
-                    List<CourseRecord> courses = snapshot.data!..sort((a, b) => a.name.compareTo(b.name));
+                    List<CourseRecord> courses = snapshot.data!
+                      ..sort((a, b) => a.name.compareTo(b.name));
 
                     if (coursesValue == null && mounted) {
                       coursesValue = valueOrDefault(
@@ -753,7 +764,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                          borderRadius:
+                              BorderRadius.circular(AppBorderRadius.sm),
                         ),
                         child: Icon(
                           AppPhosphorIcons.flagCheckered,
@@ -790,12 +802,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             color: enabled
                                 ? AppColors.navyLight
                                 : AppColors.navyLight.withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.sm),
                           ),
                           child: Icon(
                             AppPhosphorIcons.minus,
-                            color:
-                                enabled ? AppColors.textPrimary : AppColors.textMuted,
+                            color: enabled
+                                ? AppColors.textPrimary
+                                : AppColors.textMuted,
                             size: AppIconSize.button,
                           ),
                         ),
@@ -806,12 +820,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             color: enabled
                                 ? AppColors.navyLight
                                 : AppColors.navyLight.withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.sm),
                           ),
                           child: Icon(
                             AppPhosphorIcons.plus,
-                            color:
-                                enabled ? AppColors.textPrimary : AppColors.textMuted,
+                            color: enabled
+                                ? AppColors.textPrimary
+                                : AppColors.textMuted,
                             size: AppIconSize.button,
                           ),
                         ),
@@ -825,7 +841,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             overflow: TextOverflow.clip,
                             textAlign: TextAlign.center,
                             style: AppTypography.monoLarge.copyWith(
-                              color: AppColors.textPrimary.withValues(alpha: 0.85),
+                              color:
+                                  AppColors.textPrimary.withValues(alpha: 0.85),
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -881,7 +898,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(AppPhosphorIcons.success, color: AppColors.pure, size: AppIconSize.md),
+              Icon(AppPhosphorIcons.success,
+                  color: AppColors.pure, size: AppIconSize.md),
               SizedBox(width: AppSpacing.xs),
               Text(
                 'Save Changes',
@@ -920,9 +938,13 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           if (!confirm) return;
 
           try {
-            final user = FirebaseAuth.instance.currentUser;
-            if (user == null) throw StateError('no_user');
-            await user.delete();
+            final deleted = await deleteAccount();
+            if (!deleted) {
+              if (!mounted) return;
+              showSnackbar(
+                  context, 'Unable to delete account. Please try again.');
+              return;
+            }
             await authManager.signOut();
             if (!mounted) return;
             context.goNamed(
@@ -931,13 +953,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                 kTransitionInfoKey: TransitionStandards.modalTransition,
               },
             );
-          } on FirebaseAuthException catch (e) {
-            debugPrint('Delete account failed (auth): ${e.code} ${e.message}');
-            if (!mounted) return;
-            final message = e.code == 'requires-recent-login'
-                ? 'Please sign in again before deleting your account.'
-                : 'Unable to delete account. Please try again.';
-            showSnackbar(context, message);
           } catch (e) {
             debugPrint('Delete account failed: $e');
             if (!mounted) return;

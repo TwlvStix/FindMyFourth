@@ -22,6 +22,7 @@ import '/core/widgets/app_icon.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/cancelled_game_banner.dart';
 import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_info_card.dart';
 import '/core/widgets/premium_section_header.dart';
@@ -343,6 +344,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
           );
         }
         final gameJoinedDetailedGamesRecord = Game.fromRecord(gamesRecord);
+        final isCancelled = gameJoinedDetailedGamesRecord.isCancelledStatus;
         _ensureGroupVibeMatch(gameJoinedDetailedGamesRecord, currentUserRef);
 
         // Trigger entrance animations once when content first loads
@@ -1010,9 +1012,20 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                   ),
                 ),
                   SizedBox(height: AppSpacing.md),
-                  // Add Players button (for owner, when not full)
+
+                  // Cancelled game banner
+                  if (isCancelled)
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        AppSpacing.md, 0, AppSpacing.md, AppSpacing.md,
+                      ),
+                      child: const CancelledGameBanner(),
+                    ),
+
+                  // Add Players button (for owner, when not full, not cancelled)
                   if (gameJoinedDetailedGamesRecord.userRef == currentUserRef &&
-                      _getPlayerCount(gameJoinedDetailedGamesRecord) < 4)
+                      _getPlayerCount(gameJoinedDetailedGamesRecord) < 4 &&
+                      !isCancelled)
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       child: AppButtonEnhanced(
@@ -1029,10 +1042,11 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                       ),
                     ),
                   if (gameJoinedDetailedGamesRecord.userRef == currentUserRef &&
-                      _getPlayerCount(gameJoinedDetailedGamesRecord) < 4)
+                      _getPlayerCount(gameJoinedDetailedGamesRecord) < 4 &&
+                      !isCancelled)
                     SizedBox(height: AppSpacing.md),
-                  // Leave game button (for non-owner)
-                  if (gameJoinedDetailedGamesRecord.userRef != currentUserRef)
+                  // Leave game button (for non-owner, not cancelled)
+                  if (gameJoinedDetailedGamesRecord.userRef != currentUserRef && !isCancelled)
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       child: AppButtonEnhanced(
@@ -1122,8 +1136,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                         },
                       ),
                     ),
-                  // Cancel game button (for owner)
-                  if (gameJoinedDetailedGamesRecord.userRef == currentUserRef)
+                  // Cancel game button (for owner, not already cancelled)
+                  if (gameJoinedDetailedGamesRecord.userRef == currentUserRef && !isCancelled)
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       child: AppButtonEnhanced(

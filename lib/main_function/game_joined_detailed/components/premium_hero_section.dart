@@ -21,6 +21,8 @@ class PremiumHeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isCancelled = game.isCancelledStatus;
+
     return Container(
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -42,25 +44,31 @@ class PremiumHeroSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Status badge
+          // Status badge - shows Cancelled or Joined
           Container(
             padding: EdgeInsets.symmetric(
               horizontal: AppSpacing.sm,
               vertical: AppSpacing.xxs,
             ),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.green, AppColors.greenLight],
+              gradient: LinearGradient(
+                colors: isCancelled
+                    ? [AppColors.stone, AppColors.stone]
+                    : [AppColors.green, AppColors.greenLight],
               ),
               borderRadius: BorderRadius.circular(AppBorderRadius.xl),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AppIcon(icon: AppPhosphorIcons.joined, color: AppColors.pure, size: AppIconSize.xs),
+                AppIcon(
+                  icon: isCancelled ? AppPhosphorIcons.blocked : AppPhosphorIcons.joined,
+                  color: AppColors.pure,
+                  size: AppIconSize.xs,
+                ),
                 const SizedBox(width: 4),
                 Text(
-                  'Joined',
+                  isCancelled ? 'Cancelled' : 'Joined',
                   style: AppTypography.labelSmall.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,

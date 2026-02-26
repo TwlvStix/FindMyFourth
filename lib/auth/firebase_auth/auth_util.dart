@@ -39,7 +39,23 @@ bool get currentUserEmailVerified => currentUser?.emailVerified ?? false;
 String? _currentJwtToken;
 final jwtTokenStream = FirebaseAuth.instance
     .idTokenChanges()
-    .map((user) async => _currentJwtToken = await user?.getIdToken())
+    .asyncMap((user) async {
+      if (user == null) {
+        _currentJwtToken = null;
+        return null;
+      }
+
+      try {
+        _currentJwtToken = await user.getIdToken();
+      } catch (_) {
+        // Token fetch failures can happen during transient auth/session changes,
+        // including platform-level errors (FlutterError) not just FirebaseAuthException.
+        // Keep app state stable and let the next auth event retry.
+        _currentJwtToken = null;
+      }
+
+      return _currentJwtToken;
+    })
     .asBroadcastStream();
 
 DocumentReference? get currentUserReference =>

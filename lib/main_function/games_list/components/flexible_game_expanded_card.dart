@@ -39,19 +39,21 @@ class FlexibleGameExpandedCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => _navigateToGame(context, isUserGame),
-      child: Container(
-        width: double.infinity,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: AppColors.navy,
-          borderRadius: BorderRadius.circular(AppBorderRadius.card),
-          border: Border.all(
-            color: AppColors.navyLight,
-            width: 1,
+      child: Opacity(
+        opacity: isCancelled ? 0.65 : 1.0,
+        child: Container(
+          width: double.infinity,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: AppColors.navy,
+            borderRadius: BorderRadius.circular(AppBorderRadius.card),
+            border: Border.all(
+              color: AppColors.navyLight,
+              width: 1,
+            ),
+            boxShadow: [AppElevation.card],
           ),
-          boxShadow: [AppElevation.card],
-        ),
-        child: Padding(
+          child: Padding(
           padding: EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,6 +75,7 @@ class FlexibleGameExpandedCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

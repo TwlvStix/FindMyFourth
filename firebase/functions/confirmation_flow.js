@@ -33,7 +33,7 @@
 
 "use strict";
 
-const functions = require("firebase-functions");
+const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 const trustProfile = require("./trust_profile");
 const { routeNotification } = require('./notifications/trust/router');

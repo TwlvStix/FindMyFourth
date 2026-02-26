@@ -12,6 +12,7 @@ import '/main_function/game_joined_detailed/components/player_match_chip.dart';
 import '/main_function/game_joined_detailed/components/group_vibe_summary.dart';
 import '/main_function/game_joined_detailed/components/premium_app_bar.dart';
 import '/core/widgets/trust/restriction_banner.dart';
+import '/core/widgets/cancelled_game_banner.dart';
 import '/core/widgets/app_info_card.dart';
 import '/core/widgets/premium_section_header.dart';
 import '/utils/app_util.dart';
@@ -601,6 +602,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
           );
         }
         final joinGameDetailedGamesRecord = Game.fromRecord(gamesRecord);
+        final isCancelled = joinGameDetailedGamesRecord.isCancelledStatus;
         _ensureGroupVibeMatch(joinGameDetailedGamesRecord, currentUserRef);
 
         // Trigger entrance animation once when content first loads
@@ -1137,8 +1139,17 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
 
                       SizedBox(height: AppSpacing.md),
 
+                      // Cancelled game banner — shown when game is cancelled
+                      if (isCancelled)
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            AppSpacing.md, 0, AppSpacing.md, AppSpacing.md,
+                          ),
+                          child: const CancelledGameBanner(),
+                        ),
+
                       // Restriction banner — shown above join button when player is restricted
-                      if (joinGameDetailedGamesRecord.userRef != currentUserRef)
+                      if (joinGameDetailedGamesRecord.userRef != currentUserRef && !isCancelled)
                         Consumer<TrustProvider>(
                           builder: (context, trust, _) {
                             final restriction = trust.myStanding?.currentRestriction;
@@ -1155,7 +1166,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                           },
                         ),
 
-                      if (joinGameDetailedGamesRecord.userRef != currentUserRef)
+                      if (joinGameDetailedGamesRecord.userRef != currentUserRef && !isCancelled)
                         Consumer2<TrustProvider, UserProvider>(
                           builder: (context, trust, userProvider, _) {
                             final isRestricted = trust.myStanding?.currentRestriction != null;
@@ -1281,6 +1292,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                         break;
                                       case 'game-not-found':
                                         message = 'Game not found';
+                                        break;
+                                      case 'game-cancelled':
+                                        message = 'This game has been cancelled';
                                         break;
                                       case 'gender-restricted':
                                         final restrictionLabel =

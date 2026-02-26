@@ -355,7 +355,7 @@ async function seedUsers(db, count) {
       await db.collection('users').doc(userId)
         .collection('devices').doc(`device_${d}`)
         .set({
-          fcm_token: generateFcmToken(userId, d),
+          fcmToken: generateFcmToken(userId, d),
           platform: d === 0 ? 'ios' : 'android',
           lastSeenAt: new Date(),
         });

@@ -332,7 +332,20 @@ class _MyAppState extends State<MyApp> {
       }
     });
 
-    _jwtTokenSub = jwtTokenStream.listen((_) {});
+    _jwtTokenSub = jwtTokenStream.listen(
+      (_) {},
+      onError: (error, stackTrace) {
+        debugPrint('⚠️ APP: JWT token stream error: $error');
+        if (!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(
+            error,
+            stackTrace,
+            reason: 'JWT token stream listener error',
+            fatal: false,
+          );
+        }
+      },
+    );
 
     debugPrint('⏱️  APP: Starting 3-second fallback timer');
     _splashFallbackTimer = Timer(const Duration(seconds: 3), () {

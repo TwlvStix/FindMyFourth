@@ -317,10 +317,10 @@ async function routeNotification(event, db) {
     .get();
 
   const devices = devicesSnap.docs
-    .filter((d) => Boolean(d.data().fcm_token))
+    .filter((d) => Boolean(d.data().fcmToken))
     .map((d) => ({
       deviceId: d.id,
-      fcmToken: d.data().fcm_token,
+      fcmToken: d.data().fcmToken,
       platform: d.data().platform || 'unknown',
     }));
 

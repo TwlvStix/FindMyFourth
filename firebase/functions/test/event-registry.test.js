@@ -4,11 +4,11 @@
  * Trust System Event Registry — Unit Tests
  *
  * Covers:
- *   - Enum values (snake_case convention, all 15 types, all priorities, all categories)
+ *   - Enum values (snake_case convention, all 17 types, all priorities, all categories)
  *   - getEventConfig: valid types, unknown type error
  *   - getPriorityConfig: all 4 priorities, unknown priority error
  *   - PRIORITY_FCM_CONFIG: correct android/apns/interruption values
- *   - renderTemplate: all 15 event types (happy path + missing variable error)
+ *   - renderTemplate: all 17 event types (happy path + missing variable error)
  *   - reminderTemplate: host_checkin_due happy path + missing variable error
  *   - isReminder=true on event with no reminderTemplate → error
  *
@@ -28,9 +28,9 @@ const {
 // ── Enum value correctness ────────────────────────────────────────────────────
 
 describe('TrustEventType enum', () => {
-  test('all 15 values use snake_case', () => {
+  test('all 17 values use snake_case', () => {
     const values = Object.values(TrustEventType);
-    expect(values).toHaveLength(15);
+    expect(values).toHaveLength(17);
     for (const v of values) {
       // snake_case: lowercase letters, digits, and underscores only
       expect(v).toMatch(/^[a-z][a-z0-9_]*$/);

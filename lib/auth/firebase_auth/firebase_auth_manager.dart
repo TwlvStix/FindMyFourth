@@ -539,65 +539,66 @@ class FirebaseAuthManager extends AuthManager
     Object? fallbackExtra,
     bool replaceRoute = true,
   }) async {
-    final completedOnboarding = await _hasCompletedOnboarding();
-    if (!context.mounted) {
-      return;
-    }
-
     final user = FirebaseAuth.instance.currentUser;
-    final userDocPath =
-        user != null ? UsersRecord.collection.doc(user.uid).path : '';
-    final backendConfirmed = userDocPath.isNotEmpty
-        ? await _verifyOnboardingCompleted(userDocPath)
-        : false;
-    if (!context.mounted) {
-      return;
-    }
-
-    if (!completedOnboarding || !backendConfirmed) {
-      if (user != null) {
-        try {
-          final userDoc = await UsersRecord.getDocumentOnce(
-            UsersRecord.collection.doc(user.uid),
-          );
-          if (!context.mounted) {
-            return;
-          }
-          final hasProfileData = userDoc.displayName.isNotEmpty ||
-              userDoc.firstName.isNotEmpty ||
-              userDoc.lastName.isNotEmpty;
-          if (hasProfileData) {
-            await makeCloudCall(
-              'completeOnboarding',
-              {'userDocPath': userDocPath},
-            );
-            if (!context.mounted) {
-              return;
-            }
-            if (replaceRoute) {
-              context.goNamed(fallbackRouteName, extra: fallbackExtra);
-            } else {
-              context.pushNamed(fallbackRouteName, extra: fallbackExtra);
-            }
-            return;
-          }
-        } catch (_) {}
-      }
-      if (!context.mounted) {
-        return;
-      }
+    if (user == null) {
+      if (!context.mounted) return;
       context.goNamed(
         'UserOnboarding',
-        queryParameters: {
-          'next': fallbackRouteName,
-        },
+        queryParameters: {'next': fallbackRouteName},
       );
       return;
     }
 
-    if (!context.mounted) {
+    final userDocPath = UsersRecord.collection.doc(user.uid).path;
+
+    // Always verify profile exists, regardless of what flags say
+    bool hasProfileData = false;
+    try {
+      final userDoc = await UsersRecord.getDocumentOnce(
+        UsersRecord.collection.doc(user.uid),
+      );
+      hasProfileData = userDoc.displayName.isNotEmpty ||
+          userDoc.firstName.isNotEmpty ||
+          userDoc.lastName.isNotEmpty;
+    } catch (e) {
+      // Document doesn't exist or fetch failed - user needs onboarding
+      AppLog.d('📖 AUTH: Profile check failed for ${user.uid}: $e');
+      hasProfileData = false;
+    }
+
+    if (!context.mounted) return;
+
+    if (!hasProfileData) {
+      // No profile data - send to onboarding
+      AppLog.d('📖 AUTH: No profile data, routing to onboarding');
+      context.goNamed(
+        'UserOnboarding',
+        queryParameters: {'next': fallbackRouteName},
+      );
       return;
     }
+
+    // Profile exists - ensure onboarding is marked complete
+    final completedOnboarding = await _hasCompletedOnboarding();
+    final backendConfirmed = await _verifyOnboardingCompleted(userDocPath);
+
+    if (!context.mounted) return;
+
+    if (!completedOnboarding || !backendConfirmed) {
+      // Profile exists but onboarding flags not set - fix them
+      try {
+        await makeCloudCall(
+          'completeOnboarding',
+          {'userDocPath': userDocPath},
+        );
+      } catch (e) {
+        AppLog.d('❌ AUTH: completeOnboarding call failed: $e');
+      }
+    }
+
+    if (!context.mounted) return;
+
+    // Route to fallback (e.g., Games List)
     if (replaceRoute) {
       context.goNamed(fallbackRouteName, extra: fallbackExtra);
     } else {
@@ -611,7 +612,13 @@ class FirebaseAuthManager extends AuthManager
       if (user == null) {
         return false;
       }
-      await user.getIdToken(true);
+      // Refresh token - this can fail with platform errors, not just FirebaseAuthException
+      try {
+        await user.getIdToken(true);
+      } catch (e) {
+        AppLog.d('❌ AUTH: getIdToken failed during onboarding check: $e');
+        return false;
+      }
       final result = await makeCloudCall(
         'checkOnboardingComplete',
         {'userDocPath': userDocPath},

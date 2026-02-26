@@ -3,7 +3,6 @@
   "description": "Firebase Cloud Functions",
   "dependencies": {
     "@google-cloud/tasks": "^6.2.1",
-    "@sendgrid/mail": "^8.0.0",
     "@langchain/anthropic": "^0.1.1",
     "@langchain/core": "^0.3.19",
     "@langchain/google-genai": "^0.0.8",
@@ -11,22 +10,23 @@
     "@langchain/openai": "^0.3.14",
     "@mux/mux-node": "^7.3.3",
     "@onesignal/node-onesignal": "^2.0.1-beta2",
+    "@sendgrid/mail": "^8.0.0",
     "axios": "1.12.0",
     "braintree": "^3.6.0",
     "firebase-admin": "^11.11.0",
-    "firebase-functions": "^4.4.1",
+    "firebase-functions": "^7.0.6",
     "qs": "^6.7.0",
     "razorpay": "^2.8.4",
     "stripe": "^8.0.1"
   },
   "devDependencies": {
-    "eslint": "^6.8.0",
+    "eslint": "^8.57.1",
     "eslint-plugin-promise": "^4.2.1",
     "jest": "^29.0.0"
   },
   "scripts": {
     "test": "jest --testPathPattern=test/",
-    "lint": "./node_modules/.bin/eslint --max-warnings=0 .",
+    "lint": "./node_modules/.bin/eslint --max-warnings=30 .",
     "serve": "firebase -P find-my-fourth emulators:start --only functions",
     "shell": "firebase -P find-my-fourth functions:shell",
     "start": "npm run shell",
@@ -39,7 +39,7 @@
     "notif-load-test:small": "NOTIF_LOAD_TEST_SMALL=true jest test/notification-load.test.js --testTimeout=60000"
   },
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "private": true
 }

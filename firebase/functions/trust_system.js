@@ -36,7 +36,7 @@
  * NOTE: admin.initializeApp() is called in index.js — do NOT call it here.
  */
 
-const functions = require("firebase-functions");
+const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 
 // admin is already initialized by index.js before this module is required.

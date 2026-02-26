@@ -51,6 +51,7 @@ class AppTextField extends StatefulWidget {
   final String? suffixSvgPath;
   final PhosphorIconData? suffixPhosphorIcon;
   final VoidCallback? onSuffixIconTap;
+  final FocusNode? focusNode;
 
   const AppTextField({
     super.key,
@@ -78,6 +79,7 @@ class AppTextField extends StatefulWidget {
     this.suffixSvgPath,
     this.suffixPhosphorIcon,
     this.onSuffixIconTap,
+    this.focusNode,
   });
 
   @override
@@ -87,11 +89,18 @@ class AppTextField extends StatefulWidget {
 class _AppTextFieldState extends State<AppTextField> {
   late FocusNode _focusNode;
   bool _isFocused = false;
+  bool _ownsNode = false;
 
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode();
+    if (widget.focusNode != null) {
+      _focusNode = widget.focusNode!;
+      _ownsNode = false;
+    } else {
+      _focusNode = FocusNode();
+      _ownsNode = true;
+    }
     _focusNode.addListener(_onFocusChange);
   }
 
@@ -104,7 +113,9 @@ class _AppTextFieldState extends State<AppTextField> {
   @override
   void dispose() {
     _focusNode.removeListener(_onFocusChange);
-    _focusNode.dispose();
+    if (_ownsNode) {
+      _focusNode.dispose();
+    }
     super.dispose();
   }
 

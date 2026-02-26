@@ -195,6 +195,15 @@ class GameService {
         }
 
         final game = GamesRecord.fromSnapshot(gameDoc);
+
+        // Check if game is cancelled
+        if (game.isCancelled == true) {
+          throw GameOperationException(
+            'This game has been cancelled',
+            code: 'game-cancelled',
+          );
+        }
+
         final currentPlayers = game.joinedPlayers.length;
         final maxPlayers = game.maxPlayers;
 
