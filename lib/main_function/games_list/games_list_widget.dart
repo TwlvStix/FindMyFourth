@@ -209,10 +209,20 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     if (game.status != 'cancelled') {
       return false;
     }
+
+    // Auto-hide cancelled games after they've expired
+    // This happens regardless of user preference
+    if (_isCancelledGameExpired(game)) {
+      return true;
+    }
+
+    // For same-day cancelled games, check if user selected "Remove now"
     final handling = _getCancelledHandling(game);
     if (handling == CancelledGameHandling.removeNow) {
       return true;
     }
+
+    // Legacy handling options (kept for backward compatibility)
     if (handling == CancelledGameHandling.removeEndOfDay) {
       final gameDate = game.date;
       if (gameDate == null) {
@@ -235,6 +245,43 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       }
       return getCurrentTimestamp.isAfter(hideAt);
     }
+    return false;
+  }
+
+  /// Checks if a cancelled game should be auto-hidden based on expiration.
+  ///
+  /// - Scheduled games: hidden after the scheduled date passes
+  /// - Flexible games: hidden after the cancellation date passes
+  bool _isCancelledGameExpired(Game game) {
+    final now = getCurrentTimestamp;
+
+    // Scheduled games: hide after scheduled date passes
+    if (game.scheduleType == 'scheduled' && game.date != null) {
+      final endOfDay = DateTime(
+        game.date!.year,
+        game.date!.month,
+        game.date!.day,
+        23,
+        59,
+        59,
+      );
+      return now.isAfter(endOfDay);
+    }
+
+    // Flexible games: hide after cancellation date passes
+    if (game.scheduleType == 'flexible' && game.cancelledAt != null) {
+      final cancelDate = game.cancelledAt!;
+      final endOfCancelDay = DateTime(
+        cancelDate.year,
+        cancelDate.month,
+        cancelDate.day,
+        23,
+        59,
+        59,
+      );
+      return now.isAfter(endOfCancelDay);
+    }
+
     return false;
   }
 

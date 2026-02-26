@@ -2286,3 +2286,31 @@ exports.scheduledBigQueryExport = functions
       console.error("BigQuery export failed:", error);
     }
   });
+
+// ─────────────────────────────────────────────
+// CLEANUP FUNCTIONS
+// ─────────────────────────────────────────────
+
+const { cleanupCancelledGamesHandler } = require("./cleanup");
+
+/**
+ * Nightly cleanup of cancelled games.
+ * Runs at 3:00 AM Pacific daily.
+ *
+ * Deletes:
+ * - Scheduled games: cancelled AND date < today
+ * - Flexible games: cancelled AND cancelled_at < today
+ */
+exports.cleanupCancelledGames = functions
+  .region("us-west2")
+  .runWith({ timeoutSeconds: 540, memory: "512MB" })
+  .pubsub.schedule("0 3 * * *") // 3:00 AM daily
+  .timeZone("America/Los_Angeles")
+  .onRun(async () => {
+    try {
+      const results = await cleanupCancelledGamesHandler();
+      console.log("Cancelled games cleanup results:", results);
+    } catch (error) {
+      console.error("Cancelled games cleanup failed:", error);
+    }
+  });

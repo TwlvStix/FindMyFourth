@@ -20,6 +20,7 @@ class Game {
     required this.joinedPlayers,
     required this.guestPlayers,
     required this.isCancelled,
+    this.cancelledAt,
     required this.status,
     required this.date,
     required this.createdTime,
@@ -51,6 +52,7 @@ class Game {
   final List<DocumentReference> joinedPlayers;
   final List<String> guestPlayers;
   final bool isCancelled;
+  final DateTime? cancelledAt;
   final String status; // 'active', 'completed', 'cancelled', 'expired'
   final DateTime? date;
   final DateTime? createdTime;
@@ -170,6 +172,7 @@ class Game {
               .toList() ??
           [],
       isCancelled: (data['isCancelled'] as bool?) ?? false,
+      cancelledAt: (data['cancelled_at'] as Timestamp?)?.toDate(),
       status: gameStatus,
       date: (data['date'] as Timestamp?)?.toDate(),
       createdTime: (data['created_time'] as Timestamp?)?.toDate(),
@@ -221,6 +224,7 @@ class Game {
       joinedPlayers: record.joinedPlayers,
       guestPlayers: record.guestPlayers,
       isCancelled: record.isCancelled,
+      cancelledAt: record.cancelledAt,
       status: gameStatus,
       date: record.date,
       createdTime: record.createdTime,

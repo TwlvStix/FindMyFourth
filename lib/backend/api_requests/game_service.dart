@@ -330,12 +330,14 @@ class GameService {
   /// Updates:
   /// - isCancelled: true
   /// - status: 'cancelled'
+  /// - cancelled_at: server timestamp (for deletion scheduling)
   /// - updated_at: server timestamp
   Future<void> cancelGame(String gameId) async {
     try {
       await _firestore.collection('games').doc(gameId).update({
         'isCancelled': true,
         'status': 'cancelled',
+        'cancelled_at': FieldValue.serverTimestamp(),
         'updated_at': FieldValue.serverTimestamp(),
       });
     } on FirebaseException catch (e) {

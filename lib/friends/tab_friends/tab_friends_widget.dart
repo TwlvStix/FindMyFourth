@@ -650,6 +650,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                         currentUser: currentUserDocument,
                         messageLabel: '+Add',
                         messageIcon: AppPhosphorIcons.addPlayer,
+                        messageIsPrimary: true,
                         onViewProfile: () {
                           context.pushNamed(
                             'ProfileUser',
@@ -666,7 +667,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                         },
                         actionLabel: 'Deny',
                         actionIcon: AppPhosphorIcons.close,
-                        actionColor: AppColors.stone,
+                        actionVariant: ActionButtonVariant.muted,
                         showActionButton: true,
                       );
                     },

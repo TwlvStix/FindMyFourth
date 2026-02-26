@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_empty_state.dart';
+import '/core/widgets/app_icon.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/friends/components/premium_friend_card.dart';
 import '/friends/components/friend_section_header.dart';
 import '/friends/components/swipeable_friend_card.dart';
@@ -204,12 +209,268 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
         user: friend,
         currentUser: widget.currentUser,
         onViewProfile: () => widget.onViewProfile(friend),
+        messageIsPrimary: true,
         onMessage: () => widget.onMessage(friend),
-        onAction: () => widget.onRemove(friend),
-        actionLabel: 'Remove',
-        actionIcon: AppPhosphorIcons.removePlayer,
-        actionColor: AppColors.stone,
-        showActionButton: true,
+        showActionButton: false,
+        showOverflowMenu: true,
+        onOverflowAction: () => _showRemoveSheet(context, friend),
+      ),
+    );
+  }
+
+  void _showRemoveSheet(BuildContext context, UsersRecord friend) {
+    HapticFeedback.lightImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => _RemoveFriendSheet(
+        friend: friend,
+        onRemove: () {
+          Navigator.of(ctx).pop();
+          widget.onRemove(friend);
+        },
+      ),
+    );
+  }
+}
+
+/// Bottom sheet for removing a friend with inline confirmation
+class _RemoveFriendSheet extends StatefulWidget {
+  final UsersRecord friend;
+  final VoidCallback onRemove;
+
+  const _RemoveFriendSheet({
+    required this.friend,
+    required this.onRemove,
+  });
+
+  @override
+  State<_RemoveFriendSheet> createState() => _RemoveFriendSheetState();
+}
+
+class _RemoveFriendSheetState extends State<_RemoveFriendSheet> {
+  bool _showConfirm = false;
+
+  // Confirmation styling colors
+  static const _confirmBg = Color(0x0FB43C3C); // rgba(180,60,60,0.06)
+  static const _confirmBorder = Color(0x1FB43C3C); // rgba(180,60,60,0.12)
+  static const _cancelBg = Color(0x0FFFFFFF); // rgba(255,255,255,0.06)
+  static const _cancelBorder = Color(0x1AFFFFFF); // rgba(255,255,255,0.1)
+  static const _removeBg = Color(0x33C83C3C); // rgba(200,60,60,0.2)
+  static const _removeBorder = Color(0x4DC83C3C); // rgba(200,60,60,0.3)
+  static const _removeText = Color(0xFFF06464); // rgba(240,100,100,1)
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.navy,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppBorderRadius.lg),
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.xl + MediaQuery.of(context).padding.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Drag handle
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.navyLight,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          SizedBox(height: AppSpacing.lg),
+
+          // Animated content switcher
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: ScaleTransition(
+                  scale: Tween<double>(begin: 0.95, end: 1.0).animate(animation),
+                  child: child,
+                ),
+              );
+            },
+            child: _showConfirm
+                ? _buildConfirmation()
+                : _buildRemoveButton(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRemoveButton() {
+    return Material(
+      key: const ValueKey('remove_button'),
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          setState(() => _showConfirm = true);
+        },
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: _removeBg,
+            border: Border.all(color: _removeBorder, width: 1),
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppIcon(
+                icon: AppPhosphorIcons.removePlayer,
+                size: AppIconSize.button,
+                color: _removeText,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Remove Friend',
+                style: AppTypography.labelLarge.copyWith(
+                  color: _removeText,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConfirmation() {
+    final friendName = widget.friend.displayName.isNotEmpty
+        ? widget.friend.displayName
+        : 'this friend';
+
+    return Container(
+      key: const ValueKey('confirmation'),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      decoration: BoxDecoration(
+        color: _confirmBg,
+        border: Border.all(color: _confirmBorder, width: 1),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Confirmation text
+          RichText(
+            textAlign: TextAlign.center,
+            text: TextSpan(
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textMuted,
+              ),
+              children: [
+                const TextSpan(text: 'Remove '),
+                TextSpan(
+                  text: friendName,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const TextSpan(text: ' from your circle?'),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+
+          // Subtitle
+          Text(
+            "You'll need to send a new request to reconnect.",
+            textAlign: TextAlign.center,
+            style: AppTypography.labelSmall.copyWith(
+              color: AppColors.textMuted.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Buttons row
+          Row(
+            children: [
+              // Cancel button
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      setState(() => _showConfirm = false);
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: _cancelBg,
+                        border: Border.all(color: _cancelBorder, width: 1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        textAlign: TextAlign.center,
+                        style: AppTypography.labelLarge.copyWith(
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+
+              // Remove button
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      widget.onRemove();
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: _removeBg,
+                        border: Border.all(color: _removeBorder, width: 1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Remove',
+                        textAlign: TextAlign.center,
+                        style: AppTypography.labelLarge.copyWith(
+                          color: _removeText,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

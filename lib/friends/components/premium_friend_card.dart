@@ -14,6 +14,16 @@ import '/core/widgets/app_icon.dart';
 import '/services/vibe_matcher.dart';
 import '/models/vibe_profile.dart';
 
+/// Button styling variants for friend card actions
+enum ActionButtonVariant {
+  /// Green filled, white icon - for primary positive actions
+  primary,
+  /// Transparent, navyLight border, textSecondary icon - for neutral secondary actions
+  secondary,
+  /// Transparent, stone border, textMuted icon - for de-emphasized/destructive actions
+  muted,
+}
+
 /// Redesigned premium friend card matching LuxuryPlayerCard design language:
 /// - Dark fairway surface (AppColors.navy @ 30% alpha)
 /// - Rounded-square avatars (52×52, radius 14)
@@ -31,11 +41,15 @@ class PremiumFriendCard extends StatefulWidget {
   final String messageLabel;
   final PhosphorIconData? messageIcon;
   final String? messageSvgPath;
+  final bool messageIsPrimary;
   final String actionLabel;
   final PhosphorIconData? actionIcon;
   final String? actionSvgPath;
   final Color actionColor;
+  final ActionButtonVariant actionVariant;
   final bool showActionButton;
+  final bool showOverflowMenu;
+  final VoidCallback? onOverflowAction;
   final bool isLoading;
   final int? mutualFriendsCount;
   final int? gamesPlayedTogether;
@@ -52,11 +66,15 @@ class PremiumFriendCard extends StatefulWidget {
     this.messageLabel = 'Chat',
     this.messageIcon = AppPhosphorIcons.chat,
     this.messageSvgPath,
+    this.messageIsPrimary = false,
     this.actionLabel = 'Add',
     this.actionIcon = AppPhosphorIcons.addPlayer,
     this.actionSvgPath,
     this.actionColor = AppColors.navy,
+    this.actionVariant = ActionButtonVariant.primary,
     this.showActionButton = true,
+    this.showOverflowMenu = false,
+    this.onOverflowAction,
     this.isLoading = false,
     this.mutualFriendsCount,
     this.gamesPlayedTogether,
@@ -364,31 +382,49 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     // Always use icon-only buttons for compact design
     final actions = <Widget>[];
 
-    // Message button (secondary - ghost style)
+    // Message button (primary or secondary based on messageIsPrimary)
     if (widget.onMessage != null) {
       actions.add(
         _buildIconOnlyButton(
           icon: widget.messageIcon,
           svgPath: widget.messageSvgPath,
           onPressed: widget.onMessage!,
-          isPrimary: false,
+          variant: widget.messageIsPrimary
+              ? ActionButtonVariant.primary
+              : ActionButtonVariant.secondary,
           tooltip: widget.messageLabel,
         ),
       );
     }
 
-    // Action button (primary - Add Friend is the main CTA)
+    // Action button (uses actionVariant for styling)
     if (widget.showActionButton) {
       actions.add(
         _buildIconOnlyButton(
           icon: widget.actionIcon,
           svgPath: widget.actionSvgPath,
           onPressed: widget.onAction,
-          isPrimary: true,
+          variant: widget.actionVariant,
           isLoading: widget.isLoading,
           tooltip: widget.actionLabel,
         ),
       );
+    }
+
+    // Overflow menu button (⋯)
+    if (widget.showOverflowMenu && widget.onOverflowAction != null) {
+      actions.add(
+        _buildIconOnlyButton(
+          icon: AppPhosphorIcons.more,
+          onPressed: widget.onOverflowAction!,
+          variant: ActionButtonVariant.muted,
+          tooltip: 'More options',
+        ),
+      );
+    }
+
+    if (actions.isEmpty) {
+      return const SizedBox.shrink();
     }
 
     return Row(
@@ -404,26 +440,42 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     PhosphorIconData? icon,
     String? svgPath,
     required VoidCallback? onPressed,
-    required bool isPrimary,
+    required ActionButtonVariant variant,
     bool isLoading = false,
     String? tooltip,
   }) {
-    // Primary: green filled (Add Friend CTA)
-    // Secondary: ghost/transparent with muted icon (Chat)
-    final iconColor = isPrimary ? AppColors.textPrimary : AppColors.textSecondary;
+    // Determine colors based on variant
+    final Color backgroundColor;
+    final Color? borderColor;
+    final Color iconColor;
+
+    switch (variant) {
+      case ActionButtonVariant.primary:
+        // Green filled, white icon - primary positive actions
+        backgroundColor = AppColors.green;
+        borderColor = null;
+        iconColor = AppColors.textPrimary;
+      case ActionButtonVariant.secondary:
+        // Transparent, navyLight border - neutral secondary actions
+        backgroundColor = Colors.transparent;
+        borderColor = AppColors.navyLight;
+        iconColor = AppColors.textSecondary;
+      case ActionButtonVariant.muted:
+        // Transparent, stone border - de-emphasized/destructive actions
+        backgroundColor = Colors.transparent;
+        borderColor = AppColors.stone;
+        iconColor = AppColors.textMuted;
+    }
 
     final button = Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: isPrimary ? AppColors.green : Colors.transparent,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        border: isPrimary
-            ? null
-            : Border.all(
-                color: AppColors.navyLight,
-                width: 1,
-              ),
+        border: borderColor != null
+            ? Border.all(color: borderColor, width: 1)
+            : null,
       ),
       child: Material(
         color: Colors.transparent,

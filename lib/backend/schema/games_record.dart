@@ -111,6 +111,11 @@ class GamesRecord extends FirestoreRecord {
   bool get isCancelled => _isCancelled ?? false;
   bool hasIsCancelled() => _isCancelled != null;
 
+  // "cancelled_at" field.
+  DateTime? _cancelledAt;
+  DateTime? get cancelledAt => _cancelledAt;
+  bool hasCancelledAt() => _cancelledAt != null;
+
   // "schedule_type" field.
   String? _scheduleType;
   String get scheduleType => _scheduleType ?? 'confirmed';
@@ -202,6 +207,7 @@ class GamesRecord extends FirestoreRecord {
     _uid = snapshotData['uid'] as String?;
     _chatRef = snapshotData['chatRef'] as DocumentReference?;
     _isCancelled = snapshotData['isCancelled'] as bool?;
+    _cancelledAt = snapshotData['cancelled_at'] as DateTime?;
     _scheduleType = snapshotData['schedule_type'] as String?;
     _flexibleDays = getDataList(snapshotData['flexible_days']);
     _flexibleTimeOfDay = snapshotData['flexible_time_of_day'] as String?;
@@ -270,6 +276,7 @@ Map<String, dynamic> createGamesRecordData({
   String? uid,
   DocumentReference? chatRef,
   bool? isCancelled,
+  DateTime? cancelledAt,
   String? scheduleType,
   List<int>? flexibleDays,
   String? flexibleTimeOfDay,
@@ -305,6 +312,7 @@ Map<String, dynamic> createGamesRecordData({
       'uid': uid,
       'chatRef': chatRef,
       'isCancelled': isCancelled,
+      'cancelled_at': cancelledAt,
       'schedule_type': scheduleType,
       'flexible_days': flexibleDays,
       'flexible_time_of_day': flexibleTimeOfDay,
@@ -349,6 +357,7 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e1?.uid == e2?.uid &&
         e1?.chatRef == e2?.chatRef &&
         e1?.isCancelled == e2?.isCancelled &&
+        e1?.cancelledAt == e2?.cancelledAt &&
         e1?.flexibleStartDate == e2?.flexibleStartDate &&
         e1?.flexibleEndDate == e2?.flexibleEndDate &&
         e1?.isFunGame == e2?.isFunGame &&
@@ -381,6 +390,7 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e?.uid,
         e?.chatRef,
         e?.isCancelled,
+        e?.cancelledAt,
         e?.flexibleStartDate,
         e?.flexibleEndDate,
         e?.isFunGame,
